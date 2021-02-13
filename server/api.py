@@ -1,4 +1,8 @@
+from typing import Optional
+
 from fastapi import FastAPI
+
+from visualizer.main import run
 
 app = FastAPI()
 
@@ -11,7 +15,7 @@ async def index() -> dict:
 
 
 @app.post("/run")
-async def run(code: str) -> dict:
+async def run(code: str, input_data: Optional[str] = '') -> dict:
     return {
-        "message": code
+        "message": run(code, input_data)
     }
