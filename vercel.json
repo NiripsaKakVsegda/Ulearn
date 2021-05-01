@@ -2,9 +2,6 @@
   "builds": [
     {"src": "/server/api.py", "use": "@now/python"}
   ],
-  "routes": [
-    {"src": "/(.*)", "dest": "server/api.py"}
-  ],
   "headers": [
     {
       "source": "/server/api.py",
