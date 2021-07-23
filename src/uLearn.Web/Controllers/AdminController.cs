@@ -94,9 +94,9 @@ namespace uLearn.Web.Controllers
 		public async Task<ActionResult> SpellingErrors(Guid versionId)
 		{
 			var versionFile = coursesRepo.GetVersionFile(versionId);
-			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, versionFile.CourseVersionId, versionFile.File))
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				var (course, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, versionFile.CourseVersionId, courseDirectory.DirectoryInfo);
+				var (course, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
 				var model = course.SpellCheck(courseDirectory.DirectoryInfo.FullName);
 				return PartialView(model);
 			}
@@ -246,7 +246,7 @@ namespace uLearn.Web.Controllers
 			if (fileName == null || !fileName.ToLower().EndsWith(".zip"))
 				return RedirectToAction("Packages", new { courseId });
 
-			using var tempFile = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new Guid(), file.InputStream);
+			using var tempFile = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(new Guid()), file.InputStream);
 			Guid versionId;
 			Exception error;
 			using (var inputStream = ZipUtils.GetZipWithFileWithNameInRoot(tempFile.FileInfo.FullName, "course.xml"))
@@ -394,13 +394,13 @@ namespace uLearn.Web.Controllers
 			log.Info($"Start upload course '{courseId}'");
 			var versionId = Guid.NewGuid();
 
-			using (var zipOnDisk = courseManager.SaveVersionZipToTemporaryDirectory(courseId, versionId, content))
+			using (var zipOnDisk = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), content))
 			{
 				try
 				{
-					using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseId, versionId, await zipOnDisk.FileInfo.ReadAllContentAsync()))
+					using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseId, new CourseVersionToken(versionId), await zipOnDisk.FileInfo.ReadAllContentAsync()))
 					{
-						var (course, exception) = courseManager.LoadCourseFromDirectory(courseId, versionId, courseDirectory.DirectoryInfo);
+						var (course, exception) = courseManager.LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
 						if (exception != null)
 						{
 							log.Warn(exception, $"Upload course exception '{courseId}'");
@@ -443,6 +443,9 @@ namespace uLearn.Web.Controllers
 		{
 			var versionId = Guid.NewGuid();
 			var userId = User.Identity.GetUserId();
+
+			if (courseManager.IsCourseIdAllowed(courseId))
+				throw new Exception("CourseId contains forbidden characters");
 
 			var createdNew = await courseManager.CreateCourseIfNotExists(courseId, versionId, courseTitle, userId);
 			if (!createdNew)
@@ -904,9 +907,9 @@ namespace uLearn.Web.Controllers
 
 			var course = courseStorage.GetCourse(courseId);
 			var versionFile = coursesRepo.GetVersionFile(versionId.Value);
-			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, versionFile.CourseVersionId, versionFile.File))
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				var (version, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, versionFile.CourseVersionId, courseDirectory.DirectoryInfo);
+				var (version, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
 
 				var courseDiff = new CourseDiff(course, version);
 				var schemaPath = Path.Combine(HttpRuntime.BinDirectory, "schema.xsd");
@@ -970,9 +973,9 @@ namespace uLearn.Web.Controllers
 
 			Course version;
 			var versionFile = coursesRepo.GetVersionFile(versionId);
-			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, versionFile.CourseVersionId, versionFile.File))
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				(version, _) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, versionFile.CourseVersionId, courseDirectory.DirectoryInfo);
+				(version, _) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
 			}
 
 			var courseDiff = new CourseDiff(oldCourse, version);

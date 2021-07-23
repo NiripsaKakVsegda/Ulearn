@@ -430,7 +430,7 @@ namespace uLearn.Web.Controllers
 					|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 			}
 
-			var incorrectChars = new string(WebCourseManager.GetInvalidCharacters().OrderBy(c => c).Where(c => 32 <= c).ToArray());
+			var incorrectChars = new string(CourseManager.InvalidForCourseIdCharacters.OrderBy(c => c).Where(c => 32 <= c).ToArray());
 			if (isSystemAdministrator)
 				courses = courses.OrderBy(course => course.Id, StringComparer.InvariantCultureIgnoreCase);
 			else

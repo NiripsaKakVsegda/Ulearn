@@ -53,7 +53,7 @@ namespace Database
 			if (!hasCourse)
 			{
 				var helpVersionFile = coursesRepo.GetPublishedVersionFile(ExampleCourseId);
-				using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, versionId, new MemoryStream(helpVersionFile.File)))
+				using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
 				{
 					CreateCourseFromExample(courseId, courseTitle, exampleCourseZip.FileInfo);
 					await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync()

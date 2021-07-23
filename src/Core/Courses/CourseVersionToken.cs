@@ -112,7 +112,11 @@ namespace Ulearn.Core.Courses
 
 		public override string ToString()
 		{
-			return JsonConvert.SerializeObject(this, Formatting.Indented);
+			if (Version != null)
+				return Version.ToString();
+			if (LoadingTime != null)
+				return LoadingTime.Value.ToSortable();
+			return "";
 		}
 	}
 }

@@ -68,28 +68,12 @@ namespace Ulearn.Web.Api.Controllers
 				};
 			}
 
-			var tmpCourse = await tempCoursesRepo.FindAsync(tmpCourseId);
-			if (tmpCourse != null)
-			{
-				return new TempCourseUpdateResponse
-				{
-					ErrorType = ErrorType.Conflict,
-					Message = $"Ваша временная версия курса {courseId} уже существует с id {tmpCourseId}."
-				};
-			}
+			var tempCourse = await courseManager.CreateTempCourse(courseId, tmpCourseId, UserId);
 
-			var versionId = Guid.NewGuid();
-			var courseTitle = "Заготовка временного курса";
-			if (!courseManager.TryCreateTempCourse(tmpCourseId, courseTitle, versionId))
-				throw new Exception();
-
-			var result = await tempCoursesRepo.AddTempCourseAsync(tmpCourseId, UserId);
-			var loadingTime = result.LoadingTime;
-			await courseRolesRepo.ToggleRole(tmpCourseId, UserId, CourseRoleType.CourseAdmin, UserId, "Создал временный курс");
 			return new TempCourseUpdateResponse
 			{
 				Message = $"Временный курс с id {tmpCourseId} успешно создан.",
-				LastUploadTime = loadingTime
+				LastUploadTime = tempCourse.LoadingTime
 			};
 		}
 
@@ -174,7 +158,7 @@ namespace Ulearn.Web.Api.Controllers
 			}
 
 			await tempCoursesRepo.MarkTempCourseAsNotErroredAsync(tmpCourseId);
-			var loadingTime = await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tmpCourseId);
+			var loadingTime = await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tmpCourseId, DateTime.Now);
 			return new TempCourseUpdateResponse
 			{
 				Message = $"Временный курс {tmpCourseId} успешно обновлен",

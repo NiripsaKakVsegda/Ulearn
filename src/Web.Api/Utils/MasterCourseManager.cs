@@ -5,6 +5,7 @@ using Database;
 using Database.Models;
 using Database.Repos;
 using Microsoft.Extensions.DependencyInjection;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
@@ -19,7 +20,6 @@ namespace Ulearn.Web.Api.Utils
 
 		private readonly IServiceScopeFactory serviceScopeFactory;
 		private readonly ExerciseStudentZipsCache exerciseStudentZipsCache;
-		private bool tempCourseLoaded;
 
 		public MasterCourseManager(IServiceScopeFactory serviceScopeFactory, ExerciseStudentZipsCache exerciseStudentZipsCache)
 			: base(serviceScopeFactory)
@@ -67,9 +67,14 @@ namespace Ulearn.Web.Api.Utils
 			}
 
 			var courseFile = await coursesRepo.GetVersionFile(publishedCourseVersions.Id);
-			using (var courseDirectory = await ExtractCourseVersionToTemporaryDirectory(courseId, publishedCourseVersions.Id, courseFile.File))
+			await UpdateCourseInCommonDirectory(courseId, courseFile.File, publishedVersionToken);
+		}
+
+		private async Task UpdateCourseInCommonDirectory(string courseId, byte[] content, CourseVersionToken publishedVersionToken)
+		{
+			using (var courseDirectory = await ExtractCourseVersionToTemporaryDirectory(courseId, publishedVersionToken, content))
 			{
-				var (course, error) = LoadCourseFromDirectory(courseId, publishedCourseVersions.Id, courseDirectory.DirectoryInfo);
+				var (course, error) = LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
 				if (error != null)
 				{
 					brokenVersions.TryAdd(publishedVersionToken, true);
@@ -77,6 +82,7 @@ namespace Ulearn.Web.Api.Utils
 					log.Error(error, message);
 					return;
 				}
+
 				using (await CourseLock.AcquireWriterLock(courseId))
 				{
 					try
@@ -92,29 +98,53 @@ namespace Ulearn.Web.Api.Utils
 			}
 		}
 
-		// Временные курсы выкладываются на диск сразу контроллером, который их создает, здесь только загружаю курсы с диска при старте
+		// Временные курсы выкладываются на диск сразу контроллером, который их создает, здесь только загружаю курсы с диска
+		// Это актуально при старте, а в дальнейшем должен находить курсы на диске уже актуальной версии
 		public override async Task UpdateTempCourses()
 		{
-			if (!tempCourseLoaded)
-			{
-				tempCourseLoaded = true;
-				using (var scope = serviceScopeFactory.CreateScope())
-				{
-					var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
-					var tempCourses = await tempCoursesRepo.GetTempCoursesAsync();
-					foreach (var tempCourse in tempCourses)
-					{
-						var courseId = tempCourse.CourseId;
-						var publishedLoadingTime = tempCourse.LoadingTime;
-						await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, new CourseVersionToken(publishedLoadingTime));
-					}
-				}
-			}
+			await base.UpdateTempCourses();
 		}
 
 		public async Task<FileInfo> GenerateOrFindStudentZip(string courseId, Slide slide)
 		{
 			return await exerciseStudentZipsCache.GenerateOrFindZip(courseId, slide, GetExtractedCourseDirectory(courseId).FullName);
+		}
+
+		public async Task<TempCourse> CreateTempCourse(string baseCourseId, string tmpCourseId, string userId)
+		{
+			using (var scope = serviceScopeFactory.CreateScope())
+			{
+				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
+				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+
+				var tmpCourseDbData = await tempCoursesRepo.FindAsync(tmpCourseId);
+				if (tmpCourseDbData != null)
+				{
+					log.Warn($"Временный курс {tmpCourseId} уже существует в базе");
+
+					var course = CourseStorageInstance.FindCourse(tmpCourseId);
+					if (course != null && course.CourseVersionToken.LoadingTime == tmpCourseDbData.LoadingTime)
+					{
+						log.Warn($"Временный курс {tmpCourseId} версии {course.CourseVersionToken} уже загружен в память");
+						return tmpCourseDbData;
+					}
+				}
+
+				var loadingTime = DateTime.Now;
+				var versionToken = new CourseVersionToken(loadingTime);
+				var baseCourseVersionFile = await coursesRepo.GetPublishedVersionFile(baseCourseId);
+				await UpdateCourseInCommonDirectory(tmpCourseId, baseCourseVersionFile.File, versionToken);
+
+				if (tmpCourseDbData == null)
+				{
+					tmpCourseDbData = await tempCoursesRepo.AddTempCourseAsync(tmpCourseId, userId, loadingTime);
+					await courseRolesRepo.ToggleRole(tmpCourseId, userId, CourseRoleType.CourseAdmin, userId, "Создал временный курс");
+					return tmpCourseDbData;
+				}
+				await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tmpCourseId, loadingTime);
+				return await tempCoursesRepo.FindAsync(tmpCourseId);
+			}
 		}
 	}
 }

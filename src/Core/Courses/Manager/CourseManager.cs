@@ -37,6 +37,8 @@ namespace Ulearn.Core.Courses.Manager
 		private readonly DirectoryInfo tempCourseStaging;
 		private readonly DirectoryInfo coursesVersionsDirectory;
 
+		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&' }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
+
 		/* TODO (andgein): Use DI */
 		public static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
 		private static readonly ErrorsBot errorsBot = new ErrorsBot();
@@ -245,44 +247,23 @@ namespace Ulearn.Core.Courses.Manager
 			return versionId.GetNormalizedGuid() + ".zip";
 		}
 
-		public bool TryCreateTempCourse(string courseId, string courseTitle, Guid firstVersionId)
+		// Пересоздает временный курс в том смылсе, что выкладывает на диск копию основного курса
+		public bool CreateTempCourseOnDisk(string courseId, string courseTitle, DateTime loadingTime)
 		{
-			try
-			{
-				//todo дубликат метода TryCreateCourse. Можно убрать создание пустой версии и пустого архива в Staging
-				if (courseId.Any(GetInvalidCharacters().Contains))
-					return false;
-
-				var package = stagedDirectory.GetFile(GetPackageName(courseId));
-				if (package.Exists)
-					return true;
-
-				var examplePackage = stagedDirectory.GetFile(GetPackageName(examplePackageName));
-				if (!examplePackage.Exists)
-					CreateEmptyCourse(courseId, courseTitle, package.FullName);
-				else
-				{
-					examplePackage.CopyTo(package.FullName, true);
-					File.SetLastWriteTime(examplePackage.FullName, DateTime.Now);
-					CreateCourseFromExample(courseId, courseTitle, new FileInfo(package.FullName));
-				}
-
-				ReloadCourseFromZip(package);
-
-				var versionFile = GetCourseVersionFile(firstVersionId);
-				File.Copy(package.FullName, versionFile.FullName);
-
+			var package = stagedDirectory.GetFile(GetPackageName(courseId));
+			if (package.Exists)
 				return true;
-			}
-			catch (Exception ex)
-			{
-				log.Error(ex, $"Error on create temp course {courseId}");
-				courseIdToIsBroken.AddOrUpdate(courseId.ToLower(), _ => true, (_, _) => true);
-				return false;
-			}
+
+			var examplePackage = stagedDirectory.GetFile(GetPackageName(examplePackageName));
+
+			examplePackage.CopyTo(package.FullName, true);
+			File.SetLastWriteTime(examplePackage.FullName, DateTime.Now);
+			CreateCourseFromExample(courseId, courseTitle, new FileInfo(package.FullName));
+
+			ReloadCourseFromZip(package);
+			return true;
 		}
-
-
+		
 		public void EnsureVersionIsExtracted(Guid versionId)
 		{
 			var versionDirectory = GetExtractedVersionDirectory(versionId);
@@ -298,20 +279,6 @@ namespace Ulearn.Core.Courses.Manager
 			var zipWithChanges = GetStagingTempCourseFile(tempCourseId);
 			var courseDirectory = GetExtractedCourseDirectory(tempCourseId);
 			UnzipTempWithOverwrite(zipWithChanges, courseDirectory);
-		}
-
-		private static void CreateEmptyCourse(string courseId, string courseTitle, string path)
-		{
-			using (var zip = new ZipFile(Encoding.UTF8))
-			{
-				zip.AddEntry("course.xml",
-					"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" +
-					$"<course xmlns=\"https://ulearn.me/schema/v2\" title=\"{courseTitle.EncodeQuotes()}\">\n" +
-					@"<units><add>*\unit.xml</add></units>" +
-					"</course>",
-					new UTF8Encoding(false));
-				zip.Save(path);
-			}
 		}
 
 		public static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)
@@ -354,9 +321,9 @@ namespace Ulearn.Core.Courses.Manager
 			}
 		}
 
-		public static char[] GetInvalidCharacters()
+		public bool IsCourseIdAllowed(string courseId)
 		{
-			return new[] { '&' }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
+			return !courseId.Any(InvalidForCourseIdCharacters.Contains);
 		}
 
 		private void UpdateCourse(Course course)
@@ -400,27 +367,27 @@ namespace Ulearn.Core.Courses.Manager
 
 #region WorkWithCourseInTemporaryDirectory
 
-		public async Task<TempDirectory> ExtractCourseVersionToTemporaryDirectory(string courseId, Guid versionId, byte[] zipContent)
+		public async Task<TempDirectory> ExtractCourseVersionToTemporaryDirectory(string courseId, CourseVersionToken versionToken, byte[] zipContent)
 		{
-			var tempDirectory = CreateCourseTempDirectory(courseId, versionId);
+			var tempDirectory = CreateCourseTempDirectory(courseId, versionToken);
 			ZipUtils.UnpackZip(zipContent, tempDirectory.DirectoryInfo.FullName);
-			await new CourseVersionToken(versionId).Save(tempDirectory.DirectoryInfo);
+			await versionToken.Save(tempDirectory.DirectoryInfo);
 			return tempDirectory;
 		}
 
-		private TempDirectory CreateCourseTempDirectory(string courseId, Guid versionId)
+		private TempDirectory CreateCourseTempDirectory(string courseId, CourseVersionToken versionToken)
 		{
-			var directoryName = $"{courseId}_{versionId}_{DateTime.Now.ToSortable()}";
+			var directoryName = $"{courseId}_{versionToken}_{DateTime.Now.ToSortable()}";
 			return new TempDirectory(directoryName);
 		}
 
-		public TempFile SaveVersionZipToTemporaryDirectory(string courseId, Guid versionId, Stream stream)
+		public TempFile SaveVersionZipToTemporaryDirectory(string courseId, CourseVersionToken versionToken, Stream stream)
 		{
-			var fileName = $"{courseId}_{versionId}_{DateTime.Now.ToSortable()}";
+			var fileName = $"{courseId}_{versionToken}_{DateTime.Now.ToSortable()}";
 			return new TempFile(fileName, stream);
 		}
 
-		public (Course Course, Exception Exception) LoadCourseFromDirectory(string courseId, Guid versionId, DirectoryInfo extractedCourseDirectory)
+		public (Course Course, Exception Exception) LoadCourseFromDirectory(string courseId, DirectoryInfo extractedCourseDirectory)
 		{
 			try
 			{

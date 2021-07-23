@@ -30,13 +30,13 @@ namespace Database.Repos
 			return await db.TempCourseErrors.SingleOrDefaultAsync(error => error.CourseId == courseId);
 		}
 
-		public async Task<TempCourse> AddTempCourseAsync(string courseId, string authorId)
+		public async Task<TempCourse> AddTempCourseAsync(string courseId, string authorId, DateTime loadingTime)
 		{
 			var tempCourse = new TempCourse
 			{
 				CourseId = courseId,
 				AuthorId = authorId,
-				LoadingTime = DateTime.Now,
+				LoadingTime = loadingTime,
 				LastUpdateTime = DateTime.UnixEpoch // Используется вместо default, потому что default нельзя сохранить в базу
 			};
 			db.TempCourses.Add(tempCourse);
@@ -44,13 +44,13 @@ namespace Database.Repos
 			return tempCourse;
 		}
 
-		public async Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId)
+		public async Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId, DateTime loadingTime)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
 				return default;
 
-			course.LoadingTime = DateTime.Now;
+			course.LoadingTime = loadingTime;
 			await db.SaveChangesAsync();
 			return course.LoadingTime;
 		}
