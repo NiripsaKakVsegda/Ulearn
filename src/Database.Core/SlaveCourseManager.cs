@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Database.Repos;
 using Microsoft.Extensions.DependencyInjection;
-using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Vostok.Logging.Abstractions;
@@ -49,26 +46,6 @@ namespace Database
 					var publishedLoadingTime = tempCourse.LoadingTime;
 					await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, new CourseVersionToken(publishedLoadingTime));
 				}
-			}
-		}
-
-		public async Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId)
-		{
-			using (var scope = serviceScopeFactory.CreateScope())
-			{
-				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
-				var hasCourse = await coursesRepo.GetPublishedCourseVersion(courseId) != null;
-				if (!hasCourse)
-				{
-					var helpVersionFile = await coursesRepo.GetPublishedVersionFile(ExampleCourseId);
-					using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
-					{
-						CreateCourseFromExample(courseId, courseTitle, exampleCourseZip.FileInfo);
-						await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync());
-					}
-					await coursesRepo.MarkCourseVersionAsPublished(versionId);
-				}
-				return !hasCourse;
 			}
 		}
 	}
