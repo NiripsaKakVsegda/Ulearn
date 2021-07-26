@@ -66,7 +66,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				userId = UserId;
 
 			var submissions = await userSolutionsRepo
-				.GetAllSubmissionsByUser(courseId, slideId, userId)
+				.GetAllSubmissionsByUserAllInclude(courseId, slideId, userId)
 				.ToListAsync();
 			var submissionsScores = await slideCheckingsRepo.GetCheckedPercentsBySubmissions(courseId, slideId, userId, null);
 			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(courseId, slideId, userId);
@@ -86,17 +86,17 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 
 			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), submission.UserId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
+			
+			/* Invalid form: score isn't from range 0..100 */
+			if (score is < 0 or > 100)
+			{
+				return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {score}");
+			}
 
 			await using (var transaction = await db.Database.BeginTransactionAsync())
 			{
 				var course = courseStorage.GetCourse(submission.CourseId);
 				var slide = course.FindSlideByIdNotSafe(submission.SlideId);
-
-				/* Invalid form: score isn't from range 0..100 */
-				if (score is < 0 or > 100)
-				{
-					return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {score}");
-				}
 
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, score);
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking);

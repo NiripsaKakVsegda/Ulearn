@@ -22,6 +22,8 @@ namespace Database.Repos
 
 		IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, bool includeManualAndAutomaticCheckings = true);
 		IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, IEnumerable<Guid> slidesIds);
+		IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId, IEnumerable<Guid> slidesIds);
+		IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId);
 		IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, IEnumerable<Guid> slidesIds, DateTime periodStart, DateTime periodFinish);
 		IQueryable<UserExerciseSubmission> GetAllAcceptedSubmissions(string courseId, IEnumerable<Guid> slidesIds, DateTime periodStart, DateTime periodFinish);
 		IQueryable<UserExerciseSubmission> GetAllAcceptedSubmissions(string courseId, IEnumerable<Guid> slidesIds);
@@ -31,6 +33,7 @@ namespace Database.Repos
 		IQueryable<UserExerciseSubmission> GetAllAcceptedSubmissionsByUser(string courseId, string userId);
 		IQueryable<UserExerciseSubmission> GetAllAcceptedSubmissionsByUser(string courseId, Guid slideId, string userId);
 		IQueryable<UserExerciseSubmission> GetAllSubmissionsByUser(string courseId, Guid slideId, string userId);
+		IQueryable<UserExerciseSubmission> GetAllSubmissionsByUserAllInclude(string courseId, Guid slideId, string userId);
 		IQueryable<UserExerciseSubmission> GetAllSubmissionsByUsers(SubmissionsFilterOptions filterOptions);
 		Task<int> GetAcceptedSolutionsCount(string courseId, Guid slideId);
 		Task<bool> IsCheckingSubmissionByUser(string courseId, Guid slideId, string userId, DateTime periodStart, DateTime periodFinish);
@@ -44,6 +47,6 @@ namespace Database.Repos
 		Task RunAutomaticChecking(int submissionId, [CanBeNull] string sandbox, TimeSpan timeout, bool waitUntilChecked, int priority);
 		Task<Dictionary<int, string>> GetSolutionsForSubmissions(IEnumerable<int> submissionsIds);
 		Task<UserExerciseSubmission> GetUnhandledSubmission(string agentName, List<string> sandboxes);
-		Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionIdNoTracking(int submissionId);
+		Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionId(int submissionId);
 	}
 }

@@ -108,10 +108,24 @@ namespace Database.Repos
 					.Include(s => s.AutomaticChecking);
 			return query.Where(x => x.CourseId == courseId);
 		}
+		
+		public IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId)
+		{
+			var query = db.UserExerciseSubmissions
+				.AsQueryable()
+				.Include(s => s.ManualChecking).ThenInclude(c => c.Reviews).ThenInclude(r => r.Author)
+				.Include(s => s.Reviews).ThenInclude(r => r.Author);
+			return query.Where(x => x.CourseId == courseId);
+		}
 
 		public IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, IEnumerable<Guid> slidesIds)
 		{
 			return GetAllSubmissions(courseId).Where(x => slidesIds.Contains(x.SlideId));
+		}
+		
+		public IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId, IEnumerable<Guid> slidesIds)
+		{
+			return GetAllSubmissionsAllInclude(courseId).Where(x => slidesIds.Contains(x.SlideId));
 		}
 
 		public IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, IEnumerable<Guid> slidesIds, DateTime periodStart, DateTime periodFinish)
@@ -163,6 +177,11 @@ namespace Database.Repos
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsByUser(string courseId, Guid slideId, string userId)
 		{
 			return GetAllSubmissions(courseId, new List<Guid> { slideId }).Where(s => s.UserId == userId);
+		}
+		
+		public IQueryable<UserExerciseSubmission> GetAllSubmissionsByUserAllInclude(string courseId, Guid slideId, string userId)
+		{
+			return GetAllSubmissionsAllInclude(courseId, new List<Guid> { slideId }).Where(s => s.UserId == userId);
 		}
 
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsByUsers(SubmissionsFilterOptions filterOptions)
@@ -327,10 +346,9 @@ namespace Database.Repos
 				.SingleOrDefaultAsync(x => x.Id == id);
 		}
 
-		public async Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionIdNoTracking(int submissionId)
+		public async Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionId(int submissionId)
 		{
 			var submission = await db.UserExerciseSubmissions
-				.AsNoTracking()
 				.Include(s => s.Reviews).ThenInclude(c => c.Author)
 				.Include(s => s.ManualChecking).ThenInclude(c => c.Reviews).ThenInclude(r => r.Author)
 				.SingleOrDefaultAsync(x => x.Id == submissionId);
