@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
@@ -13,9 +12,6 @@ using Database.Repos;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Web.Api.Models.Responses.AntiPlagiarism;
@@ -26,23 +22,19 @@ namespace Ulearn.Web.Api.Controllers.AntiPlagiarism
 	public class AntiPlagiarismController : BaseController
 	{
 		private readonly IUserSolutionsRepo userSolutionsRepo;
-		private static readonly IAntiPlagiarismClient antiPlagiarismClient;
-
-		static AntiPlagiarismController()
-		{
-			var antiplagiarismClientConfiguration = ApplicationConfiguration.Read<UlearnConfiguration>().AntiplagiarismClient;
-			antiPlagiarismClient = new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
-		}
-
+		private readonly IAntiPlagiarismClient antiPlagiarismClient;
+		
 		public AntiPlagiarismController(
 			ICourseStorage courseStorage,
 			UlearnDb db,
 			IUsersRepo usersRepo,
+			IAntiPlagiarismClient antiPlagiarismClient,
 			IUserSolutionsRepo userSolutionsRepo
 		)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.userSolutionsRepo = userSolutionsRepo;
+			this.antiPlagiarismClient = antiPlagiarismClient;
 		}
 
 		[Authorize(Policy = "Instructors")]
@@ -96,7 +88,7 @@ namespace Ulearn.Web.Api.Controllers.AntiPlagiarism
 			= new ConcurrentDictionary<Tuple<Guid, Guid>, Tuple<DateTime, GetAuthorPlagiarismsResponse>>();
 		private static readonly TimeSpan cacheLifeTime = TimeSpan.FromMinutes(10);
 
-		private static async Task<GetAuthorPlagiarismsResponse> GetAuthorPlagiarismsAsync(UserExerciseSubmission submission)
+		private async Task<GetAuthorPlagiarismsResponse> GetAuthorPlagiarismsAsync(UserExerciseSubmission submission)
 		{
 			RemoveOldValuesFromCache();
 			var userId = Guid.Parse(submission.UserId);

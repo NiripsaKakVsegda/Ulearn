@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AntiPlagiarism.Api;
 using Database;
 using Database.Di;
 using Database.Models;
@@ -242,6 +243,11 @@ namespace Ulearn.Web.Api
 			services.AddScoped<StyleErrorsResultObserver>();
 			services.AddScoped<LtiResultObserver>();
 			services.AddScoped<ControllerUtils>();
+			services.AddSingleton<IAntiPlagiarismClient>(sp=>
+			{
+				var antiplagiarismClientConfiguration = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.AntiplagiarismClient;
+				return new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
+			});
 
 			services.AddDatabaseServices();
 		}
