@@ -250,7 +250,7 @@ namespace Ulearn.Web.Api
 			services.AddScoped<LtiResultObserver>();
 			services.AddScoped<ControllerUtils>();
 
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(false);
 		}
 
 		protected override void ConfigureBackgroundWorkers(IVostokAspNetCoreApplicationBuilder builder)

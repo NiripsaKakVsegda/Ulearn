@@ -72,10 +72,6 @@ namespace Notifications
 		{
 			base.ConfigureDi(services);
 
-			services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
-			services.AddSingleton<SlaveCourseManager>();
-			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<SlaveCourseManager>());
-
 			services.AddSingleton<OneTimeEmailSender>();
 			services.AddSingleton<IEmailSender, KonturSpamEmailSender>();
 			services.AddScoped<INotificationSender, NotificationSender>();
@@ -85,7 +81,7 @@ namespace Notifications
 				((IOptions<NotificationsConfiguration>)sp.GetService(typeof(IOptions<NotificationsConfiguration>)))!.Value.GraphiteServiceName));
 			services.AddSingleton<UpdateCoursesWorker>();
 
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(true);
 		}
 
 		public async Task MainLoop()

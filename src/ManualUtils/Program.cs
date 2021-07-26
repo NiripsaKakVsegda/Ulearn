@@ -66,12 +66,7 @@ namespace ManualUtils
 			services.AddSingleton(db);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
 
-			services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
-			services.AddSingleton<SlaveCourseManager>();
-			services.AddSingleton<ISlaveCourseManager, SlaveCourseManager>();
-			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<SlaveCourseManager>());
-
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(true);
 			services.AddSingleton(adb);
 
 			return services.BuildServiceProvider();
