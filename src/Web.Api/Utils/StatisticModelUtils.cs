@@ -13,14 +13,54 @@ using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
+using Ulearn.Core.GoogleSheet;
 using Ulearn.Web.Api.Models.Internal;
 using Ulearn.Web.Api.Models.Parameters.Analytics;
 
 namespace Ulearn.Web.Api.Utils
 {
-	public static class StatisticModelUtils
+	public class StatisticModelUtils
 	{
-		public static void FillCourseStatisticsWithBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+
+		private readonly ICourseRolesRepo courseRolesRepo;
+		private readonly IGroupMembersRepo groupMembersRepo;
+		private readonly IUnitsRepo unitsRepo;
+		private readonly IGroupsRepo groupsRepo;
+		private readonly ControllerUtils controllerUtils;
+		private readonly IVisitsRepo visitsRepo;
+		private readonly IAdditionalScoresRepo additionalScoresRepo;
+		private readonly IGroupAccessesRepo groupAccessesRepo;
+		private readonly ICourseStorage courseStorage;
+		private readonly UlearnDb db;
+		
+		public StatisticModelUtils(ICourseRolesRepo courseRolesRepo, IGroupMembersRepo groupMembersRepo,
+			IUnitsRepo unitsRepo, IGroupsRepo groupsRepo, ControllerUtils controllerUtils,
+			IVisitsRepo visitsRepo, IAdditionalScoresRepo additionalScoresRepo,
+			IGroupAccessesRepo groupAccessesRepo, ICourseStorage courseStorage, UlearnDb db)
+		{
+			this.courseRolesRepo = courseRolesRepo;
+			this.groupMembersRepo = groupMembersRepo;
+			this.unitsRepo = unitsRepo;
+			this.groupsRepo = groupsRepo;
+			this.controllerUtils = controllerUtils;
+			this.visitsRepo = visitsRepo;
+			this.additionalScoresRepo = additionalScoresRepo;
+			this.groupAccessesRepo = groupAccessesRepo;
+			this.courseStorage = courseStorage;
+			this.db = db;
+		}
+
+		public async Task<GoogleSheet> GetFilledGoogleSheet(CourseStatisticsParams courseStatisticsParams, int userLimits, string userId)
+		{
+			var model = await GetCourseStatisticsModel(userLimits, userId, courseStatisticsParams.CourseId, courseStatisticsParams.GroupsIds);
+			var listId = courseStatisticsParams.ListId;
+			var sheet = new GoogleSheet(200, 200, listId);
+			var builder = new GoogleSheetBuilder(sheet);
+			FillCourseStatisticsWithBuilder(builder, model);
+			return sheet;
+		}
+		
+		public void FillCourseStatisticsWithBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
 		{
 			builder.AddStyleRule(s => s.Font.Bold = true);
 
@@ -134,16 +174,12 @@ namespace Ulearn.Web.Api.Utils
 			}
 		}
 		
-		public static async Task<CourseStatisticPageModel> GetCourseStatisticsModel(CourseStatisticsParams param, int usersLimit, string userId, 
-			ICourseRolesRepo courseRolesRepo, ICourseStorage courseStorage, IUnitsRepo unitsRepo, IGroupsRepo groupsRepo,
-			ControllerUtils controllerUtils,IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo,
-			IAdditionalScoresRepo additionalScoresRepo, UlearnDb db)
+		public async Task<CourseStatisticPageModel> GetCourseStatisticsModel(int usersLimit, string userId, string courseId, List<string> groupsIds)
 		{
-			var courseId = param.CourseId;
-			var groupsIds = param.GroupsIds ?? new List<string>();
+			groupsIds ??= new List<string>();
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor);
 			var isStudent = !isInstructor;
-			if (isStudent && !await CanStudentViewGroupsStatistics(userId, groupsIds, groupMembersRepo))
+			if (isStudent && !await CanStudentViewGroupsStatistics(userId, groupsIds))
 				return null;
 
 			var course = courseStorage.GetCourse(courseId);
@@ -159,15 +195,15 @@ namespace Ulearn.Web.Api.Utils
 			if (filterOptions.UserIds != null && !filterOptions.IsUserIdsSupplement)
 				usersIds = filterOptions.UserIds;
 			else
-				usersIds = await GetUsersIds(filterOptions, visitsRepo);
+				usersIds = await GetUsersIds(filterOptions);
 
-			var visitedUsers = await GetUnitStatisticUserInfos(usersIds, db);
+			var visitedUsers = await GetUnitStatisticUserInfos(usersIds);
 			var isMore = visitedUsers.Count > usersLimit;
 
 			var unitBySlide = visibleUnits.SelectMany(u => u.GetSlides(isInstructor).Select(s => Tuple.Create(u.Id, s.Id))).ToDictionary(p => p.Item2, p => p.Item1);
 			var scoringGroups = course.Settings.Scoring.Groups;
 
-			var totalScoreByUserAllTime = await GetTotalScoreByUserAllTime(filterOptions,visitsRepo);
+			var totalScoreByUserAllTime = await GetTotalScoreByUserAllTime(filterOptions);
 
 			/* Get `usersLimit` best by slides count */
 			visitedUsers = visitedUsers
@@ -183,16 +219,16 @@ namespace Ulearn.Web.Api.Utils
 			/* From now fetch only filtered users' statistics */
 			filterOptions.UserIds = visitedUsersIds;
 			filterOptions.IsUserIdsSupplement = false;
-			var scoreByUserUnitScoringGroup = await GetScoreByUserUnitScoringGroup(filterOptions, slidesIds, unitBySlide, course, visitsRepo);
+			var scoreByUserUnitScoringGroup = await GetScoreByUserUnitScoringGroup(filterOptions, slidesIds, unitBySlide, course);
 
 			var shouldBeSolvedSlides = visibleUnits.SelectMany(u => u.GetSlides(isInstructor)).Where(s => s.ShouldBeSolved).ToList();
 			var shouldBeSolvedSlidesIds = shouldBeSolvedSlides.Select(s => s.Id).ToHashSet();
 			var shouldBeSolvedSlidesByUnitScoringGroup = GetShouldBeSolvedSlidesByUnitScoringGroup(shouldBeSolvedSlides, unitBySlide);
-			var scoreByUserAndSlide = await GetScoreByUserAndSlide(filterOptions, shouldBeSolvedSlidesIds, visitsRepo);
+			var scoreByUserAndSlide = await GetScoreByUserAndSlide(filterOptions, shouldBeSolvedSlidesIds);
 
-			var additionalScores = await GetAdditionalScores(courseId, visitedUsersIds, additionalScoresRepo);
+			var additionalScores = await GetAdditionalScores(courseId, visitedUsersIds);
 			var usersGroupsIds = await groupMembersRepo.GetUsersGroupsIdsAsync(courseId, visitedUsersIds);
-			var enabledAdditionalScoringGroupsForGroups = await GetEnabledAdditionalScoringGroupsForGroups(courseId, groupsRepo);
+			var enabledAdditionalScoringGroupsForGroups = await GetEnabledAdditionalScoringGroupsForGroups(courseId);
 
 			/* Filter out only scoring groups which are affected in selected groups */
 			var additionalScoringGroupsForFilteredGroups = await controllerUtils.GetEnabledAdditionalScoringGroupsForGroups(course, groupsIds, userId);
@@ -234,7 +270,7 @@ namespace Ulearn.Web.Api.Utils
 			return model;
 		}
 		
-		private static async Task<bool> CanStudentViewGroupsStatistics(string userId, List<string> groupsIds, IGroupMembersRepo groupMembersRepo)
+		private async Task<bool> CanStudentViewGroupsStatistics(string userId, List<string> groupsIds)
 		{
 			foreach (var groupId in groupsIds)
 			{
@@ -247,12 +283,12 @@ namespace Ulearn.Web.Api.Utils
 			return true;
 		}
 
-		private static async Task<List<string>> GetUsersIds(VisitsFilterOptions filterOptions, IVisitsRepo visitsRepo)
+		private async Task<List<string>> GetUsersIds(VisitsFilterOptions filterOptions)
 		{
 			return await visitsRepo.GetVisitsInPeriod(filterOptions).Select(v => v.UserId).Distinct().ToListAsync();
 		}
 
-		private static async Task<List<UnitStatisticUserInfo>> GetUnitStatisticUserInfos(List<string> usersIds, UlearnDb db)
+		private async Task<List<UnitStatisticUserInfo>> GetUnitStatisticUserInfos(List<string> usersIds)
 		{
 			return (await db.Users.Where(u => usersIds.Contains(u.Id))
 					.Select(u => new { u.Id, u.UserName, u.Email, u.FirstName, u.LastName })
@@ -260,7 +296,7 @@ namespace Ulearn.Web.Api.Utils
 				.Select(u => new UnitStatisticUserInfo(u.Id, u.UserName, u.Email, u.FirstName, u.LastName)).ToList();
 		}
 
-		private static async Task<DefaultDictionary<string, int>> GetTotalScoreByUserAllTime(VisitsFilterOptions filterOptions, IVisitsRepo visitsRepo)
+		private async Task<DefaultDictionary<string, int>> GetTotalScoreByUserAllTime(VisitsFilterOptions filterOptions)
 		{
 			return (await visitsRepo.GetVisitsInPeriod(filterOptions.WithPeriodStart(DateTime.MinValue).WithPeriodFinish(DateTime.MaxValue))
 					.GroupBy(v => v.UserId)
@@ -270,8 +306,8 @@ namespace Ulearn.Web.Api.Utils
 				.ToDefaultDictionary();
 		}
 
-		private static async Task<DefaultDictionary<Tuple<string, Guid, string>, int>> GetScoreByUserUnitScoringGroup(VisitsFilterOptions filterOptions, HashSet<Guid> slides,
-			Dictionary<Guid, Guid> unitBySlide, Course course, IVisitsRepo visitsRepo)
+		private async Task<DefaultDictionary<Tuple<string, Guid, string>, int>> GetScoreByUserUnitScoringGroup(VisitsFilterOptions filterOptions, HashSet<Guid> slides,
+			Dictionary<Guid, Guid> unitBySlide, Course course)
 		{
 			return (await visitsRepo.GetVisitsInPeriod(filterOptions)
 				.Select(v => new { v.UserId, v.SlideId, v.Score })
@@ -282,7 +318,7 @@ namespace Ulearn.Web.Api.Utils
 				.ToDefaultDictionary();
 		}
 
-		private static DefaultDictionary<Tuple<Guid, string>, List<Slide>> GetShouldBeSolvedSlidesByUnitScoringGroup(List<Slide> shouldBeSolvedSlides, Dictionary<Guid, Guid> unitBySlide)
+		private DefaultDictionary<Tuple<Guid, string>, List<Slide>> GetShouldBeSolvedSlidesByUnitScoringGroup(List<Slide> shouldBeSolvedSlides, Dictionary<Guid, Guid> unitBySlide)
 		{
 			return shouldBeSolvedSlides
 				.GroupBy(s => Tuple.Create(unitBySlide[s.Id], s.ScoringGroup))
@@ -290,8 +326,8 @@ namespace Ulearn.Web.Api.Utils
 				.ToDefaultDictionary();
 		}
 
-		private static async Task<DefaultDictionary<Tuple<string, Guid>, int>> GetScoreByUserAndSlide(VisitsFilterOptions filterOptions,
-			HashSet<Guid> shouldBeSolvedSlidesIds, IVisitsRepo visitsRepo)
+		private async Task<DefaultDictionary<Tuple<string, Guid>, int>> GetScoreByUserAndSlide(VisitsFilterOptions filterOptions,
+			HashSet<Guid> shouldBeSolvedSlidesIds)
 		{
 			return (await visitsRepo.GetVisitsInPeriod(filterOptions)
 				.Select(v => new { v.UserId, v.SlideId, v.Score })
@@ -302,8 +338,8 @@ namespace Ulearn.Web.Api.Utils
 				.ToDefaultDictionary();
 		}
 
-		private static async Task<DefaultDictionary<Tuple<string, Guid, string>, int>> GetAdditionalScores(string courseId,
-			List<string> visitedUsersIds, IAdditionalScoresRepo additionalScoresRepo)
+		private async Task<DefaultDictionary<Tuple<string, Guid, string>, int>> GetAdditionalScores(string courseId,
+			List<string> visitedUsersIds)
 		{
 			return (await additionalScoresRepo
 					.GetAdditionalScoresForUsers(courseId, visitedUsersIds))
@@ -311,11 +347,12 @@ namespace Ulearn.Web.Api.Utils
 				.ToDefaultDictionary();
 		}
 
-		private static async Task<Dictionary<int, List<string>>> GetEnabledAdditionalScoringGroupsForGroups(string courseId, IGroupsRepo groupsRepo)
+		private async Task<Dictionary<int, List<string>>> GetEnabledAdditionalScoringGroupsForGroups(string courseId)
 		{
 			return (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(courseId))
 				.GroupBy(e => e.GroupId)
-				.ToDictionary(g => g.Key, g => g.Select(e => e.ScoringGroupId).ToList());
+				.ToDictionary(g => g.Key,
+				 g => g.Select(e => e.ScoringGroupId).ToList());
 		}
 	}
 }

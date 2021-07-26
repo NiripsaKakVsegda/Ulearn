@@ -67,7 +67,15 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
-		public async Task UpdateTask(GoogleSheetExportTask exportTask, bool isVisibleForStudents, DateTime? refreshStartDate,
+		public async Task<List<GoogleSheetExportTask>> GetAllTasks()
+		{
+			return await db.GoogleSheetExportTasks
+				.Include(t => t.Author)
+				.Include(t => t.Groups).ThenInclude(g => g.Group)
+				.ToListAsync();
+		}
+
+			public async Task UpdateTask(GoogleSheetExportTask exportTask, bool isVisibleForStudents, DateTime? refreshStartDate,
 			DateTime? refreshEndDate, int? refreshTimeInMinutes)
 		{
 			exportTask.IsVisibleForStudents = isVisibleForStudents;

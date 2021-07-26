@@ -30,32 +30,20 @@ namespace Ulearn.Web.Api.Controllers
 	public class GoogleSheetsStatisticController : BaseController
 	{
 		private readonly ICourseRolesRepo courseRolesRepo;
-		private readonly IGroupMembersRepo groupMembersRepo;
-		private readonly IUnitsRepo unitsRepo;
-		private readonly IGroupsRepo groupsRepo;
-		private readonly ControllerUtils controllerUtils;
-		private readonly IVisitsRepo visitsRepo;
-		private readonly IAdditionalScoresRepo additionalScoresRepo;
 		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly IGoogleSheetExportTasksRepo googleSheetExportTasksRepo;
 		private readonly UlearnConfiguration configuration;
+		private readonly StatisticModelUtils statisticModelUtils;
 
 		public GoogleSheetsStatisticController(ICourseStorage courseStorage, UlearnDb db,
-			IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo, IGroupMembersRepo groupMembersRepo,
-			IUnitsRepo unitsRepo, IGroupsRepo groupsRepo, ControllerUtils controllerUtils, IVisitsRepo visitsRepo,
-			IAdditionalScoresRepo additionalScoresRepo, IGroupAccessesRepo groupAccessesRepo, IOptions<WebApiConfiguration> options,
-			IGoogleSheetExportTasksRepo googleSheetExportTasksRepo)
+			IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo, IGroupAccessesRepo groupAccessesRepo, IOptions<WebApiConfiguration> options,
+			IGoogleSheetExportTasksRepo googleSheetExportTasksRepo, StatisticModelUtils statisticModelUtils)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.courseRolesRepo = courseRolesRepo;
-			this.groupMembersRepo = groupMembersRepo;
-			this.unitsRepo = unitsRepo;
-			this.groupsRepo = groupsRepo;
-			this.controllerUtils = controllerUtils;
-			this.visitsRepo = visitsRepo;
-			this.additionalScoresRepo = additionalScoresRepo;
 			this.groupAccessesRepo = groupAccessesRepo;
 			this.googleSheetExportTasksRepo = googleSheetExportTasksRepo;
+			this.statisticModelUtils = statisticModelUtils;
 			configuration = options.Value;
 		}
 
@@ -131,7 +119,6 @@ namespace Ulearn.Web.Api.Controllers
 				return NotFound();
 			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
 				return Forbid();
-			//TODO: понять, как вызвать рисовалку отсюда
 
 			var courseStatisticsParams = new CourseStatisticsParams
 			{
@@ -139,12 +126,7 @@ namespace Ulearn.Web.Api.Controllers
 				ListId = task.ListId,
 				GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
 			};
-			var model = await StatisticModelUtils.GetCourseStatisticsModel(courseStatisticsParams, 3000, UserId, courseRolesRepo,courseStorage,unitsRepo,
-				groupsRepo, controllerUtils, groupMembersRepo, groupAccessesRepo, visitsRepo, additionalScoresRepo, db);
-			var listId = courseStatisticsParams.ListId;
-			var sheet = new GoogleSheet(200, 200, listId);
-			var builder = new GoogleSheetBuilder(sheet);
-			StatisticModelUtils.FillCourseStatisticsWithBuilder(builder, model);
+			var sheet = await statisticModelUtils.GetFilledGoogleSheet(courseStatisticsParams, 3000, UserId);
 			
 			var credentialsJson = configuration.GoogleAccessCredentials;
 			var client = new GoogleApiClient(credentialsJson);

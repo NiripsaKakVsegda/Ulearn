@@ -16,6 +16,8 @@ namespace Database.Repos
 		
 		Task<List<GoogleSheetExportTask>> GetTasks(string courseId, string authorId = null);
 
+		Task<List<GoogleSheetExportTask>> GetAllTasks();
+
 		Task UpdateTask(GoogleSheetExportTask exportTask, bool isVisibleForStudents, DateTime? refreshStartDate,
 			DateTime? refreshEndDate, int? refreshTimeInMinutes);
 

@@ -44,6 +44,7 @@ using Ulearn.Web.Api.Controllers.Slides;
 using Ulearn.Web.Api.Controllers.Websockets;
 using Ulearn.Web.Api.Models;
 using Ulearn.Web.Api.Models.Binders;
+using Ulearn.Web.Api.Models.Parameters.Analytics;
 using Ulearn.Web.Api.Models.Responses.SlideBlocks;
 using Ulearn.Web.Api.Swagger;
 using Ulearn.Web.Api.Utils;
@@ -242,6 +243,7 @@ namespace Ulearn.Web.Api
 			services.AddScoped<StyleErrorsResultObserver>();
 			services.AddScoped<LtiResultObserver>();
 			services.AddScoped<ControllerUtils>();
+			services.AddScoped<StatisticModelUtils>();
 
 			services.AddDatabaseServices();
 		}
@@ -251,6 +253,7 @@ namespace Ulearn.Web.Api
 			builder.AddHostedServiceFromApplication<ArchiveGroupsWorker>();
 			builder.AddHostedServiceFromApplication<RefreshMaterializedViewsWorker>();
 			builder.AddHostedServiceFromApplication<UpdateCoursesWorker>();
+			builder.AddHostedServiceFromApplication<RefreshGoogleSheetWorker>();
 		}
 
 		public void ConfigureAuthServices(IServiceCollection services, WebApiConfiguration configuration)

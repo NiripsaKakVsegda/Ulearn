@@ -42,13 +42,14 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly IAdditionalScoresRepo additionalScoresRepo;
 		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly UlearnConfiguration configuration;
+		private readonly StatisticModelUtils statisticModelUtils;
 		
 
 		public CourseScoreSheetController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo,
 			IGroupMembersRepo groupMembersRepo, IUnitsRepo unitsRepo,
 			IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo,
 			ControllerUtils controllerUtils, IVisitsRepo visitsRepo, IAdditionalScoresRepo additionalScoresRepo,
-			IOptions<WebApiConfiguration> options)
+			IOptions<WebApiConfiguration> options, StatisticModelUtils statisticModelUtils)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.courseRolesRepo = courseRolesRepo;
@@ -59,6 +60,7 @@ namespace Ulearn.Web.Api.Controllers
 			this.controllerUtils = controllerUtils;
 			this.visitsRepo = visitsRepo;
 			this.additionalScoresRepo = additionalScoresRepo;
+			this.statisticModelUtils = statisticModelUtils;
 			configuration = options.Value;
 		}
 		
@@ -69,8 +71,7 @@ namespace Ulearn.Web.Api.Controllers
 			if (param.CourseId == null)
 				return NotFound();
 
-			var model = await StatisticModelUtils.GetCourseStatisticsModel(param, 3000, UserId, courseRolesRepo,courseStorage,unitsRepo,
-				groupsRepo, controllerUtils, groupMembersRepo, groupAccessesRepo, visitsRepo, additionalScoresRepo, db);
+			var model = await statisticModelUtils.GetCourseStatisticsModel(3000, UserId, param.CourseId, param.GroupsIds);
 			var serializedModel = new CourseStatisticsModel(model).JsonSerialize(Formatting.Indented);
 
 			return File(Encoding.UTF8.GetBytes(serializedModel), "application/json", $"{fileNameWithNoExtension}.json");
@@ -82,8 +83,7 @@ namespace Ulearn.Web.Api.Controllers
 		{
 			if (param.CourseId == null)
 				return NotFound();
-			var model = await StatisticModelUtils.GetCourseStatisticsModel(param,3000, UserId, courseRolesRepo,courseStorage,unitsRepo,
-				groupsRepo, controllerUtils, groupMembersRepo, groupAccessesRepo, visitsRepo, additionalScoresRepo, db);
+			var model = await statisticModelUtils.GetCourseStatisticsModel(3000, UserId, param.CourseId, param.GroupsIds);
 			var serializedModel = new CourseStatisticsModel(model).XmlSerialize();
 			return File(Encoding.UTF8.GetBytes(serializedModel), "text/xml", $"{fileNameWithNoExtension}.xml");
 		}
@@ -95,18 +95,17 @@ namespace Ulearn.Web.Api.Controllers
 			if (param.CourseId == null)
 				return NotFound();
 
-			var model = await StatisticModelUtils.GetCourseStatisticsModel(param, 3000, UserId, courseRolesRepo,courseStorage,unitsRepo,
-				groupsRepo, controllerUtils, groupMembersRepo, groupAccessesRepo, visitsRepo, additionalScoresRepo, db);
+			var model = await statisticModelUtils.GetCourseStatisticsModel(3000, UserId, param.CourseId, param.GroupsIds);
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 			var package = new ExcelPackage();
 			var builder = new ExcelWorksheetBuilder(package.Workbook.Worksheets.Add(model.CourseTitle));
-			StatisticModelUtils.FillCourseStatisticsWithBuilder(
+			statisticModelUtils.FillCourseStatisticsWithBuilder(
 				builder,
 				model,
 				exportEmails: true
 			);
 			builder = new ExcelWorksheetBuilder(package.Workbook.Worksheets.Add("Только полные баллы"));
-			StatisticModelUtils.FillCourseStatisticsWithBuilder(
+			statisticModelUtils.FillCourseStatisticsWithBuilder(
 				builder,
 				model,
 				exportEmails: true,
@@ -127,12 +126,7 @@ namespace Ulearn.Web.Api.Controllers
 		{
 			if (courseStatisticsParams.CourseId == null)
 				return NotFound();
-			var model = await StatisticModelUtils.GetCourseStatisticsModel(courseStatisticsParams, 3000, UserId, courseRolesRepo,courseStorage,unitsRepo,
-				groupsRepo, controllerUtils, groupMembersRepo, groupAccessesRepo, visitsRepo, additionalScoresRepo, db);
-			var listId = courseStatisticsParams.ListId;
-			var sheet = new GoogleSheet(200, 200, listId);
-			var builder = new GoogleSheetBuilder(sheet);
-			StatisticModelUtils.FillCourseStatisticsWithBuilder(builder, model);
+			var sheet = await statisticModelUtils.GetFilledGoogleSheet(courseStatisticsParams, 3000, UserId);
 			
 			var credentialsJson = configuration.GoogleAccessCredentials;
 			var client = new GoogleApiClient(credentialsJson);
