@@ -125,8 +125,9 @@ namespace Ulearn.Web.Api.Controllers
 				CourseId = task.CourseId,
 				ListId = task.ListId,
 				GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
+				SpreadsheetId = task.SpreadsheetId,
 			};
-			var sheet = await statisticModelUtils.GetFilledGoogleSheet(courseStatisticsParams, 3000, UserId);
+			var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId);
 			
 			var credentialsJson = configuration.GoogleAccessCredentials;
 			var client = new GoogleApiClient(credentialsJson);

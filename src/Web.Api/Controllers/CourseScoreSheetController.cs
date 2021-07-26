@@ -126,7 +126,7 @@ namespace Ulearn.Web.Api.Controllers
 		{
 			if (courseStatisticsParams.CourseId == null)
 				return NotFound();
-			var sheet = await statisticModelUtils.GetFilledGoogleSheet(courseStatisticsParams, 3000, UserId);
+			var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId);
 			
 			var credentialsJson = configuration.GoogleAccessCredentials;
 			var client = new GoogleApiClient(credentialsJson);

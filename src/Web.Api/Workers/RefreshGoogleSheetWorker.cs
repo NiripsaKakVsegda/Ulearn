@@ -18,7 +18,7 @@ namespace Ulearn.Web.Api.Workers
 	public class RefreshGoogleSheetWorker : VostokScheduledApplication
 	{
 		private readonly IServiceScopeFactory serviceScopeFactory;
-		private static ILog log => LogProvider.Get().ForContext(typeof(ArchiveGroupsWorker));
+		private static ILog log => LogProvider.Get().ForContext(typeof(RefreshGoogleSheetWorker));
 		private readonly UlearnConfiguration configuration;
 		private readonly StatisticModelUtils statisticModelUtils;
 		
@@ -50,8 +50,8 @@ namespace Ulearn.Web.Api.Workers
 								&& t.RefreshEndDate > timeNow);
 				foreach (var task in tasks)
 				{
-					var deltaTime = timeNow - task.RefreshStartDate;
-					if (deltaTime?.TotalMinutes % task.RefreshTimeInMinutes == 0)
+					var deltaTime = timeNow - task.RefreshStartDate.Value;
+					if ((int)deltaTime.TotalMinutes % task.RefreshTimeInMinutes == 0)
 					{
 						var courseStatisticsParams = new CourseStatisticsParams
 						{
@@ -59,11 +59,12 @@ namespace Ulearn.Web.Api.Workers
 							ListId = task.ListId,
 							GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
 						};
-						var sheet = await statisticModelUtils.GetFilledGoogleSheet(courseStatisticsParams, 3000, task.AuthorId);
+						var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, task.AuthorId);
 						
 						var credentialsJson = configuration.GoogleAccessCredentials;
 						var client = new GoogleApiClient(credentialsJson);
 						client.FillSpreadSheet(task.SpreadsheetId, sheet);
+						log.Info($"Refreshed task {task.Id}");
 					}
 				}
 			}

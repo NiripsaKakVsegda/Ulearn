@@ -16,7 +16,7 @@ namespace Ulearn.Core.Tests
 		public void FillingTest()
 		{
 			var client = new GoogleApiClient(credentialsJson);
-			var sheet = new GoogleSheet.GoogleSheet(2, 2, 0);
+			var sheet = new GoogleSheet.GoogleSheetModel(2, 2, 0);
 			var date = DateTime.UtcNow;
 			sheet.AddCell(0, 0, date);
 			sheet.AddCell(0, 1, 1);

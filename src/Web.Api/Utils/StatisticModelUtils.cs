@@ -21,7 +21,6 @@ namespace Ulearn.Web.Api.Utils
 {
 	public class StatisticModelUtils
 	{
-
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IGroupMembersRepo groupMembersRepo;
 		private readonly IUnitsRepo unitsRepo;
@@ -50,11 +49,11 @@ namespace Ulearn.Web.Api.Utils
 			this.db = db;
 		}
 
-		public async Task<GoogleSheet> GetFilledGoogleSheet(CourseStatisticsParams courseStatisticsParams, int userLimits, string userId)
+		public async Task<GoogleSheetModel> GetFilledGoogleSheetModel(CourseStatisticsParams courseStatisticsParams, int userLimits, string userId)
 		{
 			var model = await GetCourseStatisticsModel(userLimits, userId, courseStatisticsParams.CourseId, courseStatisticsParams.GroupsIds);
 			var listId = courseStatisticsParams.ListId;
-			var sheet = new GoogleSheet(200, 200, listId);
+			var sheet = new GoogleSheetModel(200, 200, listId);
 			var builder = new GoogleSheetBuilder(sheet);
 			FillCourseStatisticsWithBuilder(builder, model);
 			return sheet;

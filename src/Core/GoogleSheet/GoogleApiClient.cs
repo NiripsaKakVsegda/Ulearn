@@ -21,10 +21,10 @@ namespace Ulearn.Core.GoogleSheet
 			});
 		}
 
-		public void FillSpreadSheet(string spreadsheetId, GoogleSheet googleSheet)
+		public void FillSpreadSheet(string spreadsheetId, GoogleSheetModel googleSheetModel)
 		{
-			WhiteWashSheet(spreadsheetId, googleSheet.ListId, googleSheet.Width);
-			var requests = RequestCreator.GetRequests(googleSheet);
+			WhiteWashSheet(spreadsheetId, googleSheetModel.ListId, googleSheetModel.Width);
+			var requests = RequestCreator.GetRequests(googleSheetModel);
 			service.Spreadsheets.BatchUpdate(new BatchUpdateSpreadsheetRequest { Requests = requests },
 				spreadsheetId).Execute();
 		}

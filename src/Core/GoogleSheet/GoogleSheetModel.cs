@@ -2,14 +2,14 @@
 
 namespace Ulearn.Core.GoogleSheet
 {
-    public class GoogleSheet
+    public class GoogleSheetModel
     {
         public readonly IGoogleSheetCell[,] Cells;
         public readonly int ListId;
         public readonly int Height;
         public readonly int Width;
 
-		public GoogleSheet(int height, int width, int listId)
+		public GoogleSheetModel(int height, int width, int listId)
 		{
 			Height = height;
 			Width = width;
