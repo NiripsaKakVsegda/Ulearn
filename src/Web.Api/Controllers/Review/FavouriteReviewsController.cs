@@ -35,33 +35,42 @@ namespace Ulearn.Web.Api.Controllers.Review
 				{
 					Id = 0,
 					Text = "**bold** __italic__ ```code```",
-					IsFavourite = false,
 					RenderedText = "<b>bold</b> <i>italic</i> <code>code</code>",
-					UseCount = 10
+					AddedToFavouriteCount = 10
 				},
 				new()
 				{
 					Id = 1,
 					Text = "Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом.Выполняйте задания самостоятельно.",
-					IsFavourite = false,
 					RenderedText = "Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом.Выполняйте задания самостоятельно.",
-					UseCount = 100
+					AddedToFavouriteCount = 100
 				},
 				new()
 				{
 					Id = 2,
 					Text = "Так делать не стоит из-за сложности в O(N^3). Есть более оптимизированные алгоритмы",
-					IsFavourite = true,
 					RenderedText = "Так делать не стоит из-за сложности в O(N^3). Есть более оптимизированные алгоритмы",
-					UseCount = 5
+					AddedToFavouriteCount = 5
 				}
+			};
+			
+			var userReviews = new List<FavouriteReview>
+			{
+				new()
+				{
+					Id = 0,
+					Text = "Мой избаранный любимый комментарий",
+					RenderedText = "Мой избаранный любимый комментарий",
+					AddedToFavouriteCount = 10
+				},
 			};
 			
 			await Task.Delay(100); //todo MOCKED
 			
 			return new FavouriteReviewsResponse
 			{
-				FavouriteReviews = reviews
+				FavouriteReviews = reviews,
+				UserFavouriteReviews = userReviews
 			};
 		}
 	}

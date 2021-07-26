@@ -7,11 +7,15 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	public class FavouriteReviewsResponse
 	{
 		public List<FavouriteReview> FavouriteReviews;
+		public List<FavouriteReview> UserFavouriteReviews;
 	}
 
 	[DataContract]
 	public class FavouriteReview
 	{
+		[DataMember]
+		public int Id { get; set; }
+		
 		[DataMember]
 		public string Text { get; set; }
 
@@ -19,12 +23,6 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 		public string RenderedText { get; set; }
 
 		[DataMember]
-		public bool IsFavourite { get; set; }
-
-		[DataMember]
-		public int Id { get; set; }
-
-		[DataMember]
-		public int UseCount { get; set; }
+		public int AddedToFavouriteCount { get; set; }
 	}
 }
