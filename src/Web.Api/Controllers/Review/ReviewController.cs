@@ -8,6 +8,7 @@ using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Swashbuckle.AspNetCore.Annotations;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses.Manager;
@@ -34,6 +35,28 @@ namespace Ulearn.Web.Api.Controllers.Review
 			this.groupAccessesRepo = groupAccessesRepo;
 		}
 
+		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+		{
+			var submissionId = (int)context.ActionArguments["submissionId"];
+			
+			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
+
+			if (submission == null)
+			{
+				context.Result = NotFound(new ErrorResponse($"Submission {submissionId} not found"));
+				return;
+			}
+
+			/* check below will return false if user is not sys admin and/or can't view student submission */
+			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
+			{
+				context.Result = StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to view this submission"));
+				return;
+			}
+
+			await base.OnActionExecutionAsync(context, next);
+		}
+
 		/// <summary>
 		/// Добавить ревью к решению
 		/// </summary>
@@ -43,12 +66,6 @@ namespace Ulearn.Web.Api.Controllers.Review
 		public async Task<ActionResult<ReviewInfo>> AddReview([FromQuery] int submissionId, [FromBody] ReviewCreateParameters parameters)
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
-
-			if (submission == null)
-				return NotFound(new ErrorResponse($"Submission {submissionId} not found"));
-
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
 
 			if (parameters.StartLine > parameters.FinishLine || (parameters.StartLine == parameters.FinishLine && parameters.StartPosition > parameters.FinishPosition))
 			{
@@ -80,16 +97,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		[Authorize]
 		public async Task<ActionResult> DeleteReview([FromQuery] int submissionId, [FromQuery] int reviewId)
 		{
-			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
-
-			if (submission == null)
-				return NotFound(new ErrorResponse($"Submission {submissionId} not found"));
-
-			/* check below will return false if user is not sys admin and/or can't view student submission */
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to view this submission"));
-
-			var reviews = await userSolutionsRepo.FindSubmissionReviewsBySubmissionIdNoTracking(submissionId);
+			var reviews = await userSolutionsRepo.FindSubmissionReviewsBySubmissionId(submissionId);
 			var review = reviews.FirstOrDefault(r => r.Id == reviewId);
 
 			if (review == null)
@@ -111,16 +119,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		[Authorize]
 		public async Task<ActionResult<ReviewInfo>> EditReview([FromQuery] int submissionId, [FromQuery] int reviewId, [FromBody] string text)
 		{
-			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
-
-			if (submission == null)
-				return NotFound(new ErrorResponse($"Submission {submissionId} not found"));
-
-			/* check below will return false if user is not sys admin and/or can't view student submission */
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to view this submission"));
-
-			var reviews = await userSolutionsRepo.FindSubmissionReviewsBySubmissionIdNoTracking(submissionId);
+			var reviews = await userSolutionsRepo.FindSubmissionReviewsBySubmissionId(submissionId);
 			var review = reviews.FirstOrDefault(r => r.Id == reviewId);
 
 			if (review == null)
