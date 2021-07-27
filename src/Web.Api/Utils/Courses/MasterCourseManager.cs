@@ -5,6 +5,8 @@ using Database;
 using Database.Models;
 using Database.Repos;
 using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot.Types.Enums;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
@@ -73,12 +75,13 @@ namespace Ulearn.Web.Api.Utils.Courses
 		{
 			using (var courseDirectory = await ExtractCourseVersionToTemporaryDirectory(courseId, publishedVersionToken, content))
 			{
-				var (course, error) = LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
-				if (error != null)
+				var (course, exception) = LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
 				{
 					BrokenVersions.TryAdd(publishedVersionToken, true);
 					var message = $"Не смог загрузить с диска в память курс {courseId} версии {publishedVersionToken}";
-					log.Error(error, message);
+					log.Error(exception, message);
+					await PostCourseLoadingErrorToTelegram(courseId, exception);
 					return;
 				}
 
@@ -92,6 +95,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 					catch (Exception ex)
 					{
 						log.Error(ex, $"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую");
+						await errorsBot.PostToChannelAsync($"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
 					}
 				}
 			}
@@ -168,7 +172,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 					using (var fs = new FileStream(stagingTempCourseFile.FullName, FileMode.Create, FileAccess.Write))
 						await zipContent.CopyToAsync(fs);
 
-					var (course, exception) = await TryUpdateCourseOnDisk(tempCourseId, new CourseVersionToken(loadingTime), isFullCourse);
+					var (course, exception) = await TryUpdateTempCourseOnDisk(tempCourseId, new CourseVersionToken(loadingTime), isFullCourse);
 
 					if (exception != null)
 					{
@@ -193,7 +197,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 			}
 		}
 
-		private async Task<(Course Course, Exception Exception)> TryUpdateCourseOnDisk(string courseId, CourseVersionToken versionToken, bool isFull)
+		private async Task<(Course Course, Exception Exception)> TryUpdateTempCourseOnDisk(string courseId, CourseVersionToken versionToken, bool isFull)
 		{
 			var courseDirectory = GetExtractedCourseDirectory(courseId);
 			var stagingTempCourseFile = GetStagingTempCourseFile(courseId);
@@ -202,17 +206,17 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 			await updater.ApplyChanges();
 
-			var (course, error) = LoadCourseFromDirectory(courseId, courseDirectory);
-			if (error != null)
+			var (course, exception) = LoadCourseFromDirectory(courseId, courseDirectory);
+			if (exception != null)
 			{
-				log.Warn(error, $"Не смог загрузить с диска в память временный курс {courseId}. Откатываю.");
+				log.Warn(exception, $"Не смог загрузить с диска в память временный курс {courseId}. Откатываю.");
 
 				await updater.Revert();
 
-				log.Warn(error, $"Откатил временный курс {courseId}.");
+				log.Warn(exception, $"Откатил временный курс {courseId}.");
 			}
 
-			return (course, error);
+			return (course, exception);
 		}
 
 		#endregion

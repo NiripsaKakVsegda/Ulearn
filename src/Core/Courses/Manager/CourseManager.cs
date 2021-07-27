@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Ionic.Zip;
+using Telegram.Bot.Types.Enums;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
@@ -35,7 +36,7 @@ namespace Ulearn.Core.Courses.Manager
 
 		/* TODO (andgein): Use DI */
 		public static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
-		private static readonly ErrorsBot errorsBot = new ErrorsBot();
+		public static readonly ErrorsBot errorsBot = new ErrorsBot();
 
 		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
@@ -163,6 +164,11 @@ namespace Ulearn.Core.Courses.Manager
 			return new DirectoryInfo(coursesDirectory);
 		}
 
+		public async Task PostCourseLoadingErrorToTelegram(string courseId, Exception ex)
+		{
+			await errorsBot.PostToChannelAsync($"Не смог загрузить курс из папки {GetExtractedCourseDirectory(courseId)}:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
+		}
+
 
 #region WorkWithCourseInTemporaryDirectory
 
@@ -214,7 +220,7 @@ namespace Ulearn.Core.Courses.Manager
 				return;
 			try
 			{
-				await UpdateCourseFromDirectory(courseId, publishedVersionToken);
+				await UpdateCourseFromDirectoryIfRightVersion(courseId, publishedVersionToken);
 			}
 			catch (Exception ex)
 			{
@@ -223,11 +229,14 @@ namespace Ulearn.Core.Courses.Manager
 				if (publishedVersionToken.IsTempCourse())
 					log.Warn(ex, message);
 				else
+				{
 					log.Error(ex, message);
+					await PostCourseLoadingErrorToTelegram(courseId, ex);
+				}
 			}
 		}
 
-		private async Task UpdateCourseFromDirectory(string courseId, CourseVersionToken publishedVersionToken)
+		private async Task UpdateCourseFromDirectoryIfRightVersion(string courseId, CourseVersionToken publishedVersionToken)
 		{
 			var courseDirectory = GetExtractedCourseDirectory(courseId);
 			if (!courseDirectory.Exists)

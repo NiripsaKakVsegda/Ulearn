@@ -96,7 +96,9 @@ namespace uLearn.Web.Controllers
 			var versionFile = coursesRepo.GetVersionFile(versionId);
 			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				var (course, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				var (course, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
 				var model = course.SpellCheck(courseDirectory.DirectoryInfo.FullName);
 				return PartialView(model);
 			}
@@ -402,10 +404,7 @@ namespace uLearn.Web.Controllers
 					{
 						var (course, exception) = courseManager.LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
 						if (exception != null)
-						{
-							log.Warn(exception, $"Upload course exception '{courseId}'");
-							return (versionId, exception);
-						}
+							throw exception;
 					}
 				}
 				catch (Exception e)
@@ -909,7 +908,9 @@ namespace uLearn.Web.Controllers
 			var versionFile = coursesRepo.GetVersionFile(versionId.Value);
 			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				var (version, error) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				var (version, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
 
 				var courseDiff = new CourseDiff(course, version);
 				var schemaPath = Path.Combine(HttpRuntime.BinDirectory, "schema.xsd");
@@ -975,7 +976,10 @@ namespace uLearn.Web.Controllers
 			var versionFile = coursesRepo.GetVersionFile(versionId);
 			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				(version, _) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				Exception exception;
+				(version, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
 			}
 
 			var courseDiff = new CourseDiff(oldCourse, version);
