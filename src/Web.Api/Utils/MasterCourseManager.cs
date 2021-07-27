@@ -162,7 +162,7 @@ namespace Ulearn.Web.Api.Utils
 				var loadingTime = DateTime.Now;
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
 
-				using (CourseLock.AcquireWriterLock(tempCourseId))
+				using (await CourseLock.AcquireWriterLock(tempCourseId))
 				{
 					var stagingTempCourseFile = GetStagingTempCourseFile(tempCourseId);
 					using (var fs = new FileStream(stagingTempCourseFile.FullName, FileMode.Create, FileAccess.Write))

@@ -107,6 +107,10 @@ namespace Web.Api.Tests.Controllers.TempCourses
 			var file = GetFormFileFromZip(fullCourseZip);
 			var uploadResult = await tempCourseController.UploadFullCourse(baseCourse.Id, new List<IFormFile> { file });
 			Assert.AreEqual(ErrorType.NoErrors, uploadResult.Value.ErrorType);
+			var tempCourseId = courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id);
+			var courseTokenFromDisk = CourseVersionToken.Load(courseManager.GetExtractedCourseDirectory(tempCourseId));
+			var courseTokenFromDb = new CourseVersionToken(uploadResult.Value.LastUploadTime);
+			Assert.AreEqual(courseTokenFromDb, courseTokenFromDisk);
 		}
 
 		[Test]
@@ -384,6 +388,7 @@ namespace Web.Api.Tests.Controllers.TempCourses
 				.Concat(secondDirFiles.Except(firstDirFiles))
 				.Except(new List<string> { "course.xml" }) // после создания курса в папке курса на сервере создается course.xml
 				.Except(new List<string> { "deleted.txt" })
+				.Except(new List<string> { ".version" })
 				.ToList();
 			return diffs;
 		}
