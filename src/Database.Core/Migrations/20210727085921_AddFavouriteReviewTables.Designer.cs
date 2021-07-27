@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(UlearnDb))]
-    [Migration("20210726131448_AddFavouriteReviewTables")]
+    [Migration("20210727085921_AddFavouriteReviewTables")]
     partial class AddFavouriteReviewTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -939,10 +939,10 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Text")
-                        .IsUnique();
-
                     b.HasIndex("CourseId", "SlideId");
+
+                    b.HasIndex("CourseId", "SlideId", "Text")
+                        .IsUnique();
 
                     b.ToTable("FavouriteReviews");
                 });

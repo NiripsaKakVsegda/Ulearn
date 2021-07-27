@@ -384,7 +384,7 @@ namespace Database
 			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
 
 			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<FavouriteReview>(modelBuilder, c => c.Text, true);
+			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Text }, true);
 
 			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
 			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });

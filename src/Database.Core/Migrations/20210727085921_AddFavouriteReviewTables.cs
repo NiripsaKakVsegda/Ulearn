@@ -56,9 +56,9 @@ namespace Database.Migrations
                 columns: new[] { "CourseId", "SlideId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_FavouriteReviews_Text",
+                name: "IX_FavouriteReviews_CourseId_SlideId_Text",
                 table: "FavouriteReviews",
-                column: "Text",
+                columns: new[] { "CourseId", "SlideId", "Text" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

@@ -937,10 +937,10 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Text")
-                        .IsUnique();
-
                     b.HasIndex("CourseId", "SlideId");
+
+                    b.HasIndex("CourseId", "SlideId", "Text")
+                        .IsUnique();
 
                     b.ToTable("FavouriteReviews");
                 });
