@@ -22,7 +22,7 @@ namespace Ulearn.Core.Courses.Manager
 			this.courseId = courseId;
 		}
 
-		// TODO сейчас локи не отличаются
+		// TODO сейчас Writer и Reader локи не отличаются
 		public static async Task<CourseLock> AcquireWriterLock(string courseId)
 		{
 			var courseLock = new CourseLock(courseId);

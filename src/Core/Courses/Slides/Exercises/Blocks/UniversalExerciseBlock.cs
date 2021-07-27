@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Helpers;
 using Ulearn.Core.Model;
@@ -294,9 +295,13 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					.Select(d => d.FullName);
 				var directoriesToInclude = toUpdateDirectories.Append(fp.ExerciseDirectory.FullName).ToList();
 
-				var ms = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, null);
-				log.Info($"Собираю zip-архив для проверки: zip-архив собран, {ms.Length} байтов");
-				return ms;
+				using (CourseLock.AcquireReaderLock(CourseId).Result)
+				{
+					var ms = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, null);
+
+					log.Info($"Собираю zip-архив для проверки: zip-архив собран, {ms.Length} байтов");
+					return ms;
+				}
 			}
 
 			private FileContent GetCodeFile(string code)

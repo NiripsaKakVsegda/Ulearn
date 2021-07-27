@@ -82,23 +82,20 @@ namespace Ulearn.Web.Api.Controllers.Runner
 
 			if (slide is ExerciseSlide exerciseSlide)
 			{
-				using (await CourseLock.AcquireReaderLock(submission.CourseId))
-				{
-					var courseDictionary = courseManager.GetExtractedCourseDirectory(submission.CourseId).FullName;
-					if (exerciseSlide is PolygonExerciseSlide)
-						return ((PolygonExerciseBlock)exerciseSlide.Exercise).CreateSubmission(
-							submission.Id.ToString(),
-							submission.SolutionCode.Text,
-							submission.Language,
-							courseDictionary
-						);
-
-					return exerciseSlide.Exercise.CreateSubmission(
+				var courseDictionary = courseManager.GetExtractedCourseDirectory(submission.CourseId).FullName;
+				if (exerciseSlide is PolygonExerciseSlide)
+					return ((PolygonExerciseBlock)exerciseSlide.Exercise).CreateSubmission(
 						submission.Id.ToString(),
 						submission.SolutionCode.Text,
+						submission.Language,
 						courseDictionary
 					);
-				}
+
+				return exerciseSlide.Exercise.CreateSubmission(
+					submission.Id.ToString(),
+					submission.SolutionCode.Text,
+					courseDictionary
+				);
 			}
 
 			return new FileRunnerSubmission
