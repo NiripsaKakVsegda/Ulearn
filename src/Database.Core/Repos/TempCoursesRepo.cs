@@ -36,8 +36,7 @@ namespace Database.Repos
 			{
 				CourseId = courseId,
 				AuthorId = authorId,
-				LoadingTime = loadingTime,
-				LastUpdateTime = DateTime.UnixEpoch // Используется вместо default, потому что default нельзя сохранить в базу
+				LoadingTime = loadingTime
 			};
 			db.TempCourses.Add(tempCourse);
 			await db.SaveChangesAsync();
