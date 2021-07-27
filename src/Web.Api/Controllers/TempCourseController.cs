@@ -43,8 +43,6 @@ namespace Ulearn.Web.Api.Controllers
 		[HttpPost("{courseId}")]
 		public async Task<ActionResult<TempCourseUpdateResponse>> CreateCourse([FromRoute] string courseId)
 		{
-			var tmpCourseId = courseManager.GetTempCourseId(courseId, UserId);
-
 			if (!courseStorage.HasCourse(courseId))
 			{
 				return new TempCourseUpdateResponse
@@ -63,11 +61,11 @@ namespace Ulearn.Web.Api.Controllers
 				};
 			}
 
-			var tempCourse = await courseManager.CreateTempCourse(courseId, tmpCourseId, UserId);
+			var tempCourse = await courseManager.CreateTempCourse(courseId, UserId);
 
 			return new TempCourseUpdateResponse
 			{
-				Message = $"Временный курс с id {tmpCourseId} успешно создан.",
+				Message = $"Временный курс с id {tempCourse.CourseId} успешно создан.",
 				LastUploadTime = tempCourse.LoadingTime
 			};
 		}

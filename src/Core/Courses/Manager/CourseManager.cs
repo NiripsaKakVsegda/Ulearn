@@ -22,8 +22,6 @@ namespace Ulearn.Core.Courses.Manager
 {
 	public abstract class CourseManager
 	{
-		private const string examplePackageName = "Help";
-
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseManager));
 
 		public const string ExampleCourseId = "Help";
@@ -35,7 +33,6 @@ namespace Ulearn.Core.Courses.Manager
 		private readonly DirectoryInfo stagedDirectory;
 		private readonly DirectoryInfo coursesDirectory;
 		private readonly DirectoryInfo tempCourseStaging;
-		private readonly DirectoryInfo coursesVersionsDirectory;
 
 		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
@@ -43,23 +40,20 @@ namespace Ulearn.Core.Courses.Manager
 		public static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
 		private static readonly ErrorsBot errorsBot = new ErrorsBot();
 
-		private static readonly ConcurrentDictionary<string, bool> courseIdToIsBroken = new ConcurrentDictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
-
-		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> brokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
+		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
 		public static readonly string CoursesSubdirectory = "Courses";
 
 		public CourseManager(DirectoryInfo baseDirectory)
 			: this(
 				baseDirectory.GetSubdirectory("Courses.Staging"),
-				baseDirectory.GetSubdirectory("Courses.Versions"),
 				baseDirectory.GetSubdirectory(CoursesSubdirectory),
 				baseDirectory.GetSubdirectory("TempCourseStaging")
 			)
 		{
 		}
 
-		private CourseManager(DirectoryInfo stagedDirectory, DirectoryInfo coursesVersionsDirectory, DirectoryInfo coursesDirectory, DirectoryInfo tempCourseStaging)
+		private CourseManager(DirectoryInfo stagedDirectory, DirectoryInfo coursesDirectory, DirectoryInfo tempCourseStaging)
 		{
 			this.stagedDirectory = stagedDirectory;
 			stagedDirectory.EnsureExists();
@@ -67,28 +61,6 @@ namespace Ulearn.Core.Courses.Manager
 			coursesDirectory.EnsureExists();
 			this.tempCourseStaging = tempCourseStaging;
 			tempCourseStaging.EnsureExists();
-			this.coursesVersionsDirectory = coursesVersionsDirectory;
-			coursesVersionsDirectory.EnsureExists();
-		}
-
-		protected bool CourseIsBroken(string courseId)
-		{
-			return courseIdToIsBroken.TryGetValue(courseId, out var val) ? val : false;
-		}
-
-		protected void RemoveCourseFromBroken(string courseId)
-		{
-			courseIdToIsBroken.TryRemove(courseId, out _);
-		}
-
-		///
-		/// <exception cref="CourseLoadingException"></exception>
-		///
-		public Course GetVersion(Guid versionId)
-		{
-			var versionFile = GetCourseVersionFile(versionId);
-			var version = LoadCourseFromZip(versionFile);
-			return version;
 		}
 
 		public FileInfo GetStagingCourseFile(string courseId)
@@ -110,40 +82,6 @@ namespace Ulearn.Core.Courses.Manager
 		public DirectoryInfo GetExtractedCourseDirectory(string courseId)
 		{
 			return coursesDirectory.GetSubdirectory(courseId);
-		}
-
-		public DirectoryInfo GetExtractedVersionDirectory(Guid versionId)
-		{
-			return GetExtractedCourseDirectory(versionId.GetNormalizedGuid());
-		}
-
-		public FileInfo GetCourseVersionFile(Guid versionId)
-		{
-			var packageName = GetPackageName(versionId);
-			return coursesVersionsDirectory.GetFile(packageName);
-		}
-
-		public string GetStagingCoursePath(string courseId)
-		{
-			return GetStagingCourseFile(courseId).FullName;
-		}
-
-		public bool TryReloadCourse(string courseId)
-		{
-			if (CourseIsBroken(courseId))
-				return false;
-			try
-			{
-				ReloadCourseNotSafe(courseId);
-				return true;
-			}
-			catch (Exception e)
-			{
-				log.Error(e, $"Не могу загрузить курс {courseId}");
-				courseIdToIsBroken.AddOrUpdate(courseId, _ => true, (_, _) => true);
-			}
-
-			return false;
 		}
 
 		public void ReloadCourseNotSafe(string courseId, bool notifyAboutErrors = true)
@@ -242,38 +180,6 @@ namespace Ulearn.Core.Courses.Manager
 			return courseId + ".zip";
 		}
 
-		public string GetPackageName(Guid versionId)
-		{
-			return versionId.GetNormalizedGuid() + ".zip";
-		}
-
-		// Пересоздает временный курс в том смылсе, что выкладывает на диск копию основного курса
-		public bool CreateTempCourseOnDisk(string courseId, string courseTitle, DateTime loadingTime)
-		{
-			var package = stagedDirectory.GetFile(GetPackageName(courseId));
-			if (package.Exists)
-				return true;
-
-			var examplePackage = stagedDirectory.GetFile(GetPackageName(examplePackageName));
-
-			examplePackage.CopyTo(package.FullName, true);
-			File.SetLastWriteTime(examplePackage.FullName, DateTime.Now);
-			CreateCourseFromExample(courseId, courseTitle, new FileInfo(package.FullName));
-
-			ReloadCourseFromZip(package);
-			return true;
-		}
-		
-		public void EnsureVersionIsExtracted(Guid versionId)
-		{
-			var versionDirectory = GetExtractedVersionDirectory(versionId);
-			if (!versionDirectory.Exists)
-			{
-				Directory.CreateDirectory(versionDirectory.FullName);
-				UnzipFile(GetCourseVersionFile(versionId), versionDirectory);
-			}
-		}
-
 		public void ExtractTempCourseChanges(string tempCourseId)
 		{
 			var zipWithChanges = GetStagingTempCourseFile(tempCourseId);
@@ -334,8 +240,6 @@ namespace Ulearn.Core.Courses.Manager
 			courseStorage.AddOrUpdateCourse(course);
 		}
 
-		private const int updateCourseEachOperationTriesCount = 5;
-
 		protected void MoveCourse(Course course, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
 		{
 			// Не использую TempDirectory, потому что директория, в которую перемещаю, не должна существовать, иначе Move кинет ошибку.
@@ -344,16 +248,17 @@ namespace Ulearn.Core.Courses.Manager
 			{
 				destinationDirectory.EnsureExists();
 
-				FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectoryPath), updateCourseEachOperationTriesCount);
+				const int triesCount = 5;
+				FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectoryPath), triesCount);
 
 				try
 				{
-					FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
+					FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), triesCount);
 				}
 				catch (IOException)
 				{
 					/* In case of any file system's error rollback previous operation */
-					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
+					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), triesCount);
 					throw;
 				}
 
@@ -420,7 +325,7 @@ namespace Ulearn.Core.Courses.Manager
 
 		protected async Task UpdateCourseOrTempCourseToVersionFromDirectory(string courseId, CourseVersionToken publishedVersionToken)
 		{
-			if (brokenVersions.ContainsKey(publishedVersionToken))
+			if (BrokenVersions.ContainsKey(publishedVersionToken))
 				return;
 			var courseInMemory = CourseStorageInstance.FindCourse(courseId);
 			if (courseInMemory != null && courseInMemory.CourseVersionToken == publishedVersionToken)
@@ -431,7 +336,7 @@ namespace Ulearn.Core.Courses.Manager
 			}
 			catch (Exception ex)
 			{
-				brokenVersions.TryAdd(publishedVersionToken, true);
+				BrokenVersions.TryAdd(publishedVersionToken, true);
 				var message = $"Не смог загрузить с диска в память курс {courseId} версии {publishedVersionToken}";
 				if (publishedVersionToken.IsTempCourse())
 					log.Warn(ex, message);

@@ -10,12 +10,10 @@ using Database.Repos;
 using Ionic.Zip;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Common;
-using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Helpers;
-using Ulearn.Web.Api.Models.Responses.TempCourses;
 using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Web.Api.Utils
@@ -58,7 +56,7 @@ namespace Ulearn.Web.Api.Utils
 		{
 			var courseId = publishedCourseVersions.CourseId;
 			var publishedVersionToken = new CourseVersionToken(publishedCourseVersions.Id);
-			if (brokenVersions.ContainsKey(publishedVersionToken))
+			if (BrokenVersions.ContainsKey(publishedVersionToken))
 				return;
 			var courseInMemory = CourseStorageInstance.FindCourse(courseId);
 			if (courseInMemory != null && courseInMemory.CourseVersionToken == publishedVersionToken)
@@ -83,7 +81,7 @@ namespace Ulearn.Web.Api.Utils
 				var (course, error) = LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
 				if (error != null)
 				{
-					brokenVersions.TryAdd(publishedVersionToken, true);
+					BrokenVersions.TryAdd(publishedVersionToken, true);
 					var message = $"Не смог загрузить с диска в память курс {courseId} версии {publishedVersionToken}";
 					log.Error(error, message);
 					return;
@@ -116,13 +114,16 @@ namespace Ulearn.Web.Api.Utils
 			return await exerciseStudentZipsCache.GenerateOrFindZip(courseId, slide, GetExtractedCourseDirectory(courseId).FullName);
 		}
 
+#region CreateAndUpdateTempCourses
+
 		public string GetTempCourseId(string baseCourseId, string userId)
 		{
 			return $"{baseCourseId}_{userId}";
 		}
 
-		public async Task<TempCourse> CreateTempCourse(string baseCourseId, string tempCourseId, string userId)
+		public async Task<TempCourse> CreateTempCourse(string baseCourseId, string userId)
 		{
+			var tempCourseId = GetTempCourseId(baseCourseId, userId);
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
@@ -401,5 +402,8 @@ namespace Ulearn.Web.Api.Utils
 				AddedFiles.ForEach(File.Delete);
 			}
 		}
+
+#endregion
+
 	}
 }
