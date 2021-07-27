@@ -811,9 +811,9 @@ namespace uLearn.Web.Controllers
 		{
 			var userRolesByEmail = User.IsSystemAdministrator() ? usersRepo.FilterUsersByEmail(queryModel) : null;
 			var userRoles = usersRepo.FilterUsers(queryModel);
-			var tempCourses = tempCoursesRepo.GetTempCourses().Select(s => s.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCoursesIdsSet = tempCoursesRepo.GetAllTempCourses().Select(s => s.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
 			var courses = courseStorage.GetCourses()
-				.ToDictionary(c => c.Id, c => (c, tempCourses.Contains(c.Id)), StringComparer.OrdinalIgnoreCase);
+				.ToDictionary(c => c.Id, c => (c, IsTempCourse: allTempCoursesIdsSet.Contains(c.Id)), StringComparer.OrdinalIgnoreCase);
 			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList(),
 				courses,
 				queryModel.CourseId);
@@ -822,7 +822,7 @@ namespace uLearn.Web.Controllers
 		}
 
 		private UserListModel GetUserListModel(List<UserRolesInfo> userRoles,
-			Dictionary<string, (Course, bool)> courses,
+			Dictionary<string, (Course, bool IsTempCourse)> courses,
 			string courseId)
 		{
 			var rolesForUsers = userRolesRepo.GetRolesByUsers(courseId);
@@ -878,7 +878,7 @@ namespace uLearn.Web.Controllers
 							UserName = user.UserVisibleName,
 							AccessType = a,
 							CourseTitle = courses.GetOrDefault(courseId).Item1?.Title,
-							IsTempCourse = courses.GetOrDefault(courseId).Item2
+							IsTempCourse = courses.GetOrDefault(courseId).IsTempCourse
 						}
 					);
 

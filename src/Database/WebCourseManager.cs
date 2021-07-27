@@ -37,8 +37,8 @@ namespace Database
 		public async Task UpdateTempCourses()
 		{
 			var tempCoursesRepo = new TempCoursesRepo();
-			var tempCourses = tempCoursesRepo.GetTempCoursesNoTracking();
-			foreach (var tempCourse in tempCourses)
+			var recentTempCourses = tempCoursesRepo.GetRecentTempCourses();
+			foreach (var tempCourse in recentTempCourses)
 			{
 				var courseId = tempCourse.CourseId;
 				var publishedLoadingTime = tempCourse.LoadingTime;

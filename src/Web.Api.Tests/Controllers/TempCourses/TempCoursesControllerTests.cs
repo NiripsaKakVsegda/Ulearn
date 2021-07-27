@@ -74,7 +74,7 @@ namespace Web.Api.Tests.Controllers.TempCourses
 		{
 			var baseCourse = await CreateAndConfigureBaseCourseForUser("create_DB_success");
 			await tempCourseController.CreateCourse(baseCourse.Id);
-			var tempCourseEntity = await tempCoursesRepo.FindAsync(courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id));
+			var tempCourseEntity = await tempCoursesRepo.Find(courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id));
 			Assert.NotNull(tempCourseEntity);
 		}
 
@@ -132,12 +132,12 @@ namespace Web.Api.Tests.Controllers.TempCourses
 			var baseCourse = await CreateAndConfigureBaseCourseForUser("upload_DB_success");
 			await tempCourseController.CreateCourse(baseCourse.Id);
 			var tmpCourseId = courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id);
-			var loadTimeBeforeUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeBeforeUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			var fullCourseZip = new ZipFile(Encoding.UTF8);
 			fullCourseZip.AddDirectory(workingCourseDirectory.FullName);
 			var file = GetFormFileFromZip(fullCourseZip);
 			await tempCourseController.UploadFullCourse(baseCourse.Id, new List<IFormFile> { file });
-			var loadTimeAfterUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeAfterUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			Assert.Less(loadTimeBeforeUpload, loadTimeAfterUpload);
 		}
 
@@ -182,13 +182,13 @@ namespace Web.Api.Tests.Controllers.TempCourses
 			var baseCourse = await CreateAndConfigureBaseCourseForUser("upload_DB_courseError");
 			await tempCourseController.CreateCourse(baseCourse.Id);
 			var tmpCourseId = courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id);
-			var loadTimeBeforeUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeBeforeUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			var fullCourseZip = new ZipFile(Encoding.UTF8);
 			BreakCourse();
 			fullCourseZip.AddDirectory(workingCourseDirectory.FullName);
 			var file = GetFormFileFromZip(fullCourseZip);
 			await tempCourseController.UploadFullCourse(baseCourse.Id, new List<IFormFile> { file });
-			var loadTimeAfterUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeAfterUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			Assert.AreEqual(loadTimeBeforeUpload, loadTimeAfterUpload);
 		}
 
@@ -227,14 +227,14 @@ namespace Web.Api.Tests.Controllers.TempCourses
 			var baseCourse = await CreateAndConfigureBaseCourseForUser("partiallyUpload_DB_update");
 			await tempCourseController.CreateCourse(baseCourse.Id);
 			var tmpCourseId = courseManager.GetTempCourseId(baseCourse.Id, TestUsers.User.Id);
-			var loadTimeBeforeUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeBeforeUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			var fullCourseZip = new ZipFile(Encoding.UTF8);
 			fullCourseZip.AddDirectory(workingCourseDirectory.FullName);
 			var file = GetFormFileFromZip(fullCourseZip);
 			Thread.Sleep(10);
 			var result = await tempCourseController.UploadCourse(baseCourse.Id, new List<IFormFile> { file });
 			Assert.AreEqual(ErrorType.NoErrors, result.Value.ErrorType);
-			var loadTimeAfterUpload = (await tempCoursesRepo.FindAsync(tmpCourseId)).LoadingTime;
+			var loadTimeAfterUpload = (await tempCoursesRepo.Find(tmpCourseId)).LoadingTime;
 			Assert.Less(loadTimeBeforeUpload, loadTimeAfterUpload);
 		}
 

@@ -84,7 +84,7 @@
 		<ol>
 			@foreach (var course in Model.UserCourses)
 			{
-				var isTempCourse = Model.TempCoursesIds.Contains(course.Id);
+				var isTempCourse = Model.AllTempCoursesIdsSet.Contains(course.Id);
 				var isTempLabel = isTempCourse ? "Временный - " : "";
 				<li>
 					@Html.ActionLink(isTempLabel + course.Title, "CourseInfo", new { userId = Model.User.Id, courseId = course.Id })
@@ -118,7 +118,7 @@
 			}
 			@foreach (var courseId in courseIds)
 			{
-				var isTempCourse = Model.TempCoursesIds.Contains(courseId);
+				var isTempCourse = Model.AllTempCoursesIdsSet.Contains(courseId);
 				if (Model.AllCourses.TryGetValue(courseId, out var course))
 				{
 					var isTempLAbel = isTempCourse ? "Временный - " : "";

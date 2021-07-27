@@ -42,8 +42,8 @@ namespace Database
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
-				var tempCourses = await tempCoursesRepo.GetTempCoursesAsync();
-				foreach (var tempCourse in tempCourses)
+				var recentTempCourses = await tempCoursesRepo.GetRecentTempCourses();
+				foreach (var tempCourse in recentTempCourses)
 				{
 					var courseId = tempCourse.CourseId;
 					var publishedLoadingTime = tempCourse.LoadingTime;

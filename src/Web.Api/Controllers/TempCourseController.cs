@@ -78,7 +78,7 @@ namespace Ulearn.Web.Api.Controllers
 		[HttpGet("{courseId}/errors")]
 		public async Task<ActionResult<TempCourseErrorsResponse>> GetError([FromRoute] string courseId)
 		{
-			var tmpCourseError = await tempCoursesRepo.GetCourseErrorAsync(courseId);
+			var tmpCourseError = await tempCoursesRepo.GetCourseError(courseId);
 			return new TempCourseErrorsResponse
 			{
 				TempCourseError = tmpCourseError?.Error
@@ -108,7 +108,7 @@ namespace Ulearn.Web.Api.Controllers
 		private async Task<TempCourseUpdateResponse> UploadCourse(string courseId, List<IFormFile> files, bool isFull)
 		{
 			var tmpCourseId = courseManager.GetTempCourseId(courseId, UserId);
-			var tmpCourse = await tempCoursesRepo.FindAsync(tmpCourseId);
+			var tmpCourse = await tempCoursesRepo.Find(tmpCourseId);
 			if (tmpCourse == null)
 			{
 				return new TempCourseUpdateResponse

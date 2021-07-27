@@ -7,12 +7,13 @@ namespace Database.Repos
 {
 	public interface ITempCoursesRepo
 	{
-		Task<TempCourse> FindAsync(string courseId);
-		Task<List<TempCourse>> GetTempCoursesAsync();
-		Task<TempCourseError> GetCourseErrorAsync(string courseId);
-		Task<TempCourse> AddTempCourseAsync(string courseId, string authorId, DateTime loadingTime);
-		Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId, DateTime loadingTime);
-		Task<TempCourseError> UpdateOrAddTempCourseErrorAsync(string courseId, string error);
-		Task MarkTempCourseAsNotErroredAsync(string courseId);
+		Task<TempCourse> Find(string courseId);
+		Task<List<TempCourse>> GetAllTempCourses();
+		Task<List<TempCourse>> GetRecentTempCourses();
+		Task<TempCourseError> GetCourseError(string courseId);
+		Task<TempCourse> AddTempCourse(string courseId, string authorId, DateTime loadingTime);
+		Task<DateTime> UpdateTempCourseLoadingTime(string courseId, DateTime loadingTime);
+		Task<TempCourseError> UpdateOrAddTempCourseError(string courseId, string error);
+		Task MarkTempCourseAsNotErrored(string courseId);
 	}
 }

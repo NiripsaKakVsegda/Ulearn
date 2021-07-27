@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,22 +16,29 @@ namespace Database.Repos
 			this.db = db;
 		}
 
-		public async Task<TempCourse> FindAsync(string courseId)
+		public async Task<TempCourse> Find(string courseId)
 		{
 			return await db.TempCourses.SingleOrDefaultAsync(course => course.CourseId == courseId);
 		}
 
-		public async Task<List<TempCourse>> GetTempCoursesAsync()
+		public async Task<List<TempCourse>> GetAllTempCourses()
 		{
 			return await db.TempCourses.ToListAsync();
 		}
 
-		public async Task<TempCourseError> GetCourseErrorAsync(string courseId)
+		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память
+		public async Task<List<TempCourse>> GetRecentTempCourses()
+		{
+			var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
+			return await db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToListAsync();
+		}
+
+		public async Task<TempCourseError> GetCourseError(string courseId)
 		{
 			return await db.TempCourseErrors.SingleOrDefaultAsync(error => error.CourseId == courseId);
 		}
 
-		public async Task<TempCourse> AddTempCourseAsync(string courseId, string authorId, DateTime loadingTime)
+		public async Task<TempCourse> AddTempCourse(string courseId, string authorId, DateTime loadingTime)
 		{
 			var tempCourse = new TempCourse
 			{
@@ -43,7 +51,7 @@ namespace Database.Repos
 			return tempCourse;
 		}
 
-		public async Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId, DateTime loadingTime)
+		public async Task<DateTime> UpdateTempCourseLoadingTime(string courseId, DateTime loadingTime)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
@@ -54,7 +62,7 @@ namespace Database.Repos
 			return course.LoadingTime;
 		}
 
-		public async Task<TempCourseError> UpdateOrAddTempCourseErrorAsync(string courseId, string error)
+		public async Task<TempCourseError> UpdateOrAddTempCourseError(string courseId, string error)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
@@ -77,7 +85,7 @@ namespace Database.Repos
 			return result;
 		}
 
-		public async Task MarkTempCourseAsNotErroredAsync(string courseId)
+		public async Task MarkTempCourseAsNotErrored(string courseId)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
@@ -85,7 +93,7 @@ namespace Database.Repos
 			var error = await db.TempCourseErrors.FindAsync(courseId);
 			if (error == null)
 			{
-				await UpdateOrAddTempCourseErrorAsync(courseId, null);
+				await UpdateOrAddTempCourseError(courseId, null);
 				return;
 			}
 

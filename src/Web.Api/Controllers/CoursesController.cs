@@ -98,8 +98,8 @@ namespace Ulearn.Web.Api.Controllers
 			else
 				courses = courses.OrderBy(c => c.Title);
 
-			var tempCourseLabel =  "Временный - ";
-			var tempCoursesIds = (await tempCoursesRepo.GetTempCoursesAsync())
+			var tempCourseLabel = "Временный - ";
+			var allTempCoursesIdsSet = (await tempCoursesRepo.GetAllTempCourses()) // Все, потому что старые могут быть еще в памяти.
 				.Select(t => t.CourseId)
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 			var coursesList = courses.ToList();
@@ -110,9 +110,9 @@ namespace Ulearn.Web.Api.Controllers
 					.Select(c => new ShortCourseInfo
 					{
 						Id = c.Id,
-						Title = tempCoursesIds.Contains(c.Id) ? tempCourseLabel + c.Title : c.Title,
+						Title = allTempCoursesIdsSet.Contains(c.Id) ? tempCourseLabel + c.Title : c.Title,
 						ApiUrl = Url.Action("CourseInfo", "Courses", new { courseId = c.Id }),
-						IsTempCourse = tempCoursesIds.Contains(c.Id),
+						IsTempCourse = allTempCoursesIdsSet.Contains(c.Id),
 						Timestamp = coursesLastVisits.TryGetValue(c.Id, out var date) ? date : null,
 					}
 				).ToList()
@@ -172,8 +172,8 @@ namespace Ulearn.Web.Api.Controllers
 
 			var containsFlashcards = visibleUnits.Any(x => x.GetSlides(true).OfType<FlashcardSlide>().Any());
 			var scoringSettings = GetScoringSettings(course);
-			var tempCourseError = (await tempCoursesRepo.GetCourseErrorAsync(courseId))?.Error;
-			var isTempCourse = await tempCoursesRepo.FindAsync(courseId) != null;
+			var tempCourseError = (await tempCoursesRepo.GetCourseError(courseId))?.Error;
+			var isTempCourse = await tempCoursesRepo.Find(courseId) != null;
 			return new CourseInfo
 			{
 				Id = course.Id,

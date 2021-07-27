@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Database.Models;
 
@@ -23,14 +24,16 @@ namespace Database.DataContexts
 			return db.TempCourses.Find(courseId);
 		}
 
-		public List<TempCourse> GetTempCourses()
+		public List<TempCourse> GetAllTempCourses()
 		{
 			return db.TempCourses.ToList();
 		}
 
-		public List<TempCourse> GetTempCoursesNoTracking()
+		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память
+		public List<TempCourse> GetRecentTempCourses()
 		{
-			return db.TempCourses.AsNoTracking().ToList();
+			var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
+			return db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToList();
 		}
 	}
 }

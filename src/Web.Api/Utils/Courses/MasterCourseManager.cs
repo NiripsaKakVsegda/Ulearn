@@ -135,7 +135,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
 				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
 
-				var tmpCourseDbData = await tempCoursesRepo.FindAsync(tempCourseId);
+				var tmpCourseDbData = await tempCoursesRepo.Find(tempCourseId);
 				if (tmpCourseDbData != null)
 				{
 					log.Warn($"Временный курс {tempCourseId} уже существует в базе");
@@ -155,13 +155,13 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 				if (tmpCourseDbData == null)
 				{
-					tmpCourseDbData = await tempCoursesRepo.AddTempCourseAsync(tempCourseId, userId, loadingTime);
+					tmpCourseDbData = await tempCoursesRepo.AddTempCourse(tempCourseId, userId, loadingTime);
 					await courseRolesRepo.ToggleRole(tempCourseId, userId, CourseRoleType.CourseAdmin, userId, "Создал временный курс");
 					return tmpCourseDbData;
 				}
 
-				await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tempCourseId, loadingTime);
-				return await tempCoursesRepo.FindAsync(tempCourseId);
+				await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, loadingTime);
+				return await tempCoursesRepo.Find(tempCourseId);
 			}
 		}
 
@@ -189,16 +189,16 @@ namespace Ulearn.Web.Api.Utils.Courses
 							exception = exception.InnerException;
 						}
 
-						await tempCoursesRepo.UpdateOrAddTempCourseErrorAsync(tempCourseId, errorMessage);
+						await tempCoursesRepo.UpdateOrAddTempCourseError(tempCourseId, errorMessage);
 						return (null, errorMessage);
 					}
 
 					CourseStorageUpdaterInstance.AddOrUpdateCourse(course);
-					await tempCoursesRepo.MarkTempCourseAsNotErroredAsync(tempCourseId);
-					await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tempCourseId, loadingTime);
+					await tempCoursesRepo.MarkTempCourseAsNotErrored(tempCourseId);
+					await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, loadingTime);
 				}
 
-				var tempCourse = await tempCoursesRepo.FindAsync(tempCourseId);
+				var tempCourse = await tempCoursesRepo.Find(tempCourseId);
 				return (tempCourse, null);
 			}
 		}
