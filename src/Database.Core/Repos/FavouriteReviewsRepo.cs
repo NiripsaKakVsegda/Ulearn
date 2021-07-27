@@ -83,25 +83,28 @@ namespace Database.Repos
 
 			if (favouriteReviewByUser == null)
 				return;
-			
+
 			await DeleteFavouriteReviewByUser(favouriteReviewByUser);
 		}
-		
+
 		public async Task DeleteFavouriteReviewByUser(FavouriteReviewByUser favouriteReviewByUser)
 		{
 			if (favouriteReviewByUser == null)
 				return;
 
 			db.FavouriteReviewsByUsers.Remove(favouriteReviewByUser);
-			
 			await db.SaveChangesAsync();
 
 			var hasUserWithThisFavouriteReview = await HasUserWithThisFavouriteReview(favouriteReviewByUser.FavouriteReviewId);
 
-			if (!hasUserWithThisFavouriteReview && favouriteReviewByUser.FavouriteReview != null)
+			if (!hasUserWithThisFavouriteReview)
 			{
-				db.FavouriteReviews.Remove(favouriteReviewByUser.FavouriteReview);
-				await db.SaveChangesAsync();
+				var favouriteReview = await FindFavouriteReview(favouriteReviewByUser.FavouriteReviewId);
+				if (favouriteReview != null)
+				{
+					db.FavouriteReviews.Remove(favouriteReview);
+					await db.SaveChangesAsync();
+				}
 			}
 		}
 
@@ -122,6 +125,11 @@ namespace Database.Repos
 		public async Task<FavouriteReviewByUser> FindFavouriteReviewByUser(int favouriteReviewByUserId)
 		{
 			return await db.FavouriteReviewsByUsers.FindAsync(favouriteReviewByUserId);
+		}
+
+		private async Task<FavouriteReview> FindFavouriteReview(int id)
+		{
+			return await db.FavouriteReviews.FindAsync(id);
 		}
 	}
 }
