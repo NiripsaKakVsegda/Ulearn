@@ -14,6 +14,6 @@ namespace Ulearn.Web.Api.Utils.Courses
 		Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId);
 		Task<TempCourse> CreateTempCourse(string baseCourseId, string userId);
 		string GetTempCourseId(string baseCourseId, string userId);
-		Task<(TempCourse Course, string Error)> UpdateTempCourseFromStream(string tmpCourseId, Stream updateZipContent, bool isFullCourse);
+		Task<(TempCourse Course, string Error)> UpdateTempCourseFromUserZipStream(string tmpCourseId, Stream updateZipContent, bool isFullCourse);
 	}
 }

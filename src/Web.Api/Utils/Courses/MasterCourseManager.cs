@@ -61,17 +61,17 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 			if (courseInMemory == null) // Проверяем, вдруг на диске актуальная версия
 			{
-				await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, publishedVersionToken);
+				await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, publishedVersionToken, TimeSpan.FromSeconds(0.1));
 				courseInMemory = CourseStorageInstance.FindCourse(courseId);
 				if (courseInMemory != null && courseInMemory.CourseVersionToken == publishedVersionToken)
 					return;
 			}
 
 			var courseFile = await coursesRepo.GetVersionFile(publishedCourseVersions.Id);
-			await UpdateCourseInCommonDirectory(courseId, courseFile.File, publishedVersionToken);
+			await UpdateCourseInCommonDirectory(courseId, courseFile.File, publishedVersionToken, TimeSpan.FromSeconds(0.1));
 		}
 
-		private async Task UpdateCourseInCommonDirectory(string courseId, byte[] content, CourseVersionToken publishedVersionToken)
+		private async Task UpdateCourseInCommonDirectory(string courseId, byte[] content, CourseVersionToken publishedVersionToken, TimeSpan? courseLockLimit)
 		{
 			using (var courseDirectory = await ExtractCourseVersionToTemporaryDirectory(courseId, publishedVersionToken, content))
 			{
@@ -85,8 +85,14 @@ namespace Ulearn.Web.Api.Utils.Courses
 					return;
 				}
 
-				using (await CourseLock.AcquireWriterLock(courseId))
+				using (var courseLock = await CourseLock.TryAcquireWriterLock(courseId, courseLockLimit))
 				{
+					if (!courseLock.IsLocked)
+					{
+						log.Warn($"Не дождался разблокировки курса {courseId} за {courseLockLimit ?? TimeSpan.Zero}");
+						return;
+					}
+
 					try
 					{
 						MoveCourse(course, courseDirectory.DirectoryInfo, GetExtractedCourseDirectory(courseId));
@@ -145,7 +151,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 				var loadingTime = DateTime.Now;
 				var versionToken = new CourseVersionToken(loadingTime);
 				var baseCourseVersionFile = await coursesRepo.GetPublishedVersionFile(baseCourseId);
-				await UpdateCourseInCommonDirectory(tempCourseId, baseCourseVersionFile.File, versionToken);
+				await UpdateCourseInCommonDirectory(tempCourseId, baseCourseVersionFile.File, versionToken, TimeSpan.FromSeconds(15));
 
 				if (tmpCourseDbData == null)
 				{
@@ -159,7 +165,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 			}
 		}
 
-		public async Task<(TempCourse Course, string Error)> UpdateTempCourseFromStream(string tempCourseId, Stream zipContent, bool isFullCourse)
+		public async Task<(TempCourse Course, string Error)> UpdateTempCourseFromUserZipStream(string tempCourseId, Stream zipContent, bool isFullCourse)
 		{
 			using (var scope = serviceScopeFactory.CreateScope())
 			{

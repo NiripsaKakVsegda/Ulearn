@@ -141,7 +141,7 @@ namespace Ulearn.Core.Courses.Manager
 			{
 				var tempDir = new DirectoryInfo(tempDirectoryPath);
 				if (tempDir.Exists)
-					tempDir.Delete(true); 
+					tempDir.Delete(true);
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace Ulearn.Core.Courses.Manager
 		}
 
 
-#region WorkWithCourseInTemporaryDirectory
+		#region WorkWithCourseInTemporaryDirectory
 
 		public async Task<TempDirectory> ExtractCourseVersionToTemporaryDirectory(string courseId, CourseVersionToken versionToken, byte[] zipContent)
 		{
@@ -197,11 +197,11 @@ namespace Ulearn.Core.Courses.Manager
 			}
 		}
 
-#endregion
+		#endregion
 
-#region UpdateInMemoryCourseFromCommonDirectory
+		#region UpdateInMemoryCourseFromCommonDirectory
 
-		protected async Task UpdateCourseOrTempCourseToVersionFromDirectory(string courseId, CourseVersionToken publishedVersionToken)
+		protected async Task UpdateCourseOrTempCourseToVersionFromDirectory(string courseId, CourseVersionToken publishedVersionToken, TimeSpan? courseLockLimit)
 		{
 			if (BrokenVersions.ContainsKey(publishedVersionToken))
 				return;
@@ -210,7 +210,7 @@ namespace Ulearn.Core.Courses.Manager
 				return;
 			try
 			{
-				await UpdateCourseFromDirectoryIfRightVersion(courseId, publishedVersionToken);
+				await UpdateCourseFromDirectoryIfRightVersion(courseId, publishedVersionToken, courseLockLimit);
 			}
 			catch (Exception ex)
 			{
@@ -226,13 +226,19 @@ namespace Ulearn.Core.Courses.Manager
 			}
 		}
 
-		private async Task UpdateCourseFromDirectoryIfRightVersion(string courseId, CourseVersionToken publishedVersionToken)
+		private async Task UpdateCourseFromDirectoryIfRightVersion(string courseId, CourseVersionToken publishedVersionToken, TimeSpan? courseLockLimit)
 		{
 			var courseDirectory = GetExtractedCourseDirectory(courseId);
 			if (!courseDirectory.Exists)
 				return;
-			using (await CourseLock.AcquireReaderLock(courseId))
+			using (var courseLock = await CourseLock.TryAcquireReaderLock(courseId, courseLockLimit))
 			{
+				if (!courseLock.IsLocked)
+				{
+					log.Warn($"Не дождался разблокировки курса {courseId} за {courseLockLimit ?? TimeSpan.Zero}");
+					return;
+				}
+
 				var courseVersionToken = CourseVersionToken.Load(courseDirectory);
 				if (courseVersionToken != publishedVersionToken)
 					return;
@@ -243,6 +249,6 @@ namespace Ulearn.Core.Courses.Manager
 			}
 		}
 
-#endregion
+		#endregion
 	}
 }

@@ -140,7 +140,7 @@ namespace Ulearn.Web.Api.Controllers
 			if (fileName == null || !fileName.ToLower().EndsWith(".zip"))
 				throw new Exception("The file should have .zip extension");
 
-			var (tempCourse, error) = await courseManager.UpdateTempCourseFromStream(tmpCourseId, file.OpenReadStream(), isFull);
+			var (tempCourse, error) = await courseManager.UpdateTempCourseFromUserZipStream(tmpCourseId, file.OpenReadStream(), isFull);
 
 			if (error != null)
 			{

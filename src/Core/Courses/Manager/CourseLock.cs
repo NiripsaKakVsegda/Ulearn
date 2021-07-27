@@ -10,12 +10,12 @@ namespace Ulearn.Core.Courses.Manager
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseLock));
 
-		private static readonly TimeSpan waitBetweenLockTries = TimeSpan.FromSeconds(0.1);
-		private static readonly TimeSpan lockLifeTime = TimeSpan.FromMinutes(3);
+		private static readonly TimeSpan waitBetweenLockTries = TimeSpan.FromSeconds(0.05);
+		private static readonly TimeSpan lockLifeTime = TimeSpan.FromMinutes(1);
 		private static readonly DirectoryInfo coursesDirectory = CourseManager.GetCoursesDirectory().GetSubdirectory(CourseManager.CoursesSubdirectory);
 
 		public bool IsLocked { get; private set; }
-		private string courseId;
+		private readonly string courseId;
 
 		private CourseLock(string courseId)
 		{
@@ -25,9 +25,7 @@ namespace Ulearn.Core.Courses.Manager
 		// TODO сейчас Writer и Reader локи не отличаются
 		public static async Task<CourseLock> AcquireWriterLock(string courseId)
 		{
-			var courseLock = new CourseLock(courseId);
-			await courseLock.Lock(int.MaxValue);
-			return courseLock;
+			return await AcquireReaderLock(courseId);
 		}
 
 		public static async Task<CourseLock> AcquireReaderLock(string courseId)
@@ -37,10 +35,19 @@ namespace Ulearn.Core.Courses.Manager
 			return courseLock;
 		}
 
-		public static CourseLock TryLock(string courseId)
+		// timeLimit == null означает одна попытка и не ждем
+		public static async Task<CourseLock> TryAcquireWriterLock(string courseId, TimeSpan? timeLimit = null)
+		{
+			return await TryAcquireReaderLock(courseId, timeLimit);
+		}
+
+		public static async Task<CourseLock> TryAcquireReaderLock(string courseId, TimeSpan? timeLimit = null)
 		{
 			var courseLock = new CourseLock(courseId);
-			courseLock.Lock(1).RunSynchronously();
+			if (timeLimit == null)
+				courseLock.Lock(1).RunSynchronously();
+			else
+				await courseLock.Lock((int)Math.Ceiling(timeLimit.Value.TotalMilliseconds / waitBetweenLockTries.TotalMilliseconds));
 			return courseLock;
 		}
 
