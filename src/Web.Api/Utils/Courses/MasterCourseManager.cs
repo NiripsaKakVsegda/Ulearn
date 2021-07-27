@@ -11,7 +11,7 @@ using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Helpers;
 using Vostok.Logging.Abstractions;
 
-namespace Ulearn.Web.Api.Utils
+namespace Ulearn.Web.Api.Utils.Courses
 {
 	public class MasterCourseManager : SlaveCourseManager, IMasterCourseManager
 	{

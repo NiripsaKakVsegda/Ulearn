@@ -25,6 +25,7 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Logging;
 using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Utils.LTI;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File;

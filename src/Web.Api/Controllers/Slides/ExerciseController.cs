@@ -28,6 +28,7 @@ using Ulearn.Web.Api.Controllers.Runner;
 using Ulearn.Web.Api.Models.Parameters.Exercise;
 using Ulearn.Web.Api.Models.Responses.Exercise;
 using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Vostok.Logging.Abstractions;
 using AutomaticExerciseCheckingStatus = Database.Models.AutomaticExerciseCheckingStatus;
 

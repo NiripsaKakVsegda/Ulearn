@@ -5,7 +5,7 @@ using Database.Models;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
 
-namespace Ulearn.Web.Api.Utils
+namespace Ulearn.Web.Api.Utils.Courses
 {
 	public interface IMasterCourseManager : ICourseUpdater
 	{

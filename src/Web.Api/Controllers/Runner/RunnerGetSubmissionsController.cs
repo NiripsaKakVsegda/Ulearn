@@ -17,6 +17,7 @@ using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.RunCheckerJobApi;
 using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Controllers.Runner

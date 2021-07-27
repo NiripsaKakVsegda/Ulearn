@@ -8,7 +8,7 @@ using Ulearn.Common;
 using Ulearn.Core.Courses;
 using Vostok.Logging.Abstractions;
 
-namespace Ulearn.Web.Api.Utils
+namespace Ulearn.Web.Api.Utils.Courses
 {
 	public class TempCourseOnDiskUpdater
 	{
