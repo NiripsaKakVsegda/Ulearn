@@ -86,7 +86,7 @@ namespace Database
 			await feedRepo.AddFeedNotificationTransportIfNeeded(null);
 		}
 
-		private async Task AddExampleCourse()
+		public async Task AddExampleCourse()
 		{
 			var courseId = CoursesRepo.ExampleCourseId;
 			var hasCourse = await coursesRepo.GetPublishedCourseVersion(courseId) != null;

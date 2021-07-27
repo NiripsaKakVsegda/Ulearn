@@ -28,7 +28,11 @@ namespace Ulearn.Core.Helpers
 		{
 			try
 			{
-				FuncUtils.TrySeveralTimes(() => DirectoryInfo.Delete(true), 3);
+				FuncUtils.TrySeveralTimes(() =>
+				{
+					if (DirectoryInfo.Exists)
+						DirectoryInfo.Delete(true);
+				}, 3);
 			}
 			catch (Exception ex)
 			{

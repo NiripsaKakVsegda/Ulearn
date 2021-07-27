@@ -121,7 +121,7 @@ namespace Ulearn.Web.Api.Utils
 			return $"{baseCourseId}_{userId}";
 		}
 
-		public async Task<TempCourse> CreateTempCourse(string baseCourseId, string tmpCourseId, string userId)
+		public async Task<TempCourse> CreateTempCourse(string baseCourseId, string tempCourseId, string userId)
 		{
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
@@ -129,15 +129,15 @@ namespace Ulearn.Web.Api.Utils
 				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
 				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
 
-				var tmpCourseDbData = await tempCoursesRepo.FindAsync(tmpCourseId);
+				var tmpCourseDbData = await tempCoursesRepo.FindAsync(tempCourseId);
 				if (tmpCourseDbData != null)
 				{
-					log.Warn($"Временный курс {tmpCourseId} уже существует в базе");
+					log.Warn($"Временный курс {tempCourseId} уже существует в базе");
 
-					var course = CourseStorageInstance.FindCourse(tmpCourseId);
+					var course = CourseStorageInstance.FindCourse(tempCourseId);
 					if (course != null && course.CourseVersionToken.LoadingTime == tmpCourseDbData.LoadingTime)
 					{
-						log.Warn($"Временный курс {tmpCourseId} версии {course.CourseVersionToken} уже загружен в память");
+						log.Warn($"Временный курс {tempCourseId} версии {course.CourseVersionToken} уже загружен в память");
 						return tmpCourseDbData;
 					}
 				}
@@ -145,17 +145,17 @@ namespace Ulearn.Web.Api.Utils
 				var loadingTime = DateTime.Now;
 				var versionToken = new CourseVersionToken(loadingTime);
 				var baseCourseVersionFile = await coursesRepo.GetPublishedVersionFile(baseCourseId);
-				await UpdateCourseInCommonDirectory(tmpCourseId, baseCourseVersionFile.File, versionToken);
+				await UpdateCourseInCommonDirectory(tempCourseId, baseCourseVersionFile.File, versionToken);
 
 				if (tmpCourseDbData == null)
 				{
-					tmpCourseDbData = await tempCoursesRepo.AddTempCourseAsync(tmpCourseId, userId, loadingTime);
-					await courseRolesRepo.ToggleRole(tmpCourseId, userId, CourseRoleType.CourseAdmin, userId, "Создал временный курс");
+					tmpCourseDbData = await tempCoursesRepo.AddTempCourseAsync(tempCourseId, userId, loadingTime);
+					await courseRolesRepo.ToggleRole(tempCourseId, userId, CourseRoleType.CourseAdmin, userId, "Создал временный курс");
 					return tmpCourseDbData;
 				}
 
-				await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tmpCourseId, loadingTime);
-				return await tempCoursesRepo.FindAsync(tmpCourseId);
+				await tempCoursesRepo.UpdateTempCourseLoadingTimeAsync(tempCourseId, loadingTime);
+				return await tempCoursesRepo.FindAsync(tempCourseId);
 			}
 		}
 

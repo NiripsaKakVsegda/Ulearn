@@ -15,6 +15,7 @@ namespace Ulearn.Core.Courses
 	public class CourseLoader : ICourseLoader
 	{
 		private readonly IUnitLoader unitLoader;
+		public const char CourseIdDelimiter = '@'; // После @ в название могут добавляться доп. символы для временных папок
 
 		public CourseLoader(IUnitLoader unitLoader)
 		{
@@ -41,7 +42,7 @@ namespace Ulearn.Core.Courses
 
 		private Course UnsafeLoad(DirectoryInfo courseDirectory)
 		{
-			var courseId = courseDirectory.Name;
+			var courseId = courseDirectory.Name.Split(CourseIdDelimiter)[0];
 
 			CourseSettings settings;
 			try

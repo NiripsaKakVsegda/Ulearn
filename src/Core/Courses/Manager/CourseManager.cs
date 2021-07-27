@@ -37,7 +37,7 @@ namespace Ulearn.Core.Courses.Manager
 		private readonly DirectoryInfo tempCourseStaging;
 		private readonly DirectoryInfo coursesVersionsDirectory;
 
-		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&' }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
+		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
 		/* TODO (andgein): Use DI */
 		public static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
@@ -64,7 +64,7 @@ namespace Ulearn.Core.Courses.Manager
 			this.stagedDirectory = stagedDirectory;
 			stagedDirectory.EnsureExists();
 			this.coursesDirectory = coursesDirectory;
-			coursesVersionsDirectory.EnsureExists();
+			coursesDirectory.EnsureExists();
 			this.tempCourseStaging = tempCourseStaging;
 			tempCourseStaging.EnsureExists();
 			this.coursesVersionsDirectory = coursesVersionsDirectory;
@@ -338,21 +338,33 @@ namespace Ulearn.Core.Courses.Manager
 
 		protected void MoveCourse(Course course, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
 		{
-			using var tempDirectory = new TempDirectory(Path.GetRandomFileName());
-
-			FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectory.DirectoryInfo.FullName), updateCourseEachOperationTriesCount);
-
+			// Не использую TempDirectory, потому что директория, в которую перемещаю, не должна существовать, иначе Move кинет ошибку.
+			var tempDirectoryPath = Path.Combine(TempDirectory.TempDirectoryPath, Path.GetRandomFileName());
 			try
 			{
-				FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
+				destinationDirectory.EnsureExists();
+
+				FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectoryPath), updateCourseEachOperationTriesCount);
+
+				try
+				{
+					FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
+				}
+				catch (IOException)
+				{
+					/* In case of any file system's error rollback previous operation */
+					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
+					throw;
+				}
+
+				UpdateCourse(course);
 			}
-			catch (IOException)
+			finally
 			{
-				/* In case of any file system's error rollback previous operation */
-				FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectory.DirectoryInfo.FullName, destinationDirectory.FullName), updateCourseEachOperationTriesCount);
-				throw;
+				var tempDir = new DirectoryInfo(tempDirectoryPath);
+				if (tempDir.Exists)
+					tempDir.Delete(true); 
 			}
-			UpdateCourse(course);
 		}
 
 		public static DirectoryInfo GetCoursesDirectory()
@@ -377,13 +389,14 @@ namespace Ulearn.Core.Courses.Manager
 
 		private TempDirectory CreateCourseTempDirectory(string courseId, CourseVersionToken versionToken)
 		{
-			var directoryName = $"{courseId}_{versionToken}_{DateTime.Now.ToSortable()}";
+			// @ — разделитель courseId и остального. используется CourseLoader
+			var directoryName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}";
 			return new TempDirectory(directoryName);
 		}
 
 		public TempFile SaveVersionZipToTemporaryDirectory(string courseId, CourseVersionToken versionToken, Stream stream)
 		{
-			var fileName = $"{courseId}_{versionToken}_{DateTime.Now.ToSortable()}";
+			var fileName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}";
 			return new TempFile(fileName, stream);
 		}
 
