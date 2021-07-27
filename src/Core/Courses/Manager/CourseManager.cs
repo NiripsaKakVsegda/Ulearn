@@ -65,18 +65,14 @@ namespace Ulearn.Core.Courses.Manager
 
 		public FileInfo GetStagingCourseFile(string courseId)
 		{
-			var packageName = GetPackageName(courseId);
-			if (Path.GetInvalidFileNameChars().Any(packageName.Contains))
-				throw new Exception(courseId);
-			return stagedDirectory.GetFile(packageName);
+			var zipName = courseId + ".zip";
+			return stagedDirectory.GetFile(zipName);
 		}
 
 		public FileInfo GetStagingTempCourseFile(string courseId)
 		{
-			var packageName = GetPackageName(courseId);
-			if (Path.GetInvalidFileNameChars().Any(packageName.Contains))
-				throw new Exception(courseId);
-			return tempCourseStaging.GetFile(packageName);
+			var zipName = courseId + ".zip";
+			return tempCourseStaging.GetFile(zipName);
 		}
 
 		public DirectoryInfo GetExtractedCourseDirectory(string courseId)
@@ -173,11 +169,6 @@ namespace Ulearn.Core.Courses.Manager
 		public static string GetCourseId(string packageName)
 		{
 			return Path.GetFileNameWithoutExtension(packageName);
-		}
-
-		public string GetPackageName(string courseId)
-		{
-			return courseId + ".zip";
 		}
 
 		public void ExtractTempCourseChanges(string tempCourseId)
