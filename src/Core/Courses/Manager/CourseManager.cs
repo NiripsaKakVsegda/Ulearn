@@ -2,13 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Ionic.Zip;
-using Telegram.Bot.Types.Enums;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
@@ -30,7 +28,6 @@ namespace Ulearn.Core.Courses.Manager
 		public static ICourseStorage CourseStorageInstance => courseStorage;
 		public static IUpdateCourseStorage CourseStorageUpdaterInstance => courseStorage;
 
-		private readonly DirectoryInfo stagedDirectory;
 		private readonly DirectoryInfo coursesDirectory;
 		private readonly DirectoryInfo tempCourseStaging;
 
@@ -43,30 +40,22 @@ namespace Ulearn.Core.Courses.Manager
 		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
 		public static readonly string CoursesSubdirectory = "Courses";
+		public static readonly string TempCourseStagingSubdirectory = "TempCourseStaging";
 
-		public CourseManager(DirectoryInfo baseDirectory)
+		protected CourseManager(DirectoryInfo baseDirectory)
 			: this(
-				baseDirectory.GetSubdirectory("Courses.Staging"),
 				baseDirectory.GetSubdirectory(CoursesSubdirectory),
-				baseDirectory.GetSubdirectory("TempCourseStaging")
+				baseDirectory.GetSubdirectory(TempCourseStagingSubdirectory)
 			)
 		{
 		}
 
-		private CourseManager(DirectoryInfo stagedDirectory, DirectoryInfo coursesDirectory, DirectoryInfo tempCourseStaging)
+		private CourseManager(DirectoryInfo coursesDirectory, DirectoryInfo tempCourseStaging)
 		{
-			this.stagedDirectory = stagedDirectory;
-			stagedDirectory.EnsureExists();
 			this.coursesDirectory = coursesDirectory;
 			coursesDirectory.EnsureExists();
 			this.tempCourseStaging = tempCourseStaging;
 			tempCourseStaging.EnsureExists();
-		}
-
-		public FileInfo GetStagingCourseFile(string courseId)
-		{
-			var zipName = courseId + ".zip";
-			return stagedDirectory.GetFile(zipName);
 		}
 
 		public FileInfo GetStagingTempCourseFile(string courseId)
@@ -78,104 +67,6 @@ namespace Ulearn.Core.Courses.Manager
 		public DirectoryInfo GetExtractedCourseDirectory(string courseId)
 		{
 			return coursesDirectory.GetSubdirectory(courseId);
-		}
-
-		public void ReloadCourseNotSafe(string courseId, bool notifyAboutErrors = true)
-		{
-			/* First try load course from directory */
-			var courseDir = GetExtractedCourseDirectory(courseId);
-			try
-			{
-				log.Info($"Сначала попробую загрузить уже распакованный курс из {courseDir.FullName}");
-				ReloadCourseFromDirectory(courseDir);
-			}
-			catch (Exception e)
-			{
-				log.Warn(e, $"Не смог загрузить курс из папки {courseDir}");
-				var zipFile = GetStagingCourseFile(courseId);
-				log.Info($"Буду загружать из zip-архива: {zipFile.FullName}");
-				if (notifyAboutErrors)
-					errorsBot.PostToChannel($"Не смог загрузить курс из папки {courseDir}, буду загружать из zip-архива {zipFile.FullName}:\n{e.Message.EscapeMarkdown()}\n```{e.StackTrace}```", ParseMode.Markdown);
-				ReloadCourseFromZip(zipFile);
-			}
-		}
-
-		private Course ReloadCourseFromZip(FileInfo zipFile)
-		{
-			var course = LoadCourseFromZip(zipFile);
-			courseStorage.AddOrUpdateCourse(course);
-			log.Info($"Курс {course.Id} загружен из {zipFile.FullName} и сохранён в памяти");
-			
-			return course;
-		}
-
-		private Course ReloadCourseFromDirectory(DirectoryInfo directory)
-		{
-			var course = LoadCourseFromDirectory(directory);
-			courseStorage.AddOrUpdateCourse(course);
-			log.Info($"Курс {course.Id} загружен из {directory.FullName} и сохранён в памяти");
-			return course;
-		}
-
-		protected void UnzipFile(FileInfo zipFile, DirectoryInfo unpackDirectory)
-		{
-			using (var zip = ZipFile.Read(zipFile.FullName, new ReadOptions { Encoding = ZipUtils.Cp866 })) // Использует UTF8, где нужно
-			{
-				log.Info($"Очищаю директорию {unpackDirectory.FullName}");
-				unpackDirectory.ClearDirectory();
-				log.Info($"Директория {unpackDirectory.FullName} очищена");
-				zip.ExtractAll(unpackDirectory.FullName, ExtractExistingFileAction.OverwriteSilently);
-				foreach (var f in unpackDirectory.GetFiles("*", SearchOption.AllDirectories).Cast<FileSystemInfo>().Concat(unpackDirectory.GetDirectories("*", SearchOption.AllDirectories)))
-					f.Attributes &= ~FileAttributes.ReadOnly;
-				log.Info($"Архив {zipFile.FullName} распакован");
-			}
-		}
-
-		private void UnzipTempWithOverwrite(FileInfo zipFile, DirectoryInfo unpackDirectory)
-		{
-			using (var zip = ZipFile.Read(zipFile.FullName, new ReadOptions { Encoding = Encoding.UTF8 }))
-			{
-				zip.ExtractAll(unpackDirectory.FullName, ExtractExistingFileAction.OverwriteSilently);
-				foreach (var f in unpackDirectory.GetFiles("*", SearchOption.AllDirectories).Cast<FileSystemInfo>().Concat(unpackDirectory.GetDirectories("*", SearchOption.AllDirectories)))
-					f.Attributes &= ~FileAttributes.ReadOnly;
-				log.Info($"Архив {zipFile.FullName} распакован");
-			}
-		}
-
-		private DirectoryInfo UnzipCourseFile(FileInfo zipFile)
-		{
-			var courseOrVersionId = GetCourseId(zipFile.Name);
-			var courseDir = coursesDirectory.GetSubdirectory(courseOrVersionId);
-			if (courseDir.Exists)
-				return courseDir;
-			courseDir.Create();
-			log.Info($"Распаковываю архив с курсом из {zipFile.FullName} в {courseDir.FullName}");
-			UnzipFile(zipFile, courseDir);
-			log.Info($"Распаковал архив с курсом из {zipFile.FullName} в {courseDir.FullName}");
-			return courseDir;
-		}
-
-		private Course LoadCourseFromZip(FileInfo zipFile)
-		{
-			var courseDir = UnzipCourseFile(zipFile);
-			return LoadCourseFromDirectory(courseDir);
-		}
-
-		private Course LoadCourseFromDirectory(DirectoryInfo dir)
-		{
-			return loader.Load(dir);
-		}
-
-		public static string GetCourseId(string packageName)
-		{
-			return Path.GetFileNameWithoutExtension(packageName);
-		}
-
-		public void ExtractTempCourseChanges(string tempCourseId)
-		{
-			var zipWithChanges = GetStagingTempCourseFile(tempCourseId);
-			var courseDirectory = GetExtractedCourseDirectory(tempCourseId);
-			UnzipTempWithOverwrite(zipWithChanges, courseDirectory);
 		}
 
 		public static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)

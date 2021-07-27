@@ -55,6 +55,13 @@ namespace Ulearn.Core.Courses
 			await file.WriteAsync(bytes, 0, bytes.Length);
 		}
 
+		public void RemoveFile(DirectoryInfo courseDirectory)
+		{
+			var versionFile = courseDirectory.GetFile(fileName);
+			if (versionFile.Exists)
+				versionFile.Delete();
+		}
+
 		[DataMember(EmitDefaultValue = false)]
 		public Guid? Version { get; set; } // null для временных курсов и проверяемых курсов, для которых еще нет версии
 

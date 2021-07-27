@@ -6,28 +6,38 @@ using System.Threading.Tasks;
 using Ionic.Zip;
 using Ulearn.Common;
 using Ulearn.Core.Courses;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Web.Api.Utils
 {
 	public class TempCourseOnDiskUpdater
 	{
+		private static ILog log => LogProvider.Get().ForContext(typeof(TempCourseOnDiskUpdater));
+
 		private readonly DirectoryInfo courseDirectory;
+		private readonly FileInfo zipWithChanges;
+
 		private readonly CourseVersionToken newVersionToken;
 		private readonly CourseVersionToken versionTokenBeforeChanges;
+
 		private readonly List<FileContent> filesToDelete;
 		private readonly List<string> directoriesToDelete;
 		private readonly List<FileContent> filesToUpdateBeforeChanges;
 		private readonly List<string> filesToAdd;
 
-		public TempCourseOnDiskUpdater(DirectoryInfo courseDirectory, CourseVersionToken versionToken, FileInfo zipFile, bool isFull)
+		public TempCourseOnDiskUpdater(DirectoryInfo courseDirectory, CourseVersionToken versionToken, FileInfo zipWithChanges, bool isFull)
 		{
 			this.courseDirectory = courseDirectory;
+			this.zipWithChanges = zipWithChanges;
 			newVersionToken = versionToken;
+			versionTokenBeforeChanges = CourseVersionToken.Load(courseDirectory);
+			versionTokenBeforeChanges.RemoveFile(courseDirectory);
+
 			var pathPrefix = courseDirectory.FullName;
-			var filesToDeleteRelativePaths = ParseDeletedTxt(zipFile);
+			var filesToDeleteRelativePaths = ParseDeletedTxt(zipWithChanges);
 			var filesInDirectoriesToDelete = GetFilesInDirectoriesToDelete(filesToDeleteRelativePaths, pathPrefix);
 			filesToDeleteRelativePaths.AddRange(filesInDirectoriesToDelete);
-			var zip = ZipFile.Read(zipFile.FullName, new ReadOptions { Encoding = Encoding.UTF8 });
+			var zip = ZipFile.Read(zipWithChanges.FullName, new ReadOptions { Encoding = Encoding.UTF8 });
 			var filesToChangeRelativePaths = zip.Entries
 				.Where(x => !x.IsDirectory)
 				.Select(x => x.FileName)
@@ -68,7 +78,8 @@ namespace Ulearn.Web.Api.Utils
 		{
 			DeleteFiles(filesToDelete, directoriesToDelete);
 			DeleteEmptySubdirectories(courseDirectory.FullName);
-			ExtractTempCourseChanges(courseId);
+			UnzipWithOverwrite(zipWithChanges, courseDirectory);
+			await newVersionToken.Save(courseDirectory);
 		}
 
 		public async Task Revert()
@@ -86,6 +97,18 @@ namespace Ulearn.Web.Api.Utils
 			filesToUpdateBeforeChanges.ForEach(WriteContent);
 			filesToDelete.ForEach(WriteContent);
 			filesToAdd.ForEach(File.Delete);
+			await versionTokenBeforeChanges.Save(courseDirectory);
+		}
+
+		private void UnzipWithOverwrite(FileInfo zipFile, DirectoryInfo unpackDirectory)
+		{
+			using (var zip = ZipFile.Read(zipFile.FullName, new ReadOptions { Encoding = Encoding.UTF8 }))
+			{
+				zip.ExtractAll(unpackDirectory.FullName, ExtractExistingFileAction.OverwriteSilently);
+				foreach (var f in unpackDirectory.GetFiles("*", SearchOption.AllDirectories).Cast<FileSystemInfo>().Concat(unpackDirectory.GetDirectories("*", SearchOption.AllDirectories)))
+					f.Attributes &= ~FileAttributes.ReadOnly;
+				log.Info($"Архив {zipFile.FullName} распакован");
+			}
 		}
 
 		private List<string> ParseDeletedTxt(FileInfo stagingTempCourseFile)
@@ -168,7 +191,6 @@ namespace Ulearn.Web.Api.Utils
 		{
 			return text.Substring(text.IndexOf(prefix) + prefix.Length + 1);
 		}
-
 
 		private List<string> GetDeletedDirs(List<string> filesToDeleteRelativePaths, string pathPrefix)
 		{
