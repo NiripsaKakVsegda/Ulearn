@@ -26,7 +26,6 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly ITempCoursesRepo tempCoursesRepo;
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IMasterCourseManager courseManager;
-		public bool DontCheckBaseCourseExistsOnCreate = false; // Для тестрирования
 		private static ILog log => LogProvider.Get().ForContext(typeof(TempCourseController));
 
 		public TempCourseController(ICourseStorage courseStorage, IMasterCourseManager courseManager, UlearnDb db, [CanBeNull] IUsersRepo usersRepo, ITempCoursesRepo tempCoursesRepo, ICourseRolesRepo courseRolesRepo)
@@ -44,9 +43,9 @@ namespace Ulearn.Web.Api.Controllers
 		[HttpPost("{courseId}")]
 		public async Task<ActionResult<TempCourseUpdateResponse>> CreateCourse([FromRoute] string courseId)
 		{
-			var tmpCourseId = courseManager.GetTmpCourseId(courseId, UserId);
+			var tmpCourseId = courseManager.GetTempCourseId(courseId, UserId);
 
-			if (!DontCheckBaseCourseExistsOnCreate && !courseStorage.HasCourse(courseId))
+			if (!courseStorage.HasCourse(courseId))
 			{
 				return new TempCourseUpdateResponse
 				{
@@ -109,7 +108,7 @@ namespace Ulearn.Web.Api.Controllers
 
 		private async Task<TempCourseUpdateResponse> UploadCourse(string courseId, List<IFormFile> files, bool isFull)
 		{
-			var tmpCourseId = courseManager.GetTmpCourseId(courseId, UserId);
+			var tmpCourseId = courseManager.GetTempCourseId(courseId, UserId);
 			var tmpCourse = await tempCoursesRepo.FindAsync(tmpCourseId);
 			if (tmpCourse == null)
 			{

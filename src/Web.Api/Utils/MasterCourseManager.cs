@@ -116,7 +116,7 @@ namespace Ulearn.Web.Api.Utils
 			return await exerciseStudentZipsCache.GenerateOrFindZip(courseId, slide, GetExtractedCourseDirectory(courseId).FullName);
 		}
 
-		public string GetTmpCourseId(string baseCourseId, string userId)
+		public string GetTempCourseId(string baseCourseId, string userId)
 		{
 			return $"{baseCourseId}_{userId}";
 		}
