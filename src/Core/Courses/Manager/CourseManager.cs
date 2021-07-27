@@ -35,8 +35,8 @@ namespace Ulearn.Core.Courses.Manager
 		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
 		/* TODO (andgein): Use DI */
-		public static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
-		public static readonly ErrorsBot errorsBot = new ErrorsBot();
+		private static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
+		protected static readonly ErrorsBot errorsBot = new ErrorsBot();
 
 		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
@@ -59,7 +59,7 @@ namespace Ulearn.Core.Courses.Manager
 			tempCourseStaging.EnsureExists();
 		}
 
-		public FileInfo GetStagingTempCourseFile(string courseId)
+		protected FileInfo GetStagingTempCourseFile(string courseId)
 		{
 			var zipName = courseId + ".zip";
 			return tempCourseStaging.GetFile(zipName);
@@ -70,7 +70,7 @@ namespace Ulearn.Core.Courses.Manager
 			return coursesDirectory.GetSubdirectory(courseId);
 		}
 
-		public static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)
+		protected static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)
 		{
 			var nsResolver = new XmlNamespaceManager(new NameTable());
 			nsResolver.AddNamespace("ulearn", "https://ulearn.me/schema/v2");
@@ -115,14 +115,6 @@ namespace Ulearn.Core.Courses.Manager
 			return !courseId.Any(InvalidForCourseIdCharacters.Contains);
 		}
 
-		private void UpdateCourse(Course course)
-		{
-			if (!courseStorage.HasCourse(course.Id))
-				return;
-
-			courseStorage.AddOrUpdateCourse(course);
-		}
-
 		protected void MoveCourse(Course course, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
 		{
 			// Не использую TempDirectory, потому что директория, в которую перемещаю, не должна существовать, иначе Move кинет ошибку.
@@ -144,8 +136,6 @@ namespace Ulearn.Core.Courses.Manager
 					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), triesCount);
 					throw;
 				}
-
-				UpdateCourse(course);
 			}
 			finally
 			{
