@@ -13,7 +13,8 @@ namespace Ulearn.Core.Helpers
 
 		static TempDirectory()
 		{
-			TempDirectoryPath = ApplicationConfiguration.Read<UlearnConfiguration>().TempDirectory ?? Path.GetTempPath();
+			// .NullIfEmptyOrWhitespace() null в конфиге десериализуется как "" https://github.com/dotnet/runtime/issues/36510
+			TempDirectoryPath = ApplicationConfiguration.Read<UlearnConfiguration>().TempDirectory.NullIfEmptyOrWhitespace() ?? Path.GetTempPath();
 			new DirectoryInfo(TempDirectoryPath).EnsureExists();
 		}
 
