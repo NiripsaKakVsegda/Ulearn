@@ -19,6 +19,11 @@ namespace Database.Repos
 			this.db = db;
 		}
 
+		private IQueryable<string> GetArchivedCourseIdsQueryable()
+		{
+			return db.ArchivedCourses.Select(ac => ac.CourseId);
+		}
+
 		public async Task<List<string>> GetPublishedCourseIds()
 		{
 			return await db.CourseVersions
@@ -98,7 +103,10 @@ namespace Database.Repos
 
 		public async Task<List<CourseVersion>> GetPublishedCourseVersions()
 		{
-			var courseVersions = await db.CourseVersions.ToListAsync();
+			var archivedCourseIdsQueryable = GetArchivedCourseIdsQueryable();
+			var courseVersions = await db.CourseVersions
+				.Where(v => !archivedCourseIdsQueryable.Contains(v.CourseId))
+				.ToListAsync();
 			return courseVersions
 				.GroupBy(v => v.CourseId.ToLower())
 				.Select(g => g.MaxBy(v => v.PublishTime))

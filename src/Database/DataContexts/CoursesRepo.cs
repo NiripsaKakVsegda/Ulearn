@@ -32,9 +32,17 @@ namespace Database.DataContexts
 			return db.CourseVersions.Where(v => v.CourseId == courseId && v.PublishTime != null).OrderByDescending(v => v.PublishTime).FirstOrDefault();
 		}
 
+		private IQueryable<string> GetArchivedCourseIdsQueryable()
+		{
+			return db.ArchivedCourses.Select(ac => ac.CourseId);
+		}
+
 		public List<CourseVersion> GetPublishedCourseVersions()
 		{
-			var courseVersions = db.CourseVersions.ToList();
+			var archivedCourseIdsQueryable = GetArchivedCourseIdsQueryable();
+			var courseVersions = db.CourseVersions
+				.Where(v => !archivedCourseIdsQueryable.Contains(v.CourseId))
+				.ToList();
 			return courseVersions
 				.GroupBy(v => v.CourseId.ToLower())
 				.Select(g => g.MaxBy(v => v.PublishTime))
