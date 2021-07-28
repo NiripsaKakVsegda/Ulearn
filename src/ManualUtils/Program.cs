@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
+using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Helpers;
@@ -116,6 +117,7 @@ namespace ManualUtils
 			// await RemoveVersionsWithoutFile(serviceProvider);
 			// await RemoveDuplicateExerciseManualCheckings(serviceProvider);
 			// await UpdateManualCheckingIds(serviceProvider);
+			await AddVersionFilesToCoursesOnDisk(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -692,6 +694,31 @@ namespace ManualUtils
 			{
 				var tempCourseRemover = scope.ServiceProvider.GetService<TempCourseRemover>();
 				await tempCourseRemover.RemoveTempCourseWithAllData("ulearn-testing", "71eefd72-7972-4a0a-b04e-645f7f04c9a5");
+			}
+		}
+
+		private static async Task AddVersionFilesToCoursesOnDisk(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
+				var masterCourseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
+				var publishedVersions = await coursesRepo.GetPublishedCourseVersions();
+				var tempCourses = await tempCoursesRepo.GetAllTempCourses();
+				var courseAndTokens =
+					publishedVersions.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.Id)))
+						.Concat(tempCourses.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.LoadingTime)))).ToList();
+				foreach (var (courseId, token) in courseAndTokens)
+				{
+					var dir = masterCourseManager.GetExtractedCourseDirectory(courseId);
+					if (!dir.Exists)
+						continue;
+					var oldToken = CourseVersionToken.Load(dir);
+					if (oldToken == token)
+						continue;
+					await token.Save(dir);
+				}
 			}
 		}
 	}
