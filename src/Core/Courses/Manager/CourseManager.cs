@@ -231,7 +231,7 @@ namespace Ulearn.Core.Courses.Manager
 			var courseDirectory = GetExtractedCourseDirectory(courseId);
 			if (!courseDirectory.Exists)
 				return;
-			using (var courseLock = await CourseLock.TryAcquireReaderLock(courseId, courseLockLimit))
+			using (var courseLock = await CourseLock.TryAcquireReaderLockAsync(courseId, courseLockLimit))
 			{
 				if (!courseLock.IsLocked)
 				{

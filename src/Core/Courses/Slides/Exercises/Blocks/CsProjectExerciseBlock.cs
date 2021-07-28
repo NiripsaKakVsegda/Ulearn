@@ -215,7 +215,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 						.Concat(new[] { "/bin/", "/obj/", ".idea/", ".vs/" })
 						.ToList();
 
-				using (CourseLock.AcquireReaderLock(CourseId).Result)
+				using (CourseLock.AcquireReaderLockAsync(CourseId).Result)
 				{
 					var toUpdate = GetAdditionalFiles(excluded, fp).ToList();
 					log.Info($"Собираю zip-архив для проверки: дополнительные файлы [{string.Join(", ", toUpdate.Select(c => c.Path))}]");

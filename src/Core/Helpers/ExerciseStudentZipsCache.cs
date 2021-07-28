@@ -41,7 +41,7 @@ namespace Ulearn.Core.Helpers
 			{
 				cacheCourseDirectory.EnsureExists();
 				log.Info($"Собираю zip-архив с упражнением: курс {courseId}, слайд «{slide.Title}» ({slide.Id}), файл {zipFile.FullName}");
-				using (await CourseLock.AcquireReaderLock(courseId))
+				using (await CourseLock.AcquireReaderLockAsync(courseId))
 				{
 					builder.BuildStudentZip(slide, zipFile, courseDirectory);
 				}

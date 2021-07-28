@@ -23,12 +23,12 @@ namespace Ulearn.Core.Courses.Manager
 		}
 
 		// TODO сейчас Writer и Reader локи не отличаются
-		public static async Task<CourseLock> AcquireWriterLock(string courseId)
+		public static async Task<CourseLock> AcquireWriterLockAsync(string courseId)
 		{
-			return await AcquireReaderLock(courseId);
+			return await AcquireReaderLockAsync(courseId);
 		}
 
-		public static async Task<CourseLock> AcquireReaderLock(string courseId)
+		public static async Task<CourseLock> AcquireReaderLockAsync(string courseId)
 		{
 			var courseLock = new CourseLock(courseId);
 			await courseLock.Lock(int.MaxValue);
@@ -36,12 +36,12 @@ namespace Ulearn.Core.Courses.Manager
 		}
 
 		// timeLimit == null означает одна попытка и не ждем
-		public static async Task<CourseLock> TryAcquireWriterLock(string courseId, TimeSpan? timeLimit = null)
+		public static async Task<CourseLock> TryAcquireWriterLockAsync(string courseId, TimeSpan? timeLimit = null)
 		{
-			return await TryAcquireReaderLock(courseId, timeLimit);
+			return await TryAcquireReaderLockAsync(courseId, timeLimit);
 		}
 
-		public static async Task<CourseLock> TryAcquireReaderLock(string courseId, TimeSpan? timeLimit = null)
+		public static async Task<CourseLock> TryAcquireReaderLockAsync(string courseId, TimeSpan? timeLimit = null)
 		{
 			var courseLock = new CourseLock(courseId);
 			if (timeLimit == null)

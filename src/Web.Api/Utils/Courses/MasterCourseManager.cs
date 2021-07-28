@@ -85,7 +85,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 					return;
 				}
 
-				using (var courseLock = await CourseLock.TryAcquireWriterLock(courseId, courseLockLimit))
+				using (var courseLock = await CourseLock.TryAcquireWriterLockAsync(courseId, courseLockLimit))
 				{
 					if (!courseLock.IsLocked)
 					{
@@ -172,7 +172,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 				var loadingTime = DateTime.Now;
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
 
-				using (await CourseLock.AcquireWriterLock(tempCourseId))
+				using (await CourseLock.AcquireWriterLockAsync(tempCourseId))
 				{
 					var stagingTempCourseFile = GetStagingTempCourseFile(tempCourseId);
 					using (var fs = new FileStream(stagingTempCourseFile.FullName, FileMode.Create, FileAccess.Write))

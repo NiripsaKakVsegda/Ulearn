@@ -295,7 +295,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					.Select(d => d.FullName);
 				var directoriesToInclude = toUpdateDirectories.Append(fp.ExerciseDirectory.FullName).ToList();
 
-				using (CourseLock.AcquireReaderLock(CourseId).Result)
+				using (CourseLock.AcquireReaderLockAsync(CourseId).Result)
 				{
 					var ms = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, null);
 
