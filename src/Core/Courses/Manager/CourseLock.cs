@@ -53,23 +53,23 @@ namespace Ulearn.Core.Courses.Manager
 
 		private async Task Lock(int attemptsCount)
 		{
-			log.Info($"Ожидаю, если курс {courseId} заблокирован");
+			log.Debug($"Ожидаю, если курс {courseId} заблокирован");
 			var lockFile = GetCourseLockFile();
 			for (var i = 0; i < attemptsCount; i++)
 			{
 				if (TryCreateLockFile(lockFile))
 				{
-					log.Info($"Заблокировал курс {courseId}");
+					log.Debug($"Заблокировал курс {courseId}");
 					return;
 				}
 
 				if (i + 1 == attemptsCount)
 				{
-					log.Info($"Курс {courseId} заблокирован, не буду ждать");
+					log.Debug($"Курс {courseId} заблокирован, не буду ждать");
 					return;
 				}
 
-				log.Info($"Курс {courseId} заблокирован, жду {waitBetweenLockTries.TotalSeconds} секунд");
+				log.Debug($"Курс {courseId} заблокирован, жду {waitBetweenLockTries.TotalSeconds} секунд");
 				await Task.Delay(waitBetweenLockTries);
 
 				try
@@ -78,7 +78,7 @@ namespace Ulearn.Core.Courses.Manager
 					/* If lock-file has been created ago, just delete it and unzip course again */
 					if (lockFile.Exists && lockFile.LastWriteTime < DateTime.Now.Subtract(lockLifeTime))
 					{
-						log.Info($"Курс {courseId} заблокирован слишком давно, снимаю блокировку");
+						log.Warn($"Курс {courseId} заблокирован слишком давно, снимаю блокировку");
 
 						lockFile.Delete();
 					}
@@ -95,7 +95,7 @@ namespace Ulearn.Core.Courses.Manager
 			{
 				GetCourseLockFile().Delete();
 				IsLocked = false;
-				log.Info($"Разблокировал курс {courseId}");
+				log.Debug($"Разблокировал курс {courseId}");
 			}
 		}
 
