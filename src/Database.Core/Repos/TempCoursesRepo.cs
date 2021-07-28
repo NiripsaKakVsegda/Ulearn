@@ -26,11 +26,15 @@ namespace Database.Repos
 			return await db.TempCourses.ToListAsync();
 		}
 
-		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память
+		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память.
 		public async Task<List<TempCourse>> GetRecentTempCourses()
 		{
-			var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
-			return await db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToListAsync();
+			// Пока что загружаются все временные курсы.
+			// Потому что связанные с курсом объекты могут всплыть в других запросах вроде дай мне все доступные группы.
+			// И это может привести к некорректным данным или исключению.
+			return await GetAllTempCourses();
+			// var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
+			// return await db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToListAsync();
 		}
 
 		public async Task<TempCourseError> GetCourseError(string courseId)
