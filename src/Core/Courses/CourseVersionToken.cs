@@ -17,6 +17,12 @@ namespace Ulearn.Core.Courses
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseVersionToken));
 
+		[DataMember(Name = "version", EmitDefaultValue = false)]
+		public Guid? Version { get; set; } // null для временных курсов и проверяемых курсов, для которых еще нет версии
+
+		[DataMember(Name = "loadingTime", EmitDefaultValue = false)]
+		public DateTime? LoadingTime { get; set; } // То, что вместо версии во временном курсе, дата LoadingTime
+
 		public CourseVersionToken()
 		{
 		}
@@ -61,12 +67,6 @@ namespace Ulearn.Core.Courses
 			if (versionFile.Exists)
 				versionFile.Delete();
 		}
-
-		[DataMember(EmitDefaultValue = false)]
-		public Guid? Version { get; set; } // null для временных курсов и проверяемых курсов, для которых еще нет версии
-
-		[DataMember(EmitDefaultValue = false)]
-		public DateTime? LoadingTime { get; set; } // То, что вместо версии во временном курсе, дата LoadingTime
 
 		public bool IsTempCourse()
 		{
