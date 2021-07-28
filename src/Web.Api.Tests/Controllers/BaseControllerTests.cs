@@ -63,8 +63,8 @@ namespace Web.Api.Tests.Controllers
 			serviceProvider = ConfigureServices(addServices);
 
 			var coursesDirectory = CourseManager.CoursesDirectory;
-			if (coursesDirectory.Exists)
-				coursesDirectory.Delete(true);
+			coursesDirectory.Delete(true);
+			CourseManager.EnsureDirectoriesExist();
 
 			await CreateInitialDataInDatabaseAsync().ConfigureAwait(false);
 			await CreateTestUsersAsync().ConfigureAwait(false);

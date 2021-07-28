@@ -40,11 +40,16 @@ namespace Ulearn.Core.Courses.Manager
 		static CourseManager()
 		{
 			CoursesDirectory = GetCoursesDirectory();
-			CoursesDirectory.EnsureExists();
 			ExtractedCoursesDirectory = CoursesDirectory.GetSubdirectory("Courses");
-			ExtractedCoursesDirectory.EnsureExists();
 			tempCourseStagingDirectory = CoursesDirectory.GetSubdirectory("TempCourseStaging");
+			EnsureDirectoriesExist();
+		}
+
+		public static void EnsureDirectoriesExist()
+		{
+			CoursesDirectory.EnsureExists();
 			ExtractedCoursesDirectory.EnsureExists();
+			tempCourseStagingDirectory.EnsureExists();
 		}
 
 		public bool IsCourseIdAllowed(string courseId)
