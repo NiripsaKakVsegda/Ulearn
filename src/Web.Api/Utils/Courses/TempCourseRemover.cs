@@ -82,6 +82,8 @@ order by t.table_name;
 				await transaction.CommitAsync();
 			}
 
+			log.Info($"Удалил данные временного курса {tempCourseId} из базы, жду 30 сек перед чисткой СourseStorage");
+
 			await Task.Delay(TimeSpan.FromSeconds(30)); // Жду, чтобы завершилось возможно идущее обновление временных курсов.
 
 			courseStorageUpdater.TryRemoveCourse(tempCourseId);

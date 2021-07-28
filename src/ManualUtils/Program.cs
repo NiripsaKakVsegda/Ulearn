@@ -117,8 +117,8 @@ namespace ManualUtils
 			// await UploadCourseVersions(serviceProvider);
 			// await RemoveVersionsWithoutFile(serviceProvider);
 			// await RemoveDuplicateExerciseManualCheckings(serviceProvider);
-			// await UpdateManualCheckingIds(serviceProvider);
-			await AddVersionFilesToCoursesOnDisk(serviceProvider);
+			// await RemoveTempCourse(serviceProvider);
+			//await AddVersionFilesToCoursesOnDisk(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
