@@ -6,6 +6,7 @@ using Database.Models;
 using Database.Repos;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot.Types.Enums;
+using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
@@ -33,6 +34,11 @@ namespace Ulearn.Web.Api.Utils.Courses
 				exerciseStudentZipsCache.DeleteCourseZips(courseId);
 				ExerciseCheckerZipsCache.DeleteCourseZips(courseId);
 			};
+		}
+
+		public new DirectoryInfo GetExtractedCourseDirectory(string courseId)
+		{
+			return CourseManager.GetExtractedCourseDirectory(courseId);
 		}
 
 		// Невременные курсы не выкладываются на диск сразу, а публикуются в базу и UpdateCourses их обновляет на диске.
@@ -95,15 +101,45 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 					try
 					{
-						MoveCourse(course, courseDirectory.DirectoryInfo, GetExtractedCourseDirectory(courseId));
+						MoveCourse(courseDirectory.DirectoryInfo, GetExtractedCourseDirectory(courseId));
 						CourseStorageUpdaterInstance.AddOrUpdateCourse(course);
 					}
 					catch (Exception ex)
 					{
 						log.Error(ex, $"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую");
-						await errorsBot.PostToChannelAsync($"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
+						await ErrorsBot.PostToChannelAsync($"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
 					}
 				}
+			}
+		}
+
+		private void MoveCourse(DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
+		{
+			// Не использую TempDirectory, потому что директория, в которую перемещаю, не должна существовать, иначе Move кинет ошибку.
+			var tempDirectoryPath = Path.Combine(TempDirectory.TempDirectoryPath, Path.GetRandomFileName());
+			try
+			{
+				destinationDirectory.EnsureExists();
+
+				const int triesCount = 5;
+				FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectoryPath), triesCount);
+
+				try
+				{
+					FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), triesCount);
+				}
+				catch (IOException)
+				{
+					/* In case of any file system's error rollback previous operation */
+					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), triesCount);
+					throw;
+				}
+			}
+			finally
+			{
+				var tempDir = new DirectoryInfo(tempDirectoryPath);
+				if (tempDir.Exists)
+					tempDir.Delete(true);
 			}
 		}
 

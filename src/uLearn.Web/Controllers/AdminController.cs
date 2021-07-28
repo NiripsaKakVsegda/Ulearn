@@ -83,7 +83,7 @@ namespace uLearn.Web.Controllers
 			styleErrorsRepo = new StyleErrorsRepo(db);
 			certificateGenerator = new CertificateGenerator(db);
 			tempCoursesRepo = new TempCoursesRepo(db);
-			reposDirectory = WebCourseManager.GetCoursesDirectory().GetSubdirectory("Repos");
+			reposDirectory = CourseManager.CoursesDirectory.GetSubdirectory("Repos");
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			gitSecret = configuration.Git.Webhook.Secret;
 			var antiplagiarismClientConfiguration = ApplicationConfiguration.Read<UlearnConfiguration>().AntiplagiarismClient;

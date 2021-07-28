@@ -30,7 +30,7 @@ namespace Ulearn.Core.Helpers
 			if (!string.IsNullOrEmpty(exerciseStudentZipsDirectory))
 				return new DirectoryInfo(exerciseStudentZipsDirectory);
 
-			return CourseManager.GetCoursesDirectory().GetSubdirectory("ExerciseStudentZips");
+			return CourseManager.CoursesDirectory.GetSubdirectory("ExerciseStudentZips");
 		}
 
 		public async Task<FileInfo> GenerateOrFindZip(string courseId, Slide slide, string courseDirectory)

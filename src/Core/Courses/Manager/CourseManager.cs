@@ -3,10 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using Ionic.Zip;
 using Telegram.Bot.Types.Enums;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -24,12 +20,13 @@ namespace Ulearn.Core.Courses.Manager
 		public static ICourseStorage CourseStorageInstance => courseStorage;
 		public static ICourseStorageUpdater CourseStorageUpdaterInstance => courseStorage;
 
+		public static readonly DirectoryInfo CoursesDirectory;
 		public static readonly DirectoryInfo ExtractedCoursesDirectory;
-		public static readonly DirectoryInfo TempCourseStaging;
+		private static readonly DirectoryInfo tempCourseStagingDirectory;
 
 		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
-		protected static readonly ErrorsBot errorsBot = new ErrorsBot();
+		protected static readonly ErrorsBot ErrorsBot = new ErrorsBot();
 
 		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
@@ -42,63 +39,12 @@ namespace Ulearn.Core.Courses.Manager
 
 		static CourseManager()
 		{
-			var coursesDirectory = GetCoursesDirectory();
-			coursesDirectory.EnsureExists();
-			ExtractedCoursesDirectory = coursesDirectory.GetSubdirectory("Courses");
+			CoursesDirectory = GetCoursesDirectory();
+			CoursesDirectory.EnsureExists();
+			ExtractedCoursesDirectory = CoursesDirectory.GetSubdirectory("Courses");
 			ExtractedCoursesDirectory.EnsureExists();
-			TempCourseStaging = coursesDirectory.GetSubdirectory("TempCourseStaging");
+			tempCourseStagingDirectory = CoursesDirectory.GetSubdirectory("TempCourseStaging");
 			ExtractedCoursesDirectory.EnsureExists();
-		}
-
-		protected FileInfo GetStagingTempCourseFile(string courseId)
-		{
-			var zipName = courseId + ".zip";
-			return TempCourseStaging.GetFile(zipName);
-		}
-
-		public DirectoryInfo GetExtractedCourseDirectory(string courseId)
-		{
-			return ExtractedCoursesDirectory.GetSubdirectory(courseId);
-		}
-
-		protected static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)
-		{
-			var nsResolver = new XmlNamespaceManager(new NameTable());
-			nsResolver.AddNamespace("ulearn", "https://ulearn.me/schema/v2");
-			using (var zip = ZipFile.Read(exampleZipToModify.FullName, new ReadOptions { Encoding = ZipUtils.Cp866 }))
-			{
-				var courseXml = zip.Entries.FirstOrDefault(e => Path.GetFileName(e.FileName).Equals("course.xml", StringComparison.OrdinalIgnoreCase) && !e.IsDirectory);
-				if (courseXml != null)
-					UpdateXmlAttribute(zip[courseXml.FileName], "//ulearn:course", "title", courseTitle, zip, nsResolver);
-			}
-		}
-
-		private static void UpdateXmlAttribute(ZipEntry entry, string selector, string attribute, string value, ZipFile zip, IXmlNamespaceResolver nsResolver)
-		{
-			UpdateXmlEntity(entry, selector, element =>
-			{
-				var elementAttribute = element.Attribute(attribute);
-				if (elementAttribute != null)
-					elementAttribute.Value = value;
-			}, zip, nsResolver);
-		}
-
-		private static void UpdateXmlEntity(ZipEntry entry, string selector, Action<XElement> update, ZipFile zip, IXmlNamespaceResolver nsResolver)
-		{
-			using (var output = StaticRecyclableMemoryStreamManager.Manager.GetStream())
-			{
-				using (var entryStream = entry.OpenReader())
-				{
-					var xml = XDocument.Load(entryStream);
-					var element = xml.XPathSelectElement(selector, nsResolver);
-					update(element.EnsureNotNull($"no element [{selector}] in zip entry {entry.FileName}"));
-					xml.Save(output);
-				}
-
-				output.Position = 0;
-				zip.UpdateEntry(entry.FileName, output.ToArray());
-				zip.Save();
-			}
 		}
 
 		public bool IsCourseIdAllowed(string courseId)
@@ -106,37 +52,7 @@ namespace Ulearn.Core.Courses.Manager
 			return !courseId.Any(InvalidForCourseIdCharacters.Contains);
 		}
 
-		protected void MoveCourse(Course course, DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
-		{
-			// Не использую TempDirectory, потому что директория, в которую перемещаю, не должна существовать, иначе Move кинет ошибку.
-			var tempDirectoryPath = Path.Combine(TempDirectory.TempDirectoryPath, Path.GetRandomFileName());
-			try
-			{
-				destinationDirectory.EnsureExists();
-
-				const int triesCount = 5;
-				FuncUtils.TrySeveralTimes(() => Directory.Move(destinationDirectory.FullName, tempDirectoryPath), triesCount);
-
-				try
-				{
-					FuncUtils.TrySeveralTimes(() => Directory.Move(sourceDirectory.FullName, destinationDirectory.FullName), triesCount);
-				}
-				catch (IOException)
-				{
-					/* In case of any file system's error rollback previous operation */
-					FuncUtils.TrySeveralTimes(() => Directory.Move(tempDirectoryPath, destinationDirectory.FullName), triesCount);
-					throw;
-				}
-			}
-			finally
-			{
-				var tempDir = new DirectoryInfo(tempDirectoryPath);
-				if (tempDir.Exists)
-					tempDir.Delete(true);
-			}
-		}
-
-		public static DirectoryInfo GetCoursesDirectory()
+		private static DirectoryInfo GetCoursesDirectory()
 		{
 			var coursesDirectory = ApplicationConfiguration.Read<UlearnConfiguration>().CoursesDirectory ?? "";
 			if (!Path.IsPathRooted(coursesDirectory))
@@ -145,11 +61,20 @@ namespace Ulearn.Core.Courses.Manager
 			return new DirectoryInfo(coursesDirectory);
 		}
 
-		public async Task PostCourseLoadingErrorToTelegram(string courseId, Exception ex)
+		protected static DirectoryInfo GetExtractedCourseDirectory(string courseId)
 		{
-			await errorsBot.PostToChannelAsync($"Не смог загрузить курс из папки {GetExtractedCourseDirectory(courseId)}:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
+			return ExtractedCoursesDirectory.GetSubdirectory(courseId);
 		}
 
+		protected static FileInfo GetStagingTempCourseFile(string courseId)
+		{
+			return tempCourseStagingDirectory.GetFile(courseId + ".zip");
+		}
+
+		protected static async Task PostCourseLoadingErrorToTelegram(string courseId, Exception ex)
+		{
+			await ErrorsBot.PostToChannelAsync($"Не смог загрузить курс из папки {GetExtractedCourseDirectory(courseId)}:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
+		}
 
 		#region WorkWithCourseInTemporaryDirectory
 

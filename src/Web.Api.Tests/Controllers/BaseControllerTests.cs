@@ -62,7 +62,7 @@ namespace Web.Api.Tests.Controllers
 
 			serviceProvider = ConfigureServices(addServices);
 
-			var coursesDirectory = CourseManager.GetCoursesDirectory();
+			var coursesDirectory = CourseManager.CoursesDirectory;
 			if (coursesDirectory.Exists)
 				coursesDirectory.Delete(true);
 
