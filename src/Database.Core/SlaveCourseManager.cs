@@ -17,7 +17,6 @@ namespace Database
 		private readonly IServiceScopeFactory serviceScopeFactory;
 
 		public SlaveCourseManager(IServiceScopeFactory serviceScopeFactory)
-			: base(GetCoursesDirectory())
 		{
 			this.serviceScopeFactory = serviceScopeFactory;
 		}

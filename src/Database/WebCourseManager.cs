@@ -18,7 +18,6 @@ namespace Database
 		public static ICourseUpdater CourseUpdaterInstance => courseManagerInstance;
 
 		private WebCourseManager()
-			: base(GetCoursesDirectory())
 		{
 		}
 

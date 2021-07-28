@@ -127,8 +127,6 @@ namespace Ulearn.Web.Api
 		protected override IApplicationBuilder UseStaticFiles(IApplicationBuilder app)
 		{
 			var contentTypeProvider = new FileExtensionContentTypeProvider(CourseStaticFilesHelper.AllowedExtensions);
-			var coursesDirectory = Path.Combine(MasterCourseManager.GetCoursesDirectory().FullName, MasterCourseManager.CoursesSubdirectory);
-			new DirectoryInfo(coursesDirectory).EnsureExists();
 
 			var options = new RewriteOptions()
 				.AddRewrite(@"^courses/([^/]+)/files/(.+)", "courses/$1/$2", skipRemainingRules: true);
@@ -140,7 +138,7 @@ namespace Ulearn.Web.Api
 					{
 						ContentTypeProvider = contentTypeProvider,
 						ServeUnknownFileTypes = false,
-						FileProvider = new PhysicalFileProvider(coursesDirectory),
+						FileProvider = new PhysicalFileProvider(CourseManager.ExtractedCoursesDirectory.FullName),
 						RequestPath = "/courses",
 						OnPrepareResponse = ctx => ctx.Context.Response.Headers.Append("Cache-Control", "no-cache")
 					});

@@ -21,53 +21,44 @@ namespace Ulearn.Core.Courses.Manager
 {
 	public abstract class CourseManager
 	{
-		private static ILog log => LogProvider.Get().ForContext(typeof(CourseManager));
-
-		public const string ExampleCourseId = "Help";
-
-		private static readonly CourseStorage courseStorage = new CourseStorage();
 		public static ICourseStorage CourseStorageInstance => courseStorage;
 		public static ICourseStorageUpdater CourseStorageUpdaterInstance => courseStorage;
 
-		private readonly DirectoryInfo coursesDirectory;
-		private readonly DirectoryInfo tempCourseStaging;
+		public static readonly DirectoryInfo ExtractedCoursesDirectory;
+		public static readonly DirectoryInfo TempCourseStaging;
 
 		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
-		/* TODO (andgein): Use DI */
-		private static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
 		protected static readonly ErrorsBot errorsBot = new ErrorsBot();
 
 		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
 
-		public static readonly string CoursesSubdirectory = "Courses";
-		public static readonly string TempCourseStagingSubdirectory = "TempCourseStaging";
+		private static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
+		private static readonly CourseStorage courseStorage = new CourseStorage();
 
-		protected CourseManager(DirectoryInfo baseDirectory)
-			: this(
-				baseDirectory.GetSubdirectory(CoursesSubdirectory),
-				baseDirectory.GetSubdirectory(TempCourseStagingSubdirectory)
-			)
-		{
-		}
+		protected static readonly string ExampleCourseId = "Help";
 
-		private CourseManager(DirectoryInfo coursesDirectory, DirectoryInfo tempCourseStaging)
+		private static ILog log => LogProvider.Get().ForContext(typeof(CourseManager));
+
+		static CourseManager()
 		{
-			this.coursesDirectory = coursesDirectory;
+			var coursesDirectory = GetCoursesDirectory();
 			coursesDirectory.EnsureExists();
-			this.tempCourseStaging = tempCourseStaging;
-			tempCourseStaging.EnsureExists();
+			ExtractedCoursesDirectory = coursesDirectory.GetSubdirectory("Courses");
+			ExtractedCoursesDirectory.EnsureExists();
+			TempCourseStaging = coursesDirectory.GetSubdirectory("TempCourseStaging");
+			ExtractedCoursesDirectory.EnsureExists();
 		}
 
 		protected FileInfo GetStagingTempCourseFile(string courseId)
 		{
 			var zipName = courseId + ".zip";
-			return tempCourseStaging.GetFile(zipName);
+			return TempCourseStaging.GetFile(zipName);
 		}
 
 		public DirectoryInfo GetExtractedCourseDirectory(string courseId)
 		{
-			return coursesDirectory.GetSubdirectory(courseId);
+			return ExtractedCoursesDirectory.GetSubdirectory(courseId);
 		}
 
 		protected static void CreateCourseFromExample(string courseId, string courseTitle, FileInfo exampleZipToModify)

@@ -12,7 +12,7 @@ namespace Ulearn.Core.Courses.Manager
 
 		private static readonly TimeSpan waitBetweenLockTries = TimeSpan.FromSeconds(0.05);
 		private static readonly TimeSpan lockLifeTime = TimeSpan.FromMinutes(1);
-		private static readonly DirectoryInfo coursesDirectory = CourseManager.GetCoursesDirectory().GetSubdirectory(CourseManager.CoursesSubdirectory);
+		private static readonly DirectoryInfo coursesDirectory = CourseManager.ExtractedCoursesDirectory;
 
 		public bool IsLocked { get; private set; }
 		private readonly string courseId;
