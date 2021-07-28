@@ -68,6 +68,7 @@ namespace ManualUtils
 
 			services.AddSingleton(db);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
+			services.AddDatabaseServices(false);
 
 			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
 			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
@@ -715,7 +716,7 @@ namespace ManualUtils
 					if (!dir.Exists)
 						continue;
 					var oldToken = CourseVersionToken.Load(dir);
-					if (oldToken == token)
+					if (oldToken.Version != default(Guid))
 						continue;
 					await token.Save(dir);
 				}
