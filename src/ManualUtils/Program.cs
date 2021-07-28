@@ -23,6 +23,7 @@ using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
 using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.Courses;
@@ -67,7 +68,14 @@ namespace ManualUtils
 			services.AddSingleton(db);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
 
-			services.AddDatabaseServices(true);
+			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
+			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
+			services.AddSingleton<MasterCourseManager>();
+			services.AddSingleton<ExerciseStudentZipsCache>();
+			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+
+			services.AddScoped<TempCourseRemover>();
+
 			services.AddSingleton(adb);
 
 			return services.BuildServiceProvider();
@@ -677,5 +685,14 @@ namespace ManualUtils
 				db.SaveChanges();
 			}
 		}*/
+
+		private static async Task RemoveTempCourse(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var tempCourseRemover = scope.ServiceProvider.GetService<TempCourseRemover>();
+				await tempCourseRemover.RemoveTempCourseWithAllData("ulearn-testing", "71eefd72-7972-4a0a-b04e-645f7f04c9a5");
+			}
+		}
 	}
 }

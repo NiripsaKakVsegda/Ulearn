@@ -228,6 +228,7 @@ namespace Ulearn.Web.Api
 			base.ConfigureDi(services);
 
 			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
+			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
 			services.AddSingleton<MasterCourseManager>();
 			services.AddSingleton<ExerciseStudentZipsCache>();
 			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
@@ -249,6 +250,7 @@ namespace Ulearn.Web.Api
 			services.AddScoped<AntiPlagiarismResultObserver>();
 			services.AddScoped<StyleErrorsResultObserver>();
 			services.AddScoped<LtiResultObserver>();
+			services.AddScoped<TempCourseRemover>();
 			services.AddScoped<ControllerUtils>();
 
 			services.AddDatabaseServices(false);

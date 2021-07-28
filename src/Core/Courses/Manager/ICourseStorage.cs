@@ -14,7 +14,7 @@ namespace Ulearn.Core.Courses.Manager
 		event CourseChangedEventHandler CourseChangedEvent; // Вызывается при загрузке версии курса, но не при его удалении.
 	}
 
-	public interface IUpdateCourseStorage
+	public interface ICourseStorageUpdater
 	{
 		void AddOrUpdateCourse(Course course);
 		void TryRemoveCourse(string courseId);

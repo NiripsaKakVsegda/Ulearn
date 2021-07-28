@@ -27,7 +27,7 @@ namespace Ulearn.Core.Courses.Manager
 
 		private static readonly CourseStorage courseStorage = new CourseStorage();
 		public static ICourseStorage CourseStorageInstance => courseStorage;
-		public static IUpdateCourseStorage CourseStorageUpdaterInstance => courseStorage;
+		public static ICourseStorageUpdater CourseStorageUpdaterInstance => courseStorage;
 
 		private readonly DirectoryInfo coursesDirectory;
 		private readonly DirectoryInfo tempCourseStaging;

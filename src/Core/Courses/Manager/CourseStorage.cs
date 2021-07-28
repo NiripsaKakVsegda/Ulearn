@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 
 namespace Ulearn.Core.Courses.Manager
 {
-	public class CourseStorage : ICourseStorage, IUpdateCourseStorage
+	public class CourseStorage : ICourseStorage, ICourseStorageUpdater
 	{
 		private readonly ConcurrentDictionary<string, Course> courses = new ConcurrentDictionary<string, Course>(StringComparer.InvariantCultureIgnoreCase);
 
