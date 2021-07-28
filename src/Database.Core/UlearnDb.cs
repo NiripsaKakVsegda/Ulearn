@@ -508,5 +508,7 @@ namespace Database
 
 		public DbSet<ExerciseAttemptedUsersCount> ExerciseAttemptedUsersCounts { get; set; }
 		public DbSet<ExerciseUsersWithRightAnswerCount> ExerciseUsersWithRightAnswerCounts { get; set; }
+
+		public DbSet<ArchivedCourse> ArchivedCourses { get; set; }
 	}
 }
