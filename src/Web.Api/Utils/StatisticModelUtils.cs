@@ -53,7 +53,7 @@ namespace Ulearn.Web.Api.Utils
 		{
 			var model = await GetCourseStatisticsModel(userLimits, userId, courseStatisticsParams.CourseId, courseStatisticsParams.GroupsIds);
 			var listId = courseStatisticsParams.ListId;
-			var sheet = new GoogleSheetModel(200, 200, listId);
+			var sheet = new GoogleSheetModel(listId);
 			var builder = new GoogleSheetBuilder(sheet);
 			FillStatisticModelBuilder(builder, model);
 			return builder.Build();

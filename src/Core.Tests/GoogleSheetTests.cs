@@ -16,12 +16,13 @@ namespace Ulearn.Core.Tests
 		public void FillingTest()
 		{
 			var client = new GoogleApiClient(credentialsJson);
-			var sheet = new GoogleSheet.GoogleSheetModel(2, 2, 0);
+			var sheet = new GoogleSheet.GoogleSheetModel( 0);
 			var date = DateTime.UtcNow;
-			sheet.AddCell(0, 0, date);
-			sheet.AddCell(0, 1, 1);
-			sheet.AddCell(1, 0, "2");
-			sheet.AddCell(1, 1, date);
+			sheet.AddCell(0, date);
+			sheet.AddCell(0, 1);
+			sheet.GoToNewLine();
+			sheet.AddCell(1, "2");
+			sheet.AddCell(1,  date);
 			client.FillSpreadSheet(spreadsheetId, sheet);
 		}
 	}

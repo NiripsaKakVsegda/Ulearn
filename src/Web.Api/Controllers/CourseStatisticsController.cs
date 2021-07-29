@@ -89,19 +89,5 @@ namespace Ulearn.Web.Api.Controllers
 			
 			return File(bytes, "application/vnd.ms-excel", $"{fileNameWithNoExtension}.xlsx");
 		}
-
-		[HttpPost("course-statistics/export/to-google-sheets")]
-		[Authorize(Policy = "Instructors")]
-		public async Task<ActionResult> ExportCourseStatisticsToGoogleSheets([FromBody] CourseStatisticsParams courseStatisticsParams)
-		{
-			if (courseStatisticsParams.CourseId == null)
-				return NotFound();
-			var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId);
-			
-			var credentialsJson = configuration.GoogleAccessCredentials;
-			var client = new GoogleApiClient(credentialsJson);
-			client.FillSpreadSheet(courseStatisticsParams.SpreadsheetId, sheet);
-			return Ok();
-		}
 	}
 }

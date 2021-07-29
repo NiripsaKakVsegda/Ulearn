@@ -28,10 +28,10 @@ namespace Ulearn.Web.Api.Utils
 		{
 			if (colspan < 1)
 				return;
-			googleSheetModel.AddCell(currentRow, currentColumn, value); 
+			googleSheetModel.AddCell(currentRow, value); 
 			for (var i = 1; i < colspan; i++)
 			{
-				googleSheetModel.AddCell(currentRow, currentColumn + i, "");
+				googleSheetModel.AddCell(currentRow,"");
 			}
 			
 			currentColumn += colspan;
@@ -42,10 +42,10 @@ namespace Ulearn.Web.Api.Utils
 		{
 			if (colspan < 1)
 				return;
-			googleSheetModel.AddCell(currentRow, currentColumn, value);
+			googleSheetModel.AddCell(currentRow, value);
 			for (var i = 1; i < colspan; i++)
 			{
-				googleSheetModel.AddCell(currentRow, currentColumn + i, "");
+				googleSheetModel.AddCell(currentRow, "");
 			}
 			
 			currentColumn += colspan;
@@ -54,6 +54,7 @@ namespace Ulearn.Web.Api.Utils
 
 		public void GoToNewLine()
 		{
+			googleSheetModel.GoToNewLine();
 			currentRow += 1;
 			currentColumn = 0;
 		}

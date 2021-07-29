@@ -9,12 +9,14 @@ namespace Ulearn.Core.GoogleSheet
 		public static List<Request> GetRequests(GoogleSheetModel googleSheetModel)
 		{
 			var requests = new List<Request>();
-			for (var i = 0; i < googleSheetModel.Height; i++)
+			var rowNumber = 0;
+			foreach (var row in googleSheetModel.Cells)
 			{
 				var values = new List<CellData>();
-				for (var j = 0; j < googleSheetModel.Width; j++)
-					values.Add(CreateCellData(googleSheetModel.Cells[i, j]));
-				requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, values, i));
+				foreach (var cell in row)
+					values.Add(CreateCellData(cell));
+				requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, values, rowNumber));
+				rowNumber++;
 			}
 			return requests;
 		}
