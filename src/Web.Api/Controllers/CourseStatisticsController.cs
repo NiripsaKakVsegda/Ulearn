@@ -13,7 +13,6 @@ using Newtonsoft.Json;
 using OfficeOpenXml;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Core.GoogleSheet;
 using Ulearn.Web.Api.Models.Responses.Analytics;
 using Web.Api.Configuration;
 
