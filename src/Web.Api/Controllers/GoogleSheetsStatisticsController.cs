@@ -22,7 +22,7 @@ using Web.Api.Configuration;
 namespace Ulearn.Web.Api.Controllers
 {
 	[Route("/course-statistics/export/to-google-sheets")]
-	public class GoogleSheetsStatisticController : BaseController
+	public class GoogleSheetsStatisticsController : BaseController
 	{
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IGroupAccessesRepo groupAccessesRepo;
@@ -30,7 +30,7 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly UlearnConfiguration configuration;
 		private readonly StatisticModelUtils statisticModelUtils;
 
-		public GoogleSheetsStatisticController(ICourseStorage courseStorage, UlearnDb db,
+		public GoogleSheetsStatisticsController(ICourseStorage courseStorage, UlearnDb db,
 			IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo, IGroupAccessesRepo groupAccessesRepo, IOptions<WebApiConfiguration> options,
 			IGoogleSheetExportTasksRepo googleSheetExportTasksRepo, StatisticModelUtils statisticModelUtils)
 			: base(courseStorage, db, usersRepo)

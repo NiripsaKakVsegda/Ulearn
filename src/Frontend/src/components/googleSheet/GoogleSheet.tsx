@@ -1,5 +1,5 @@
 ﻿import React, { RefObject } from "react";
-import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask } from "../../api/googleSheet";
+import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask, exportTaskNow } from "../../api/googleSheet";
 import CourseLoader from "../course/Course/CourseLoader";
 import { Button, Checkbox, DatePicker, Input, Switcher } from "ui";
 import { Gapped } from "@skbkontur/react-ui";
@@ -169,6 +169,11 @@ class GoogleSheet extends React.Component<Props, State> {
 		}
 		updateCourseTask(currentOpenedTaskId, actualTasks[currentOpenedTaskId]);
 	};
+	
+	exportTask = () => {
+		const { currentOpenedTaskId } = this.state;
+		exportTaskNow(currentOpenedTaskId);
+	}
 
 	render() {
 		const { tasks, actualTasks, currentOpenedTaskId } = this.state;
@@ -250,6 +255,9 @@ class GoogleSheet extends React.Component<Props, State> {
 					<Button use={ 'primary' }
 							disabled={ this.isTasksEqual(t, actualTasks[t.id]) }
 							onClick={ this.saveTask }>{ texts.button.save }</Button>
+
+					<Button use={ 'primary' }
+							onClick={ this.exportTask }>{ texts.button.export }</Button>
 				</Gapped>
 				: <span id={ t.id.toString() } onClick={ this.openTask }> 
 					{ t.groups.map(g => g.name).join(', ') }

@@ -29,3 +29,8 @@ export function updateCourseTask(
 	return api.patch(url,
 		api.createRequestParams(params));
 }
+
+export function exportTaskNow(taskId: number) : Promise<GoogleSheetsExportTaskResponse>{
+	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
+	return api.post(url);
+}

@@ -35,6 +35,8 @@ namespace uLearn.Web.Models
 	{
 		public bool IsInstructor { get; set; }
 
+		public bool IsAdmin { get; set; }
+
 		/* Dictionary<(userId, unitId, scoringGroupId), additionalScore> */
 		public DefaultDictionary<Tuple<string, Guid, string>, int> AdditionalScores { get; set; }
 
@@ -57,7 +59,7 @@ namespace uLearn.Web.Models
 		
 		public string XlsxExportUrl { get; set; }
 
-		public Dictionary<List<string>,Tuple<string,int>> GoogleSheetLinksParts { get; set; }
+		public List<(string GroupsNames,string Link)> GroupNamesToGoogleSheetLink { get; set; }
 
 		public SortedDictionary<string, ScoringGroup> GetUsingUnitScoringGroups(Unit unit, SortedDictionary<string, ScoringGroup> courseScoringGroups)
 		{

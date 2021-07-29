@@ -173,6 +173,7 @@ namespace Ulearn.Web.Api.Utils
 			}
 		}
 		
+		// Be careful! This method is not full copy from AnalyticsController in Web
 		public async Task<CourseStatisticPageModel> GetCourseStatisticsModel(int usersLimit, string userId, string courseId, List<string> groupsIds)
 		{
 			groupsIds ??= new List<string>();

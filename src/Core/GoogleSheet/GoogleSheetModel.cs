@@ -14,10 +14,7 @@ namespace Ulearn.Core.GoogleSheet
 			Cells = new List<List<IGoogleSheetCell>> { new() };
 		}
 
-		public void GoToNewLine()
-		{
-			Cells.Add(new List<IGoogleSheetCell>());
-		}
+		public void GoToNewLine() => Cells.Add(new List<IGoogleSheetCell>());
 
 		public void AddCell(int row, string value) => Cells[row].Add(new StringGoogleSheetCell(value));
 

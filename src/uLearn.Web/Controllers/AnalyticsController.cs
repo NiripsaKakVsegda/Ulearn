@@ -333,6 +333,7 @@ namespace uLearn.Web.Controllers
 			var groupsIds = Request.GetMultipleValuesFromQueryString("group");
 			var isInstructor = User.HasAccessFor(courseId, CourseRole.Instructor);
 			var isStudent = !isInstructor;
+			var isAdmin = User.HasAccessFor(courseId, CourseRole.CourseAdmin);
 
 			var currentUserId = User.Identity.GetUserId();
 			if (isStudent && !CanStudentViewGroupsStatistics(currentUserId, groupsIds))
@@ -412,16 +413,19 @@ namespace uLearn.Web.Controllers
 
 			var visibleGoogleSheetTasks = googleSheetExportTasksRepo
 				.GetVisibleGoogleSheetTask(courseId, groups, User);
-			var linksParts = new Dictionary<List<string>, Tuple<string, int>>();
+			var groupNamesToGoogleSheetLink = new List<(string, string)>();
 
 			if (visibleGoogleSheetTasks != null)
-				linksParts = visibleGoogleSheetTasks
-					.ToDictionary(t => t.Groups.Select(g => g.Group.Name).ToList(),
-						t => Tuple.Create(t.SpreadsheetId, t.ListId));
+				groupNamesToGoogleSheetLink = visibleGoogleSheetTasks
+					.Select(t => (string.Join(", ",t.Groups
+						.Select(g => g.Group.Name)),
+						$"https://docs.google.com/spreadsheets/d/{t.SpreadsheetId}/edit#gid={t.ListId}"))
+					.ToList();
 
 			var model = new CourseStatisticPageModel
 			{
 				IsInstructor = isInstructor,
+				IsAdmin = isAdmin,
 				CourseId = course.Id,
 				CourseTitle = course.Title,
 				Units = visibleUnits,
@@ -443,7 +447,7 @@ namespace uLearn.Web.Controllers
 				JsonExportUrl = jsonExportUrl,
 				XmlExportUrl = xmlExportUrl,
 				XlsxExportUrl = xlsxExportUrl,
-				GoogleSheetLinksParts = linksParts
+				GroupNamesToGoogleSheetLink = groupNamesToGoogleSheetLink
 			};
 			return model;
 		}
