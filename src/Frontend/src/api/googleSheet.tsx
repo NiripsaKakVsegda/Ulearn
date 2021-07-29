@@ -6,8 +6,10 @@ import {
 	GoogleSheetsExportTaskResponse
 } from "../models/googleSheet";
 
+const courseStatisticsGoogleSheet = `course-statistics/export/to-google-sheets/tasks`;
+
 export function getAllCourseTasks(courseId: string): Promise<GoogleSheetsExportTaskListResponse> {
-	const url = `course-score-sheet/export/to-google-sheets/tasks` + buildQuery({ courseId });
+	const url = courseStatisticsGoogleSheet + buildQuery({ courseId });
 	return api.get(url);
 }
 
@@ -19,9 +21,11 @@ export function updateCourseTask(
 		refreshStartDate?: string,
 		refreshEndDate?: string,
 		refreshTimeInMinutes?: number,
+		spreadsheetId: string,
+		listId: number
 	}
 ): Promise<GoogleSheetsExportTaskResponse> {
-	const url = `course-score-sheet/export/to-google-sheets/tasks/${taskId}`;
+	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
 	return api.patch(url,
 		api.createRequestParams(params));
 }

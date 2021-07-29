@@ -8,6 +8,7 @@ using Database;
 using Database.DataContexts;
 using Database.Extensions;
 using Database.Models;
+using Database.Repos;
 using Microsoft.AspNet.Identity;
 using Ulearn.Common;
 using uLearn.Web.Extensions;
@@ -38,6 +39,7 @@ namespace uLearn.Web.Controllers
 		private readonly UnitsRepo unitsRepo;
 		private readonly AdditionalScoresRepo additionalScoresRepo;
 		private readonly UlearnConfiguration configuration;
+		private readonly GoogleSheetExportTasksRepo googleSheetExportTasksRepo;
 
 		public AnalyticsController()
 			: this(new ULearnDb(), WebCourseManager.CourseStorageInstance)
@@ -55,6 +57,7 @@ namespace uLearn.Web.Controllers
 			usersRepo = new UsersRepo(db);
 			visitsRepo = new VisitsRepo(db);
 			unitsRepo = new UnitsRepo(db);
+			googleSheetExportTasksRepo = new GoogleSheetExportTasksRepo(db,courseStorage);
 			configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		}
 
@@ -327,7 +330,7 @@ namespace uLearn.Web.Controllers
 			var courseId = param.CourseId;
 			var periodStart = param.PeriodStartDate;
 			var periodFinish = param.PeriodFinishDate;
-			var groupsIds = Request.GetMultipleValuesFromQueryString("groupsIds");
+			var groupsIds = Request.GetMultipleValuesFromQueryString("group");
 			var isInstructor = User.HasAccessFor(courseId, CourseRole.Instructor);
 			var isStudent = !isInstructor;
 
@@ -407,6 +410,15 @@ namespace uLearn.Web.Controllers
 			var xmlExportUrl = uriBuilder.BuildExportXmlUrl();
 			var xlsxExportUrl = uriBuilder.BuildExportXlsxUrl();
 
+			var visibleGoogleSheetTasks = googleSheetExportTasksRepo
+				.GetVisibleGoogleSheetTask(courseId, groups, User);
+			var linksParts = new Dictionary<List<string>, Tuple<string, int>>();
+
+			if (visibleGoogleSheetTasks != null)
+				linksParts = visibleGoogleSheetTasks
+					.ToDictionary(t => t.Groups.Select(g => g.Group.Name).ToList(),
+						t => Tuple.Create(t.SpreadsheetId, t.ListId));
+
 			var model = new CourseStatisticPageModel
 			{
 				IsInstructor = isInstructor,
@@ -430,7 +442,8 @@ namespace uLearn.Web.Controllers
 				EnabledAdditionalScoringGroupsForGroups = enabledAdditionalScoringGroupsForGroups,
 				JsonExportUrl = jsonExportUrl,
 				XmlExportUrl = xmlExportUrl,
-				XlsxExportUrl = xlsxExportUrl
+				XlsxExportUrl = xlsxExportUrl,
+				GoogleSheetLinksParts = linksParts
 			};
 			return model;
 		}
@@ -853,7 +866,7 @@ namespace uLearn.Web.Controllers
 
 		public ExportUriBuilder(string baseUri, string courseId)
 		{
-			this.baseUri = new Uri(new Uri(baseUri) , $"/course-score-sheet/export/");
+			this.baseUri = new Uri(new Uri(baseUri) , $"/course-statistics/export/");
 			this.courseId = courseId;
 		}
 

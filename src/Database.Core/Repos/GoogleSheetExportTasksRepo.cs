@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Vostok.Logging.Abstractions;
 
 namespace Database.Repos
 {
 	public class GoogleSheetExportTasksRepo : IGoogleSheetExportTasksRepo
 	{
 		private readonly UlearnDb db;
+		private static ILog log => LogProvider.Get().ForContext(typeof(GoogleSheetExportTasksRepo));
 
 		public GoogleSheetExportTasksRepo(UlearnDb db)
 		{
@@ -75,13 +77,15 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
-			public async Task UpdateTask(GoogleSheetExportTask exportTask, bool isVisibleForStudents, DateTime? refreshStartDate,
-			DateTime? refreshEndDate, int? refreshTimeInMinutes)
+		public async Task UpdateTask(GoogleSheetExportTask exportTask, bool isVisibleForStudents, DateTime? refreshStartDate,
+			DateTime? refreshEndDate, int? refreshTimeInMinutes, string spreadsheetId, int listId)
 		{
 			exportTask.IsVisibleForStudents = isVisibleForStudents;
 			exportTask.RefreshStartDate = refreshStartDate;
 			exportTask.RefreshEndDate = refreshEndDate;
 			exportTask.RefreshTimeInMinutes = refreshTimeInMinutes;
+			exportTask.SpreadsheetId = spreadsheetId;
+			exportTask.ListId = listId;
 			await db.SaveChangesAsync();
 		}
 

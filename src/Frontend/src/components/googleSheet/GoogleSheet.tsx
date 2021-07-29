@@ -1,14 +1,16 @@
-﻿import React from "react";
+﻿import React, { RefObject } from "react";
 import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask } from "../../api/googleSheet";
 import CourseLoader from "../course/Course/CourseLoader";
 import { Button, Checkbox, DatePicker, Input, Switcher } from "ui";
 import { Gapped } from "@skbkontur/react-ui";
 import moment from "moment";
-import {convertDefaultTimezoneToLocal} from "../../utils/momentUtils";
+import { convertDefaultTimezoneToLocal } from "../../utils/momentUtils";
 import { SlideUserProgress } from "../../models/userProgress";
 
 import styles from './googleSheet.less';
 import texts from './googleSheet.texts';
+
+let re = /^https:\/\/docs.google.com\/spreadsheets\/d\/(.)+\/edit#gid=(\d)+$/;
 
 
 export interface Props {
@@ -56,16 +58,23 @@ class GoogleSheet extends React.Component<Props, State> {
 		return task.isVisibleForStudents === actualTask.isVisibleForStudents &&
 			task.refreshStartDate === actualTask.refreshStartDate &&
 			task.refreshEndDate === actualTask.refreshEndDate &&
-			task.refreshTimeInMinutes === actualTask.refreshTimeInMinutes;
+			task.refreshTimeInMinutes === actualTask.refreshTimeInMinutes && 
+			task.spreadsheetId == actualTask.spreadsheetId &&
+			task.listId == actualTask.listId;
 	}
-
-	changeVisibility = () => {
+	
+	getOpenedTaskCopy() {
 		const { currentOpenedTaskId, actualTasks, } = this.state;
 		if(!actualTasks) {
 			return;
 		}
-		const task = JSON.parse(
+		return JSON.parse(
 			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+	}
+
+	changeVisibility = () => {
+		const {actualTasks} = this.state;
+		const task = this.getOpenedTaskCopy()
 		if(task) {
 			this.setState({
 				actualTasks: {
@@ -77,12 +86,8 @@ class GoogleSheet extends React.Component<Props, State> {
 	};
 
 	changeRefreshInterval = (value: string) => {
-		const { currentOpenedTaskId, actualTasks, } = this.state;
-		if(!actualTasks) {
-			return;
-		}
-		const task = JSON.parse(
-			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+		const {actualTasks} = this.state;
+		const task = this.getOpenedTaskCopy()
 		if(task) {
 			this.setState({
 				actualTasks: {
@@ -94,38 +99,56 @@ class GoogleSheet extends React.Component<Props, State> {
 	};
 
 	changeRefreshStartDate = (value: string) => {
-		const { currentOpenedTaskId, actualTasks, } = this.state;
-		if(!actualTasks) {
-			return;
-		}
-		const task = JSON.parse(
-			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+		const {actualTasks} = this.state;
+		const task = this.getOpenedTaskCopy()
 		if(task) {
 			this.setState({
 				actualTasks: {
 					...actualTasks,
-					[task.id]: { ...task, refreshStartDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format()) }
+					[task.id]: {
+						...task,
+						refreshStartDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format())
+					}
 				}
 			});
 		}
 	};
 
 	changeRefreshEndDate = (value: string) => {
-		const { currentOpenedTaskId, actualTasks, } = this.state;
-		if(!actualTasks) {
-			return;
-		}
-		const task = JSON.parse(
-			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+		const {actualTasks} = this.state;
+		const task = this.getOpenedTaskCopy()
 		if(task) {
 			this.setState({
 				actualTasks: {
 					...actualTasks,
-					[task.id]: { ...task, refreshEndDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format()) }
+					[task.id]: {
+						...task,
+						refreshEndDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format())
+					}
 				}
 			});
 		}
 	};
+
+	changeLink = (value: string) => {
+		const {actualTasks} = this.state;
+		const task = this.getOpenedTaskCopy()
+		if (re.test(value)) {
+			let [spreadsheetId, listId] = value.split('/d/')[1].split('/edit#gid=');
+			if(task) {
+				this.setState({
+					actualTasks: {
+						...actualTasks,
+						[task.id]: { ...task, spreadsheetId: spreadsheetId, listId: listId }
+					}
+				});
+			}
+		}
+	};
+	
+	isLinkMatchRegexp = (value: string) => {
+		return re.test(value);
+	}
 
 
 	openTask = (event: React.MouseEvent) => {
@@ -144,11 +167,11 @@ class GoogleSheet extends React.Component<Props, State> {
 				tasks: this.state.tasks?.map(e => e.id === task.id ? task : e)
 			});
 		}
-		updateCourseTask(currentOpenedTaskId, actualTasks[currentOpenedTaskId])
+		updateCourseTask(currentOpenedTaskId, actualTasks[currentOpenedTaskId]);
 	};
 
 	render() {
-		const { tasks, actualTasks, currentOpenedTaskId} = this.state;
+		const { tasks, actualTasks, currentOpenedTaskId } = this.state;
 
 		if(!tasks || !actualTasks) {
 			return <CourseLoader/>;
@@ -207,17 +230,23 @@ class GoogleSheet extends React.Component<Props, State> {
 					</Gapped>
 
 					<Gapped gap={ 8 }>
-						<label> {actualTasks[t.id].authorInfo.visibleName}</label>
+						<label> {actualTasks[t.id].authorInfo.visibleName }</label>
 					</Gapped>
 
 					<Gapped gap={ 8 }>
-						<label> {actualTasks[t.id].spreadsheetId}</label>
+						<Input
+							selectAllOnFocus
+							error={ !this.isLinkMatchRegexp(`https://docs.google.com/spreadsheets/d/${ actualTasks[t.id].spreadsheetId }/edit#gid=${ actualTasks[t.id].listId }`) }
+							width={ 800 } 
+							value={ `https://docs.google.com/spreadsheets/d/${ actualTasks[t.id].spreadsheetId }/edit#gid=${ actualTasks[t.id].listId }` }
+							onValueChange={ this.changeLink }/>
 					</Gapped>
 
 					<Gapped gap={ 8 }>
-						<label> {actualTasks[t.id].listId}</label>
+						<label> { actualTasks[t.id].spreadsheetId }</label>
 					</Gapped>
-					
+
+
 					<Button use={ 'primary' }
 							disabled={ this.isTasksEqual(t, actualTasks[t.id]) }
 							onClick={ this.saveTask }>{ texts.button.save }</Button>

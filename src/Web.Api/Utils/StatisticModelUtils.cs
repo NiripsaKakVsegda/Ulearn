@@ -55,11 +55,11 @@ namespace Ulearn.Web.Api.Utils
 			var listId = courseStatisticsParams.ListId;
 			var sheet = new GoogleSheetModel(200, 200, listId);
 			var builder = new GoogleSheetBuilder(sheet);
-			FillCourseStatisticsWithBuilder(builder, model);
-			return sheet;
+			FillStatisticModelBuilder(builder, model);
+			return builder.Build();
 		}
 		
-		public void FillCourseStatisticsWithBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+		public void FillStatisticModelBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
 		{
 			builder.AddStyleRule(s => s.Font.Bold = true);
 

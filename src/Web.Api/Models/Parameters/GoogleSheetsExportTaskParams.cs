@@ -23,17 +23,17 @@ namespace Ulearn.Web.Api.Models.Parameters
 		[FromQuery(Name = "refreshTimeInMinutes")]
 		[MinValue(10, ErrorMessage = "Period should be at least 10 minutes")]
 		public int RefreshTimeInMinutes { get; set; } = 60; // не чаще 10 минут,  по умолчанию час
-	}
-	
-	public class GoogleSheetsExportTaskParams : GoogleSheetsExportTaskUpdateParams
-	{
-		[FromQuery(Name = "groupsIds")]
-		public List<int> GroupsIds { get; set; } //удаленные группы
 		
 		[FromQuery(Name = "spreadsheetId")]
 		public string SpreadsheetId { get; set; }
 
 		[FromQuery(Name = "listId")]
 		public int ListId { get; set; }
+	}
+	
+	public class GoogleSheetsExportTaskParams : GoogleSheetsExportTaskUpdateParams
+	{
+		[FromQuery(Name = "groupsIds")]
+		public List<int> GroupsIds { get; set; } //удаленные группы
 	}
 }

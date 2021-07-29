@@ -57,6 +57,8 @@ namespace uLearn.Web.Models
 		
 		public string XlsxExportUrl { get; set; }
 
+		public Dictionary<List<string>,Tuple<string,int>> GoogleSheetLinksParts { get; set; }
+
 		public SortedDictionary<string, ScoringGroup> GetUsingUnitScoringGroups(Unit unit, SortedDictionary<string, ScoringGroup> courseScoringGroups)
 		{
 			return unit.Scoring.Groups

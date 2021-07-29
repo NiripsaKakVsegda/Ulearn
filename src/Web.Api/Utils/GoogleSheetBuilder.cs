@@ -69,5 +69,7 @@ namespace Ulearn.Web.Api.Utils
 		public void AddStyleRuleForOneCell(Action<ExcelStyle> styleFunction)
 		{
 		}
+
+		public GoogleSheetModel Build() => googleSheetModel;
 	}
 }

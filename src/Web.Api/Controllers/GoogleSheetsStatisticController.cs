@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -11,22 +9,19 @@ using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.GoogleSheet;
-using Ulearn.Web.Api.Models;
 using Ulearn.Web.Api.Models.Parameters;
 using Ulearn.Web.Api.Models.Parameters.Analytics;
 using Ulearn.Web.Api.Models.Responses;
-using Ulearn.Web.Api.Models.Responses.Courses;
 using Ulearn.Web.Api.Utils;
 using Web.Api.Configuration;
 
 
 namespace Ulearn.Web.Api.Controllers
 {
-	[Route("/course-score-sheet/export/to-google-sheets")]
+	[Route("/course-statistics/export/to-google-sheets")]
 	public class GoogleSheetsStatisticController : BaseController
 	{
 		private readonly ICourseRolesRepo courseRolesRepo;
@@ -146,7 +141,8 @@ namespace Ulearn.Web.Api.Controllers
 				return Forbid();
 			await googleSheetExportTasksRepo.UpdateTask(task,
 				param.IsVisibleForStudents, param.RefreshStartDate,
-				param.RefreshEndDate, param.RefreshTimeInMinutes);
+				param.RefreshEndDate, param.RefreshTimeInMinutes,
+				param.SpreadsheetId, param.ListId);
 			return Ok();
 		}
 
