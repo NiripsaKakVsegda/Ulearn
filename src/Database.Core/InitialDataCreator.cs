@@ -6,6 +6,7 @@ using Database.Repos;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Ulearn.Core.Courses.Manager;
 
 namespace Database
 {
@@ -44,6 +45,7 @@ namespace Database
 			await CreateUlearnBotUser().ConfigureAwait(false);
 			await AddFeedNotificationTransport().ConfigureAwait(false);
 			await AddExampleCourse().ConfigureAwait(false);
+			await AddErrorCourse().ConfigureAwait(false);
 		}
 
 		public async Task CreateRoles()
@@ -88,13 +90,22 @@ namespace Database
 
 		public async Task AddExampleCourse()
 		{
-			var courseId = CoursesRepo.ExampleCourseId;
+			await CreateCourse(CourseManager.ExampleCourseId);
+		}
+
+		public async Task AddErrorCourse()
+		{
+			await CreateCourse(CourseManager.CourseLoadingErrorCourseId);
+		}
+
+		private async Task CreateCourse(string courseId)
+		{
 			var hasCourse = await coursesRepo.GetPublishedCourseVersion(courseId) != null;
 			if (!hasCourse)
 			{
 				var versionId = Guid.NewGuid();
 				var userId = await usersRepo.GetUlearnBotUserId();
-				var zipFileContent = await File.ReadAllBytesAsync("Help.zip");
+				var zipFileContent = await File.ReadAllBytesAsync(courseId + ".zip");
 				await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, zipFileContent);
 				await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			}

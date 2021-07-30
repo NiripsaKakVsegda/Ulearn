@@ -84,6 +84,7 @@ namespace Web.Api.Tests.Controllers
 			await initialDataCreator.CreateRoles();
 			await initialDataCreator.CreateUlearnBotUser();
 			await initialDataCreator.AddExampleCourse();
+			await initialDataCreator.AddErrorCourse();
 		}
 
 		private static UlearnDb CreateDbContext(ILoggerFactory loggerFactory)

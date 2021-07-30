@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<unit xmlns="https://ulearn.me/schema/v2" title="Ошибка загрузки курса" id="b572f1f6-3f4c-4a45-9e52-8a56463d72cb">
+  <slides>
+    <add>S*.xml</add>
+  </slides>
+</unit>

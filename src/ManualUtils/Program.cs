@@ -12,6 +12,7 @@ using Database;
 using Database.Di;
 using Database.Models;
 using Database.Repos;
+using Database.Repos.Users;
 using Ionic.Zip;
 using ManualUtils.AntiPlagiarism;
 using Microsoft.AspNetCore.Identity;
@@ -118,7 +119,8 @@ namespace ManualUtils
 			// await RemoveVersionsWithoutFile(serviceProvider);
 			// await RemoveDuplicateExerciseManualCheckings(serviceProvider);
 			// await RemoveTempCourse(serviceProvider);
-			//await AddVersionFilesToCoursesOnDisk(serviceProvider);
+			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
+			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
 		}
 
 		private static void GenerateUpdateSequences()
@@ -719,6 +721,20 @@ namespace ManualUtils
 						continue;
 					await token.Save(dir);
 				}
+			}
+		}
+
+		private static async Task CreateNewVersionFromZip(IServiceProvider serviceProvider, string courseId, string zipPath)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var usersRepo = scope.ServiceProvider.GetService<IUsersRepo>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
+				var versionId = Guid.NewGuid();
+				var content = await new FileInfo(zipPath).ReadAllContentAsync();
+				await coursesRepo.AddCourseVersion(courseId, versionId, ulearnBotUser.Id, null, null, null, null, content);
+				await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			}
 		}
 	}

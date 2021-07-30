@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Extensions;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Core.Courses
 {
@@ -16,6 +15,7 @@ namespace Ulearn.Core.Courses
 	{
 		private readonly IUnitLoader unitLoader;
 		public const char CourseIdDelimiter = '@'; // После @ в название могут добавляться доп. символы для временных папок
+		private static ILog log => LogProvider.Get().ForContext(typeof(CourseLoader));
 
 		public CourseLoader(IUnitLoader unitLoader)
 		{

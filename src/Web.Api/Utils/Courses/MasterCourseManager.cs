@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Database;
 using Database.Models;
 using Database.Repos;
+using Database.Repos.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot.Types.Enums;
 using Ulearn.Common;
@@ -70,7 +71,10 @@ namespace Ulearn.Web.Api.Utils.Courses
 				await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, publishedVersionToken, TimeSpan.FromSeconds(0.1));
 				courseInMemory = CourseStorageInstance.FindCourse(courseId);
 				if (courseInMemory != null && courseInMemory.CourseVersionToken == publishedVersionToken)
+				{
+					log.Info($"Актуальная версия курса {courseId} {publishedVersionToken} просто загружена с диска");
 					return;
+				}
 			}
 
 			var courseFile = await coursesRepo.GetVersionFile(publishedCourseVersions.Id);
@@ -82,12 +86,17 @@ namespace Ulearn.Web.Api.Utils.Courses
 			using (var courseDirectory = await ExtractCourseVersionToTemporaryDirectory(courseId, publishedVersionToken, content))
 			{
 				var (course, exception) = LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
-				if (exception != null)
+				if (exception == null)
+					log.Info($"Версия {publishedVersionToken} курса {courseId} успешно загружена из временной папки в память");
+				else
 				{
 					BrokenVersions.TryAdd(publishedVersionToken, true);
 					var message = $"Не смог загрузить с диска в память курс {courseId} версии {publishedVersionToken}";
 					log.Error(exception, message);
 					await PostCourseLoadingErrorToTelegram(courseId, exception);
+
+					if (!CourseStorageInstance.HasCourse(courseId)) // Если не загружено вообще валидной версии, создаем версию с ошибкой
+						await CreateErrorVersion(courseId, exception);
 					return;
 				}
 
@@ -109,8 +118,26 @@ namespace Ulearn.Web.Api.Utils.Courses
 						log.Error(ex, $"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую");
 						await ErrorsBot.PostToChannelAsync($"Не смог переместить курс {courseId} версия {publishedVersionToken} из временной папки в общую:\n{ex.Message.EscapeMarkdown()}\n```{ex.StackTrace}```", ParseMode.Markdown);
 					}
+					log.Info($"Версия {publishedVersionToken} курса {courseId} перемещена из временной папки в основную");
 				}
 			}
+		}
+
+		private async Task CreateErrorVersion(string courseId, Exception exception)
+		{
+			var fatalMessage = $"Выкладываю в курс {courseId} заглушку об ошибке. Срочно загрузите работающую версию";
+			log.Fatal(exception, fatalMessage);
+			await ErrorsBot.PostToChannelAsync($"Fatal: {fatalMessage}:\n{exception.Message.EscapeMarkdown()}\n```{exception.StackTrace}```", ParseMode.Markdown);
+
+			var errorVersion = Guid.NewGuid();
+			using (var scope = serviceScopeFactory.CreateScope())
+			{
+				var usersRepo = scope.ServiceProvider.GetService<IUsersRepo>();
+				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
+				var courseTitle = $"Ошибка в курсе {courseId}";
+				await CreateCourseVersionFromAnotherCourseVersion(courseId, errorVersion, courseTitle, ulearnBotUser.Id, CourseLoadingErrorCourseId);
+			}
+			log.Warn($"Для курса {courseId} создана версия-заглушка {errorVersion} с инофрмацией об ошибке на основе курса {CourseLoadingErrorCourseId}");
 		}
 
 		private void MoveCourse(DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)

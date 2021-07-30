@@ -58,16 +58,23 @@ namespace Database
 				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
 				var hasCourse = await coursesRepo.GetPublishedCourseVersion(courseId) != null;
 				if (!hasCourse)
-				{
-					var helpVersionFile = await coursesRepo.GetPublishedVersionFile(ExampleCourseId);
-					using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
-					{
-						CourseZipWithTitleUpdater.Update(exampleCourseZip.FileInfo, courseTitle);
-						await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync());
-					}
-					await coursesRepo.MarkCourseVersionAsPublished(versionId);
-				}
+					await CreateCourseVersionFromAnotherCourseVersion(courseId, versionId, courseTitle, userId, ExampleCourseId);
 				return !hasCourse;
+			}
+		}
+
+		protected async Task CreateCourseVersionFromAnotherCourseVersion(string courseId, Guid versionId, string courseTitle, string userId, string sampleCourseId)
+		{
+			using (var scope = serviceScopeFactory.CreateScope())
+			{
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var helpVersionFile = await coursesRepo.GetPublishedVersionFile(sampleCourseId);
+				using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
+				{
+					CourseZipWithTitleUpdater.Update(exampleCourseZip.FileInfo, courseTitle);
+					await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync());
+				}
+				await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			}
 		}
 	}

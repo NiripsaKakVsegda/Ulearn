@@ -33,7 +33,8 @@ namespace Ulearn.Core.Courses.Manager
 		private static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
 		private static readonly CourseStorage courseStorage = new CourseStorage();
 
-		protected static readonly string ExampleCourseId = "Help";
+		public const string ExampleCourseId = "Help";
+		public const string CourseLoadingErrorCourseId = "course-loading-error";
 
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseManager));
 

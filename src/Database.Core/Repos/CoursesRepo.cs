@@ -6,6 +6,7 @@ using Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Extensions;
 
 namespace Database.Repos
@@ -210,17 +211,18 @@ namespace Database.Repos
 			return await GetVersionFile(publishedCourseVersion.Id);
 		}
 
-		public const string ExampleCourseId = "Help";
 		public async Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string userId)
 		{
 			var hasCourse = await GetPublishedCourseVersion(courseId) != null;
 			if (!hasCourse)
 			{
-				var helpVersionFile = await GetPublishedVersionFile(ExampleCourseId);
+				var helpVersionFile = await GetPublishedVersionFile(CourseManager.ExampleCourseId);
 				await AddCourseVersion(courseId, versionId, userId, null, null, null, null, helpVersionFile.File);
 				await MarkCourseVersionAsPublished(versionId);
 			}
 			return !hasCourse;
 		}
+
+		
 	}
 }
