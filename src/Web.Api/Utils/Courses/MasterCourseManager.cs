@@ -177,7 +177,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 					log.Warn($"Временный курс {tempCourseId} уже существует в базе");
 
 					var course = CourseStorageInstance.FindCourse(tempCourseId);
-					if (course != null && course.CourseVersionToken.LoadingTime == tmpCourseDbData.LoadingTime)
+					if (course != null && course.CourseVersionToken == new CourseVersionToken(tmpCourseDbData.LoadingTime))
 					{
 						log.Warn($"Временный курс {tempCourseId} версии {course.CourseVersionToken} уже загружен в память");
 						return tmpCourseDbData;
@@ -191,12 +191,12 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 				if (tmpCourseDbData == null)
 				{
-					tmpCourseDbData = await tempCoursesRepo.AddTempCourse(tempCourseId, userId, loadingTime);
+					tmpCourseDbData = await tempCoursesRepo.AddTempCourse(tempCourseId, userId, versionToken);
 					await courseRolesRepo.ToggleRole(tempCourseId, userId, CourseRoleType.CourseAdmin, userId, "Создал временный курс");
 					return tmpCourseDbData;
 				}
 
-				await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, loadingTime);
+				await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, versionToken);
 				return await tempCoursesRepo.Find(tempCourseId);
 			}
 		}
@@ -206,6 +206,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
 				var loadingTime = DateTime.Now;
+				var versionToken = new CourseVersionToken(loadingTime);
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
 
 				using (await CourseLock.AcquireWriterLockAsync(tempCourseId))
@@ -214,7 +215,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 					using (var fs = new FileStream(stagingTempCourseFile.FullName, FileMode.Create, FileAccess.Write))
 						await zipContent.CopyToAsync(fs);
 
-					var (course, exception) = await TryUpdateTempCourseOnDisk(tempCourseId, new CourseVersionToken(loadingTime), isFullCourse);
+					var (course, exception) = await TryUpdateTempCourseOnDisk(tempCourseId, versionToken, isFullCourse);
 
 					if (exception != null)
 					{
@@ -231,7 +232,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 					CourseStorageUpdaterInstance.AddOrUpdateCourse(course);
 					await tempCoursesRepo.MarkTempCourseAsNotErrored(tempCourseId);
-					await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, loadingTime);
+					await tempCoursesRepo.UpdateTempCourseLoadingTime(tempCourseId, versionToken);
 				}
 
 				var tempCourse = await tempCoursesRepo.Find(tempCourseId);

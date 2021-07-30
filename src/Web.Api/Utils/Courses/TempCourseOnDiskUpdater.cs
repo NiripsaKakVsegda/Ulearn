@@ -31,7 +31,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 			this.zipWithChanges = zipWithChanges;
 			newVersionToken = versionToken;
 			versionTokenBeforeChanges = CourseVersionToken.Load(courseDirectory);
-			versionTokenBeforeChanges.RemoveFile(courseDirectory);
+			CourseVersionToken.RemoveFile(courseDirectory);
 
 			var pathPrefix = courseDirectory.FullName;
 			var filesToDeleteRelativePaths = ParseDeletedTxt(zipWithChanges);

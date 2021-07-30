@@ -20,10 +20,20 @@ namespace Ulearn.Core.Courses
 		[DataMember(Name = "version", EmitDefaultValue = false)]
 		public Guid? Version { get; set; } // null для временных курсов и проверяемых курсов, для которых еще нет версии
 
-		[DataMember(Name = "loadingTime", EmitDefaultValue = false)]
-		public DateTime? LoadingTime { get; set; } // То, что вместо версии во временном курсе, дата LoadingTime
+		// То, что вместо версии во временном курсе, дата LoadingTime
+		// Не сравнивать даты напрямую, сравнивать CourseVersionToken
+		[IgnoreDataMember]
+		public DateTime? LoadingTime
+		{
+			get => DateTime.Parse(loadingTimeStr);
+			init => loadingTimeStr = value?.ToSortable();
+		}
 
-		public CourseVersionToken()
+		// При передаче в базу время немного меняется, так что сравниваем с погрешностью
+		[DataMember(Name = "loadingTime", EmitDefaultValue = false)]
+		private string loadingTimeStr;
+
+		public CourseVersionToken() // Для десериализации
 		{
 		}
 
@@ -61,7 +71,7 @@ namespace Ulearn.Core.Courses
 			await file.WriteAsync(bytes, 0, bytes.Length);
 		}
 
-		public void RemoveFile(DirectoryInfo courseDirectory)
+		public static void RemoveFile(DirectoryInfo courseDirectory)
 		{
 			var versionFile = courseDirectory.GetFile(fileName);
 			if (versionFile.Exists)
@@ -70,7 +80,7 @@ namespace Ulearn.Core.Courses
 
 		public bool IsTempCourse()
 		{
-			return LoadingTime != null;
+			return loadingTimeStr != null;
 		}
 
 		public override bool Equals(object obj)
@@ -93,15 +103,15 @@ namespace Ulearn.Core.Courses
 				return false;
 			if (x.GetType() != y.GetType())
 				return false;
-			return Nullable.Equals(x.Version, y.Version) && Nullable.Equals(x.LoadingTime, y.LoadingTime);
+			return Nullable.Equals(x.Version, y.Version) && Nullable.Equals(x.loadingTimeStr, y.loadingTimeStr);
 		}
 
 		public int GetHashCode(CourseVersionToken obj)
 		{
 			if (obj.Version != null)
 				return obj.Version.GetHashCode();
-			if (obj.LoadingTime != null)
-				return obj.LoadingTime.GetHashCode();
+			if (obj.loadingTimeStr != null)
+				return obj.loadingTimeStr.GetHashCode();
 			return 0;
 		}
 
@@ -122,7 +132,7 @@ namespace Ulearn.Core.Courses
 			if (Version != null)
 				return Version.ToString();
 			if (LoadingTime != null)
-				return LoadingTime.Value.ToSortable();
+				return loadingTimeStr;
 			return "";
 		}
 	}
