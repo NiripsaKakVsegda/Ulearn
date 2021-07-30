@@ -413,6 +413,7 @@ namespace uLearn.Web.Controllers
 
 			var visibleGoogleSheetTasks = googleSheetExportTasksRepo
 				.GetVisibleGoogleSheetTask(courseId, groups, User);
+			
 			var groupNamesToGoogleSheetLink = new List<(string, string)>();
 
 			if (visibleGoogleSheetTasks != null)

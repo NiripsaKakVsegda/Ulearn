@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Security.Principal;
@@ -52,11 +53,13 @@ namespace Database.Repos
 				.Where(g => accessibleAsMemberGroupsIds.Contains(g.GroupId))
 				.Select(g => g.TaskId).ToHashSet();
 
+			var currentUtcTime = DateTime.UtcNow;
 			return db.GoogleSheetExportTasks
 				.Include(t => t.Author)
 				.Include(t => t.Groups.Select(g => g.Group))
 				.Where(t => tasksIds.Contains(t.Id))
 				.Where(t => t.IsVisibleForStudents)
+				.Where(t => t.RefreshStartDate <= currentUtcTime)
 				.ToList();
 		}
 	}
