@@ -16,11 +16,11 @@ using Ionic.Zip;
 using Microsoft.AspNetCore.Http;
 using Ulearn.Common;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.Courses;
 
 namespace Web.Api.Tests.Controllers.TempCourses
 {
+	// TODO: тесты могут не работать по одному, надо запускать все. Пример: UploadCoursePartially_ShouldNotUpdateDirectory_WithInvalidDeleteFiles()
 	[TestFixture]
 	public class TempCoursesControllerTests : BaseControllerTests
 	{

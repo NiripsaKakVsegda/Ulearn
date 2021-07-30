@@ -25,7 +25,7 @@ namespace Ulearn.Core.Courses
 		[IgnoreDataMember]
 		public DateTime? LoadingTime
 		{
-			get => DateTime.Parse(loadingTimeStr);
+			get => DateTimeExtensions.FromSortable(loadingTimeStr);
 			init => loadingTimeStr = value?.ToSortable();
 		}
 
