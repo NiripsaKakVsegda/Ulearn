@@ -6,10 +6,8 @@ using Ulearn.Common.Api.Models.Validations;
 namespace Ulearn.Web.Api.Models.Parameters
 {
 
-	public class GoogleSheetsExportTaskUpdateParams
+	public class GoogleSheetsExportTaskUpdateParams : GoogleSheetsDeleteTaskParams
 	{
-		[FromQuery(Name = "courseId")]
-		public string CourseId { get; set; }
 
 		[FromQuery(Name = "isVisibleForStudents")]
 		public bool IsVisibleForStudents { get; set; }
@@ -35,5 +33,11 @@ namespace Ulearn.Web.Api.Models.Parameters
 	{
 		[FromQuery(Name = "groupsIds")]
 		public List<int> GroupsIds { get; set; } //удаленные группы
+	}
+
+	public class GoogleSheetsDeleteTaskParams
+	{
+		[FromQuery(Name = "courseId")]
+		public string CourseId { get; set; }
 	}
 }

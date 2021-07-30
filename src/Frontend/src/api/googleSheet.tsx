@@ -34,3 +34,8 @@ export function exportTaskNow(taskId: number) : Promise<GoogleSheetsExportTaskRe
 	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
 	return api.post(url);
 }
+
+export function deleteTask(taskId: number, courseId: string) : Promise<GoogleSheetsExportTaskResponse>{
+	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
+	return api.delete(url, api.createRequestParams( {courseId: courseId}));
+}

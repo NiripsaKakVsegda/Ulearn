@@ -147,8 +147,8 @@ namespace Ulearn.Web.Api.Controllers
 		}
 
 		[HttpDelete("tasks/{taskId}")]
-		[Authorize(Policy = "Instructors")]
-		public async Task<ActionResult> DeleteTask([FromBody] GoogleSheetsExportTaskUpdateParams param, [FromRoute] int taskId)
+		[Authorize]
+		public async Task<ActionResult> DeleteTask([FromBody] GoogleSheetsDeleteTaskParams param, [FromRoute] int taskId)
 		{
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
 			if (task == null)

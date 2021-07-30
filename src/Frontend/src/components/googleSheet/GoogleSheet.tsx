@@ -1,5 +1,5 @@
 ﻿import React, { RefObject } from "react";
-import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask, exportTaskNow } from "../../api/googleSheet";
+import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask, exportTaskNow, deleteTask } from "../../api/googleSheet";
 import CourseLoader from "../course/Course/CourseLoader";
 import { Button, Checkbox, DatePicker, Input, Switcher } from "ui";
 import { Gapped } from "@skbkontur/react-ui";
@@ -11,6 +11,8 @@ import styles from './googleSheet.less';
 import texts from './googleSheet.texts';
 
 let re = /^https:\/\/docs.google.com\/spreadsheets\/d\/(.)+\/edit#gid=(\d)+$/;
+
+const courseId = 'basicprogramming';
 
 
 export interface Props {
@@ -38,7 +40,7 @@ class GoogleSheet extends React.Component<Props, State> {
 	}
 
 	componentDidMount() {
-		getAllCourseTasks('basicprogramming')
+		getAllCourseTasks(courseId)
 			.then(r => {
 				this.setState({
 					tasks: r.googleSheetsExportTasks,
@@ -174,6 +176,11 @@ class GoogleSheet extends React.Component<Props, State> {
 		const { currentOpenedTaskId } = this.state;
 		exportTaskNow(currentOpenedTaskId);
 	}
+	
+	deleteTask = () =>{
+		const { currentOpenedTaskId } = this.state;
+		deleteTask(currentOpenedTaskId, courseId);
+	}
 
 	render() {
 		const { tasks, actualTasks, currentOpenedTaskId } = this.state;
@@ -258,6 +265,9 @@ class GoogleSheet extends React.Component<Props, State> {
 
 					<Button use={ 'primary' }
 							onClick={ this.exportTask }>{ texts.button.export }</Button>
+
+					<Button use={ 'primary' }
+							onClick={ this.deleteTask }>{ texts.button.delete }</Button>
 				</Gapped>
 				: <span id={ t.id.toString() } onClick={ this.openTask }> 
 					{ t.groups.map(g => g.name).join(', ') }
