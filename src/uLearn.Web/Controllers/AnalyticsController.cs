@@ -327,7 +327,7 @@ namespace uLearn.Web.Controllers
 			var courseId = param.CourseId;
 			var periodStart = param.PeriodStartDate;
 			var periodFinish = param.PeriodFinishDate;
-			var groupsIds = Request.GetMultipleValuesFromQueryString("groupsIds");
+			var groupsIds = Request.GetMultipleValuesFromQueryString("groupsIds").Concat(Request.GetMultipleValuesFromQueryString("group")).ToList();
 			var isInstructor = User.HasAccessFor(courseId, CourseRole.Instructor);
 			var isStudent = !isInstructor;
 
