@@ -27,7 +27,6 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
-using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Utils.LTI;
 using Vostok.Logging.Abstractions;
@@ -76,6 +75,7 @@ namespace ManualUtils
 			services.AddSingleton<MasterCourseManager>();
 			services.AddSingleton<ExerciseStudentZipsCache>();
 			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 
 			services.AddScoped<TempCourseRemover>();
 
@@ -121,6 +121,7 @@ namespace ManualUtils
 			// await RemoveTempCourse(serviceProvider);
 			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
 			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
+			await SetCourseNamesToVersions(serviceProvider, false);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -736,6 +737,36 @@ namespace ManualUtils
 				var publishedCourseVersion = await coursesRepo.GetPublishedCourseVersion(courseId);
 				await coursesRepo.AddCourseVersion(courseId, publishedCourseVersion.CourseName, versionId, ulearnBotUser.Id, null, null, null, null, content);
 				await coursesRepo.MarkCourseVersionAsPublished(versionId);
+			}
+		}
+
+		private static async Task SetCourseNamesToVersions(IServiceProvider serviceProvider, bool removeVersionIfCourseError)
+		{
+			Console.OutputEncoding = Encoding.UTF8;
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+				var allCourseVersions = await db.CourseVersions.ToListAsync();
+				foreach (var courseVersion in allCourseVersions)
+				{
+					var courseVersionFile = await coursesRepo.GetVersionFile(courseVersion.Id);
+					using (var tempDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseVersion.CourseId, new CourseVersionToken(courseVersion.Id), courseVersionFile.File))
+					{
+						var (course, exception) = courseManager.LoadCourseFromDirectory(courseVersion.CourseId, tempDirectory.DirectoryInfo);
+						if (exception != null)
+						{
+							if (removeVersionIfCourseError)
+								await coursesRepo.DeleteCourseVersion(courseVersion.CourseId, courseVersion.Id);
+							Console.WriteLine($"Error on {courseVersion.CourseId} {courseVersion.Id}");
+							continue;
+						}
+						courseVersion.CourseName = course.Title;
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{courseVersion.CourseId} {courseVersion.Id} {courseVersion.CourseName}");
+					}
+				}
 			}
 		}
 	}
