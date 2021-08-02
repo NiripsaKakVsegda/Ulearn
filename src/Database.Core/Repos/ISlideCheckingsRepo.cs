@@ -22,7 +22,7 @@ namespace Database.Repos
 		Task<bool> IsSlidePassed(string courseId, Guid slideId, string userId);
 		Task<(int Score, int? Percent)> GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId);
 		Task<int?> GetUserReviewPercentForExerciseSlide(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore = null);
-		Task<Dictionary<int,int?>> GetCheckedPercentsBySubmissions(string courseId, Guid slideId, string userId, DateTime? submissionBefore);
+		Task<Dictionary<int, int?>> GetCheckedPercentsBySubmissions(string courseId, Guid slideId, string userId, DateTime? submissionBefore);
 		Task<List<(Guid SlideId, int Score, int Percent)>> GetPassedManualExerciseCheckingsScoresAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits);
 		Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId);
 		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
@@ -57,5 +57,7 @@ namespace Database.Repos
 		Task<int> GetExerciseUsersCount(string courseId, Guid slideId);
 		Task<int> GetExerciseUsersWithRightAnswerCount(string courseId, Guid slideId);
 		Task RefreshExerciseStatisticsMaterializedViews();
+		Task EditExerciseCodeReviewComment(ExerciseCodeReviewComment codeReviewComment, string text);
+		Task EnableProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId);
 	}
 }

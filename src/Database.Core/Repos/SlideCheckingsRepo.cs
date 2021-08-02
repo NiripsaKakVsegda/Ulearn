@@ -381,6 +381,18 @@ namespace Database.Repos
 			await db.SaveChangesAsync();
 		}
 
+		public async Task EnableProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId)
+		{
+			var checkings = await db.ManualExerciseCheckings
+				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId)
+				.ToListAsync();
+			if (checkings.Count == 0)
+				return;
+			foreach (var checking in checkings)
+				checking.ProhibitFurtherManualCheckings = true;
+			await db.SaveChangesAsync();
+		}
+
 		public async Task ResetManualCheckingLimitsForUser(string courseId, string userId)
 		{
 			await DisableProhibitFurtherManualCheckings(courseId, userId);
@@ -468,7 +480,7 @@ namespace Database.Repos
 
 		public async Task DeleteExerciseCodeReview(ExerciseCodeReview review)
 		{
-			review.IsDeleted = true;
+			review.IsDeleted = true; //TODO delete instead IsDeleted
 			await db.SaveChangesAsync();
 		}
 
@@ -580,6 +592,12 @@ namespace Database.Repos
 			await db.SaveChangesAsync();
 
 			return await db.ExerciseCodeReviewComments.FirstOrDefaultAsync(r => r.Id == codeReviewComment.Id);
+		}
+
+		public async Task EditExerciseCodeReviewComment(ExerciseCodeReviewComment codeReviewComment, string text)
+		{
+			codeReviewComment.Text = text;
+			await db.SaveChangesAsync();
 		}
 
 		public async Task<ExerciseCodeReviewComment> FindExerciseCodeReviewCommentById(int commentId)

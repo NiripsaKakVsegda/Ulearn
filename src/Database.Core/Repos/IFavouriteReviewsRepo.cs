@@ -10,8 +10,7 @@ namespace Database.Repos
 		Task<List<FavouriteReview>> GetFavouriteReviewsForUser(string courseId, Guid slideId, string userId);
 		Task<List<FavouriteReview>> GetFavouriteReviewsForOtherUsers(string courseId, Guid slideId, string userIdToExcept, DateTime startDate);
 		Task<FavouriteReviewByUser> AddFavouriteReviewByUser(string courseId, Guid slideId, string userId, string text);
-		Task DeleteFavouriteReviewByUser(int favouriteReviewByUserId);
 		Task DeleteFavouriteReviewByUser(FavouriteReviewByUser favouriteReviewByUser);
-		Task<FavouriteReviewByUser> FindFavouriteReviewByUser(int favouriteReviewByUserId);
+		Task<FavouriteReviewByUser> FindFavouriteReviewByUser(string courseId, Guid slideId, string userId, int favouriteReviewId);
 	}
 }

@@ -48,16 +48,22 @@ namespace Database.Repos
 			if (favouriteReview == null)
 				favouriteReview = AddFavouriteReview(courseId, slideId, text);
 
-			var favouriteReviewByUser = new FavouriteReviewByUser
-			{
-				CourseId = courseId,
-				SlideId = slideId,
-				UserId = userId,
-				Timestamp = DateTime.Now,
-				FavouriteReview = favouriteReview
-			};
+			var favouriteReviewByUser = await FindFavouriteReviewByUser(courseId, slideId, userId, favouriteReview.Id);
 
-			db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+			if (favouriteReviewByUser == null)
+			{
+				favouriteReviewByUser = new FavouriteReviewByUser
+				{
+					CourseId = courseId,
+					SlideId = slideId,
+					UserId = userId,
+					Timestamp = DateTime.Now,
+					FavouriteReview = favouriteReview,
+				};
+				db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+			}
+			else
+				favouriteReviewByUser.Timestamp = DateTime.Now;
 
 			await db.SaveChangesAsync();
 
@@ -75,16 +81,6 @@ namespace Database.Repos
 
 			db.FavouriteReviews.Add(favouriteReviewByUser);
 			return favouriteReviewByUser;
-		}
-
-		public async Task DeleteFavouriteReviewByUser(int favouriteReviewByUserId)
-		{
-			var favouriteReviewByUser = await FindFavouriteReviewByUser(favouriteReviewByUserId);
-
-			if (favouriteReviewByUser == null)
-				return;
-
-			await DeleteFavouriteReviewByUser(favouriteReviewByUser);
 		}
 
 		public async Task DeleteFavouriteReviewByUser(FavouriteReviewByUser favouriteReviewByUser)
@@ -122,9 +118,15 @@ namespace Database.Repos
 					&& fr.Text == text);
 		}
 
-		public async Task<FavouriteReviewByUser> FindFavouriteReviewByUser(int favouriteReviewByUserId)
+		public async Task<FavouriteReviewByUser> FindFavouriteReviewByUser(string courseId, Guid slideId, string userId, int favouriteReviewId)
 		{
-			return await db.FavouriteReviewsByUsers.FindAsync(favouriteReviewByUserId);
+			return await db.FavouriteReviewsByUsers
+				.FirstOrDefaultAsync(fbu =>
+					fbu.CourseId == courseId
+					&& fbu.SlideId == slideId
+					&& fbu.UserId == userId
+					&& fbu.FavouriteReviewId == favouriteReviewId
+				);
 		}
 
 		private async Task<FavouriteReview> FindFavouriteReview(int id)

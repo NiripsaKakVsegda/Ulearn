@@ -111,11 +111,14 @@ namespace Database.Repos
 		
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId)
 		{
-			var query = db.UserExerciseSubmissions
-				.AsQueryable()
+			return db.UserExerciseSubmissions
+				.Include(s => s.AutomaticChecking).ThenInclude(c => c.Output)
+				.Include(s => s.AutomaticChecking).ThenInclude(c => c.CompilationError)
+				.Include(s => s.AutomaticChecking).ThenInclude(c => c.DebugLogs)
+				.Include(s => s.SolutionCode)
 				.Include(s => s.ManualChecking).ThenInclude(c => c.Reviews).ThenInclude(r => r.Author)
-				.Include(s => s.Reviews).ThenInclude(r => r.Author);
-			return query.Where(x => x.CourseId == courseId);
+				.Include(s => s.Reviews).ThenInclude(r => r.Author)
+				.Where(x => x.CourseId == courseId);
 		}
 
 		public IQueryable<UserExerciseSubmission> GetAllSubmissions(string courseId, IEnumerable<Guid> slidesIds)
