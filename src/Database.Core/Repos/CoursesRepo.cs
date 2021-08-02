@@ -45,13 +45,14 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
-		public async Task<CourseVersion> AddCourseVersion(string courseId, Guid versionId, string authorId,
+		public async Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
 			string pathToCourseXml, string repoUrl, string commitHash, string description, byte[] courseContent)
 		{
 			var courseVersion = new CourseVersion
 			{
 				Id = versionId,
 				CourseId = courseId,
+				CourseName = courseName,
 				LoadingTime = DateTime.Now,
 				PublishTime = null,
 				AuthorId = authorId,
@@ -210,19 +211,5 @@ namespace Database.Repos
 			var publishedCourseVersion = await GetPublishedCourseVersion(courseId);
 			return await GetVersionFile(publishedCourseVersion.Id);
 		}
-
-		public async Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string userId)
-		{
-			var hasCourse = await GetPublishedCourseVersion(courseId) != null;
-			if (!hasCourse)
-			{
-				var helpVersionFile = await GetPublishedVersionFile(CourseManager.ExampleCourseId);
-				await AddCourseVersion(courseId, versionId, userId, null, null, null, null, helpVersionFile.File);
-				await MarkCourseVersionAsPublished(versionId);
-			}
-			return !hasCourse;
-		}
-
-		
 	}
 }

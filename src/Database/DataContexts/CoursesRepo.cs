@@ -46,13 +46,14 @@ namespace Database.DataContexts
 			return db.CourseVersions.Where(v => v.CourseId == courseId).OrderByDescending(v => v.LoadingTime);
 		}
 
-		public async Task<CourseVersion> AddCourseVersion(string courseId, Guid versionId, string authorId,
+		public async Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
 			string pathToCourseXmlInRepo, string repoUrl, string commitHash, string description, byte[] courseContent)
 		{
 			var courseVersion = new CourseVersion
 			{
 				Id = versionId,
 				CourseId = courseId,
+				CourseName = courseName,
 				LoadingTime = DateTime.Now,
 				PublishTime = null,
 				AuthorId = authorId,

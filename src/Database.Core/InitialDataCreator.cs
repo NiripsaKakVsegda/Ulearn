@@ -90,15 +90,15 @@ namespace Database
 
 		public async Task AddExampleCourse()
 		{
-			await CreateCourse(CourseManager.ExampleCourseId);
+			await CreateCourse(CourseManager.ExampleCourseId, "Справка для авторов курсов");
 		}
 
 		public async Task AddErrorCourse()
 		{
-			await CreateCourse(CourseManager.CourseLoadingErrorCourseId);
+			await CreateCourse(CourseManager.CourseLoadingErrorCourseId, "Шаблон курса с ошибкой загрузки");
 		}
 
-		private async Task CreateCourse(string courseId)
+		private async Task CreateCourse(string courseId, string courseName)
 		{
 			var hasCourse = await coursesRepo.GetPublishedCourseVersion(courseId) != null;
 			if (!hasCourse)
@@ -106,7 +106,7 @@ namespace Database
 				var versionId = Guid.NewGuid();
 				var userId = await usersRepo.GetUlearnBotUserId();
 				var zipFileContent = await File.ReadAllBytesAsync(courseId + ".zip");
-				await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, zipFileContent);
+				await coursesRepo.AddCourseVersion(courseId, courseName, versionId, userId, null, null, null, null, zipFileContent);
 				await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			}
 		}

@@ -133,8 +133,9 @@ namespace Ulearn.Web.Api.Utils.Courses
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
 				var usersRepo = scope.ServiceProvider.GetService<IUsersRepo>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
 				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
-				var courseTitle = $"Ошибка в курсе {courseId}";
+				var courseTitle = (await coursesRepo.GetPublishedCourseVersion(courseId)).CourseName;
 				await CreateCourseVersionFromAnotherCourseVersion(courseId, errorVersion, courseTitle, ulearnBotUser.Id, CourseLoadingErrorCourseId);
 			}
 			log.Warn($"Для курса {courseId} создана версия-заглушка {errorVersion} с инофрмацией об ошибке на основе курса {CourseLoadingErrorCourseId}");

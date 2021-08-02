@@ -363,9 +363,9 @@ namespace Web.Api.Tests.Controllers.TempCourses
 		{
 			using var ms = ZipUtils.CreateZipFromDirectory(new List<string> { testCourseDirectory.FullName }, null, null);
 			var initialVersion = Guid.NewGuid();
-			await courseManager.CreateCourseIfNotExists(baseCourseId, initialVersion, "Заголовок", TestUsers.User.Id);
+			await courseManager.CreateCourseIfNotExists(baseCourseId, initialVersion, $"Заголовок {baseCourseId}", TestUsers.User.Id);
 			var versionId = Guid.NewGuid();
-			await coursesRepo.AddCourseVersion(baseCourseId, versionId, TestUsers.Admin.Id, null, null, null, null, ms.ToArray());
+			await coursesRepo.AddCourseVersion(baseCourseId, $"Заголовок {baseCourseId}", versionId, TestUsers.Admin.Id, null, null, null, null, ms.ToArray());
 			await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			await coursesRepo.DeleteCourseVersion(baseCourseId, initialVersion);
 			await courseRolesRepo.ToggleRole(baseCourseId, TestUsers.User.Id, CourseRoleType.CourseAdmin, TestUsers.Admin.Id, "Создал временный курс");

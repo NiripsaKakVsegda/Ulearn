@@ -398,6 +398,7 @@ namespace uLearn.Web.Controllers
 
 			using (var zipOnDisk = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), content))
 			{
+				string courseName;
 				try
 				{
 					using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseId, new CourseVersionToken(versionId), await zipOnDisk.FileInfo.ReadAllContentAsync()))
@@ -405,6 +406,7 @@ namespace uLearn.Web.Controllers
 						var (course, exception) = courseManager.LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
 						if (exception != null)
 							throw exception;
+						courseName = course.Title;
 					}
 				}
 				catch (Exception e)
@@ -415,7 +417,7 @@ namespace uLearn.Web.Controllers
 
 				log.Info($"Successfully update course files '{courseId}'");
 
-				await coursesRepo.AddCourseVersion(courseId, versionId, userId,
+				await coursesRepo.AddCourseVersion(courseId, courseName, versionId, userId,
 					pathToCourseXmlInRepo, uploadedFromRepoUrl, commitInfo?.Hash, commitInfo?.Message, await zipOnDisk.FileInfo.ReadAllContentAsync());
 				await NotifyAboutCourseVersion(courseId, versionId, userId);
 				try
@@ -451,7 +453,7 @@ namespace uLearn.Web.Controllers
 				return RedirectToAction("Courses", "Course", new { courseId = courseId, courseTitle = courseTitle });
 
 			var courseFile = coursesRepo.GetVersionFile(versionId);
-			await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, courseFile.File).ConfigureAwait(false);
+			await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, courseFile.File).ConfigureAwait(false);
 			await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			await NotifyAboutPublishedCourseVersion(courseId, versionId, userId).ConfigureAwait(false);
 

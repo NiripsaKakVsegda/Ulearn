@@ -55,7 +55,7 @@ namespace Database
 				using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
 				{
 					CourseZipWithTitleUpdater.Update(exampleCourseZip.FileInfo, courseTitle);
-					await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync()
+					await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync()
 						.ConfigureAwait(false)).ConfigureAwait(false);
 				}
 				await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);

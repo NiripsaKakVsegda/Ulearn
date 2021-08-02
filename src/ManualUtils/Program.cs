@@ -733,7 +733,8 @@ namespace ManualUtils
 				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
 				var versionId = Guid.NewGuid();
 				var content = await new FileInfo(zipPath).ReadAllContentAsync();
-				await coursesRepo.AddCourseVersion(courseId, versionId, ulearnBotUser.Id, null, null, null, null, content);
+				var publishedCourseVersion = await coursesRepo.GetPublishedCourseVersion(courseId);
+				await coursesRepo.AddCourseVersion(courseId, publishedCourseVersion.CourseName, versionId, ulearnBotUser.Id, null, null, null, null, content);
 				await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			}
 		}
