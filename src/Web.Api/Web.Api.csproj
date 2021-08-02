@@ -60,6 +60,10 @@
 		<Content Include="Help.zip">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<None Remove="course-loading-error.zip" />
+		<Content Include="course-loading-error.zip">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 	<ItemGroup>
 	  <Compile Remove="Configuration\**" />
