@@ -22,7 +22,7 @@ namespace Ulearn.Core.Courses
 		[NotNull]
 		public CourseVersionToken CourseVersionToken { get; set; }
 
-		public bool IsTempCourse() => CourseVersionToken.LoadingTime != null;
+		public bool IsTempCourse() => CourseVersionToken.IsTempCourse();
 
 		public string Title => Settings.Title;
 		[NotNull]

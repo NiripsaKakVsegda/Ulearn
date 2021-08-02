@@ -152,9 +152,8 @@ namespace uLearn.Web.Controllers
 		public async Task<ActionResult> DownloadPackage(string courseId)
 		{
 			var course = courseStorage.GetCourse(courseId);
-			var isTempCourse = course.IsTempCourse();
 			byte[] content;
-			if (isTempCourse)
+			if (course.IsTempCourse())
 				content = await courseManager.GetTempCourseZipBytes(courseId).ConfigureAwait(false);
 			else
 			{
@@ -474,7 +473,7 @@ namespace uLearn.Web.Controllers
 		[ValidateInput(false)]
 		public ActionResult Packages(string courseId, string error = "")
 		{
-			var isTempCourse = tempCoursesRepo.Find(courseId) != null;
+			var isTempCourse = courseStorage.GetCourse(courseId).IsTempCourse();
 			if (isTempCourse)
 				return null;
 			return PackagesInternal(courseId, error);
@@ -919,17 +918,16 @@ namespace uLearn.Web.Controllers
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
 		public async Task<ActionResult> Diagnostics(string courseId, Guid? versionId)
 		{
-			var isTempCourse = tempCoursesRepo.Find(courseId) != null;
+			var course = courseStorage.GetCourse(courseId);
 			if (versionId == null)
 			{
 				return View(new DiagnosticsModel
 				{
 					CourseId = courseId,
-					IsTempCourse = isTempCourse
+					IsTempCourse = course.IsTempCourse()
 				});
 			}
 
-			var course = courseStorage.GetCourse(courseId);
 			var versionFile = coursesRepo.GetVersionFile(versionId.Value);
 			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
@@ -950,7 +948,7 @@ namespace uLearn.Web.Controllers
 					VersionId = versionId.Value,
 					CourseDiff = courseDiff,
 					Warnings = warnings,
-					IsTempCourse = isTempCourse
+					IsTempCourse = course.IsTempCourse()
 				});
 			}
 
