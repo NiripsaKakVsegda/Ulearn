@@ -121,7 +121,8 @@ namespace ManualUtils
 			// await RemoveTempCourse(serviceProvider);
 			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
 			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
-			await SetCourseNamesToVersions(serviceProvider, false);
+			// await SetCourseNamesToVersions(serviceProvider, false);
+			await UnifyVisits(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -767,6 +768,40 @@ namespace ManualUtils
 						Console.WriteLine($"{courseVersion.CourseId} {courseVersion.Id} {courseVersion.CourseName}");
 					}
 				}
+			}
+		}
+
+		private static async Task UnifyVisits(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var visitsRepo = scope.ServiceProvider.GetService<IVisitsRepo>();
+				var visitsCount = db.Visits.Count();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
+				var dubles = await db.Visits
+					.GroupBy(v => new { v.CourseId, v.SlideId, v.UserId})
+					.Select(g => new { g.Key.CourseId, g.Key.SlideId, g.Key.UserId, Count = g.Count() })
+					.Where(t => t.Count > 1)
+					.ToListAsync();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(0.5));
+				Console.WriteLine($"{dubles.Count} / {visitsCount}");
+				var i = 0;
+				foreach (var duble in dubles)
+				{
+					//Console.WriteLine($"{duble.CourseId} {duble.SlideId} {duble.UserId} {duble.Count}");
+					var actualVisit = await visitsRepo.FindVisit(duble.CourseId, duble.SlideId, duble.UserId);
+					var allVisits = await db.Visits.Where(v => v.CourseId == duble.CourseId && v.SlideId == duble.SlideId && v.UserId == duble.UserId).ToListAsync();
+					var visitsForRemove = allVisits.Where(v => v.Id != actualVisit.Id);
+					db.Visits.RemoveRange(visitsForRemove);
+					i++;
+					if (i % 100 == 0)
+					{
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{i} / {dubles.Count}");
+					}
+				}
+				await db.SaveChangesAsync();
 			}
 		}
 	}
