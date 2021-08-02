@@ -35,6 +35,7 @@ import {
 	submissionIsLast,
 	isAcceptedSolutionsWillNotDiscardScore
 } from "./ExerciseUtils";
+import { getReviewAnchorTop } from "../../InstructorReview/utils";
 
 import { Language, } from "src/consts/languages";
 import { DeviceType } from "src/consts/deviceType";
@@ -42,12 +43,13 @@ import {
 	AutomaticExerciseCheckingResult as CheckingResult,
 	AutomaticExerciseCheckingResult,
 	RunSolutionResponse,
-	SolutionRunStatus,
+	SolutionRunStatus, SubmissionInfo,
 } from "src/models/exercise";
-import { SubmissionInfoRedux } from "src/models/reduxState";
 import { SlideUserProgress } from "src/models/userProgress";
 import { ExerciseBlockProps } from "src/models/slide";
 import { SlideContext } from "../../Slide";
+import { UserInfo } from "src/utils/courseRoles";
+import { ShortUserInfo } from "src/models/users";
 
 import CodeMirror, { Doc, Editor, EditorChange, EditorConfiguration, } from "codemirror";
 import 'codemirror/lib/codemirror.css';
@@ -61,17 +63,12 @@ import registerCodeMirrorHelpers from "./CodeMirrorAutocompleteExtension";
 import styles from './Exercise.less';
 
 import texts from './Exercise.texts';
-import { UserInfo } from "src/utils/courseRoles";
-import { getReviewAnchorTop } from "../../InstructorReview/utils";
-import { ShortUserInfo } from "../../../../../../models/users";
+
 
 export interface FromReduxDispatch {
-	sendCode: (courseId: string, slideId: string, value: string, language: Language,) => unknown;
-	addReviewComment: (courseId: string, slideId: string, submissionId: number, reviewId: number,
-		text: string
-	) => unknown;
-	deleteReviewComment:
-		(courseId: string, slideId: string, submissionId: number, reviewId: number, commentId: number) => unknown;
+	sendCode: (courseId: string, slideId: string, userId: string, value: string, language: Language,) => unknown;
+	addReviewComment: (submissionId: number, reviewId: number, text: string) => unknown;
+	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => unknown;
 	skipExercise: (courseId: string, slideId: string, onSuccess: () => void) => unknown;
 }
 
@@ -82,7 +79,7 @@ export interface FromReduxProps {
 	slideProgress: SlideUserProgress;
 	submissionError: string | null;
 	deviceType: DeviceType;
-	submissions: SubmissionInfoRedux[];
+	submissions: SubmissionInfo[];
 	maxScore: number;
 	forceInitialCode: boolean;
 }
@@ -127,7 +124,7 @@ interface State {
 	submissionLoading: boolean;
 	isAllHintsShowed: boolean;
 	visibleCheckingResponse?: RunSolutionResponse; // Не null только если только что сделанная посылка не содержит submission
-	currentSubmission: null | SubmissionInfoRedux;
+	currentSubmission: null | SubmissionInfo;
 	currentReviews: ReviewInfoWithMarker[];
 	selectedReviewId: number;
 	showOutput: boolean;
@@ -168,7 +165,7 @@ class Exercise extends React.Component<Props, State> {
 			value: exerciseInitialCode,
 			valueChanged: false,
 
-			isEditable: submissions.length === 0,
+			isEditable: submissions?.length === 0,
 
 			language: defaultLanguage ?? [...languages].sort()[0],
 
@@ -636,7 +633,7 @@ class Exercise extends React.Component<Props, State> {
 		);
 	};
 
-	loadSubmissionToState = (submission?: SubmissionInfoRedux): void => {
+	loadSubmissionToState = (submission?: SubmissionInfo): void => {
 		this.clearAllTextMarkers();
 
 		// Firstly we updating code in code mirror
@@ -657,7 +654,7 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	setCurrentSubmission = (submission: SubmissionInfoRedux, callback?: () => void): void => {
+	setCurrentSubmission = (submission: SubmissionInfo, callback?: () => void): void => {
 		const { exerciseCodeDoc, } = this.state;
 		this.clearAllTextMarkers();
 		this.setState({
@@ -683,7 +680,7 @@ class Exercise extends React.Component<Props, State> {
 	};
 
 	openAcceptedSolutionsModal = (): void => {
-		const { slideContext: { courseId, slideId, }, submissions, slideProgress, skipExercise,} = this.props;
+		const { slideContext: { courseId, slideId, }, submissions, slideProgress, skipExercise, } = this.props;
 
 		if(isAcceptedSolutionsWillNotDiscardScore(submissions, slideProgress.isSkipped)) {
 			this.openModal({ type: ModalType.acceptedSolutions });
@@ -694,7 +691,7 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	renderOverview = (submission: SubmissionInfoRedux): React.ReactElement => {
+	renderOverview = (submission: SubmissionInfo): React.ReactElement => {
 		const { selfChecks } = this.state;
 		const checkups = [
 			{
@@ -935,31 +932,35 @@ class Exercise extends React.Component<Props, State> {
 
 	sendExercise = (): void => {
 		const { value, language } = this.state;
-		const { slideContext: { courseId, slideId, }, sendCode, } = this.props;
+		const { slideContext: { courseId, slideId, }, sendCode, user, } = this.props;
+
+		if(!user) {
+			return;
+		}
 
 		this.setState({
 			submissionLoading: true,
 			showOutput: false,
 		});
 
-		sendCode(courseId, slideId, value, language);
+		sendCode(courseId, slideId, user.id, value, language);
 	};
 
 	addReviewComment = (reviewId: number, text: string): void => {
-		const { addReviewComment, slideContext: { courseId, slideId, }, } = this.props;
+		const { addReviewComment, } = this.props;
 		const { currentSubmission, } = this.state;
 
 		if(currentSubmission) {
-			addReviewComment(courseId, slideId, currentSubmission.id, reviewId, text);
+			addReviewComment(currentSubmission.id, reviewId, text);
 		}
 	};
 
 	deleteReviewComment = (reviewId: number, commentId?: number,): void => {
-		const { deleteReviewComment, slideContext: { courseId, slideId, }, } = this.props;
+		const { deleteReviewComment } = this.props;
 		const { currentSubmission, } = this.state;
 
 		if(currentSubmission) {
-			deleteReviewComment(courseId, slideId, currentSubmission.id, reviewId, commentId!,);
+			deleteReviewComment(currentSubmission.id, reviewId, commentId!,);
 		}
 	};
 

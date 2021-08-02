@@ -17,6 +17,7 @@ import { ReviewCommentResponse, ReviewInfo } from "src/models/exercise";
 import styles from "./Review.less";
 import texts from "./Review.texts";
 import { CommentReplies, RenderedReview, ReviewProps, ReviewState } from "./Review.types";
+import { ShortUserInfo } from "../../../../../../../models/users";
 
 
 class Review extends React.Component<ReviewProps, ReviewState> {
@@ -288,10 +289,14 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				}
 			</li>
 		);
-	}
+	};
 
 	renderComment(review: InstructorReviewInfo): React.ReactNode;
-	renderComment(reviewComment: ReviewCommentResponse, reviewId: number, reviewOutdated?: boolean): React.ReactNode;
+	renderComment(
+		reviewComment: ReviewCommentResponse,
+		reviewId: number,
+		reviewOutdated?: boolean
+	): React.ReactNode;
 	renderComment(
 		review: InstructorReviewInfo & ReviewCommentResponse,
 		reviewId: number | null = null,
@@ -320,25 +325,10 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 
 		return (
 			<React.Fragment>
-				<div className={ styles.authorWrapper }>
-					<Avatar user={ authorToRender } size={ "big" } className={ styles.commentAvatar }/>
-					<div className={ styles.commentInfoWrapper }>
-						<span className={ styles.commentInfo }>
-							<span className={ styles.authorName }>
-								{ authorToRender.visibleName }
-							</span>
-							{ this.renderCommentControls(review, reviewId, outdated) }
-						</span>
-						{ time &&
-						<p className={ styles.commentAddingTime }>{ texts.getAddingTime(time) }</p>
-						}
-					</div>
-				</div>
+				{ Review.renderHeaderContent(authorToRender, time,
+					this.renderCommentControls(review, reviewId, outdated)) }
 				{ editingReviewId !== id
-					? <p
-						className={ styles.commentText }
-						dangerouslySetInnerHTML={ { __html: renderedText ?? renderedComment } }
-					/>
+					? Review.renderCommentContent(renderedText ?? renderedComment)
 					: <Gapped gap={ 12 } vertical className={ styles.commentEditTextArea }>
 						<Textarea
 							autoFocus
@@ -364,6 +354,33 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 					</Gapped> }
 			</React.Fragment>
 		);
+	}
+
+	static renderSampleCommentWrapper(child: React.ReactNode) {
+		return <div className={ cn(styles.comment, styles.sample) }>
+			{ child }
+		</div>;
+	}
+
+	static renderHeaderContent(
+		authorToRender?: ShortUserInfo,
+		time?: string,
+		controls?: React.ReactNode,
+	): React.ReactNode {
+		return <div className={ styles.authorWrapper }>
+			{ authorToRender && <Avatar user={ authorToRender } size={ "big" } className={ styles.commentAvatar }/> }
+			<div className={ styles.commentInfoWrapper }>
+						<span className={ styles.commentInfo }>
+							<span className={ styles.authorName }>
+								{ authorToRender?.visibleName }
+							</span>
+							{ controls }
+						</span>
+				{ time &&
+				<p className={ styles.commentAddingTime }>{ texts.getAddingTime(time) }</p>
+				}
+			</div>
+		</div>;
 	}
 
 	renderCommentControls = ({
@@ -437,6 +454,13 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 			{ actionsMarkup }
 		</DropdownMenu>;
 	};
+
+	static renderCommentContent(content: string): React.ReactNode {
+		return <p
+			className={ styles.commentText }
+			dangerouslySetInnerHTML={ { __html: content } }
+		/>;
+	}
 
 	startEditingComment = (event: React.MouseEvent | React.SyntheticEvent): void => {
 		const { id, reviewId, } = this.parseCommentData(event);

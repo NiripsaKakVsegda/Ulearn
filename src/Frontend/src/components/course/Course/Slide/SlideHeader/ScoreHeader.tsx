@@ -14,6 +14,8 @@ import { RootState } from "src/models/reduxState";
 
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
+import { SubmissionInfo } from "../../../../../models/exercise";
+import { getSubmissionsWithReviews } from "../InstructorReview/InstructorReview.redux";
 
 
 const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
@@ -94,16 +96,22 @@ interface ScoreHeaderProps {
 }
 
 const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
-	const { userProgress, courses, slides, account, } = state;
-	const { submissionsByCourses, } = slides;
+	const { userProgress, courses, account, } = state;
 	const { courseId, slideId } = ownProps;
 
 	const slideProgress = userProgress.progress[courseId]?.[slideId];
 	const courseInfo = courses.fullCoursesInfo[courseId];
 	const slideInfo = getSlideInfoById(slideId, courseInfo)?.current;
-	const submissions = submissionsByCourses[courseId]?.[slideId];
+	const submissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			state.account.id,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+		);
 	const hasReviewedSubmissions = submissions
-		? Object.values(submissionsByCourses[courseId][slideId]).some(s => s.manualCheckingPassed)
+		? submissions.some(s => s.manualCheckingPassed)
 		: false;
 	const instructor = isInstructor(
 		{ isSystemAdministrator: account.isSystemAdministrator, courseRole: account.roleByCourse[courseId] });

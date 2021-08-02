@@ -1,9 +1,11 @@
 import React from "react";
-import AntiplagiarismHeader, { AntiplagiarismInfo, Props } from "./AntiplagiarismHeader";
+import AntiplagiarismHeader, { Props } from "./AntiplagiarismHeader";
+
+import { mockFunc, } from "src/utils/storyMock";
+import { Gapped } from "ui";
 
 import { Story } from "@storybook/react";
-import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
-import { Gapped } from "ui";
+import { AntiPlagiarismStatusResponse } from "src/models/instructor";
 
 interface PropsWithDecorator extends Props {
 	title: string;
@@ -20,45 +22,29 @@ const Template: Story<PropsWithDecorator[]> = (args) => (
 
 
 export const List = Template.bind({});
-List.args = [
+List.args = ([
 	{
 		title: 'notChecking',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(0, { suspicionCount: 2, suspicionLevel: 'warning' })),
-		shouldCheck: false,
+		status: { suspicionCount: 0, suspicionLevel: 'none', status: 'notChecked' },
 	},
 	{
-		title: 'checking -> long running',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(50000000, { suspicionCount: 0, suspicionLevel: 'accepted' })),
-		shouldCheck: true,
-	},
-	{
-		title: 'checking -> running for 2 secs',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(2000, { suspicionCount: 0, suspicionLevel: 'accepted' })),
-		shouldCheck: true,
+		title: 'checking -> running',
 	},
 	{
 		title: 'checking -> accepted',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(0, { suspicionCount: 0, suspicionLevel: 'accepted' })),
-		shouldCheck: true,
+		status: { suspicionCount: 0, suspicionLevel: 'none', status: 'checked' },
 	},
 	{
 		title: 'checking -> suspicions with 5',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(0, { suspicionCount: 5, suspicionLevel: 'warning' })),
-		shouldCheck: true,
+		status: { suspicionCount: 5, suspicionLevel: 'faint', status: 'checked' },
 	},
 	{
 		title: 'checking -> strong suspicions with 15',
-		getAntiPlagiarismStatus: () =>
-			(returnPromiseAfterDelay<AntiplagiarismInfo>(0, { suspicionCount: 15, suspicionLevel: 'strongWarning' })),
-		shouldCheck: true,
+		status: { suspicionCount: 15, suspicionLevel: 'strong', status: 'checked' },
 	},
-].map(a => ({
-	...a, fixed: false,
+] as { title: string; status?: AntiPlagiarismStatusResponse; }[]).map(a => ({
+	...a,
+	fixed: false,
 	onZeroScoreButtonPressed: mockFunc,
 }));
 

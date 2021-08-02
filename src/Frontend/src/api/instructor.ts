@@ -4,32 +4,44 @@ import {
 	studentLoadSuccessAction,
 	studentLoadFailAction,
 	studentLoadStartAction,
-	studentSubmissionsLoadStartAction,
-	studentSubmissionsLoadSuccessAction,
-	studentSubmissionsLoadFailAction,
 	antiplagiarimsStatusLoadStartAction,
 	antiplagiarimsStatusLoadSuccessAction,
 	antiplagiarimsStatusLoadFailAction,
-	favouriteReviewsLoadStartAction,
-	favouriteReviewsLoadSuccessAction,
-	favouriteReviewsLoadFailAction,
+	studentProhibitFurtherManualCheckingStartAction,
+	studentProhibitFurtherManualCheckingFailAction,
 } from "src/actions/instructor";
 import { ShortUserInfo } from "src/models/users";
-import { antiplagiarism, favouriteReviews, submissions } from "src/consts/routes";
+import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
 import {
-	AntiplagiarismStatusResponse,
-	FavouriteReviewResponse,
-	StudentSubmissionsResponse
+	AntiPlagiarismStatusResponse,
 } from "src/models/instructor";
-import { SubmissionInfo } from "src/models/exercise";
 
-export function getStudentInfo(studentId: string,) {
+export function getAntiPlagiarismStatus(courseId: string,
+	submissionId: number,
+): Promise<AntiPlagiarismStatusResponse> {
+	const url = `${ antiplagiarism }/${ submissionId }` + buildQuery({ courseId });
+	return api.get<AntiPlagiarismStatusResponse>(url);
+}
+
+export function prohibitFurtherManualChecking(
+	courseId: string,
+	slideId: string,
+	userId: string,
+	prohibit: boolean,
+): Promise<Response> {
+	const url = `user-progress/${ courseId }/${ slideId }/prohibit-further-manual-checking`
+		+ buildQuery({ userId, prohibit });
+	return api.put(url);
+}
+
+//REDUX
+
+const getStudentInfoRedux = (studentId: string,) => {
 	return (dispatch: Dispatch): Promise<string | ShortUserInfo> => {
 		dispatch(studentLoadStartAction(studentId,));
-		return api.users.getUserInfo(studentId,)
-			.then(json => {
-				const user = json.users.find(userInfo => userInfo.user.id === studentId)?.user;
+		return api.users.getOtherUserInfo(studentId,)
+			.then(user => {
 				if(user) {
 					dispatch(studentLoadSuccessAction(user));
 					return user;
@@ -42,29 +54,12 @@ export function getStudentInfo(studentId: string,) {
 				return error;
 			});
 	};
-}
+};
 
-export function getStudentSubmissions(studentId: string, courseId: string, slideId: string,) {
-	return (dispatch: Dispatch): Promise<SubmissionInfo[] | string> => {
-		dispatch(studentSubmissionsLoadStartAction(studentId, courseId, slideId,));
-		const url = submissions + buildQuery({ studentId, courseId, slideId, });
-		return api.get<StudentSubmissionsResponse>(url)
-			.then(json => {
-				dispatch(studentSubmissionsLoadSuccessAction(studentId, courseId, slideId, json));
-				return json.submissions;
-			})
-			.catch(error => {
-				dispatch(studentSubmissionsLoadFailAction(studentId, courseId, slideId, error,));
-				return error;
-			});
-	};
-}
-
-export function getAntiplagiarismStatus(submissionId: string,) {
-	return (dispatch: Dispatch): Promise<AntiplagiarismStatusResponse | string> => {
+const getAntiPlagiarismStatusRedux = (courseId: string, submissionId: number,) => {
+	return (dispatch: Dispatch): Promise<AntiPlagiarismStatusResponse | string> => {
 		dispatch(antiplagiarimsStatusLoadStartAction(submissionId,));
-		const url = `${ antiplagiarism }/${ submissionId }`;
-		return api.get<AntiplagiarismStatusResponse>(url)
+		return getAntiPlagiarismStatus(courseId, submissionId)
 			.then(json => {
 				dispatch(antiplagiarimsStatusLoadSuccessAction(submissionId, json,));
 				return json;
@@ -74,20 +69,26 @@ export function getAntiplagiarismStatus(submissionId: string,) {
 				return error;
 			});
 	};
-}
+};
 
-export function getFavouriteReviews(courseId: string, slideId: string,) {
-	return (dispatch: Dispatch): Promise<FavouriteReviewResponse | string> => {
-		dispatch(favouriteReviewsLoadStartAction(courseId, slideId,));
-		const url = favouriteReviews + buildQuery({ courseId, slideId, });
-		return api.get<FavouriteReviewResponse>(url)
-			.then(json => {
-				dispatch(favouriteReviewsLoadSuccessAction(courseId, slideId, json,));
-				return json;
-			})
+const prohibitFurtherManualCheckingRedux = (
+	courseId: string,
+	slideId: string,
+	userId: string,
+	prohibit: boolean,
+) => {
+	return (dispatch: Dispatch): Promise<Response> => {
+		dispatch(studentProhibitFurtherManualCheckingStartAction(courseId, slideId, userId, prohibit,));
+		return prohibitFurtherManualChecking(courseId, slideId, userId, prohibit)
 			.catch(error => {
-				dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error,));
+				dispatch(studentProhibitFurtherManualCheckingFailAction(courseId, slideId, userId, prohibit, error));
 				return error;
 			});
 	};
-}
+};
+
+export const redux = {
+	getAntiPlagiarismStatus: getAntiPlagiarismStatusRedux,
+	getStudentInfo: getStudentInfoRedux,
+	prohibitFurtherManualChecking: prohibitFurtherManualCheckingRedux,
+};

@@ -2,7 +2,7 @@ import React from "react";
 import CourseNavigationContent from "./CourseNavigationContent";
 import { CourseMenuItem } from "../../types";
 import type { Story } from "@storybook/react";
-import { DesktopWrapper, disableViewport, getCourseNav } from "../../stroies.data";
+import { DesktopWrapper, disableViewport, getCourseModules } from "../../stroies.data";
 
 export default {
 	title: "CourseNavigationHeader",
@@ -16,4 +16,4 @@ const Template: Story<CourseMenuItem[]> = (items) => (
 );
 
 const Default = Template.bind({});
-Default.args = getCourseNav();
+Default.args = getCourseModules();

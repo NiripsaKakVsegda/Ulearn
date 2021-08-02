@@ -1,155 +1,122 @@
 import {
-	INSTRUCTOR__STUDENT_MODE_TOGGLE,
-	INSTRUCTOR__STUDENT_INFO_LOAD_START,
-	INSTRUCTOR__STUDENT_INFO_LOAD_FAIL,
-	INSTRUCTOR__STUDENT_INFO_LOAD_SUCCESS,
-	INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_START,
-	INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_SUCCESS,
-	INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_FAIL,
-	INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_START,
-	INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
-	INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_FAIL,
-	INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_START,
-	INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_SUCCESS,
-	INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_FAIL,
+	INSTRUCTOR_STUDENT_MODE_TOGGLE,
 	StudentModeAction,
+
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL,
+	StudentProhibitFurtherManualCheckingStartAction,
+	StudentProhibitFurtherManualCheckingFailAction,
+
+	INSTRUCTOR_STUDENT_INFO_LOAD_START,
+	INSTRUCTOR_STUDENT_INFO_LOAD_FAIL,
+	INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS,
 	StudentInfoLoadFailAction,
 	StudentInfoLoadStartAction,
 	StudentInfoLoadSuccessAction,
-	StudentSubmissionsLoadStartAction,
-	StudentSubmissionsLoadSuccessAction,
-	StudentSubmissionsLoadFailAction,
-	AntiplagiarismStatusLoadStartAction,
-	AntiplagiarismStatusLoadSuccessAction,
-	AntiplagiarismStatusLoadFailAction,
-	FavouriteReviewsLoadStartAction,
-	FavouriteReviewsLoadSuccessAction,
-	FavouriteReviewsLoadFailAction,
+
+	ANTIPLAGIARISM_STATUS_LOAD_START,
+	ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
+	ANTIPLAGIARISM_STATUS_LOAD_FAIL,
+	AntiPlagiarismStatusLoadStartAction,
+	AntiPlagiarismStatusLoadSuccessAction,
+	AntiPlagiarismStatusLoadFailAction,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD,
+	StudentProhibitFurtherManualCheckingLoadAction,
 } from 'src/actions/instructor.types';
 import { ShortUserInfo } from "src/models/users";
-import { SubmissionInfo } from "../models/exercise";
 import {
-	AntiplagiarismStatusResponse,
-	FavouriteReviewResponse,
-	StudentSubmissionsResponse
+	AntiPlagiarismStatusResponse,
 } from "../models/instructor";
 
 export const studentModeToggleAction = (isStudentMode: boolean): StudentModeAction => ({
-	type: INSTRUCTOR__STUDENT_MODE_TOGGLE,
+	type: INSTRUCTOR_STUDENT_MODE_TOGGLE,
 	isStudentMode,
 });
 
+export const studentProhibitFurtherManualCheckingStartAction = (
+	courseId: string,
+	slideId: string,
+	userId: string,
+	prohibit: boolean,
+): StudentProhibitFurtherManualCheckingStartAction => ({
+	type: INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
+	courseId,
+	slideId,
+	userId,
+	prohibit,
+});
+
+export const studentProhibitFurtherManualCheckingLoadAction = (
+	courseId: string,
+	slideId: string,
+	userId: string,
+	prohibit: boolean,
+): StudentProhibitFurtherManualCheckingLoadAction => ({
+	type: INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD,
+	courseId,
+	slideId,
+	userId,
+	prohibit,
+});
+
+export const studentProhibitFurtherManualCheckingFailAction = (
+	courseId: string,
+	slideId: string,
+	userId: string,
+	prohibit: boolean,
+	error: string,
+): StudentProhibitFurtherManualCheckingFailAction => ({
+	type: INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL,
+	courseId,
+	slideId,
+	userId,
+	prohibit,
+	error,
+});
+
 export const studentLoadStartAction = (studentId: string,): StudentInfoLoadStartAction => ({
-	type: INSTRUCTOR__STUDENT_INFO_LOAD_START,
+	type: INSTRUCTOR_STUDENT_INFO_LOAD_START,
 	studentId,
 });
 
 export const studentLoadSuccessAction = (
-	studentInfo: ShortUserInfo,
+	userInfo: ShortUserInfo,
 ): StudentInfoLoadSuccessAction => ({
-	type: INSTRUCTOR__STUDENT_INFO_LOAD_SUCCESS,
-	studentId: studentInfo.id,
-	...studentInfo,
+	type: INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS,
+	studentId: userInfo.id,
+	userInfo,
 });
 
 export const studentLoadFailAction = (
 	studentId: string,
 	error: string,
 ): StudentInfoLoadFailAction => ({
-	type: INSTRUCTOR__STUDENT_INFO_LOAD_FAIL,
+	type: INSTRUCTOR_STUDENT_INFO_LOAD_FAIL,
 	studentId,
-	error,
-});
-
-export const studentSubmissionsLoadStartAction = (
-	studentId: string,
-	courseId: string,
-	slideId: string,
-): StudentSubmissionsLoadStartAction => ({
-	type: INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_START,
-	studentId,
-	courseId,
-	slideId,
-});
-
-export const studentSubmissionsLoadSuccessAction = (
-	studentId: string,
-	courseId: string,
-	slideId: string,
-	response: StudentSubmissionsResponse,
-): StudentSubmissionsLoadSuccessAction => ({
-	type: INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_SUCCESS,
-	studentId,
-	courseId,
-	slideId,
-	response,
-});
-
-export const studentSubmissionsLoadFailAction = (
-	studentId: string,
-	courseId: string,
-	slideId: string,
-	error: string,
-): StudentSubmissionsLoadFailAction => ({
-	type: INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_FAIL,
-	studentId,
-	courseId,
-	slideId,
 	error,
 });
 
 export const antiplagiarimsStatusLoadStartAction = (
-	submissionId: string,
-): AntiplagiarismStatusLoadStartAction => ({
-	type: INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_START,
+	submissionId: number,
+): AntiPlagiarismStatusLoadStartAction => ({
+	type: ANTIPLAGIARISM_STATUS_LOAD_START,
 	submissionId,
 });
 
 export const antiplagiarimsStatusLoadSuccessAction = (
-	submissionId: string,
-	response: AntiplagiarismStatusResponse,
-): AntiplagiarismStatusLoadSuccessAction => ({
-	type: INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
+	submissionId: number,
+	response: AntiPlagiarismStatusResponse,
+): AntiPlagiarismStatusLoadSuccessAction => ({
+	type: ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
 	submissionId,
-	...response,
+	response,
 });
 
 export const antiplagiarimsStatusLoadFailAction = (
-	submissionId: string,
+	submissionId: number,
 	error: string,
-): AntiplagiarismStatusLoadFailAction => ({
-	type: INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_FAIL,
+): AntiPlagiarismStatusLoadFailAction => ({
+	type: ANTIPLAGIARISM_STATUS_LOAD_FAIL,
 	submissionId,
-	error,
-});
-
-export const favouriteReviewsLoadStartAction = (
-	courseId: string,
-	slideId: string,
-): FavouriteReviewsLoadStartAction => ({
-	type: INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_START,
-	courseId,
-	slideId,
-});
-
-export const favouriteReviewsLoadSuccessAction = (
-	courseId: string,
-	slideId: string,
-	response: FavouriteReviewResponse,
-): FavouriteReviewsLoadSuccessAction => ({
-	type: INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_SUCCESS,
-	courseId,
-	slideId,
-	...response,
-});
-
-export const favouriteReviewsLoadFailAction = (
-	courseId: string,
-	slideId: string,
-	error: string,
-): FavouriteReviewsLoadFailAction => ({
-	type: INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_FAIL,
-	courseId,
-	slideId,
 	error,
 });

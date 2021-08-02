@@ -1,32 +1,33 @@
+import React from "react";
+
 import { UserInfo } from "src/utils/courseRoles";
-import { Response, ShortGroupInfo } from "src/models/comments";
+import { ShortGroupInfo } from "src/models/comments";
 import {
-	AntiplagiarismInfo,
-	AntiplagiarismStatusResponse,
+	AntiPlagiarismStatusResponse,
 	FavouriteReview,
 	FavouriteReviewResponse
 } from "src/models/instructor";
 import { ShortUserInfo } from "src/models/users";
 import { ReviewCommentResponse, ReviewInfo, SubmissionInfo } from "src/models/exercise";
 import { GroupsInfoResponse } from "src/models/groups";
-import React from "react";
 import { SlideContext } from "../Slide";
 import { ReviewInfoWithMarker, TextMarkersByReviewId } from "../Blocks/Exercise/ExerciseUtils";
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { DiffInfo } from "./utils";
 import CodeMirror, { Editor } from "codemirror";
+import { FavouriteReviewRedux, } from "src/redux/instructor";
 
 export interface PropsFromRedux {
 	user?: UserInfo;
 
-	favouriteReviews?: FavouriteReview[];
+	favouriteReviews?: FavouriteReviewRedux[];
 
 	student?: ShortUserInfo;
 	studentGroups?: ShortGroupInfo[];
 	studentSubmissions?: SubmissionInfo[];
-	scoresBySubmissionId?: { [submissionId: number]: number; };
+	scoresBySubmissionId?: { [submissionId: number]: number | undefined; };
 
-	antiplagiarismStatus?: AntiplagiarismInfo;
+	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
 	prohibitFurtherManualChecking: boolean;
 }
 
@@ -35,15 +36,19 @@ export interface ApiFromRedux {
 	getStudentSubmissions: (studentId: string, courseId: string,
 		slideId: string,
 	) => Promise<SubmissionInfo[] | string>;
-	getAntiplagiarismStatus: (submissionId: number,) => Promise<AntiplagiarismStatusResponse | string>;
+	getAntiPlagiarismStatus: (courseId: string,
+		submissionId: number,
+	) => Promise<AntiPlagiarismStatusResponse | string>;
 	getFavouriteReviews: (courseId: string, slideId: string,) => Promise<FavouriteReviewResponse | string>;
 	getStudentGroups: (courseId: string, studentId: string,) => Promise<GroupsInfoResponse | string>;
 
-	onScoreSubmit: (submissionId: number, score: number) => Promise<number>;
-	onProhibitFurtherReviewToggleChange: (value: boolean) => void;
-	onAddReview: (comment: string) => Promise<FavouriteReview>;
-	onAddReviewToFavourite: (comment: string) => Promise<FavouriteReview>;
-	onToggleReviewFavourite: (commentId: number) => Promise<FavouriteReview>;
+	onScoreSubmit: (submissionId: number, userId: string, score: number,
+		oldScore: number | undefined,
+	) => Promise<Response | string>;
+	prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) => Promise<Response>;
+
+	addFavouriteReview: (courseId: string, slideId: string, text: string) => Promise<FavouriteReview>;
+	deleteFavouriteReview: (courseId: string, slideId: string, favouriteReviewId: number) => Promise<Response>;
 
 	addReview: (
 		submissionId: number,
@@ -53,11 +58,14 @@ export interface ApiFromRedux {
 		finishLine: number,
 		finishPosition: number,
 	) => Promise<ReviewInfo>;
-	addReviewComment: (submissionId: number, reviewId: number, comment: string) => Promise<ReviewCommentResponse>;
-	deleteReviewOrComment: (submissionId: number, reviewId: number, commentId?: number) => Promise<Response>;
-	editReviewOrComment: (text: string, submissionId: number, reviewId: number,
-		commentId?: number
-	) => Promise<ReviewInfo | ReviewCommentResponse>;
+	addReviewComment: (submissionId: number, reviewId: number,
+		comment: string
+	) => Promise<ReviewCommentResponse | string>;
+	deleteReview: (submissionId: number, reviewId: number) => Promise<Response>;
+	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => Promise<Response>;
+	editReviewOrComment: (submissionId: number, reviewId: number,
+		parentReviewId: number | undefined, text: string, oldText: string,
+	) => Promise<ReviewInfo | ReviewCommentResponse | string>;
 }
 
 export interface Props extends PropsFromRedux, ApiFromRedux {
@@ -110,6 +118,7 @@ export interface State {
 
 	addCommentValue: string;
 	addCommentFormCoords?: { left: number; top: number; bottom: number };
+	addCommentFormExtraSpace?: number;
 	addCommentRanges?: { startRange: CodeMirror.Position; endRange: CodeMirror.Position; };
 
 	initialCode?: string;

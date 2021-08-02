@@ -1,128 +1,102 @@
-import { loadFail, loadStart, loadSuccess, } from "src/consts/actions";
+import { CHANGED, FAIL, FailAction, LOAD, loadFail, loadStart, loadSuccess, START, } from "src/consts/actions";
 import { ShortUserInfo } from "src/models/users";
-import { SubmissionInfo } from "src/models/exercise";
 import {
-	AntiplagiarismStatusResponse,
-	FavouriteReviewResponse,
-	StudentSubmissionsResponse
+	AntiPlagiarismStatusResponse,
 } from "src/models/instructor";
 
-const instructor = 'INSTRUCTOR__';
-const student = 'STUDENT_';
-const info = 'INFO_';
-const submissions = 'SUBMISSIONS_';
-const antiplagiarismStatus = "ANTIPLAGIARISM_STATUS_";
-const favouriteReviews = "FAVOURITE_REVIEWS_";
+const instructor = 'INSTRUCTOR';
+const student = '_STUDENT';
+const info = '_INFO';
+const antiPlagiarismStatus = "_ANTIPLAGIARISM_STATUS";
+const modeToggle = '_MODE_TOGGLE';
+const prohibitFurtherManualChecking = '_PROHIBIT_FURTHER_MANUAL_CHECKING';
 
-export const INSTRUCTOR__STUDENT_MODE_TOGGLE = instructor + student + 'MODE_TOGGLE';
+export const INSTRUCTOR_STUDENT_MODE_TOGGLE = instructor + student + modeToggle;
 
-export const INSTRUCTOR__STUDENT_INFO_LOAD_START = instructor + student + info + loadStart;
-export const INSTRUCTOR__STUDENT_INFO_LOAD_SUCCESS = instructor + student + info + loadFail;
-export const INSTRUCTOR__STUDENT_INFO_LOAD_FAIL = instructor + student + info + loadSuccess;
+export const INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START = instructor + student + prohibitFurtherManualChecking + START;
+export const INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD = instructor + student + prohibitFurtherManualChecking + LOAD;
+export const INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL = instructor + student + prohibitFurtherManualChecking + FAIL;
 
-export const INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_START = instructor + student + submissions + loadStart;
-export const INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_SUCCESS = instructor + student + submissions + loadSuccess;
-export const INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_FAIL = instructor + student + submissions + loadFail;
+export const INSTRUCTOR_STUDENT_INFO_LOAD_START = instructor + student + info + loadStart;
+export const INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS = instructor + student + info + loadSuccess;
+export const INSTRUCTOR_STUDENT_INFO_LOAD_FAIL = instructor + student + info + loadFail;
 
-export const INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_START = instructor + antiplagiarismStatus + loadStart;
-export const INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_SUCCESS = instructor + antiplagiarismStatus + loadSuccess;
-export const INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_FAIL = instructor + antiplagiarismStatus + loadFail;
+export const ANTIPLAGIARISM_STATUS_LOAD_START = instructor + antiPlagiarismStatus + loadStart;
+export const ANTIPLAGIARISM_STATUS_LOAD_SUCCESS = instructor + antiPlagiarismStatus + loadSuccess;
+export const ANTIPLAGIARISM_STATUS_LOAD_FAIL = instructor + antiPlagiarismStatus + loadFail;
 
-export const INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_START = instructor + favouriteReviews + loadStart;
-export const INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_SUCCESS = instructor + favouriteReviews + loadSuccess;
-export const INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_FAIL = instructor + favouriteReviews + loadFail;
 
 export interface StudentModeAction {
-	type: typeof INSTRUCTOR__STUDENT_MODE_TOGGLE;
+	type: typeof INSTRUCTOR_STUDENT_MODE_TOGGLE;
 	isStudentMode: boolean;
 }
 
+export interface StudentProhibitFurtherManualCheckingStartAction {
+	type: typeof INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START;
+	courseId: string;
+	slideId: string;
+	userId: string;
+	prohibit: boolean;
+}
+
+export interface StudentProhibitFurtherManualCheckingLoadAction {
+	type: typeof INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD;
+	courseId: string;
+	slideId: string;
+	userId: string;
+	prohibit: boolean;
+}
+
+export interface StudentProhibitFurtherManualCheckingFailAction extends FailAction {
+	type: typeof INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL;
+	courseId: string;
+	slideId: string;
+	userId: string;
+	prohibit: boolean;
+}
+
 export interface StudentInfoLoadStartAction {
-	type: typeof INSTRUCTOR__STUDENT_INFO_LOAD_START;
+	type: typeof INSTRUCTOR_STUDENT_INFO_LOAD_START;
 	studentId: string;
 }
 
-export interface StudentInfoLoadSuccessAction extends ShortUserInfo {
-	type: typeof INSTRUCTOR__STUDENT_INFO_LOAD_SUCCESS;
+export interface StudentInfoLoadSuccessAction {
+	type: typeof INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS;
+	studentId: string;
+	userInfo: ShortUserInfo;
+}
+
+export interface StudentInfoLoadFailAction extends FailAction {
+	type: typeof INSTRUCTOR_STUDENT_INFO_LOAD_FAIL;
 	studentId: string;
 }
 
-export interface StudentInfoLoadFailAction {
-	type: typeof INSTRUCTOR__STUDENT_INFO_LOAD_FAIL;
-	studentId: string;
-	error: string;
+export interface AntiPlagiarismStatusLoadStartAction {
+	type: typeof ANTIPLAGIARISM_STATUS_LOAD_START;
+	submissionId: number;
 }
 
-export interface StudentSubmissionsLoadStartAction {
-	type: typeof INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_START;
-	studentId: string;
-	courseId: string;
-	slideId: string;
+export interface AntiPlagiarismStatusLoadSuccessAction {
+	type: typeof ANTIPLAGIARISM_STATUS_LOAD_SUCCESS;
+	submissionId: number;
+	response: AntiPlagiarismStatusResponse;
 }
 
-export interface StudentSubmissionsLoadSuccessAction {
-	type: typeof INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_SUCCESS;
-	studentId: string;
-	courseId: string;
-	slideId: string;
-	response: StudentSubmissionsResponse;
-}
-
-export interface StudentSubmissionsLoadFailAction {
-	type: typeof INSTRUCTOR__STUDENT_SUBMISSIONS_LOAD_FAIL;
-	studentId: string;
-	courseId: string;
-	slideId: string;
-	error: string;
-}
-
-export interface AntiplagiarismStatusLoadStartAction {
-	type: typeof INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_START;
-	submissionId: string;
-}
-
-export interface AntiplagiarismStatusLoadSuccessAction extends AntiplagiarismStatusResponse {
-	type: typeof INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_SUCCESS;
-	submissionId: string;
-}
-
-export interface AntiplagiarismStatusLoadFailAction {
-	type: typeof INSTRUCTOR__ANTIPLAGIARISM_STATUS_LOAD_FAIL;
-	submissionId: string;
-	error: string;
-}
-
-export interface FavouriteReviewsLoadStartAction {
-	type: typeof INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_START;
-	courseId: string;
-	slideId: string;
-}
-
-export interface FavouriteReviewsLoadSuccessAction extends FavouriteReviewResponse {
-	type: typeof INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_SUCCESS;
-	courseId: string;
-	slideId: string;
-}
-
-export interface FavouriteReviewsLoadFailAction {
-	type: typeof INSTRUCTOR__FAVOURITE_REVIEWS_LOAD_FAIL;
-	courseId: string;
-	slideId: string;
-	error: string;
+export interface AntiPlagiarismStatusLoadFailAction extends FailAction {
+	type: typeof ANTIPLAGIARISM_STATUS_LOAD_FAIL;
+	submissionId: number;
 }
 
 export type InstructorAction =
 	StudentModeAction
+
+	| StudentProhibitFurtherManualCheckingStartAction
+
 	| StudentInfoLoadStartAction
 	| StudentInfoLoadSuccessAction
 	| StudentInfoLoadFailAction
-	| StudentSubmissionsLoadStartAction
-	| StudentSubmissionsLoadSuccessAction
-	| StudentSubmissionsLoadFailAction
-	| AntiplagiarismStatusLoadStartAction
-	| AntiplagiarismStatusLoadSuccessAction
-	| AntiplagiarismStatusLoadFailAction
-	| FavouriteReviewsLoadStartAction
-	| FavouriteReviewsLoadSuccessAction
-	| FavouriteReviewsLoadFailAction
+
+	| AntiPlagiarismStatusLoadStartAction
+	| AntiPlagiarismStatusLoadSuccessAction
+	| AntiPlagiarismStatusLoadFailAction
 	;

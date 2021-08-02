@@ -15,7 +15,7 @@ export interface BlocksRenderContext {
 
 export interface BlockRenderContext {
 	type: BlockTypes;
-	hide: boolean;
+	hide?: boolean;
 	fullSize: boolean;
 	previous?: BlockRenderContext;
 	next?: BlockRenderContext;
@@ -37,7 +37,7 @@ const mapTypeToBlock
 interface BlockToRender {
 	blocksIndexes: number[];
 	fullSize: boolean;
-	hide: boolean;
+	hide?: boolean;
 }
 
 const fullSizeBlockTypes: { [T in BlockTypes]: boolean } = {

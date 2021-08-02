@@ -14,7 +14,7 @@ export interface Props {
 	curReviewScore?: number | 0 | 25 | 50 | 75 | 100;
 	curReviewDate?: string;
 	isCurReviewNew?: boolean;
-	toggleChecked?: boolean;
+	toggleChecked: boolean;
 	scoreSaved?: boolean;
 
 	onSubmit: (score: number) => void;
@@ -39,7 +39,7 @@ class ScoreControls extends React.Component<Props, State> {
 		this.state = {
 			score: curReviewScore,
 			scoreSaved: scoreSaved || false,
-			toggleChecked: !!toggleChecked,
+			toggleChecked: toggleChecked,
 		};
 	}
 
@@ -48,9 +48,15 @@ class ScoreControls extends React.Component<Props, State> {
 
 		if(prevProps.curReviewScore !== curReviewScore) {
 			this.setState({
-				toggleChecked: !!toggleChecked,
+				toggleChecked,
 				score: curReviewScore,
 				scoreSaved: curReviewScore !== undefined,
+			});
+		}
+
+		if(this.state.toggleChecked !== toggleChecked) {
+			this.setState({
+				toggleChecked,
 			});
 		}
 	}

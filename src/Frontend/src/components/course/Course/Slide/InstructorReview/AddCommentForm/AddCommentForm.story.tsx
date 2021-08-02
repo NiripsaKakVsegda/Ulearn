@@ -51,8 +51,8 @@ function toggleCommentFavourite(commentId: number) {
 }
 
 const args: Props = {
-	comments,
-	addCommentToFavourite,
+	favouriteReviews: comments,
+	addFavouriteReview: addCommentToFavourite,
 	addComment,
 	toggleCommentFavourite,
 	onClose: mockFunc,

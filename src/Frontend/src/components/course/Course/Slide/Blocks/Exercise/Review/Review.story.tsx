@@ -1,9 +1,11 @@
 ﻿import React from "react";
-import { Review, ReviewProps } from "./Review";
+import Review from "./Review";
+import { ReviewProps } from "./Review.types";
 
 import type { Story } from "@storybook/react";
 import { UserInfo } from "src/utils/courseRoles";
 import { getMockedUser } from "../../../../../../comments/storiesData";
+import { InstructorReviewInfoWithAnchor } from "../../../InstructorReview/InstructorReview.types";
 
 const addingTime = "2020-12-03T20:03:29.9725057+05:00";
 
@@ -32,7 +34,7 @@ const comment = {
 	author: author
 };
 
-const review = {
+const review: InstructorReviewInfoWithAnchor = {
 	id: 0,
 	author: null,
 	startLine: 10,
@@ -42,7 +44,8 @@ const review = {
 	comment: "text **bold** __italic__ ```code```",
 	renderedComment: "text <b>bold</b> <i>italic</i> <pre>code</pre>",
 	addingTime: null,
-	comments: [comment, { ...comment, id: 1 }]
+	comments: [comment, { ...comment, id: 1 }],
+	anchor: 0,
 };
 
 const teacherReview = {
@@ -63,10 +66,11 @@ const props: ReviewProps = {
 	user: { ...author, id: '-1' },
 	onReviewClick: () => void (0),
 	addReviewComment: () => void (0),
-	addOrRemoveCommentToFavourite: () => void (0),
 	deleteReviewOrComment: () => void (0),
 	editReviewOrComment: () => void (0),
-	editor: null,
+	toggleReviewFavourite: () => void (0),
+	assignBotComment: () => void (0),
+	isReviewOrCommentCanBeAdded: () => true,
 };
 
 const Template: Story<ReviewProps> = (args: ReviewProps) =>

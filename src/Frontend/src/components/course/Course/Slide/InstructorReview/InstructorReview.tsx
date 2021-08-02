@@ -29,13 +29,10 @@ import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { Language } from "src/consts/languages";
 import { ReviewInfo, SubmissionInfo } from "src/models/exercise";
 import CodeMirror, { Editor, EditorConfiguration, MarkerRange, TextMarker, } from "codemirror";
-import {
-	AntiplagiarismStatusResponse,
-} from "src/models/instructor";
-
 import { InstructorReviewInfo, InstructorReviewInfoWithAnchor, Props, State } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
+import { FavouriteReview } from "src/models/instructor";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -51,7 +48,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	constructor(props: Props) {
 		super(props);
-
 		const { studentSubmissions, favouriteReviews, scoresBySubmissionId, } = props;
 
 		let currentSubmission: SubmissionInfo | undefined = undefined;
@@ -124,7 +120,7 @@ class InstructorReview extends React.Component<Props, State> {
 			getStudentGroups(courseId, studentId);
 		}
 		if(!favouriteReviews) {
-			getFavouriteReviews(courseId, studentId);
+			getFavouriteReviews(courseId, slideId);
 		}
 
 		if(currentSubmission) {
@@ -133,10 +129,20 @@ class InstructorReview extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate = (prevProps: Readonly<Props>, prevState: Readonly<State>): void => {
-		const { studentSubmissions, scoresBySubmissionId, } = this.props;
-		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
+		const { studentSubmissions, scoresBySubmissionId, getAntiPlagiarismStatus, slideContext, } = this.props;
+		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
+
+
+		if(currentTab !== prevState.currentTab) {
+			this.setState({
+				addCommentFormCoords: undefined,
+				addCommentRanges: undefined,
+			});
+		}
+
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
 			this.loadSubmission(studentSubmissions, 0);
+			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
 			return;
 		}
 
@@ -400,7 +406,6 @@ class InstructorReview extends React.Component<Props, State> {
 		const {
 			slideContext,
 			scoresBySubmissionId,
-			onProhibitFurtherReviewToggleChange,
 			prohibitFurtherManualChecking,
 			favouriteReviews,
 			studentSubmissions,
@@ -432,55 +437,63 @@ class InstructorReview extends React.Component<Props, State> {
 					prevReviewScore={ isNewReview && scoresBySubmissionId && diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
 					exerciseTitle={ slideContext.title }
 					onSubmit={ this.onScoreButtonPressed }
-					onToggleChange={ onProhibitFurtherReviewToggleChange }
+					onToggleChange={ this.prohibitFurtherReview }
 					toggleChecked={ prohibitFurtherManualChecking }
 				/>
 			</BlocksWrapper>
 		);
 	}
 
-	getAntiplagiarismStatus = (): Promise<AntiplagiarismStatusResponse | string> => {
-		const { currentSubmission, } = this.state;
-		const { getAntiplagiarismStatus, } = this.props;
+	prohibitFurtherReview = (prohibit: boolean): void => {
+		const {
+			prohibitFurtherReview,
+			slideContext,
+			student,
+		} = this.props;
 
-		if(currentSubmission) {
-			return getAntiplagiarismStatus(currentSubmission.id);
+		if(!student) {
+			return;
 		}
 
-		return Promise.resolve('no submission');
+		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, prohibit);
 	};
 
 	onScoreButtonPressed = (score: number): void => {
 		const {
+			scoresBySubmissionId,
 			onScoreSubmit,
+			student,
 		} = this.props;
 		const {
 			currentSubmission,
 		} = this.state;
 
-		if(!currentSubmission) {
+		if(!currentSubmission || !student || !scoresBySubmissionId) {
 			return;
 		}
 
-		onScoreSubmit(currentSubmission.id, score);
+		onScoreSubmit(currentSubmission.id, student.id, score, scoresBySubmissionId[currentSubmission.id]);
 	};
 
 	onZeroScoreButtonPressed = (): void => {
 		const {
 			onScoreSubmit,
-			onProhibitFurtherReviewToggleChange,
+			prohibitFurtherReview,
 			addReview,
+			slideContext,
+			student,
+			scoresBySubmissionId,
 		} = this.props;
 		const {
 			currentSubmission,
 		} = this.state;
 
-		if(!currentSubmission) {
+		if(!currentSubmission || !student || !scoresBySubmissionId) {
 			return;
 		}
 
-		onScoreSubmit(currentSubmission.id, 0);
-		onProhibitFurtherReviewToggleChange(false);
+		onScoreSubmit(currentSubmission.id, student.id, 0, scoresBySubmissionId[currentSubmission.id]);
+		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, false);
 		addReview(currentSubmission.id, this.shameComment, 0, 0, 0, 1).then(r => this.highlightReview(r.id));
 	};
 
@@ -507,9 +520,8 @@ class InstructorReview extends React.Component<Props, State> {
 
 	renderHeader = (fixed: boolean,): React.ReactElement =>
 		<AntiplagiarismHeader
+			status={ this.props.antiPlagiarismStatus }
 			fixed={ fixed }
-			shouldCheck={ true }
-			getAntiplagiarismStatus={ this.getAntiplagiarismStatus }
 			onZeroScoreButtonPressed={ this.onZeroScoreButtonPressed }
 		/>;
 
@@ -517,8 +529,6 @@ class InstructorReview extends React.Component<Props, State> {
 		const {
 			user,
 			favouriteReviews,
-			onToggleReviewFavourite,
-			onAddReviewToFavourite,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -526,15 +536,16 @@ class InstructorReview extends React.Component<Props, State> {
 			diffInfo,
 			showDiff,
 			addCommentFormCoords,
+			addCommentFormExtraSpace,
 			addCommentValue,
 		} = this.state;
 
 		if(!favouriteReviews || !currentSubmission) {
 			return null;
 		}
-
 		return (
-			<div className={ styles.positionWrapper }>
+			<div className={ styles.positionWrapper }
+				 style={ { marginBottom: addCommentFormCoords && addCommentFormExtraSpace } }>
 				<div className={ styles.wrapper }>
 					<UnControlled
 						onSelection={ this.onSelectionChange }
@@ -563,18 +574,31 @@ class InstructorReview extends React.Component<Props, State> {
 				</div>
 				{ addCommentFormCoords &&
 				<AddCommentForm
+					user={ this.props.user }
 					value={ addCommentValue }
 					valueCanBeAddedToFavourite={ this.isCommentCanBeAddedToFavourite() }
 					onValueChange={ this.onCommentFormValueChange }
 					addComment={ this.onFormAddComment }
-					comments={ favouriteReviews }
-					addCommentToFavourite={ onAddReviewToFavourite }
-					toggleCommentFavourite={ onToggleReviewFavourite }
+					favouriteReviews={ favouriteReviews }
+					addFavouriteReview={ this.addFavouriteReview }
+					deleteFavouriteReview={ this.deleteFavouriteReview }
 					coordinates={ addCommentFormCoords }
 					onClose={ this.onFormClose }
 				/> }
 			</div>
 		);
+	};
+
+	addFavouriteReview = (favouriteReviewText: string): Promise<FavouriteReview> => {
+		const { slideContext, addFavouriteReview, } = this.props;
+
+		return addFavouriteReview(slideContext.courseId, slideContext.slideId, favouriteReviewText);
+	};
+
+	deleteFavouriteReview = (favouriteReviewId: number): Promise<Response> => {
+		const { slideContext, deleteFavouriteReview, } = this.props;
+
+		return deleteFavouriteReview(slideContext.courseId, slideContext.slideId, favouriteReviewId);
 	};
 
 	getAllReviewsAsInstructorReviews = (): InstructorReviewInfoWithAnchor[] => {
@@ -613,9 +637,10 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onToggleReviewFavouriteByReviewId = (reviewId: number): void => {
 		const {
-			onToggleReviewFavourite,
-			onAddReviewToFavourite,
+			deleteFavouriteReview,
+			addFavouriteReview,
 			favouriteReviews,
+			slideContext,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -625,10 +650,10 @@ class InstructorReview extends React.Component<Props, State> {
 			const review = currentSubmission.manualCheckingReviews.find(r => r.id === reviewId);
 			if(review) {
 				const favouriteReview = favouriteReviews.find(r => r.text === review.comment);
-				if(favouriteReview) {
-					onToggleReviewFavourite(favouriteReview.id);
+				if(favouriteReview && favouriteReview.isFavourite) {
+					deleteFavouriteReview(slideContext.courseId, slideContext.slideId, favouriteReview.id);
 				} else {
-					onAddReviewToFavourite(review.comment);
+					addFavouriteReview(slideContext.courseId, slideContext.slideId, review.comment);
 				}
 			}
 		}
@@ -638,14 +663,15 @@ class InstructorReview extends React.Component<Props, State> {
 		return reviewText !== undefined && this.removeWhiteSpaces(reviewText).length > 0;
 	};
 
-	isCommentCanBeAddedToFavourite = (): boolean => {
+	isCommentCanBeAddedToFavourite = (text?: string,): boolean => {
 		const { addCommentValue, favouriteByUserSet, favouriteReviewsSet, } = this.state;
-		const trimmed = this.removeWhiteSpaces(addCommentValue);
+		text = text ?? addCommentValue;
+		const trimmed = this.removeWhiteSpaces(text);
 
 		return trimmed.length > 0 && !favouriteByUserSet?.has(trimmed) && !favouriteReviewsSet?.has(trimmed);
 	};
 
-	editReviewOrComment = (text: string, id: number, reviewId?: number,): void => {
+	editReviewOrComment = (text: string, reviewId: number, parentReviewId?: number,): void => {
 		const {
 			editReviewOrComment,
 		} = this.props;
@@ -655,8 +681,12 @@ class InstructorReview extends React.Component<Props, State> {
 
 		if(currentSubmission) {
 			const trimmed = this.removeWhiteSpaces(text);
+			const oldText = parentReviewId
+				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
+				c => c.id === reviewId)?.text || ''
+				: currentSubmission.manualCheckingReviews.find(r => r.id === reviewId)?.comment || '';
 
-			editReviewOrComment(trimmed, currentSubmission.id, id, reviewId);
+			editReviewOrComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
 		}
 	};
 
@@ -667,11 +697,15 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	onDeleteReviewOrComment = (reviewId: number, commentId?: number): void => {
-		const { deleteReviewOrComment, } = this.props;
+		const { deleteReview, deleteReviewComment, } = this.props;
 		const { currentSubmission, } = this.state;
 
 		if(currentSubmission) {
-			deleteReviewOrComment(currentSubmission.id, reviewId, commentId);
+			if(commentId) {
+				deleteReviewComment(currentSubmission.id, reviewId, commentId);
+			} else {
+				deleteReview(currentSubmission.id, reviewId);
+			}
 		}
 	};
 
@@ -824,7 +858,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 			if(selectedText.length > 0) {
 				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
-				coords = editor.charCoords({ line: endRange.line + 1, ch: 0 }, 'local');
+				coords = editor.charCoords({ line: endRange.line, ch: 0 }, 'local');
 
 				createTextMarker(
 					endRange.line,
@@ -835,9 +869,10 @@ class InstructorReview extends React.Component<Props, State> {
 					doc);
 			}
 		}
-
+		const linesCount = doc.lineCount();
 		this.setState({
 			addCommentFormCoords: coords,
+			addCommentFormExtraSpace: endRange.line + 15 > linesCount ? 20 * (16 - (linesCount - endRange.line)) : undefined,
 			addCommentRanges: { startRange, endRange, },
 		});
 		document.addEventListener('keydown', this.onEscPressed);
@@ -856,7 +891,7 @@ class InstructorReview extends React.Component<Props, State> {
 	assignBotComment = (reviewId: number): void => {
 		const {
 			addReview,
-			deleteReviewOrComment,
+			deleteReview,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -870,7 +905,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const review = reviews.find(r => r.id === reviewId);
 
 		if(review) {
-			deleteReviewOrComment(currentSubmission.id, reviewId);
+			deleteReview(currentSubmission.id, reviewId);
 
 			addReview(
 				currentSubmission.id,
@@ -884,7 +919,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onFormAddComment = (comment: string): void => {
 		const {
-			onAddReview,
 			addReview,
 		} = this.props;
 		const {
@@ -927,7 +961,6 @@ class InstructorReview extends React.Component<Props, State> {
 				endRange.ch
 			).then(r => this.highlightReview(r.id));
 		}
-		onAddReview(comment);
 
 		const doc = editor.getDoc();
 		doc

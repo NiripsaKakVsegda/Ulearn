@@ -4,82 +4,58 @@ import { Button, } from "ui";
 
 import cn from "classnames";
 
-import { AntiplagiarismStatusResponse, SuspicionLevel } from "src/models/instructor";
+import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
 
 import styles from './AntiplagiarismHeader.less';
 import texts from './AntiplagiarismHeader.texts';
 
 
-interface State extends AntiplagiarismStatusResponse {
-	loadingInfo: boolean;
-}
-
 export interface Props {
-	shouldCheck: boolean;
 	fixed: boolean;
-
-	getAntiplagiarismStatus: () => Promise<AntiplagiarismStatusResponse | string>;
+	status?: AntiPlagiarismStatusResponse;
 	onZeroScoreButtonPressed: () => void;
 }
 
 function AntiplagiarismHeader({
-	getAntiplagiarismStatus,
-	shouldCheck,
+	status,
 	onZeroScoreButtonPressed,
 	fixed,
 }: Props): React.ReactElement {
-	const [state, setState] = React.useState<State>(
-		{
-			suspicionLevel: shouldCheck ? 'running' : 'notChecking',
-			suspiciousAuthorsCount: 0,
-			loadingInfo: false,
-			status: 'notChecked',
-		});
-
-	if(shouldCheck && !state.loadingInfo && state.suspicionLevel === 'running') {
-		setState({ ...state, loadingInfo: true });
-		getAntiplagiarismStatus().then(c => {
-			const repsonse = c as AntiplagiarismStatusResponse;
-			if(repsonse) {
-				setState({ ...state, loadingInfo: false, ...repsonse });
-			}
-		});
-	}
-
 	let text: React.ReactNode;
 	let color = '';
-	switch (state.suspicionLevel) {
-		case "accepted": {
-			text = texts.getSuspicionText(0);
-			color = styles.noSuspicionColor;
-			break;
-		}
-		case "running": {
-			text = texts.runningText;
-			color = styles.runningColor;
-			break;
-		}
-		case "strongWarning": {
-			text = texts.getSuspicionText(state.suspiciousAuthorsCount, true);
-			color = styles.strongSuspicionColor;
-			break;
-		}
-		case "warning": {
-			text = texts.getSuspicionText(state.suspiciousAuthorsCount);
-			color = styles.suspicionColor;
-			break;
-		}
-		case "notChecking": {
+
+	if(status) {
+		if(status.status === 'notChecked') {
 			text = texts.notCheckingText;
 			color = styles.notCheckingColor;
-			break;
+		} else {
+			switch (status.suspicionLevel) {
+				case "none": {
+					text = texts.getSuspicionText(0);
+					color = styles.noSuspicionColor;
+					break;
+				}
+				case "strong": {
+					text = texts.getSuspicionText(status.suspiciousAuthorsCount, true);
+					color = styles.strongSuspicionColor;
+					break;
+				}
+				case "faint": {
+					text = texts.getSuspicionText(status.suspiciousAuthorsCount);
+					color = styles.suspicionColor;
+					break;
+				}
+			}
 		}
+	} else {
+		text = texts.runningText;
+		color = styles.runningColor;
 	}
 
 	return (
 		<div className={ cn(styles.header, color, { [styles.sticky]: fixed }) }>
 			<span className={ styles.text }>{ text }</span>
-			{ (shouldShowWarning(state.suspicionLevel)) &&
+			{ status && status.suspicionLevel == 'strong' &&
 			<>
 				<Link className={ cn(styles.seeDetailsLink, styles.text) } to={ '' }>
 					{ texts.buildLinkToAntiplagiarismText }
@@ -93,10 +69,6 @@ function AntiplagiarismHeader({
 			</> }
 		</div>
 	);
-
-	function shouldShowWarning(suspicionLevel: SuspicionLevel) {
-		return suspicionLevel === 'warning' || suspicionLevel === 'strongWarning';
-	}
 }
 
 export default AntiplagiarismHeader;

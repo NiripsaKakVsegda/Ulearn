@@ -1,5 +1,5 @@
 import api from "src/api";
-import { UsersSearchResponse } from "src/models/users";
+import { ShortUserInfo, UsersSearchResponse } from "src/models/users";
 import { buildQuery } from "src/utils";
 import { users } from "src/consts/routes";
 
@@ -14,3 +14,9 @@ export function getUserInfo(userId: string,): Promise<UsersSearchResponse> {
 	const url = users + query;
 	return api.get(url);
 }
+
+export function getOtherUserInfo(userId: string,): Promise<ShortUserInfo> {
+	const url = `${ users }/${ userId }`;
+	return api.get(url);
+}
+

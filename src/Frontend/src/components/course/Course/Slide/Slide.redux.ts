@@ -2,15 +2,15 @@ import { RootState } from "src/redux/reducers";
 import { Dispatch } from "redux";
 import { loadSlide } from "src/actions/slides";
 import { connect } from "react-redux";
-import Slide, { DispatchFromRedux, Props, PropsFromRedux } from "./Slide";
+import Slide, { DispatchFromRedux, PropsFromCourse, PropsFromRedux } from "./Slide";
 
-const mapStateToProps = (state: RootState, { courseId, slideInfo, }: Props
+const mapStateToProps = (state: RootState, { courseId, slideInfo, }: PropsFromCourse
 ): PropsFromRedux => {
 	const { slides, instructor, } = state;
 	const { slidesByCourses, slideLoading, slideError, } = slides;
 
 	const props: PropsFromRedux = {
-		slideLoading,
+		slideLoading: !!slideLoading,
 		slideBlocks: [],
 		slideError,
 		showHiddenBlocks: !instructor.isStudentMode,

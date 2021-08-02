@@ -171,7 +171,7 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
 	return {
-		getCurrentUser: () => api.account.getCurrentUser()(dispatch),
+		getCurrentUser: () => api.account.redux.getCurrentUser()(dispatch),
 		getCourses: () => api.courses.getCourses()(dispatch),
 		getNotificationsCount: () => api.notifications.getNotificationsCount()(dispatch),
 		setDeviceType: (deviceType: DeviceType) => dispatch(deviceChangeAction(deviceType)),

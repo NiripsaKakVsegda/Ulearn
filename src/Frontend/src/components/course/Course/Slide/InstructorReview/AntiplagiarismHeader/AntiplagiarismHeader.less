@@ -3,9 +3,9 @@
 .header {
   display: inline-flex;
   width: 100%;
-  height: 57px;
+  height: 54px;
 
-  padding: 8px 16px 15px;
+  padding: 8px 16px 24px;
   margin-bottom: -8px;
 
   font-family: @defaultFonts;
@@ -20,9 +20,18 @@
 }
 
 .sticky {
+  height:  46px;
   padding: 8px 16px;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0;
   border-bottom: 1px solid @lightGrey;
+}
+
+.stickyZIndex {
+  // z-index should be at least 6 at maximum 5000,
+  // otherwise it will overlap header menu dropdown(5000 z-index),
+  // or will be overlapped by code editor add comment form(5 z-index)
+  position: relative;
+  z-index: 6;
 }
 
 .text {

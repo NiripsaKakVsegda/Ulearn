@@ -81,7 +81,7 @@
   min-height: 0;
 
   padding: 0;
-  margin: 0;
+  margin: auto;
 
   .slide {
     border-radius: 0;
@@ -90,6 +90,10 @@
   .commentsWrapper {
     border-radius: 0;
   }
+}
+
+.rootWrapper.withoutNavigation.review {
+  min-height: calc(100vh - @headerHeight - @headerDividerHeight);
 }
 
 .slideButton {
@@ -143,6 +147,22 @@
   text-decoration: none;
 }
 
+.reviewButtonsWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.reviewButton {
+  margin-bottom: 16px;
+}
+
+.reviewQueueNumberLabel {
+  color: @additionalColor;
+  margin-bottom: 72px;
+}
+
 .footer {
   text-align: center;
   font-size: 12px;
@@ -175,6 +195,14 @@
     padding: @tabletSlidePadding 0 calc(@tabletSlidePadding * 2 + @additionalFooterMargins) 0;
 
     z-index: unset;
+  }
+
+  .rootWrapper.withoutNavigation {
+    max-width: 752px;
+
+    .slide {
+      border-radius: 24px;
+    }
   }
 
   .title {
@@ -217,6 +245,10 @@
     max-width: @laptopSlideWidth;
     margin-left: calc(@maxNavigationMenuWidth + (100vw - @maxNavigationMenuWidth - @laptopSlideWidth) / 2);
     padding: @laptopSlidePadding 0 calc(@desktopSlidePadding + @additionalFooterMargins) 0;
+  }
+
+  .rootWrapper.withoutNavigation {
+    max-width: 1254px;
   }
 
   .title {

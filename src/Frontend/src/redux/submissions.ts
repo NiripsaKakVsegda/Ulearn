@@ -1,0 +1,734 @@
+import {
+	SubmissionsAction,
+
+	SUBMISSIONS_ADD_SUBMISSION,
+	SubmissionsAddSubmissionAction,
+
+	REVIEWS_ADD_SCORE_START,
+	REVIEWS_ADD_SCORE_FAIL,
+	ReviewsAddScoreStartAction,
+	ReviewsAddScoreFailAction,
+
+	SUBMISSIONS_LOAD_START,
+	SUBMISSIONS_LOAD_SUCCESS,
+	SUBMISSIONS_LOAD_FAIL,
+	SubmissionsLoadStartAction,
+	SubmissionsLoadSuccessAction,
+	SubmissionsLoadFailAction,
+
+	REVIEWS_ADD_COMMENT_START,
+	REVIEWS_ADD_COMMENT_SUCCESS,
+	REVIEWS_ADD_COMMENT_FAIL,
+	ReviewsAddCommentStartAction,
+	ReviewsAddCommentSuccessAction,
+	ReviewsAddCommentFailAction,
+
+	REVIEWS_EDIT_START,
+	REVIEWS_EDIT_SUCCESS,
+	REVIEWS_EDIT_FAIL,
+	ReviewsEditStartAction,
+	ReviewsEditSuccessAction,
+	ReviewsEditFailAction,
+
+	REVIEWS_DELETE_COMMENT_START,
+	REVIEWS_DELETE_COMMENT_SUCCESS,
+	REVIEWS_DELETE_COMMENT_FAIL,
+	ReviewsDeleteCommentStartAction,
+	ReviewsDeleteCommentSuccessAction,
+	ReviewsDeleteCommentFailAction,
+
+	REVIEWS_ADD_FAIL,
+	REVIEWS_ADD_START,
+	REVIEWS_ADD_SUCCESS,
+	ReviewsAddFailAction,
+	ReviewsAddStartAction,
+	ReviewsAddSuccessAction,
+
+	REVIEWS_DELETE_START,
+	REVIEWS_DELETE_SUCCESS,
+	REVIEWS_DELETE_FAIL,
+	ReviewsDeleteStartAction,
+	ReviewsDeleteSuccessAction,
+	ReviewsDeleteFailAction,
+} from 'src/actions/submissions.types';
+import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse, } from "src/models/exercise";
+import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
+import { ReduxData } from "./index";
+import renderSimpleMarkdown from "../utils/simpleMarkdownRender";
+
+interface SubmissionsState {
+	submissionError: string | null;
+	lastCheckingResponse: RunSolutionResponse | null;
+
+	submissionsIdsByCourseIdBySlideIdByUserId: {
+		[courseId: string]: {
+			[slideId: string]: {
+				[studentId: string]: number[];
+			} | undefined;
+		} | undefined;
+	};
+
+	submissionsById: {
+		[submissionId: string]: SubmissionInfoRedux | undefined;
+	}
+
+	reviewsBySubmissionId: {
+		[submissionId: string]: {
+			automaticCheckingReviews: ReviewInfoRedux[] | null;
+			manualCheckingReviews: ReviewInfoRedux[];
+		} | undefined;
+	}
+
+	reviewScoresByUserIdBySubmissionId: {
+		[userId: string]: {
+			[submissionId: string]: number | undefined;
+		} | undefined;
+	}
+}
+
+const initialSubmissionsState: SubmissionsState = {
+	lastCheckingResponse: null,
+	submissionsIdsByCourseIdBySlideIdByUserId: {},
+	submissionsById: {},
+	reviewsBySubmissionId: {},
+	reviewScoresByUserIdBySubmissionId: {},
+	submissionError: null,
+};
+
+export default function submissions(state = initialSubmissionsState, action: SubmissionsAction): SubmissionsState {
+	switch (action.type) {
+		case SUBMISSIONS_ADD_SUBMISSION: {
+			const { courseId, slideId, userId, result } = action as SubmissionsAddSubmissionAction;
+			const { submission } = result;
+
+			let newState = {
+				...state,
+				lastCheckingResponse: { slideId, courseId, ...result },
+			};
+
+			const courseSubmissions = newState.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
+			const slideSubmissions = courseSubmissions?.[slideId] || {};
+			const userSubmissions = slideSubmissions?.[userId] || [];
+
+			if(submission) {
+				newState = {
+					...newState,
+					submissionsById: {
+						...newState.submissionsById,
+						[submission.id]: {
+							...submission,
+							manualCheckingReviews: undefined,
+							automaticChecking: { ...submission.automaticChecking, reviews: null, }
+						},
+					},
+					reviewsBySubmissionId: {
+						...newState.reviewsBySubmissionId,
+						[submission.id]: {
+							manualCheckingReviews: submission.manualCheckingReviews,
+							automaticCheckingReviews: submission.automaticChecking?.reviews || null,
+						}
+					},
+					submissionsIdsByCourseIdBySlideIdByUserId: {
+						...newState.submissionsIdsByCourseIdBySlideIdByUserId,
+						[courseId]: {
+							...courseSubmissions,
+							[slideId]: {
+								...slideSubmissions,
+								[userId]: [
+									...userSubmissions,
+									submission.id
+								]
+							}
+						}
+					}
+				};
+			}
+
+			return newState;
+		}
+
+		case REVIEWS_ADD_SCORE_START: {
+			const { submissionId, score, userId, } = action as ReviewsAddScoreStartAction;
+
+			return {
+				...state,
+				reviewScoresByUserIdBySubmissionId: {
+					...state.reviewScoresByUserIdBySubmissionId,
+					[userId]: {
+						...state.reviewScoresByUserIdBySubmissionId[userId],
+						[submissionId]: score,
+					},
+				}
+			};
+		}
+		case REVIEWS_ADD_SCORE_FAIL: {
+			const { submissionId, oldScore, userId, error, } = action as ReviewsAddScoreFailAction;
+
+			return {
+				...state,
+				reviewScoresByUserIdBySubmissionId: {
+					...state.reviewScoresByUserIdBySubmissionId,
+					[userId]: {
+						...state.reviewScoresByUserIdBySubmissionId[userId],
+						[submissionId]: oldScore,
+					},
+				}
+			};
+		}
+
+		case SUBMISSIONS_LOAD_START: {
+			const { userId, courseId, slideId, } = action as SubmissionsLoadStartAction;
+			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
+			const slideSubmissions = courseSubmissions?.[slideId] || {};
+			const userSubmissions = slideSubmissions?.[userId] || [];
+
+			//TODO isLoading?
+
+			return state;
+		}
+		case SUBMISSIONS_LOAD_SUCCESS: {
+			const {
+				userId,
+				courseId,
+				slideId,
+				response: { submissions, submissionsScores, },
+			} = action as SubmissionsLoadSuccessAction;
+			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
+			const slideSubmissions = courseSubmissions?.[slideId] || {};
+
+			const reviewScoresByUsers = state.reviewScoresByUserIdBySubmissionId;
+
+			const submissionsByIds = submissions.reduce((pv, cv) => {
+				pv[cv.id] = cv;
+				return pv;
+			}, {} as { [submissionId: string]: SubmissionInfoRedux });
+
+			const reviewsBySubmissionId = submissions.reduce((pv, cv) => {
+				pv[cv.id] = {
+					automaticCheckingReviews: cv.automaticChecking?.reviews || null,
+					manualCheckingReviews: cv.manualCheckingReviews
+				};
+				return pv;
+			}, {} as {
+				[submissionId: string]: {
+					automaticCheckingReviews: ReviewInfoRedux[] | null;
+					manualCheckingReviews: ReviewInfoRedux[];
+				}
+			});
+
+			return {
+				...state,
+				submissionsById: {
+					...state.submissionsById,
+					...submissionsByIds,
+				},
+				reviewScoresByUserIdBySubmissionId: {
+					...reviewScoresByUsers,
+					[userId]: {
+						...submissionsScores,
+					},
+				},
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					...reviewsBySubmissionId,
+				},
+				submissionsIdsByCourseIdBySlideIdByUserId: {
+					...state.submissionsIdsByCourseIdBySlideIdByUserId,
+					[courseId]: {
+						...courseSubmissions,
+						[slideId]: {
+							...slideSubmissions,
+							[userId]: Object.keys(submissionsByIds).map(id => parseInt(id)),
+						}
+					}
+				},
+			};
+		}
+		case SUBMISSIONS_LOAD_FAIL: {
+			const { error, } = action as SubmissionsLoadFailAction;
+
+
+			return {
+				...state,
+				submissionError: error,
+			};
+		}
+
+		case REVIEWS_ADD_START: {
+			const { submissionId, } = action as ReviewsAddStartAction;
+			//TODO isLoading?
+			return state;
+		}
+		case REVIEWS_ADD_SUCCESS: {
+			const { submissionId, review, } = action as ReviewsAddSuccessAction;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: [...reviews.manualCheckingReviews, review],
+					}
+				}
+			};
+		}
+		case REVIEWS_ADD_FAIL: {
+			const { submissionId, error, } = action as ReviewsAddFailAction;
+			//TODO error?
+			return state;
+		}
+
+		case REVIEWS_DELETE_START: {
+			const { submissionId, reviewId, } = action as ReviewsDeleteStartAction;
+			let reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+			reviews = { ...reviews };
+
+			const index = reviews.manualCheckingReviews.findIndex(r => r.id === reviewId);
+			reviews.manualCheckingReviews = [...reviews.manualCheckingReviews];
+			reviews.manualCheckingReviews[index] = {
+				...reviews.manualCheckingReviews[index],
+				isDeleted: true,
+			};
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: reviews,
+				}
+			};
+		}
+		case REVIEWS_DELETE_SUCCESS: {
+			const { submissionId, reviewId, } = action as ReviewsDeleteSuccessAction;
+			let reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+			reviews = { ...reviews };
+
+			reviews.manualCheckingReviews = reviews.manualCheckingReviews.filter(r => r.id !== reviewId);
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: reviews,
+				}
+			};
+		}
+		case REVIEWS_DELETE_FAIL: {
+			const { submissionId, reviewId, } = action as ReviewsDeleteFailAction;
+			let reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+			reviews = { ...reviews };
+
+			const index = reviews.manualCheckingReviews.findIndex(r => r.id === reviewId);
+			reviews.manualCheckingReviews = [...reviews.manualCheckingReviews];
+			reviews.manualCheckingReviews[index] = {
+				...reviews.manualCheckingReviews[index],
+				isDeleted: undefined,
+			};
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: reviews,
+				}
+			};
+		}
+
+		case REVIEWS_EDIT_START: {
+			const { submissionId, reviewId, text, parentReviewId, } = action as ReviewsEditStartAction;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			if(parentReviewId) {
+				const manualReviews = [...reviews.manualCheckingReviews];
+				const parentReviewIndex = manualReviews.findIndex(r => r.id === parentReviewId);
+
+				if(parentReviewIndex === -1) {
+					return state;
+				}
+
+				const parentReview = manualReviews[parentReviewIndex];
+				const index = parentReview.comments
+					.findIndex(c => (c as ReviewCommentResponse).id === reviewId);
+				parentReview.comments = [...parentReview.comments];
+				const comment = parentReview.comments[index] as ReviewCommentResponse;
+				comment.text = text;
+				comment.renderedText = renderSimpleMarkdown(text);
+
+				if(index === -1) {
+					return state;
+				}
+
+				return {
+					...state,
+					reviewsBySubmissionId: {
+						...state.reviewsBySubmissionId,
+						[submissionId]: {
+							...reviews,
+							manualCheckingReviews: manualReviews,
+						}
+					}
+				};
+			}
+
+			const manualReviews = [...reviews.manualCheckingReviews];
+			const parentReviewIndex = manualReviews.findIndex(r => r.id === reviewId);
+
+			if(parentReviewIndex === -1) {
+				return state;
+			}
+			manualReviews[parentReviewIndex].comment = text;
+			manualReviews[parentReviewIndex].renderedComment = renderSimpleMarkdown(text);
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: manualReviews,
+					}
+				}
+			};
+		}
+		case REVIEWS_EDIT_SUCCESS: {
+			const { submissionId, reviewId, parentReviewId, reviewOrComment, } = action as ReviewsEditSuccessAction;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			if(parentReviewId) {
+				const manualReviews = [...reviews.manualCheckingReviews];
+				const parentReviewIndex = manualReviews.findIndex(r => r.id === parentReviewId);
+
+				if(parentReviewIndex === -1) {
+					return state;
+				}
+
+				const parentReview = manualReviews[parentReviewIndex];
+				const index = parentReview.comments
+					.findIndex(c => (c as ReviewCommentResponse).id === reviewId);
+
+				if(index === -1) {
+					return state;
+				}
+
+				parentReview.comments = [...parentReview.comments];
+				parentReview.comments[index] = reviewOrComment as ReviewCommentResponse;
+
+				return {
+					...state,
+					reviewsBySubmissionId: {
+						...state.reviewsBySubmissionId,
+						[submissionId]: {
+							...reviews,
+							manualCheckingReviews: manualReviews,
+						}
+					}
+				};
+			}
+
+			const manualReviews = [...reviews.manualCheckingReviews];
+			const parentReviewIndex = manualReviews.findIndex(r => r.id === reviewId);
+
+			if(parentReviewIndex === -1) {
+				return state;
+			}
+			manualReviews[parentReviewIndex] = {
+				...reviewOrComment,
+				comments: manualReviews[parentReviewIndex].comments
+			} as ReviewInfo;
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: manualReviews,
+					}
+				}
+			};
+		}
+		case REVIEWS_EDIT_FAIL: {
+			const { submissionId, reviewId, oldText, parentReviewId, } = action as ReviewsEditFailAction;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			if(parentReviewId) {
+				const manualReviews = [...reviews.manualCheckingReviews];
+				const parentReviewIndex = manualReviews.findIndex(r => r.id === parentReviewId);
+
+				if(parentReviewIndex === -1) {
+					return state;
+				}
+
+				const parentReview = manualReviews[parentReviewIndex];
+				const index = parentReview.comments
+					.findIndex(c => (c as ReviewCommentResponse).id === reviewId);
+				parentReview.comments = [...parentReview.comments];
+				const comment = parentReview.comments[index] as ReviewCommentResponse;
+				comment.text = oldText;
+				comment.renderedText = renderSimpleMarkdown(oldText);
+
+				if(index === -1) {
+					return state;
+				}
+
+				return {
+					...state,
+					reviewsBySubmissionId: {
+						...state.reviewsBySubmissionId,
+						[submissionId]: {
+							...reviews,
+							manualCheckingReviews: manualReviews,
+						}
+					}
+				};
+			}
+
+			const manualReviews = [...reviews.manualCheckingReviews];
+			const parentReviewIndex = manualReviews.findIndex(r => r.id === reviewId);
+
+			if(parentReviewIndex === -1) {
+				return state;
+			}
+			manualReviews[parentReviewIndex].comment = oldText;
+			manualReviews[parentReviewIndex].renderedComment = renderSimpleMarkdown(oldText);
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: manualReviews,
+					}
+				}
+			};
+		}
+
+		case REVIEWS_ADD_COMMENT_START: {
+			const { submissionId, reviewId, text, } = action as ReviewsAddCommentStartAction;
+
+			return state;
+
+			/*	const reviews = state.reviewsBySubmissionId[submissionId];
+
+				if(!reviews) {
+					return state;
+				}
+
+				const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+				const review = newReviews.find(r => r.id === reviewId);
+				if(review) {
+					review.comments.push({ isLoading: true, tempIndex: text, });
+				}
+
+				return {
+					...state,
+					submissionError: null,
+					reviewsBySubmissionId: {
+						...state.reviewsBySubmissionId,
+						[submissionId]: {
+							...reviews,
+							manualCheckingReviews: newReviews,
+						}
+					}
+				};*/
+		}
+		case REVIEWS_ADD_COMMENT_SUCCESS: {
+			const { submissionId, reviewId, comment, } = action as ReviewsAddCommentSuccessAction;
+
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+			const review = newReviews.find(r => r.id === reviewId);
+			if(review) {
+				review.comments.push(comment);
+				/*	const index = review.comments.findIndex(c => (c as ReduxData)?.tempIndex === comment.text);
+					if(index > -1) {
+						review.comments[index] = comment;
+					}*/
+			}
+
+			return {
+				...state,
+				submissionError: null,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
+		case REVIEWS_ADD_COMMENT_FAIL: {
+			const { submissionId, reviewId, text, error, } = action as ReviewsAddCommentFailAction;
+
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+			const review = newReviews.find(r => r.id === reviewId);
+			if(review) {
+				const index = review.comments.findIndex(c => (c as ReduxData)?.tempIndex === text);
+				if(index > -1) {
+					review.comments[index] = { error };
+				}
+			}
+
+			return {
+				...state,
+				submissionError: error,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
+
+		case REVIEWS_DELETE_COMMENT_START: {
+			const {
+				submissionId,
+				reviewId,
+				commentId,
+			} = action as ReviewsDeleteCommentStartAction;
+
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+			const review = newReviews.find(r => r.id === reviewId);
+			if(review) {
+				const index = review.comments.findIndex(c => (c as ReviewCommentResponse)?.id === commentId);
+				if(index > -1) {
+					review.comments[index] = { ...review.comments[index], isDeleted: true };
+				}
+			}
+
+			return {
+				...state,
+				submissionError: null,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
+		case REVIEWS_DELETE_COMMENT_SUCCESS: {
+			const {
+				submissionId,
+				reviewId,
+				commentId,
+			} = action as ReviewsDeleteCommentSuccessAction;
+
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+			const review = newReviews.find(r => r.id === reviewId);
+			if(review) {
+				review.comments = review.comments.filter(c => (c as ReviewCommentResponse)?.id !== commentId);
+			}
+
+
+			return {
+				...state,
+				submissionError: null,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
+		case REVIEWS_DELETE_COMMENT_FAIL: {
+			const {
+				submissionId,
+				reviewId,
+				commentId,
+				error,
+			} = action as ReviewsDeleteCommentFailAction;
+
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = JSON.parse(JSON.stringify(reviews.manualCheckingReviews)) as ReviewInfoRedux[];
+			const review = newReviews.find(r => r.id === reviewId);
+			if(review) {
+				const index = review.comments.findIndex(c => (c as ReviewCommentResponse)?.id === commentId);
+				if(index > -1) {
+					review.comments[index] = { ...review.comments[index], isDeleted: undefined };
+				}
+			}
+
+
+			return {
+				...state,
+				submissionError: error,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
+
+		default:
+			return state;
+	}
+}

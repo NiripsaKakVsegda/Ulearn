@@ -4,9 +4,9 @@ import {
 	SolutionRunStatus,
 	SubmissionInfo
 } from "src/models/exercise";
-import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { Language } from "src/consts/languages";
 import CodeMirror, { Doc, MarkerRange, TextMarker } from "codemirror";
+import { ReduxData } from "src/redux";
 
 enum SubmissionColor {
 	MaxResult = "MaxResult", // Студенту больше ничего не может сделать, ни сийчам ни в будущем
@@ -15,7 +15,7 @@ enum SubmissionColor {
 	Message = "Message", // Сообщение, ни на что не влияющее, например, старая версия
 }
 
-interface ReviewInfoWithMarker extends ReviewInfoRedux {
+interface ReviewInfoWithMarker extends ReviewInfo {
 	markers: TextMarker[];
 }
 
@@ -83,10 +83,16 @@ function isSubmissionShouldBeEditable(submission: SubmissionInfo): boolean {
 }
 
 function getReviewsWithoutDeleted(reviews: ReviewInfoWithMarker[]): ReviewInfoWithMarker[] {
-	return reviews.map(r => ({ ...r, comments: r.comments.filter(c => !c.isDeleted && !c.isLoading) }));
+	return reviews.map(r => ({
+		...r, comments: r.comments.filter(c => {
+				const data = (c as ReduxData);
+				return data && !data.isDeleted && !data.isLoading;
+			}
+		)
+	}));
 }
 
-function getAllReviewsFromSubmission(submission: SubmissionInfoRedux): ReviewInfoRedux[] {
+function getAllReviewsFromSubmission(submission: SubmissionInfo): ReviewInfo[] {
 	if(!submission) {
 		return [];
 	}
@@ -114,7 +120,7 @@ function createTextMarker(
 }
 
 function getReviewsWithTextMarkers(
-	submission: SubmissionInfoRedux,
+	submission: SubmissionInfo,
 	exerciseCodeDoc: Doc,
 	markerClassName: string,
 ): ReviewInfoWithMarker[] {

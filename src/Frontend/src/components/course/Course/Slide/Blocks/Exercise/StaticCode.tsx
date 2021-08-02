@@ -90,8 +90,8 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 	}
 
 	function copyCodeButtonClicked() {
-		navigator.clipboard.writeText(code);
-		Toast.push(texts.controls.copyCode.onCopy);
+		navigator.clipboard.writeText(code)
+			.then(() => Toast.push(texts.controls.copyCode.onCopy));
 	}
 }
 

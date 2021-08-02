@@ -5,8 +5,8 @@ import {
 } from "src/actions/notifications.types";
 
 interface NotificationsState {
-	count: number,
-	lastTimestamp: string,
+	count: number;
+	lastTimestamp: string;
 }
 
 const initialNotificationsState: NotificationsState = {

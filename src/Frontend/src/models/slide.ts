@@ -39,7 +39,7 @@ export enum BlockTypes {
 
 interface Block {
 	$type: BlockTypes;
-	hide: boolean;
+	hide?: boolean;
 }
 
 interface SpoilerBlock extends Block {

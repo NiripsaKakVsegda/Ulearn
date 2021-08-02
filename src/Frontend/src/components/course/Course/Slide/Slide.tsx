@@ -7,7 +7,6 @@ import CourseLoader from "src/components/course/Course/CourseLoader";
 import { Block, BlockTypes, ShortSlideInfo, SlideType, SpoilerBlock, } from "src/models/slide";
 
 import InstructorReview from "./InstructorReview/InstructorReview.redux";
-import { RouteComponentProps } from "react-router-dom";
 import { getQueryStringParameter } from "src/utils";
 
 export interface SlideContext {
@@ -35,13 +34,15 @@ export interface DispatchFromRedux {
 	loadSlide: (courseId: string, slideId: string,) => void;
 }
 
-export interface Props extends PropsFromRedux, DispatchFromRedux, RouteComponentProps {
+export interface PropsFromCourse {
 	courseId: string;
 	slideInfo: ShortSlideInfo;
 
 	isLti: boolean;
 	isReview: boolean;
 }
+
+export type Props = PropsFromRedux & DispatchFromRedux & PropsFromCourse;
 
 class Slide extends React.Component<Props> {
 	componentDidMount(): void {
@@ -95,7 +96,6 @@ class Slide extends React.Component<Props> {
 			return <StudentModeSlide { ...slideProps } isHiddenSlide={ slideInfo.hide }/>;
 		}
 
-
 		return <DefaultSlide { ...slideProps }/>;
 	};
 }
@@ -137,21 +137,23 @@ const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 
 	const exerciseSlideBlockIndex = slideBlocks.findIndex(sb => sb.$type === BlockTypes.exercise);
 	const authorSolution = slideBlocks[slideBlocks.length - 1].$type === BlockTypes.code
-		? {
+		? [{
 			...slideBlocks[slideBlocks.length - 1],
 			hide: false,
-		}
+		}]
 		: undefined;
 	const formulation = slideBlocks.slice(0, exerciseSlideBlockIndex);
-	const exerciseSlideBlock = slideBlocks[exerciseSlideBlockIndex];
-	const userId = getQueryStringParameter('userId')!;
+	const userId = getQueryStringParameter('userId');
 
+	if(!userId) {
+		throw new Error("User id was not provided in query of " + window.location.href);
+	}
 
 	return <InstructorReview
 		studentId={ userId }
 		slideContext={ slideContext }
 		authorSolution={ authorSolution
-			? BlocksRenderer.renderBlocks([exerciseSlideBlock])
+			? BlocksRenderer.renderBlocks(authorSolution)
 			: undefined }
 		formulation={ formulation.length > 0
 			? BlocksRenderer.renderBlocks(formulation)

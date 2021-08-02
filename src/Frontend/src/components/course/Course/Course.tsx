@@ -61,7 +61,7 @@ const slideNavigationButtonTitles = {
 };
 
 interface State {
-	Page?: React.ReactNode;
+	Page?: React.ComponentType | React.ElementType;
 	title?: string;
 	highlightedUnit: string | null;
 	currentSlideInfo: CourseSlideInfo | null;
@@ -253,7 +253,7 @@ class Course extends Component<CourseProps, State> {
 			window.scrollTo(0, 0);
 
 			const slideInfo = getSlideInfoById(props.slideId, props.courseInfo);
-			const Page = Course.getOpenedPage(props.slideId, props.courseInfo, slideInfo?.slideType, props.pageInfo);
+			const Page = Course.getOpenedPage(props.slideId, props.courseInfo, slideInfo?.slideType);
 			const title = Course.getTitle(slideInfo?.current?.title);
 			if(slideInfo && slideInfo.current && slideInfo.current.id && progress && !isHijacked) {
 				updateVisitedSlide(courseId, slideInfo.current.id);
@@ -286,8 +286,7 @@ class Course extends Component<CourseProps, State> {
 		slideId: string | undefined,
 		courseInfo: CourseInfo | undefined,
 		slideType: SlideType | undefined,
-		pageInfo: PageInfo
-	): React.ReactNode => {
+	): React.ComponentType | React.ElementType => {
 		if(slideId === flashcardsPreview) {
 			return PreviewUnitPageFromAllCourse;
 		}
@@ -310,7 +309,7 @@ class Course extends Component<CourseProps, State> {
 
 		if(slideType &&
 			(slideType === SlideType.Lesson
-				|| (slideType === SlideType.Exercise && !pageInfo.isReview))) {
+				|| (slideType === SlideType.Exercise))) {
 			return Slide;
 		}
 
@@ -380,6 +379,7 @@ class Course extends Component<CourseProps, State> {
 		const wrapperClassName = classnames(
 			styles.rootWrapper,
 			{ [styles.withoutNavigation]: !isNavigationVisible }, // TODO remove isNavMenuVisible flag
+			{ [styles.review]: isReview }, // TODO remove isNavMenuVisible flag
 			{ [styles.forStudents]: isNavigationVisible && isStudentMode },
 		);
 
@@ -411,7 +411,8 @@ class Course extends Component<CourseProps, State> {
 						openUnitId={ openedUnit?.id }
 					/> }
 					{
-						Page === Slide
+						Page !== undefined &&
+						(Page === Slide
 							?
 							slideInfo && <Slide
 								courseId={ courseId }
@@ -420,13 +421,12 @@ class Course extends Component<CourseProps, State> {
 								isReview={ isReview }
 							/>
 							: <BlocksWrapper>
-								{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */ }
-								{/* @ts-ignore*/ }
 								<Page/>
-							</BlocksWrapper>
+							</BlocksWrapper>)
 					}
 				</div>
 				{ currentSlideInfo && isNavigationVisible && this.renderNavigationButtons(currentSlideInfo) }
+				{ isReview && this.renderReviewNavigationButtons() }
 				{ currentSlideInfo && currentSlideInfo.current
 				&& slideInfo && slideInfo.id && isNavigationVisible
 				&& this.renderComments(currentSlideInfo.current) }
@@ -480,9 +480,21 @@ class Course extends Component<CourseProps, State> {
 		);
 	}
 
+	renderReviewNavigationButtons(): React.ReactElement {
+		return (
+			<div className={ styles.reviewButtonsWrapper }>
+				<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
+					  to={ '' }>
+					Следующее решение
+				</Link>
+				<span className={ styles.reviewQueueNumberLabel }>Осталось 8 работ</span>
+			</div>
+		);
+	}
+
 	getPreviousSlideUrl = (slideInfo: CourseSlideInfo): string | null => {
 		const { courseId, } = this.props;
-		const { previous, current, } = slideInfo;
+		const { previous, } = slideInfo;
 
 		return previous
 			? constructPathToSlide(courseId, previous.slug)

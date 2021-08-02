@@ -7,15 +7,6 @@ export interface SlideComments {
 
 export type SlideCommentsResponse = SlideComments & Response;
 
-export enum ResponseStatus {
-	ok,
-	error,
-}
-
-export interface Response {
-	status: ResponseStatus;
-}
-
 export interface Pagination {
 	offset: number;
 	count: number;
@@ -53,9 +44,8 @@ export interface CommentPolicy {
 	onlyInstructorsCanReply: boolean;
 }
 
-export interface CommentPolicyResponse {
+export interface CommentPolicyResponse extends Response {
 	areCommentsEnabled: boolean;
 	moderationPolicy: string;
 	onlyInstructorsCanReply: boolean;
-	status: ResponseStatus;
 }

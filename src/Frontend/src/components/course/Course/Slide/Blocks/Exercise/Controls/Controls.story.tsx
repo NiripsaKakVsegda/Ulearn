@@ -4,10 +4,9 @@ import type { Story } from "@storybook/react";
 import Controls from "./Controls";
 import texts from "../Exercise.texts";
 import { Gapped } from "ui";
+import { mockFunc } from "src/utils/storyMock";
 
 const defaultHints: string[] = [];
-
-const mockFunc = () => ({});
 
 const defaultProps = {
 	isEditable: true,
@@ -67,7 +66,6 @@ const ListTemplate: Story<{ items: { props: typeof defaultProps, header: string 
 					<Controls.StatisticsHint attemptsStatistics={ props.attemptsStatistics }/>
 					{ (!props.hideSolutions && (props.hints.length === props.showedHintsCount || props.isShowAcceptedSolutionsAvailable))
 					&& <Controls.AcceptedSolutionsButton
-						acceptedSolutionsUrl={ '' }
 						onVisitAcceptedSolutions={ props.onVisitAcceptedSolutions }
 						isShowAcceptedSolutionsAvailable={ props.isShowAcceptedSolutionsAvailable }
 					/> }
@@ -174,7 +172,6 @@ export const OpenedAcceptedSolutionsButton = () => {
 		<Controls>
 			<Controls.AcceptedSolutionsButton
 				tooltipTrigger={ 'opened' }
-				acceptedSolutionsUrl={ '' }
 				onVisitAcceptedSolutions={ mockFunc }
 				isShowAcceptedSolutionsAvailable={ true }
 			/>

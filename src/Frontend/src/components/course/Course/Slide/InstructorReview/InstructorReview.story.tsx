@@ -12,8 +12,8 @@ import { returnPromiseAfterDelay } from "src/utils/storyMock";
 import { getMockedUser } from "../../../../comments/storiesData";
 import { instructor, renderMd, StoryUpdater } from "src/storiesUtils";
 import {
-	AntiplagiarismInfo,
-	AntiplagiarismStatusResponse,
+	AntiPlagiarismInfo,
+	AntiPlagiarismStatusResponse,
 	FavouriteReview,
 	FavouriteReviewResponse
 } from "src/models/instructor";
@@ -380,8 +380,6 @@ const args: Props = {
 			id: this.favouriteReviews?.length || 0,
 			renderedText: renderMd(commentText),
 			text: commentText,
-			useCount: 1,
-			isFavourite: true,
 		};
 
 		const existingCommentIndex = this.favouriteReviews?.findIndex(c => c.text === commentText);
@@ -400,13 +398,11 @@ const args: Props = {
 
 		return returnPromiseAfterDelay(loadingTimes.addReview, comment);
 	},
-	onAddReviewToFavourite(commentText: string) {
+	addReviewToFavourite(commentText: string) {
 		const comment: FavouriteReview = {
 			id: this.favouriteReviews?.length || 0,
 			renderedText: renderMd(commentText),
 			text: commentText,
-			useCount: 1,
-			isFavourite: true,
 		};
 
 		if(!this.favouriteReviews) {
@@ -442,7 +438,7 @@ const args: Props = {
 			}
 		);
 	},
-	onProhibitFurtherReviewToggleChange(value: boolean) {
+	prohibitFurtherReview(value: boolean) {
 		this.prohibitFurtherManualChecking = value;
 	},
 	onScoreSubmit(submissionId: number, score: number) {
@@ -549,22 +545,22 @@ const args: Props = {
 			return r;
 		});
 	},
-	getAntiplagiarismStatus(submissionId: number): Promise<AntiplagiarismStatusResponse | string> {
+	getAntiPlagiarismStatus(submissionId: number): Promise<AntiPlagiarismStatusResponse | string> {
 		const rnd = Math.random();
-		let suspicionLevel: AntiplagiarismInfo['suspicionLevel'] = 'accepted';
+		let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
 		let suspicionCount = 0;
 
 		if(extra.suspicionLevel === 1) {
 			suspicionCount = Math.ceil(rnd * 10);
-			suspicionLevel = 'warning';
+			suspicionLevel = 'faint';
 		}
 		if(extra.suspicionLevel === 2) {
 			suspicionCount = Math.ceil(rnd * 50);
-			suspicionLevel = "strongWarning";
+			suspicionLevel = "strong";
 		}
 		extra.suspicionLevel++;
 		extra.suspicionLevel %= 3;
-		const info: AntiplagiarismStatusResponse = {
+		const info: AntiPlagiarismStatusResponse = {
 			suspiciousAuthorsCount: suspicionCount,
 			suspicionLevel,
 			status: 'checked'

@@ -1,30 +1,30 @@
 import { SubmissionInfo, } from "./exercise";
 
-export interface StudentSubmissionsResponse {
+export interface SubmissionsResponse {
 	submissions: SubmissionInfo[];
 	submissionsScores: { [submissionId: number]: number; };
+	prohibitFurtherManualChecking: boolean;
 }
 
-export type SuspicionLevel = 'notChecking' | 'accepted' | 'warning' | 'strongWarning' | 'running';
+export type SuspicionLevel = 'none' | 'faint' | 'strong';
 
-export interface AntiplagiarismInfo {
+export interface AntiPlagiarismInfo {
 	suspicionLevel: SuspicionLevel;
 	suspiciousAuthorsCount: number;
 }
 
-export interface AntiplagiarismStatusResponse extends AntiplagiarismInfo {
+export interface AntiPlagiarismStatusResponse extends AntiPlagiarismInfo {
 	status: "notChecked" | "checked";
 }
 
 export interface FavouriteReview {
-	isFavourite: boolean;
 	renderedText: string;
 	text: string;
 	id: number;
-	useCount: number;
 }
 
 
 export interface FavouriteReviewResponse {
-	reviews: FavouriteReview[];
+	favouriteReviews: FavouriteReview[];
+	userFavouriteReviews: FavouriteReview[];
 }

@@ -1,10 +1,11 @@
 import { GroupInfo } from "src/models/groups";
 import { ReduxData } from "./index";
 import {
-	GROUPS_LOAD_FAIL,
+	GroupsAction,
+
 	GROUPS_LOAD_START,
 	GROUPS_LOAD_SUCCESS,
-	GroupsAction,
+	GROUPS_LOAD_FAIL,
 	GroupsLoadStartAction,
 	GroupsLoadSuccessAction,
 	GroupsLoadFailAction,

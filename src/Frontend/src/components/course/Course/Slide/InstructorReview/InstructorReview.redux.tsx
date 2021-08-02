@@ -6,82 +6,147 @@ import { buildUserInfo } from "src/utils/courseRoles";
 
 import { Dispatch } from "redux";
 import { RootState } from "src/redux/reducers";
-import {
-	getAntiplagiarismStatus,
-	getFavouriteReviews,
-	getStudentInfo,
-	getStudentSubmissions
-} from "src/api/instructor";
-import { getCourseGroupsRedux } from "src/api/groups";
+import api from "src/api";
 import { getDataIfLoaded } from "src/redux";
 import { SlideContext } from "../Slide";
 import { ShortGroupInfo } from "src/models/comments";
-import { ReviewInfo } from "src/models/exercise";
-import { FavouriteComment } from "./AddCommentForm/AddCommentForm";
-import { AntiplagiarismInfo } from "src/models/instructor";
 import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
+import { SubmissionInfo } from "src/models/exercise";
+import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
+
+interface Props {
+	slideContext: SlideContext;
+	studentId: string;
+}
+
+export const getSubmissionsWithReviews = (
+	courseId: string,
+	slideId: string,
+	userId: string | undefined,
+	submissionsIdsByCourseIdBySlideIdByUserId: {
+		[courseId: string]: {
+			[slideId: string]: {
+				[studentId: string]: number[];
+			} | undefined;
+		} | undefined;
+	},
+	submissionsById: {
+		[submissionId: string]: SubmissionInfoRedux | undefined;
+	},
+	reviewsBySubmissionId: {
+		[submissionId: string]: {
+			automaticCheckingReviews: ReviewInfoRedux[] | null;
+			manualCheckingReviews: ReviewInfoRedux[];
+		} | undefined;
+	}
+): SubmissionInfo[] | undefined => {
+	if(!userId) {
+		return undefined;
+	}
+	const studentSubmissionsIds = getDataIfLoaded(
+		submissionsIdsByCourseIdBySlideIdByUserId[courseId]
+			?.[slideId]
+			?.[userId]);
+
+	return studentSubmissionsIds
+		?.map(id => submissionsById[id]!)
+		.map(r => {
+			const reviews = reviewsBySubmissionId[r.id];
+
+			return ({
+				...r,
+				manualCheckingReviews: reviews?.manualCheckingReviews || [],
+				automaticChecking: {
+					...r.automaticChecking,
+					reviews: reviews?.automaticCheckingReviews || null,
+				},
+			} as SubmissionInfo);
+		});
+};
 
 const mapStateToProps = (
-	{ instructor, account, groups, }: RootState,
-	{ slideContext: { courseId, slideId, }, studentId }: {
-		slideContext: SlideContext;
-		studentId: string,
-	}
+	state: RootState,
+	{ slideContext: { courseId, slideId, }, studentId }: Props
 ): PropsFromRedux => {
-	const student = getDataIfLoaded(instructor.studentsById[studentId]);
-	const studentSubmissions = getDataIfLoaded(instructor
-		.submissionsByCourseId[courseId]
-		?.bySlideId[slideId]
-		?.byStudentId[studentId]);
+	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
+
+	const studentSubmissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			studentId,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+		);
+
+	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
-	const reduxGroups = getDataIfLoaded(groups.groupsIdsByUserId[studentId])
-		?.map(groupId => getDataIfLoaded(groups.groupById[groupId]));
+	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
+		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
 	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
 		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
 	}
+	const favouriteReviews = getDataIfLoaded(
+		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
+
+	const antiPlagiarismStatus = studentSubmissions && getDataIfLoaded(
+		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id]);
+
 	return {
-		user: buildUserInfo(account, courseId,),
-		favouriteReviews: [],
-		studentGroups: studentGroups,
+		user: buildUserInfo(state.account, courseId,),
+		favouriteReviews,
+		studentGroups,
 		student,
 		studentSubmissions,
-		antiplagiarismStatus: undefined,
-		prohibitFurtherManualChecking: true,
+		antiPlagiarismStatus,
+		prohibitFurtherManualChecking: state.instructor.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]?.[slideId]?.[studentId] || false,
+		scoresBySubmissionId,
 	};
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	return {
-		addReview(submissionId: number, comment: string, startLine: number, startPosition: number, finishLine: number,
-			finishPosition: number
-		): Promise<ReviewInfo> {
-			return Promise.resolve(undefined as unknown as ReviewInfo);
-		},
-		addReviewComment(submissionId: number, reviewId: number, comment: string): void {
-		},
-		deleteReviewOrComment(submissionId: number, reviewId: number, commentId: number | undefined): void {
-		},
-		getAntiPlagiarismStatus(): Promise<AntiplagiarismInfo> {
-			return Promise.resolve(undefined as unknown as AntiplagiarismInfo);
-		},
-		onAddReview(comment: string): Promise<FavouriteComment> {
-			return Promise.resolve(undefined as unknown as FavouriteComment);
-		},
-		onAddReviewToFavourite(comment: string): Promise<FavouriteComment> {
-			return Promise.resolve(undefined as unknown as FavouriteComment);
-		},
-		onProhibitFurtherReviewToggleChange(value: boolean): void {
-		},
-		onScoreSubmit(score: number): void {
-		},
-		onToggleReviewFavourite(commentId: number): void {
-		},
-		getStudentInfo: (studentId: string,) => getStudentInfo(studentId)(dispatch),
-		getStudentSubmissions: (studentId: string, courseId: string, slideId: string,) =>
-			getStudentSubmissions(studentId, courseId, slideId)(dispatch),
-		getAntiplagiarismStatus: (submissionId: string,) => getAntiplagiarismStatus(submissionId)(dispatch),
-		getFavouriteReviews: (courseId: string, slideId: string,) => getFavouriteReviews(courseId, slideId,)(dispatch),
-		getStudentGroups: (courseId: string, userId: string,) => getCourseGroupsRedux(courseId, userId)(dispatch)
+		addReview: (
+			submissionId: number,
+			text: string,
+			startLine: number, startPosition: number,
+			finishLine: number, finishPosition: number
+		) =>
+			api.submissions.redux
+				.addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
+		deleteReview: (submissionId, reviewId) =>
+			api.submissions.redux.deleteReview(submissionId, reviewId)(dispatch),
+
+		addReviewComment: (submissionId: number, reviewId: number, comment: string) =>
+			api.submissions.redux.addReviewComment(submissionId, reviewId, comment)(dispatch),
+		deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) =>
+			api.submissions.redux.deleteReviewComment(submissionId, reviewId, commentId)(dispatch),
+
+
+		addFavouriteReview: (courseId: string, slideId: string, text: string) =>
+			api.favouriteReviews.redux.addFavouriteReview(courseId, slideId, text)(dispatch),
+		deleteFavouriteReview: (courseId: string, slideId: string, favouriteReviewId: number) =>
+			api.favouriteReviews.redux.deleteFavouriteReview(courseId, slideId, favouriteReviewId)(dispatch),
+		editReviewOrComment: (submissionId: number, reviewId: number, parentReviewId: number | undefined, text: string,
+			oldText: string,
+		) => api.submissions.redux.editReviewOrComment(submissionId, reviewId, parentReviewId, text, oldText,)(
+			dispatch),
+
+		prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) =>
+			api.instructor.redux.prohibitFurtherManualChecking(courseId, slideId, userId, prohibit)(dispatch),
+		onScoreSubmit: (submissionId: number, userId: string, score: number, oldScore: number | undefined,) =>
+			api.submissions.redux.submitReviewScore(submissionId, userId, score, oldScore)(dispatch),
+
+		getStudentInfo: (studentId: string,) =>
+			api.instructor.redux.getStudentInfo(studentId)(dispatch),
+		getStudentSubmissions: (userId: string, courseId: string, slideId: string,) =>
+			api.submissions.redux.getUserSubmissions(userId, courseId, slideId)(dispatch),
+		getAntiPlagiarismStatus: (courseId: string, submissionId: number,) =>
+			api.instructor.redux.getAntiPlagiarismStatus(courseId, submissionId)(dispatch),
+		getFavouriteReviews: (courseId: string, slideId: string,) =>
+			api.favouriteReviews.redux.getFavouriteReviews(courseId, slideId,)(dispatch),
+		getStudentGroups: (courseId: string, userId: string,) =>
+			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch)
 	};
 };
 

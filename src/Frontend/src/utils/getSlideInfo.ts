@@ -32,7 +32,7 @@ export default function getSlideInfo(location: { pathname: string, search: strin
 			slideId = slideSlugOrAction.split('_').pop();
 		}
 
-		const isReview = params.CheckQueueItemId !== undefined;
+		const isReview = params.SubmissionId !== undefined && params.UserId !== undefined;
 
 		return {
 			slideId: slideId as string,

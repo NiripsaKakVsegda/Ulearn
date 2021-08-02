@@ -29,12 +29,12 @@ export interface ReviewProps {
 
 	isReviewOrCommentCanBeAdded: (reviewText: string) => boolean;
 	onReviewClick: (e: React.MouseEvent | React.FocusEvent, id: number,) => void;
-	addReviewComment: (reviewId: number, comment: string) => void;
-	deleteReviewOrComment: (id: number, reviewId?: number) => void;
-	editReviewOrComment: (text: string, id: number, reviewId?: number) => void;
-	assignBotComment?: (reviewId: number,) => void;
+	addReviewComment: (parentReviewId: number, comment: string) => void;
+	deleteReviewOrComment: (reviewId: number, parentReviewId?: number) => void;
+	editReviewOrComment: (text: string, reviewId: number, parentReviewId?: number) => void;
+	assignBotComment?: (botReviewId: number,) => void;
 
 	backgroundColor?: 'orange' | 'gray';
 
-	toggleReviewFavourite?: (id: number,) => void;
+	toggleReviewFavourite?: (favouriteReviewId: number,) => void;
 }
