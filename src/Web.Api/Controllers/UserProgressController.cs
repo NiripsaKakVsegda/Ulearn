@@ -193,19 +193,19 @@ namespace Ulearn.Web.Api.Controllers
 			return await UserProgress(course.Id, new UserProgressParameters());
 		}
 
-		[HttpPut("/{courseId}/{slideId}/prohibit-further-manual-checking")]
+		[HttpPut("{courseId}/{slideId}/prohibit-further-manual-checking")]
 		[Authorize(Policy = "Instructors")]
-		public async Task<ActionResult<UsersProgressResponse>> ProhibitFurtherManualChecking([FromRoute] string courseId, [FromRoute] Guid slideId, [FromQuery] string userId, [FromBody] bool prohibit)
+		public async Task<ActionResult> ProhibitFurtherManualChecking([FromRoute] string courseId, [FromRoute] Guid slideId, [FromQuery] string userId, [FromQuery] bool prohibit)
 		{
 			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), userId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "This student should be member of one of accessible for you groups");
 
-			if (prohibit)
+			if (!prohibit)
 				await slideCheckingsRepo.DisableProhibitFurtherManualCheckings(courseId, userId, slideId);
 			else
-				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
+				await slideCheckingsRepo.EnableProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
 
-			return await UserProgress(courseId, new UserProgressParameters());
+			return Ok("Prohibit further exercise manual checking " + (prohibit ? "enabled" : "disabled"));
 		}
 
 		/// <summary>

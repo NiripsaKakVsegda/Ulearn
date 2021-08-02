@@ -15,21 +15,19 @@ using Ulearn.Web.Api.Models.Responses.Review;
 namespace Ulearn.Web.Api.Controllers.Review
 {
 	[Route("/favourite-reviews")]
+	[Authorize(Policy = "Instructors")]
 	public class FavouriteReviewsController : BaseController
 	{
 		private readonly IFavouriteReviewsRepo favouriteReviewsRepo;
-		private readonly IUnitsRepo unitsRepo;
 
 		public FavouriteReviewsController(
 			ICourseStorage courseStorage,
 			UlearnDb db,
 			IFavouriteReviewsRepo favouriteReviewsRepo,
-			IUnitsRepo unitsRepo,
 			IUsersRepo usersRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.favouriteReviewsRepo = favouriteReviewsRepo;
-			this.unitsRepo = unitsRepo;
 		}
 
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -40,15 +38,14 @@ namespace Ulearn.Web.Api.Controllers.Review
 			var course = courseStorage.FindCourse(courseId);
 			if (course == null)
 			{
-				context.Result = NotFound(new ErrorResponse("Course not found"));
+				context.Result = NotFound(new ErrorResponse($"Course {courseId} not found"));
 				return;
 			}
 
-			var visibleUnitsIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
-			var slide = course.FindSlideById(slideId, true, visibleUnitsIds);
+			var slide = course.FindSlideByIdNotSafe(slideId);
 			if (slide == null)
 			{
-				context.Result = NotFound(new ErrorResponse("Slide not found"));
+				context.Result = NotFound(new ErrorResponse($"Slide with id {slideId} not found"));
 				return;
 			}
 
@@ -56,44 +53,41 @@ namespace Ulearn.Web.Api.Controllers.Review
 		}
 
 		[HttpGet]
-		[Authorize(Policy = "Instructors")]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, "You don't have access to view submissions")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course not found")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course {course} not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide with id {slideId} not found")]
 		public async Task<ActionResult<FavouriteReviewsResponse>> GetFavouriteReviews([FromQuery] string courseId, [FromQuery] Guid slideId)
 		{
 			var startDate = DateTime.Now.AddYears(-1).AddMonths(-6);
 
-			var favouriteReviews = await favouriteReviewsRepo.GetFavouriteReviewsForUser(courseId, slideId, UserId);
+			var userFavouriteReviews = await favouriteReviewsRepo.GetFavouriteReviewsForUser(courseId, slideId, UserId);
 			var favouriteReviewsForOthersUsers = await favouriteReviewsRepo.GetFavouriteReviewsForOtherUsers(courseId, slideId, UserId, startDate);
 
-			return FavouriteReviewsResponse.Build(favouriteReviews, favouriteReviewsForOthersUsers);
+			return FavouriteReviewsResponse.Build(favouriteReviewsForOthersUsers, userFavouriteReviews);
 		}
 
 		[HttpPost]
-		[Authorize(Policy = "Instructors")]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, "You don't have access to view submissions")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course not found")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course {course} not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide with id {slideId} not found")]
 		public async Task<ActionResult<FavouriteReviewResponse>> AddFavouriteReview([FromQuery] string courseId, [FromQuery] Guid slideId, [FromBody] string text)
 		{
-			var favouriteReview = await favouriteReviewsRepo.AddFavouriteReviewByUser(courseId, slideId, UserId, text);
-			return FavouriteReviewResponse.Build(favouriteReview);
+			var favouriteReviewByUser = await favouriteReviewsRepo.AddFavouriteReviewByUser(courseId, slideId, UserId, text);
+			return FavouriteReviewResponse.Build(favouriteReviewByUser);
 		}
 
 		[HttpDelete]
-		[Authorize(Policy = "Instructors")]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, "You don't have access to view submissions")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course not found")]
-		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Course {course} not found")]
+		[SwaggerResponse((int)HttpStatusCode.NotFound, "Slide with id {slideId} not found")]
 		[SwaggerResponse((int)HttpStatusCode.NotFound, "Favourite review with id {favouriteReviewId} not found")]
-		public async Task<ActionResult> DeleteFavouriteReview([FromQuery] string courseId, [FromQuery] Guid slideId, [FromQuery] int favouriteReviewId)
+		public async Task<ActionResult> DeleteFavouriteReviewByUser([FromQuery] string courseId, [FromQuery] Guid slideId, [FromQuery] int favouriteReviewId)
 		{
-			var favouriteReview = await favouriteReviewsRepo.FindFavouriteReviewByUser(favouriteReviewId);
-			if (favouriteReview == null)
+			var favouriteReviewByUser = await favouriteReviewsRepo.FindFavouriteReviewByUser(courseId, slideId, UserId, favouriteReviewId);
+			if (favouriteReviewByUser == null)
 				return NotFound(new ErrorResponse($"Favourite review with id {favouriteReviewId} not found"));
 
-			await favouriteReviewsRepo.DeleteFavouriteReviewByUser(favouriteReview);
+			await favouriteReviewsRepo.DeleteFavouriteReviewByUser(favouriteReviewByUser);
 
 			return Ok("Favourite review deleted");
 		}

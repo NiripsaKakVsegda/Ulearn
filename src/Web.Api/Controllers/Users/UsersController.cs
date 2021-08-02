@@ -136,7 +136,7 @@ namespace Ulearn.Web.Api.Controllers.Users
 			};
 		}
 
-		[HttpGet("/{userId}")]
+		[HttpGet("{userId}")]
 		public async Task<ActionResult<ShortUserInfo>> FindUserById([FromRoute] string userId)
 		{
 			var currentUser = await usersRepo.FindUserById(UserId);

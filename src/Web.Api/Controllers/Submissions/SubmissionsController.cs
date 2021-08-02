@@ -63,7 +63,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 					return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to view submissions"));
 			}
 			else
-				userId = UserId;
+				userId ??= UserId;
 
 			var submissions = await userSolutionsRepo
 				.GetAllSubmissionsByUserAllInclude(courseId, slideId, userId)
@@ -73,24 +73,25 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)
 				.ToDictionary(g => g.Key, g => g.AsEnumerable());
+			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking.ProhibitFurtherManualCheckings);
 
-			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin);
+			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
 
-		[HttpPost("/{submissionId}/score")]
+		[HttpPost("{submissionId}/score")]
 		[Authorize]
-		public async Task<ActionResult> Score([FromRoute] string submissionId, [FromBody] int score)
+		public async Task<ActionResult> Score([FromRoute] string submissionId, [FromQuery] int percent)
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 			var checking = submission.ManualChecking;
 
 			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), submission.UserId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
-			
+
 			/* Invalid form: score isn't from range 0..100 */
-			if (score is < 0 or > 100)
+			if (percent is < 0 or > 100)
 			{
-				return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {score}");
+				return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {percent}");
 			}
 
 			await using (var transaction = await db.Database.BeginTransactionAsync())
@@ -98,7 +99,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				var course = courseStorage.GetCourse(submission.CourseId);
 				var slide = course.FindSlideByIdNotSafe(submission.SlideId);
 
-				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, score);
+				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent);
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking);
 				await visitsRepo.UpdateScoreForVisit(checking.CourseId, slide, checking.UserId);
 
@@ -109,21 +110,21 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				await transaction.CommitAsync();
 			}
 
-			return Ok();
+			return Ok($"Submission {submissionId} scored {percent} successfully");
 		}
-		
+
 		private async Task NotifyAboutManualExerciseChecking(ManualExerciseChecking checking)
 		{
 			var isRecheck = (await notificationsRepo
-				.FindNotifications<PassedManualExerciseCheckingNotification>(n => n.CheckingId == checking.Id))
+					.FindNotifications<PassedManualExerciseCheckingNotification>(n => n.CheckingId == checking.Id))
 				.Any();
-			
+
 			var notification = new PassedManualExerciseCheckingNotification
 			{
 				Checking = checking,
 				IsRecheck = isRecheck,
 			};
-			
+
 			await notificationsRepo.AddNotification(checking.CourseId, notification, UserId);
 		}
 	}

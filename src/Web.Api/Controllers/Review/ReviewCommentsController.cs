@@ -37,7 +37,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		/// <summary>
 		/// Добавить комментарий к сделанному преподавателем ревью (т.е. замечанию к коду)
 		/// </summary>
-		[HttpPost("review/{reviewId}/comments")]
+		[HttpPost("reviews/{reviewId}/comments")]
 		[Authorize]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, "You don't have access to this comment")]
 		[SwaggerResponse((int)HttpStatusCode.TooManyRequests, "You are commenting too fast. Please wait some time")]
@@ -71,9 +71,29 @@ namespace Ulearn.Web.Api.Controllers.Review
 		}
 
 		/// <summary>
+		/// Изменить содержание ревью
+		/// </summary>
+		[HttpPatch("reviews/{reviewId}/comments/{commentId}")]
+		[Authorize]
+		public async Task<ActionResult<ReviewCommentResponse>> EditReviewComment([FromRoute] int commentId, [FromBody] ReviewCreateCommentParameters parameters)
+		{
+			var comment = await slideCheckingsRepo.FindExerciseCodeReviewCommentById(commentId);
+			if (comment == null)
+				return NotFound(new ErrorResponse($"Comment {commentId} not found"));
+
+			var courseId = comment.Review.ExerciseCheckingId.HasValue ? comment.Review.ExerciseChecking.CourseId : comment.Review.Submission.CourseId;
+			if (comment.AuthorId != UserId && !await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin))
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You can't delete this comment"));
+
+			await slideCheckingsRepo.EditExerciseCodeReviewComment(comment, parameters.Text);
+
+			return ReviewCommentResponse.Build(comment);
+		}
+
+		/// <summary>
 		/// Удалить комментарий к ревью
 		/// </summary>
-		[HttpDelete("review/{reviewId}/comments/{commentId:int:min(0)}")]
+		[HttpDelete("reviews/{reviewId}/comments/{commentId:int:min(0)}")]
 		[Authorize]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, "You don't have access to this comment")]
 		public async Task<ActionResult> DeleteExerciseCodeReviewComment([FromRoute] int reviewId, [FromRoute] int commentId)

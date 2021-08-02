@@ -16,17 +16,22 @@ namespace Ulearn.Web.Api.Models.Responses.Submissions
 		[DataMember]
 		public Dictionary<int, int?> SubmissionsScores { get; set; }
 
+		[DataMember]
+		public bool ProhibitFurtherManualChecking { get; set; }
+
 		public static SubmissionsResponse Build(
 			IEnumerable<UserExerciseSubmission> submissions,
 			Dictionary<int, int?> checkPercentBySubmissions,
 			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments,
-			bool showCheckerLogs = false
+			bool showCheckerLogs = false,
+			bool prohibitFurtherManualChecking = true
 		)
 		{
 			return new SubmissionsResponse
 			{
 				Submissions = submissions.Select(s => SubmissionInfo.Build(s, reviewId2Comments, showCheckerLogs)).ToList(),
 				SubmissionsScores = checkPercentBySubmissions,
+				ProhibitFurtherManualChecking = prohibitFurtherManualChecking,
 			};
 		}
 	}

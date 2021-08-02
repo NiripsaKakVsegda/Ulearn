@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Database.Models;
 using Ulearn.Common.Extensions;
+using Ulearn.Web.Api.Utils;
 
 namespace Ulearn.Web.Api.Models.Responses.Review
 {
@@ -39,12 +40,12 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 
 		public static FavouriteReviewResponse Build(FavouriteReview fr)
 		{
-			return new() { Id = fr.Id, Text = fr.Text, RenderedText = fr.Text.RenderSimpleMarkdown() };
+			return new() { Id = fr.Id, Text = fr.Text, RenderedText = CommentTextHelper.RenderCommentTextToHtml(fr.Text) };
 		}
 
 		public static FavouriteReviewResponse Build(FavouriteReviewByUser fr)
 		{
-			return new() { Id = fr.Id, Text = fr.FavouriteReview.Text, RenderedText = fr.FavouriteReview.Text.RenderSimpleMarkdown() };
+			return Build(fr.FavouriteReview);
 		}
 	}
 }

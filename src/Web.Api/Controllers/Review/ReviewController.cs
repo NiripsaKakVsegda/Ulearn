@@ -17,7 +17,7 @@ using Ulearn.Web.Api.Models.Responses.Exercise;
 
 namespace Ulearn.Web.Api.Controllers.Review
 {
-	[Route("reviews")]
+	[Route("/reviews")]
 	public class ReviewController : BaseController
 	{
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
@@ -38,7 +38,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 		{
 			var submissionId = (int)context.ActionArguments["submissionId"];
-			
+
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 
 			if (submission == null)
@@ -79,13 +79,14 @@ namespace Ulearn.Web.Api.Controllers.Review
 			}
 
 			var review = await slideCheckingsRepo.AddExerciseCodeReview(
-				submission,
+				submission.ManualChecking,
 				UserId,
 				parameters.StartLine,
 				parameters.StartPosition,
 				parameters.FinishLine,
 				parameters.FinishPosition,
-				parameters.Text);
+				parameters.Text,
+				true);
 
 			return ReviewInfo.Build(review, null, false);
 		}
@@ -117,7 +118,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		/// </summary>
 		[HttpPatch]
 		[Authorize]
-		public async Task<ActionResult<ReviewInfo>> EditReview([FromQuery] int submissionId, [FromQuery] int reviewId, [FromBody] string text)
+		public async Task<ActionResult<ReviewInfo>> EditReview([FromQuery] int submissionId, [FromQuery] int reviewId, [FromBody] ReviewParameters parameters)
 		{
 			var reviews = await userSolutionsRepo.FindSubmissionReviewsBySubmissionId(submissionId);
 			var review = reviews.FirstOrDefault(r => r.Id == reviewId);
@@ -129,7 +130,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			if (review.Author.Id != UserId)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to edit this review"));
 
-			await slideCheckingsRepo.UpdateExerciseCodeReview(review, text);
+			await slideCheckingsRepo.UpdateExerciseCodeReview(review, parameters.Text);
 			var newReview = await slideCheckingsRepo.FindExerciseCodeReviewById(reviewId);
 
 			return ReviewInfo.Build(newReview, null, false);
