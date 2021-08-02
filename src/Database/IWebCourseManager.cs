@@ -7,5 +7,6 @@ namespace Database
 	public interface IWebCourseManager : ISlaveCourseManager
 	{
 		Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId);
+		Task<byte[]> GetTempCourseZipBytes(string courseId);
 	}
 }

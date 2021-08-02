@@ -149,10 +149,19 @@ namespace uLearn.Web.Controllers
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
-		public ActionResult DownloadPackage(string courseId)
+		public async Task<ActionResult> DownloadPackage(string courseId)
 		{
-			var publishedVersionFile = coursesRepo.GetPublishedVersionFile(courseId);
-			return File(publishedVersionFile.File, "application/zip", courseId + ".zip");
+			var course = courseStorage.GetCourse(courseId);
+			var isTempCourse = course.IsTempCourse();
+			byte[] content;
+			if (isTempCourse)
+				content = await courseManager.GetTempCourseZipBytes(courseId).ConfigureAwait(false);
+			else
+			{
+				var publishedVersionFile = coursesRepo.GetPublishedVersionFile(courseId);
+				content = publishedVersionFile.File;
+			}
+			return File(content, "application/zip", courseId + ".zip");
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]

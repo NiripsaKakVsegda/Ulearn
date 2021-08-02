@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Database.DataContexts;
+using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Vostok.Logging.Abstractions;
@@ -61,6 +63,16 @@ namespace Database
 				await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			}
 			return !hasCourse;
+		}
+
+		public async Task<byte[]> GetTempCourseZipBytes(string courseId)
+		{
+			var path = GetExtractedCourseDirectory(courseId);
+			using (await CourseLock.AcquireReaderLockAsync(courseId).ConfigureAwait(false))
+			{
+				using var stream = ZipUtils.CreateZipFromDirectory(new List<string> { path.FullName }, new List<string> { CourseVersionToken.VersionFileName }, null);
+				return stream.ToArray();
+			}
 		}
 	}
 }

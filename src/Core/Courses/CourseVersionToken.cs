@@ -17,6 +17,8 @@ namespace Ulearn.Core.Courses
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseVersionToken));
 
+		public const string VersionFileName = ".version";
+
 		[DataMember(Name = "version", EmitDefaultValue = false)]
 		public Guid? Version { get; set; } // null для временных курсов и проверяемых курсов, для которых еще нет версии
 
@@ -47,12 +49,11 @@ namespace Ulearn.Core.Courses
 			LoadingTime = tempCourseLoadingTime;
 		}
 
-		private const string fileName = ".version";
 		[NotNull]
 		// Из общей папки читать CourseVersionToken нужно под дисковым локом на курс
 		public static CourseVersionToken Load(DirectoryInfo courseDirectory)
 		{
-			var versionFile = courseDirectory.GetFile(fileName);
+			var versionFile = courseDirectory.GetFile(VersionFileName);
 			if (!versionFile.Exists)
 			{
 				log.Error($".version not exists in {courseDirectory.FullName}");
@@ -64,7 +65,7 @@ namespace Ulearn.Core.Courses
 		// Из общей папки писать CourseVersionToken нужно под дисковым локом на курс
 		public async Task Save(DirectoryInfo directory)
 		{
-			var fullName = Path.Combine(directory.FullName, fileName);
+			var fullName = Path.Combine(directory.FullName, VersionFileName);
 			using var file = File.Open(fullName, FileMode.Create, FileAccess.Write, FileShare.None);
 			var json = JsonConvert.SerializeObject(this, Formatting.Indented);
 			var bytes = Encoding.UTF8.GetBytes(json);
@@ -73,7 +74,7 @@ namespace Ulearn.Core.Courses
 
 		public static void RemoveFile(DirectoryInfo courseDirectory)
 		{
-			var versionFile = courseDirectory.GetFile(fileName);
+			var versionFile = courseDirectory.GetFile(VersionFileName);
 			if (versionFile.Exists)
 				versionFile.Delete();
 		}
