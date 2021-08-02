@@ -13,20 +13,20 @@ namespace Database.Models
 
 		[StringLength(64)]
 		[Required]
-		[Index("IDX_Visits_ByCourseSlideAndUser", 3)]
+		[Index("IDX_Visits_ByCourseSlideAndUser", 3, IsUnique = true)]
 		[Index("IDX_Visits_ByCourseAndUser", 2)]
 		public string UserId { get; set; }
 
 		[Required]
 		[StringLength(100)]
-		[Index("IDX_Visits_ByCourseSlideAndUser", 1)]
+		[Index("IDX_Visits_ByCourseSlideAndUser", 1, IsUnique = true)]
 		[Index("IDX_Visits_ByCourseSlideAndTime", 1)]
 		[Index("IDX_Visits_ByCourseAndUser", 1)]
 		public string CourseId { get; set; }
 
 		[Required]
+		[Index("IDX_Visits_ByCourseSlideAndUser", 2, IsUnique = true)]
 		[Index("IDX_Visits_ByCourseSlideAndTime", 2)]
-		[Index("IDX_Visits_ByCourseSlideAndUser", 2)]
 		public Guid SlideId { get; set; }
 
 		///<summary>Первый заход на слайд</summary>
