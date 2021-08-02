@@ -18,6 +18,7 @@ using Database.DataContexts;
 using Database.Extensions;
 using Database.Models;
 using GitCourseUpdater;
+using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using Ulearn.Common;
 using uLearn.Web.Extensions;
@@ -813,9 +814,10 @@ namespace uLearn.Web.Controllers
 		{
 			var userRolesByEmail = User.IsSystemAdministrator() ? usersRepo.FilterUsersByEmail(queryModel) : null;
 			var userRoles = usersRepo.FilterUsers(queryModel);
-			var allTempCoursesIdsSet = tempCoursesRepo.GetAllTempCourses().Select(s => s.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);;
 			var courses = courseStorage.GetCourses()
-				.ToDictionary(c => c.Id, c => (c, IsTempCourse: allTempCoursesIdsSet.Contains(c.Id)), StringComparer.OrdinalIgnoreCase);
+				.ToDictionary(c => c.Id, c => (c, allTempCourses.GetValueOrDefault(c.Id)), StringComparer.OrdinalIgnoreCase);
 			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList(),
 				courses,
 				queryModel.CourseId);
@@ -824,7 +826,7 @@ namespace uLearn.Web.Controllers
 		}
 
 		private UserListModel GetUserListModel(List<UserRolesInfo> userRoles,
-			Dictionary<string, (Course, bool IsTempCourse)> courses,
+			Dictionary<string, (Course Course, TempCourse TempCourse)> courses,
 			string courseId)
 		{
 			var rolesForUsers = userRolesRepo.GetRolesByUsers(courseId);
@@ -852,19 +854,32 @@ namespace uLearn.Web.Controllers
 				if (!rolesForUsers.TryGetValue(userRolesInfo.UserId, out List<CourseRole> roles))
 					roles = new List<CourseRole>();
 
+				string visibleCourseName(string s)
+				{
+					var (course, tempCourse) = courses.GetOrDefault(s);
+					string visibleCourseName = null;
+					if (course != null)
+						visibleCourseName = tempCourse != null
+							? tempCourse.GetVisibleName(course.Title)
+							: courseStorage.GetCourse(course.Id).Title;
+					return visibleCourseName;
+				}
+
 				user.CourseRoles = Enum.GetValues(typeof(CourseRole))
 					.Cast<CourseRole>()
 					.Where(courseRole => courseRole != CourseRole.Student)
 					.ToDictionary(
 						courseRole => courseRole.ToString(),
-						courseRole => (ICoursesRolesListModel)new SingleCourseRolesModel
+						courseRole =>
 						{
-							HasAccess = roles.Contains(courseRole),
-							ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
-							UserName = user.UserVisibleName,
-							Role = courseRole,
-							CourseTitle = courses.GetOrDefault(courseId).Item1?.Title,
-							IsTempCourse = courses.GetOrDefault(courseId).Item2
+	return (ICoursesRolesListModel)new SingleCourseRolesModel
+							{
+								HasAccess = roles.Contains(courseRole),
+								ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
+								UserName = user.UserVisibleName,
+								Role = courseRole,
+								VisibleCourseName = visibleCourseName(courseId)
+							};
 						});
 
 				var courseAccesses = usersCourseAccesses.ContainsKey(user.UserId) ? usersCourseAccesses[user.UserId] : null;
@@ -879,8 +894,7 @@ namespace uLearn.Web.Controllers
 							ToggleUrl = Url.Action("ToggleCourseAccess", "Admin", new { courseId = courseId, userId = user.UserId, accessType = a }),
 							UserName = user.UserVisibleName,
 							AccessType = a,
-							CourseTitle = courses.GetOrDefault(courseId).Item1?.Title,
-							IsTempCourse = courses.GetOrDefault(courseId).IsTempCourse
+							VisibleCourseName = visibleCourseName(courseId)
 						}
 					);
 
@@ -1632,7 +1646,8 @@ namespace uLearn.Web.Controllers
 	{
 		public string Title { get; set; }
 		public string Id { get; set; }
-		public bool IsTemp { get; set; }
+		[CanBeNull]
+		public TempCourse TempCourse { get; set; }
 	}
 
 	public class PackagesViewModel

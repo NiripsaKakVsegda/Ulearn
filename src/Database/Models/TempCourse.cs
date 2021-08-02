@@ -17,5 +17,7 @@ namespace Database.Models
 		public string AuthorId { get; set; }
 
 		public virtual ApplicationUser Author { get; set; }
+
+		public string GetVisibleName(string baseCourseName) => $"Временный - {baseCourseName} - {Author.VisibleName}";
 	}
 }

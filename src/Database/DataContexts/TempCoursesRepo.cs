@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using Database.Models;
 
@@ -26,7 +26,7 @@ namespace Database.DataContexts
 
 		public List<TempCourse> GetAllTempCourses()
 		{
-			return db.TempCourses.ToList();
+			return db.TempCourses.Include(t => t.Author).ToList();
 		}
 
 		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память.

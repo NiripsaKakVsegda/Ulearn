@@ -436,7 +436,8 @@ namespace uLearn.Web.Controllers
 			else
 				courses = courses.OrderBy(course => course.Title, StringComparer.InvariantCultureIgnoreCase);
 
-			var allTempCoursesIdsSet = tempCoursesRepo.GetAllTempCourses().Select(c => c.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var model = new CourseListViewModel
 			{
 				Courses = courses
@@ -444,7 +445,7 @@ namespace uLearn.Web.Controllers
 					{
 						Id = course.Id,
 						Title = course.Title,
-						IsTemp = allTempCoursesIdsSet.Contains(course.Id)
+						TempCourse = allTempCourses.GetOrDefault(course.Id)
 					})
 					.ToList(),
 				LastTryCourseId = courseId,

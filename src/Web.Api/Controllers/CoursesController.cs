@@ -98,10 +98,8 @@ namespace Ulearn.Web.Api.Controllers
 			else
 				courses = courses.OrderBy(c => c.Title);
 
-			var tempCourseLabel = "Временный - ";
-			var allTempCoursesIdsSet = (await tempCoursesRepo.GetAllTempCourses()) // Все, потому что старые могут быть еще в памяти.
-				.Select(t => t.CourseId)
-				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = (await tempCoursesRepo.GetAllTempCourses()) // Все, потому что старые могут быть еще в памяти.
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var coursesList = courses.ToList();
 			var coursesLastVisits = await visitsRepo.GetLastVisitsForCourses(coursesList.Select(c => c.Id).ToHashSet(), UserId);
 			return new CoursesListResponse
@@ -110,9 +108,9 @@ namespace Ulearn.Web.Api.Controllers
 					.Select(c => new ShortCourseInfo
 					{
 						Id = c.Id,
-						Title = allTempCoursesIdsSet.Contains(c.Id) ? tempCourseLabel + c.Title : c.Title,
+						Title = allTempCourses.ContainsKey(c.Id) ? allTempCourses[c.Id].GetVisibleName(c.Title) : c.Title,
 						ApiUrl = Url.Action("CourseInfo", "Courses", new { courseId = c.Id }),
-						IsTempCourse = allTempCoursesIdsSet.Contains(c.Id),
+						IsTempCourse = allTempCourses.ContainsKey(c.Id),
 						Timestamp = coursesLastVisits.TryGetValue(c.Id, out var date) ? date : null,
 					}
 				).ToList()
@@ -173,17 +171,17 @@ namespace Ulearn.Web.Api.Controllers
 			var containsFlashcards = visibleUnits.Any(x => x.GetSlides(true).OfType<FlashcardSlide>().Any());
 			var scoringSettings = GetScoringSettings(course);
 			var tempCourseError = (await tempCoursesRepo.GetCourseError(courseId))?.Error;
-			var isTempCourse = await tempCoursesRepo.Find(courseId) != null;
+			var tempCourse = await tempCoursesRepo.Find(courseId);
 			return new CourseInfo
 			{
 				Id = course.Id,
-				Title = isTempCourse ? "Временный - " + course.Title : course.Title,
+				Title = tempCourse != null ? tempCourse.GetVisibleName(course.Title) : course.Title,
 				Description = course.Settings.Description,
 				Scoring = scoringSettings,
 				NextUnitPublishTime = await unitsRepo.GetNextUnitPublishTime(course.Id),
 				Units = units,
 				ContainsFlashcards = containsFlashcards,
-				IsTempCourse = isTempCourse,
+				IsTempCourse =  tempCourse != null,
 				TempCourseError = tempCourseError
 			};
 		}

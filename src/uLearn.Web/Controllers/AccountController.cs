@@ -96,14 +96,13 @@ namespace uLearn.Web.Controllers
 
 			var currentUserId = User.Identity.GetUserId();
 			var userIds = users.Select(u => u.UserId).ToList();
-			var allTempCoursesIdsSet = tempCoursesRepo.GetAllTempCourses() // Все, потому что старые могут быть еще в памяти.
-				.Select(t => t.CourseId)
-				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses() // Все, потому что старые могут быть еще в памяти.
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var model = new UserListModel
 			{
 				CanToggleRoles = User.HasAccess(CourseRole.CourseAdmin),
 				ShowDangerEntities = User.IsSystemAdministrator(),
-				Users = users.Select(user => GetUserModel(user, coursesForUsers, courses, allTempCoursesIdsSet)).ToList(),
+				Users = users.Select(user => GetUserModel(user, coursesForUsers, courses, allTempCourses)).ToList(),
 				UsersGroups = groupsRepo.GetUsersGroupsNamesAsStrings(courses, userIds, User, actual: true, archived: false),
 				UsersArchivedGroups = groupsRepo.GetUsersGroupsNamesAsStrings(courses, userIds, User, actual: false, archived: true),
 				CanViewAndToggleCourseAccesses = false,
@@ -115,7 +114,7 @@ namespace uLearn.Web.Controllers
 		}
 
 		private UserModel GetUserModel(UserRolesInfo userRoles, Dictionary<string, Dictionary<CourseRole, List<string>>> coursesForUsers,
-			List<string> coursesIds, HashSet<string> allTempCoursesIdsSet)
+			List<string> coursesIds, Dictionary<string, TempCourse> allTempCourses)
 		{
 			var user = new UserModel(userRoles)
 			{
@@ -144,13 +143,14 @@ namespace uLearn.Web.Controllers
 						{
 							Role = role,
 							CourseId = s,
-							CourseTitle = courseStorage.GetCourse(s).Title,
+							VisibleCourseName = allTempCourses.ContainsKey(s)
+								? allTempCourses[s].GetVisibleName(courseStorage.GetCourse(s).Title)
+								: courseStorage.GetCourse(s).Title,
 							HasAccess = coursesForUser.ContainsKey(role) && coursesForUser[role].Contains(s.ToLower()),
 							ToggleUrl = Url.Content($"~/Account/{nameof(ToggleRole)}?courseId={s}&userId={user.UserId}&role={role}"),
 							UserName = user.UserVisibleName,
-							IsTempCourse = allTempCoursesIdsSet.Contains(s)
 						})
-						.OrderBy(s => s.CourseTitle, StringComparer.InvariantCultureIgnoreCase)
+						.OrderBy(s => s.VisibleCourseName, StringComparer.InvariantCultureIgnoreCase)
 						.ToList()
 				};
 			}
@@ -321,9 +321,8 @@ namespace uLearn.Web.Controllers
 			var userCourses = courses.Where(c => userCoursesIds.Contains(c.Id.ToLower())).OrderBy(c => c.Title).ToList();
 
 			var allCourses = courses.ToDictionary(c => c.Id, c => c, StringComparer.InvariantCultureIgnoreCase);
-			var allTempCoursesIdsSet = tempCoursesRepo.GetAllTempCourses() // Все, потому что старые могут быть еще в памяти.
-				.Select(c => c.CourseId)
-				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses() // Все, потому что старые могут быть еще в памяти.
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var certificates = certificatesRepo.GetUserCertificates(user.Id).OrderBy(c => allCourses.GetOrDefault(c.Template.CourseId)?.Title ?? "<курс удалён>").ToList();
 
 			var courseGroups = userCourses.ToDictionary(c => c.Id, c => groupsRepo.GetUserGroupsNamesAsString(c.Id, userId, User, actual: true, archived: false, maxCount: 10));
@@ -340,7 +339,7 @@ namespace uLearn.Web.Controllers
 				CourseArchivedGroups = courseArchivedGroups,
 				Certificates = certificates,
 				AllCourses = allCourses,
-				AllTempCoursesIdsSet = allTempCoursesIdsSet,
+				AllTempCourses = allTempCourses,
 				CoursesWithRoles = coursesWithRoles,
 				CoursesWithAccess = coursesWithAccess
 			});
@@ -908,7 +907,7 @@ namespace uLearn.Web.Controllers
 		public Dictionary<string, string> CourseGroups { get; set; }
 		public Dictionary<string, string> CourseArchivedGroups { get; set; }
 		
-		public HashSet<string> AllTempCoursesIdsSet { get; set; }
+		public Dictionary<string, TempCourse> AllTempCourses { get; set; }
 
 		public List<string> CoursesWithRoles;
 

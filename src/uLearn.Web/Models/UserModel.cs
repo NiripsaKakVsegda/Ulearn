@@ -45,24 +45,21 @@ namespace uLearn.Web.Models
 		public bool HasAccess { get; set; }
 		public string ToggleUrl { get; set; }
 
-		public string CourseTitle { get; set; }
-
 		public string UserName { get; set; }
 
 		public CourseRole Role { get; set; }
 
-		public bool IsTempCourse { get; set; }
+		public string VisibleCourseName { get; set; }
 	}
 
 	public class CourseRoleModel
 	{
 		public string CourseId { get; set; }
-		public string CourseTitle { get; set; }
+		public string VisibleCourseName { get; set; }
 		public bool HasAccess { get; set; }
 		public string ToggleUrl { get; set; }
 		public string UserName { get; set; }
 		public CourseRole Role { get; set; }
-		public bool IsTempCourse { get; set; }
 	}
 
 	public class ManyCourseRolesModel : ICoursesRolesListModel
@@ -77,13 +74,12 @@ namespace uLearn.Web.Models
 		public string ToggleUrl { get; set; }
 		public string UserName { get; set; }
 		public CourseAccessType AccessType { get; set; }
-		public string CourseTitle { get; set; }
+		public string VisibleCourseName { get; set; }
 	}
 
 	public class CourseAccessModel : AccessModel
 	{
 		public string CourseId { get; set; }
-		public bool IsTempCourse { get; set; }
 	}
 
 	public class SystemAccessModel : AccessModel

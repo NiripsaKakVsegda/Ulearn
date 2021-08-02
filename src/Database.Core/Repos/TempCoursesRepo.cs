@@ -19,12 +19,12 @@ namespace Database.Repos
 
 		public async Task<TempCourse> Find(string courseId)
 		{
-			return await db.TempCourses.SingleOrDefaultAsync(course => course.CourseId == courseId);
+			return await db.TempCourses.Include(t => t.Author).SingleOrDefaultAsync(course => course.CourseId == courseId);
 		}
 
 		public async Task<List<TempCourse>> GetAllTempCourses()
 		{
-			return await db.TempCourses.ToListAsync();
+			return await db.TempCourses.Include(t => t.Author).ToListAsync();
 		}
 
 		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память.

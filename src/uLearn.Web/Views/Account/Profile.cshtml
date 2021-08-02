@@ -1,4 +1,5 @@
-﻿@using Database.Extensions
+﻿@using ApprovalUtilities.Utilities
+@using Database.Extensions
 @using uLearn.Web.Extensions
 @using uLearn.Web.Kontur.Passport
 @using uLearn.Web.Microsoft.Owin.Security.VK
@@ -84,10 +85,10 @@
 		<ol>
 			@foreach (var course in Model.UserCourses)
 			{
-				var isTempCourse = Model.AllTempCoursesIdsSet.Contains(course.Id);
-				var isTempLabel = isTempCourse ? "Временный - " : "";
+				var isTempCourse = Model.AllTempCourses.ContainsKey(course.Id);
+				var visibleCourseName = isTempCourse ? Model.AllTempCourses[course.Id].GetVisibleName(course.Title) : course.Title;
 				<li>
-					@Html.ActionLink(isTempLabel + course.Title, "CourseInfo", new { userId = Model.User.Id, courseId = course.Id })
+					@Html.ActionLink(visibleCourseName, "CourseInfo", new { userId = Model.User.Id, courseId = course.Id })
 					@if (!string.IsNullOrEmpty(Model.CourseGroups[course.Id]))
 					{
 						<div title="Группы, в которых состоит студент">
@@ -118,12 +119,12 @@
 			}
 			@foreach (var courseId in courseIds)
 			{
-				var isTempCourse = Model.AllTempCoursesIdsSet.Contains(courseId);
 				if (Model.AllCourses.TryGetValue(courseId, out var course))
 				{
-					var isTempLAbel = isTempCourse ? "Временный - " : "";
+					var isTempCourse = Model.AllTempCourses.ContainsKey(course.Id);
+					var visibleCourseName = isTempCourse ? Model.AllTempCourses[course.Id].GetVisibleName(course.Title) : course.Title;
 					<li>
-						@Html.ActionLink(isTempLAbel + course.Title, "ToggleRolesHistory", new { userId = Model.User.Id, courseId = course.Id })
+						@Html.ActionLink(visibleCourseName, "ToggleRolesHistory", new { userId = Model.User.Id, courseId = course.Id })
 					</li>
 				}
 			}
