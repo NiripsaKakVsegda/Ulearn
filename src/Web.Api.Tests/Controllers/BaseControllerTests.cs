@@ -14,6 +14,7 @@ using Moq;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Ulearn.Common;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api;
 using Ulearn.Web.Api.Controllers;
 using Vostok.Logging.Microsoft;
@@ -61,6 +62,10 @@ namespace Web.Api.Tests.Controllers
 
 			serviceProvider = ConfigureServices(addServices);
 
+			var coursesDirectory = CourseManager.CoursesDirectory;
+			coursesDirectory.Delete(true);
+			CourseManager.EnsureDirectoriesExist();
+
 			await CreateInitialDataInDatabaseAsync().ConfigureAwait(false);
 			await CreateTestUsersAsync().ConfigureAwait(false);
 
@@ -76,8 +81,10 @@ namespace Web.Api.Tests.Controllers
 		private async Task CreateInitialDataInDatabaseAsync()
 		{
 			var initialDataCreator = serviceProvider.GetService<InitialDataCreator>();
-			await initialDataCreator.CreateRoles().ConfigureAwait(false);
-			await initialDataCreator.CreateUlearnBotUser().ConfigureAwait(false);
+			await initialDataCreator.CreateRoles();
+			await initialDataCreator.CreateUlearnBotUser();
+			await initialDataCreator.AddExampleCourse();
+			await initialDataCreator.AddErrorCourse();
 		}
 
 		private static UlearnDb CreateDbContext(ILoggerFactory loggerFactory)

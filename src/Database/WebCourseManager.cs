@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Database.DataContexts;
-using Database.Models;
-using Vostok.Logging.Abstractions;
+using Ulearn.Common;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
+using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Manager;
 
 namespace Database
 {
-	public class WebCourseManager : CourseManager, IWebCourseManager, ICourseUpdater
+	public class WebCourseManager : CourseManager, IWebCourseManager
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(WebCourseManager));
 
@@ -18,94 +19,59 @@ namespace Database
 		public static IWebCourseManager CourseManagerInstance => courseManagerInstance;
 		public static ICourseUpdater CourseUpdaterInstance => courseManagerInstance;
 
-		private readonly Dictionary<string, Guid> loadedCourseVersions = new Dictionary<string, Guid>();
-
 		private WebCourseManager()
-			: base(GetCoursesDirectory())
 		{
 		}
 
-		private readonly object @lock = new object();
-
 		public async Task UpdateCourses()
 		{
-			LoadCoursesIfNotYet();
 			var coursesRepo = new CoursesRepo();
 			var publishedCourseVersions = coursesRepo.GetPublishedCourseVersions();
-			foreach (var courseVersion in publishedCourseVersions)
+			foreach (var publishedVersion in publishedCourseVersions)
 			{
-				if (CourseIsBroken(courseVersion.CourseId))
-					continue;
-				try
-				{
-					ReloadCourseIfLoadedAndPublishedVersionsAreDifferent(courseVersion.CourseId, courseVersion);
-				}
-				catch (FileNotFoundException)
-				{
-					/* Sometimes zip-archive with course has been deleted already. It's strange but ok */
-					log.Warn("Это странно, что я не смог загрузить с диска курс, который, если верить базе данных, был опубликован. Но ничего, просто проигнорирую");
-				}
+				var courseId = publishedVersion.CourseId;
+				var publishedVersionId = publishedVersion.Id;
+				await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, new CourseVersionToken(publishedVersionId), TimeSpan.FromSeconds(0.1));
 			}
 		}
 
 		public async Task UpdateTempCourses()
 		{
-			TryCheckTempCoursesAndReloadIfNecessary();
+			var tempCoursesRepo = new TempCoursesRepo();
+			var recentTempCourses = tempCoursesRepo.GetRecentTempCourses();
+			foreach (var tempCourse in recentTempCourses)
+			{
+				var courseId = tempCourse.CourseId;
+				var publishedLoadingTime = tempCourse.LoadingTime;
+				await UpdateCourseOrTempCourseToVersionFromDirectory(courseId, new CourseVersionToken(publishedLoadingTime), TimeSpan.FromSeconds(0.1));
+			}
 		}
 
-		private void ReloadCourseIfLoadedAndPublishedVersionsAreDifferent(string courseId, CourseVersion publishedVersion)
+		public async Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId)
 		{
-			lock (@lock)
+			var coursesRepo = new CoursesRepo();
+			var hasCourse = coursesRepo.GetPublishedCourseVersion(courseId) != null;
+			if (!hasCourse)
 			{
-				var isCourseLoaded = loadedCourseVersions.TryGetValue(courseId.ToLower(), out var loadedVersionId);
-				if ((isCourseLoaded && loadedVersionId != publishedVersion.Id) || !isCourseLoaded)
+				var helpVersionFile = coursesRepo.GetPublishedVersionFile(ExampleCourseId);
+				using (var exampleCourseZip = SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), new MemoryStream(helpVersionFile.File)))
 				{
-					var actual = isCourseLoaded ? loadedVersionId.ToString() : "<none>";
-					log.Info($"Загруженная версия курса {courseId} отличается от актуальной ({actual} != {publishedVersion.Id}). Обновляю курс.");
-					TryReloadCourse(courseId);
+					CourseZipWithTitleUpdater.Update(exampleCourseZip.FileInfo, courseTitle);
+					await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, await exampleCourseZip.FileInfo.ReadAllContentAsync()
+						.ConfigureAwait(false)).ConfigureAwait(false);
 				}
-				loadedCourseVersions[courseId.ToLower()] = publishedVersion.Id;
+				await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			}
+			return !hasCourse;
 		}
 
-		public void UpdateCourseVersion(string courseId, Guid versionId)
+		public async Task<byte[]> GetTempCourseZipBytes(string courseId)
 		{
-			lock (@lock)
+			var path = GetExtractedCourseDirectory(courseId);
+			using (await CourseLock.AcquireReaderLockAsync(courseId).ConfigureAwait(false))
 			{
-				loadedCourseVersions[courseId.ToLower()] = versionId;
-			}
-		}
-
-		private void TryCheckTempCoursesAndReloadIfNecessary()
-		{
-			try
-			{
-				var tempCoursesRepo = new TempCoursesRepo();
-				var tempCourses = tempCoursesRepo.GetTempCoursesNoTracking();
-				foreach (var tempCourse in tempCourses)
-				{
-					var courseId = tempCourse.CourseId;
-					if (CourseIsBroken(courseId))
-						continue;
-					Course course = null;
-					try
-					{
-						course = CourseStorageInstance.GetCourse(courseId);
-					}
-					catch (Exception ex)
-					{
-						log.Error(ex);
-					}
-					if (course == null || course.GetSlidesNotSafe().Count == 0)
-					{
-						TryReloadCourse(courseId);
-						tempCoursesRepo.UpdateTempCourseLastUpdateTime(courseId);
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				log.Error(ex);
+				using var stream = ZipUtils.CreateZipFromDirectory(new List<string> { path.FullName }, new List<string> { CourseVersionToken.VersionFileName }, null);
+				return stream.ToArray();
 			}
 		}
 	}

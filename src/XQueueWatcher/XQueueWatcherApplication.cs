@@ -51,7 +51,7 @@ namespace XQueueWatcher
 		{
 			base.ConfigureDi(services);
 			services.AddSingleton<UpdateCoursesWorker>();
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(true);
 		}
 
 		public async Task StartXQueueWatchers(CancellationToken cancellationToken)

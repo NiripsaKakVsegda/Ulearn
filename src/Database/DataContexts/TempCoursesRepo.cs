@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using Database.Models;
 
 namespace Database.DataContexts
@@ -25,24 +24,20 @@ namespace Database.DataContexts
 			return db.TempCourses.Find(courseId);
 		}
 
-		public List<TempCourse> GetTempCourses()
+		public List<TempCourse> GetAllTempCourses()
 		{
-			return db.TempCourses.ToList();
+			return db.TempCourses.Include(t => t.Author).ToList();
 		}
 
-		public List<TempCourse> GetTempCoursesNoTracking()
+		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память.
+		public List<TempCourse> GetRecentTempCourses()
 		{
-			return db.TempCourses.AsNoTracking().ToList();
-		}
-
-		public void UpdateTempCourseLastUpdateTime(string courseId)
-		{
-			var course = db.TempCourses.Find(courseId);
-			if (course == null)
-				return;
-
-			course.LastUpdateTime = DateTime.Now;
-			db.SaveChanges();
+			// Пока что загружаются все временные курсы.
+			// Потому что связанные с курсом объекты могут всплыть в других запросах вроде дай мне все доступные группы.
+			// И это может привести к некорректным данным или исключению.
+			return GetAllTempCourses();
+			// var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
+			// return db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToList();
 		}
 	}
 }

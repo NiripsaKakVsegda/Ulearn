@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Database.Models;
+using Ulearn.Core.Courses;
 
 namespace Database.Repos
 {
 	public interface ITempCoursesRepo
 	{
-		Task<TempCourse> FindAsync(string courseId);
-		Task<List<TempCourse>> GetTempCoursesAsync();
-		Task<TempCourseError> GetCourseErrorAsync(string courseId);
-		Task<TempCourse> AddTempCourseAsync(string courseId, string authorId);
-		Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId);
-		Task<DateTime> UpdateTempCourseLastUpdateTimeAsync(string courseId);
-		Task<TempCourseError> UpdateOrAddTempCourseErrorAsync(string courseId, string error);
-		Task MarkTempCourseAsNotErroredAsync(string courseId);
+		Task<TempCourse> Find(string courseId);
+		Task<List<TempCourse>> GetAllTempCourses();
+		Task<List<TempCourse>> GetRecentTempCourses();
+		Task<TempCourseError> GetCourseError(string courseId);
+		Task<TempCourse> AddTempCourse(string courseId, string authorId, CourseVersionToken versionToke);
+		Task<DateTime> UpdateTempCourseLoadingTime(string courseId, CourseVersionToken versionToke);
+		Task<TempCourseError> UpdateOrAddTempCourseError(string courseId, string error);
+		Task MarkTempCourseAsNotErrored(string courseId);
 	}
 }

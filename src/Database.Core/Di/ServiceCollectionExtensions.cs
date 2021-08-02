@@ -14,12 +14,14 @@ namespace Database.Di
 {
 	public static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddDatabaseServices(this IServiceCollection services)
+		public static IServiceCollection AddDatabaseServices(this IServiceCollection services, bool withSlaveCourseManager)
 		{
-			services.AddSingleton(WebCourseManager.CourseStorageInstance);
-			services.AddSingleton<WebCourseManager>();
-			services.AddSingleton<IWebCourseManager>(x => x.GetRequiredService<WebCourseManager>());
-			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<WebCourseManager>());
+			if (withSlaveCourseManager)
+			{
+				services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
+				services.AddSingleton<ISlaveCourseManager, SlaveCourseManager>();
+				services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<ISlaveCourseManager>());
+			}
 
 			services.AddScoped<UlearnUserManager>();
 			services.AddScoped<InitialDataCreator>();

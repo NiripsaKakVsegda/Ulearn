@@ -430,13 +430,14 @@ namespace uLearn.Web.Controllers
 					|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 			}
 
-			var incorrectChars = new string(WebCourseManager.GetInvalidCharacters().OrderBy(c => c).Where(c => 32 <= c).ToArray());
+			var incorrectChars = new string(CourseManager.InvalidForCourseIdCharacters.OrderBy(c => c).Where(c => 32 <= c).ToArray());
 			if (isSystemAdministrator)
 				courses = courses.OrderBy(course => course.Id, StringComparer.InvariantCultureIgnoreCase);
 			else
 				courses = courses.OrderBy(course => course.Title, StringComparer.InvariantCultureIgnoreCase);
 
-			var tempCourses = tempCoursesRepo.GetTempCourses().Select(c => c.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var model = new CourseListViewModel
 			{
 				Courses = courses
@@ -444,7 +445,7 @@ namespace uLearn.Web.Controllers
 					{
 						Id = course.Id,
 						Title = course.Title,
-						IsTemp = tempCourses.Contains(course.Id)
+						TempCourse = allTempCourses.GetOrDefault(course.Id)
 					})
 					.ToList(),
 				LastTryCourseId = courseId,

@@ -107,7 +107,6 @@
 
 @helper RoleButton(SingleCourseRolesModel courseRoles, string role, string cssClass)
 {
-	var isTempLabel = courseRoles.IsTempCourse ? "Временный - " : "";
 	var buttonClass = "btn-" + cssClass;
 	<button type="button"
 			class="btn btn-sm btn-default @( courseRoles.HasAccess ? buttonClass : "")"
@@ -116,7 +115,7 @@
 			data-toggle-userName="@courseRoles.UserName"
 			data-toggle-role="@courseRoles.Role.GetDisplayName()"
 			data-toggle-isRole="@true"
-			data-toggle-courseTitle="@isTempLabel@courseRoles.CourseTitle"
+			data-toggle-courseTitle="@courseRoles.VisibleCourseName"
 			onclick="window.legacy.openPopup(this, window.legacy.ToggleButtonClass)">
 		@role
 
@@ -140,16 +139,15 @@
 		<ul class="dropdown-menu" data-css-class="li-@cssClass">
 			@foreach (var course in coursesRoles.CourseRoles)
 			{
-				var isTempLabel = course.IsTempCourse ? "Временный - " : "";
 				<li class="@( course.HasAccess ? liClass : "")"
 					data-toggle-url="@course.ToggleUrl"
 					data-toggle-userName="@course.UserName"
 					data-toggle-role="@course.Role"
 					data-toggle-isRole="@true"
-					data-toggle-courseTitle="@isTempLabel@course.CourseTitle."
+					data-toggle-courseTitle="@course.VisibleCourseName"
 					onclick="window.legacy.openPopup(this, window.legacy.ToggleDropDownClass)">
 
-					<a>@isTempLabel@course.CourseTitle</a>
+					<a>@course.VisibleCourseName</a>
 				</li>
 			}
 		</ul>
@@ -172,18 +170,17 @@
 				foreach (var courseAccessType in user.CourseAccesses[courseId].Keys)
 				{
 					var courseAccess = user.CourseAccesses[courseId][courseAccessType];
-					var isTempLabel = courseAccess.IsTempCourse ? "Временный - " : "";
 					<li class="@( courseAccess.HasAccess ? "li-info" : "")"
 						data-toggle-url="@courseAccess.ToggleUrl"
 						data-toggle-userName="@courseAccess.UserName"
 						data-toggle-role="@courseAccess.AccessType.GetDisplayName()"
 						data-toggle-isRole="@false"
-						data-toggle-courseTitle="@isTempLabel@courseAccess.CourseTitle"
+						data-toggle-courseTitle="@courseAccess.VisibleCourseName"
 						data-css-class="li-info"
 						data-has-access="@( courseAccess.HasAccess ? "true" : "false")"
 
 						onclick="window.legacy.openPopup(this, window.legacy.ToggleButtonClass)">
-						<a>@isTempLabel@courseAccessType.GetDisplayName()</a>
+						<a>@courseAccessType.GetDisplayName()</a>
 					</li>
 				}
 			}

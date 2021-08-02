@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Ulearn.Common.Extensions
 {
@@ -8,7 +9,12 @@ namespace Ulearn.Common.Extensions
 		{
 			return dateTime.ToString("yyyy-MM-ddTHH.mm.ss.ff");
 		}
-		
+
+		public static DateTime FromSortable(string str)
+		{
+			return DateTime.ParseExact(str, "yyyy-MM-ddTHH.mm.ss.ff", CultureInfo.InvariantCulture);
+		}
+
 		public static string ToSortableDate(this DateTime dateTime)
 		{
 			return dateTime.ToString("yyyy-MM-dd");

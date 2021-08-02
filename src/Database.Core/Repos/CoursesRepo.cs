@@ -6,6 +6,7 @@ using Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Extensions;
 
 namespace Database.Repos
@@ -44,13 +45,14 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
-		public async Task<CourseVersion> AddCourseVersion(string courseId, Guid versionId, string authorId,
+		public async Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
 			string pathToCourseXml, string repoUrl, string commitHash, string description, byte[] courseContent)
 		{
 			var courseVersion = new CourseVersion
 			{
 				Id = versionId,
 				CourseId = courseId,
+				CourseName = courseName,
 				LoadingTime = DateTime.Now,
 				PublishTime = null,
 				AuthorId = authorId,

@@ -9,9 +9,4 @@
       <ProjectReference Include="..\Common.Api\Common.Api.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\Parameters" />
-      <Folder Include="Models\Results" />
-    </ItemGroup>
-
 </Project>

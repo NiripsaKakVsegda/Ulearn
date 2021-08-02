@@ -2,19 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Extensions;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Core.Courses
 {
 	public class CourseLoader : ICourseLoader
 	{
 		private readonly IUnitLoader unitLoader;
+		public const char CourseIdDelimiter = '@'; // После @ в название могут добавляться доп. символы для временных папок
+		private static ILog log => LogProvider.Get().ForContext(typeof(CourseLoader));
 
 		public CourseLoader(IUnitLoader unitLoader)
 		{
@@ -41,7 +42,7 @@ namespace Ulearn.Core.Courses
 
 		private Course UnsafeLoad(DirectoryInfo courseDirectory)
 		{
-			var courseId = courseDirectory.Name;
+			var courseId = courseDirectory.Name.Split(CourseIdDelimiter)[0];
 
 			CourseSettings settings;
 			try
@@ -72,7 +73,7 @@ namespace Ulearn.Core.Courses
 				settings.Description = "";
 			}
 
-			var courseMeta = LoadMeta(courseDirectory);
+			var versionToken = CourseVersionToken.Load(courseDirectory);
 
 			var context = new CourseLoadingContext(courseId, settings, courseDirectory);
 
@@ -88,7 +89,7 @@ namespace Ulearn.Core.Courses
 			AddDefaultScoringGroupIfNeeded(units, slides, settings);
 			CalculateScoringGroupScores(units, settings);
 
-			return new Course(courseId, units, settings, courseMeta);
+			return new Course(courseId, units, settings, versionToken);
 		}
 
 		private static string GetValidationLog(List<Unit> units)
@@ -133,22 +134,7 @@ namespace Ulearn.Core.Courses
 			}
 		}
 
-		// Meta присутствует в курсах, для которых уже создана версия в базе
-		[CanBeNull]
-		public static CourseMeta LoadMeta(DirectoryInfo courseDirectory)
-		{
-			var metaFile = courseDirectory.GetFile(".meta");
-			if (!metaFile.Exists)
-				return null;
-			try
-			{
-				return JsonConvert.DeserializeObject<CourseMeta>(metaFile.ContentAsUtf8());
-			}
-			catch (Exception ex)
-			{
-				return null;
-			}
-		}
+
 
 		private IEnumerable<Unit> LoadUnits(CourseLoadingContext context)
 		{
