@@ -369,7 +369,7 @@ namespace Web.Api.Tests.Controllers.TempCourses
 			await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			await coursesRepo.DeleteCourseVersion(baseCourseId, initialVersion);
 			await courseRolesRepo.ToggleRole(baseCourseId, TestUsers.User.Id, CourseRoleType.CourseAdmin, TestUsers.Admin.Id, "Создал временный курс");
-			await courseUpdater.UpdateCourses();
+			await courseUpdater.UpdateCoursesAsync();
 			var course = courseStorage.GetCourse(baseCourseId);
 			await AuthenticateUserInControllerAsync(tempCourseController, TestUsers.User);
 			return course;

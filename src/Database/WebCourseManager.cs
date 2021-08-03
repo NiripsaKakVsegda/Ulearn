@@ -23,7 +23,7 @@ namespace Database
 		{
 		}
 
-		public async Task UpdateCourses()
+		public async Task UpdateCoursesAsync()
 		{
 			var coursesRepo = new CoursesRepo();
 			var publishedCourseVersions = coursesRepo.GetPublishedCourseVersions();
@@ -35,7 +35,7 @@ namespace Database
 			}
 		}
 
-		public async Task UpdateTempCourses()
+		public async Task UpdateTempCoursesAsync()
 		{
 			var tempCoursesRepo = new TempCoursesRepo();
 			var recentTempCourses = tempCoursesRepo.GetRecentTempCourses();

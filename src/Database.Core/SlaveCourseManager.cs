@@ -21,7 +21,7 @@ namespace Database
 			this.serviceScopeFactory = serviceScopeFactory;
 		}
 
-		public virtual async Task UpdateCourses()
+		public virtual async Task UpdateCoursesAsync()
 		{
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
@@ -36,7 +36,7 @@ namespace Database
 			}
 		}
 
-		public virtual async Task UpdateTempCourses()
+		public virtual async Task UpdateTempCoursesAsync()
 		{
 			using (var scope = serviceScopeFactory.CreateScope())
 			{

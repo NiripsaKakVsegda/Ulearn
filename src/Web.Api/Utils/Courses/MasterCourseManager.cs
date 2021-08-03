@@ -43,7 +43,7 @@ namespace Ulearn.Web.Api.Utils.Courses
 		}
 
 		// Невременные курсы не выкладываются на диск сразу, а публикуются в базу и UpdateCourses их обновляет на диске.
-		public override async Task UpdateCourses()
+		public override async Task UpdateCoursesAsync()
 		{
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
@@ -173,9 +173,9 @@ namespace Ulearn.Web.Api.Utils.Courses
 
 		// Временные курсы выкладываются на диск сразу контроллером, который их создает, здесь только загружаю курсы с диска
 		// Это актуально при старте, а в дальнейшем должен находить курсы на диске уже актуальной версии
-		public override async Task UpdateTempCourses()
+		public override async Task UpdateTempCoursesAsync()
 		{
-			await base.UpdateTempCourses();
+			await base.UpdateTempCoursesAsync();
 		}
 
 		public async Task<FileInfo> GenerateOrFindStudentZip(string courseId, Slide slide)

@@ -20,7 +20,7 @@ namespace uLearn.Web
 			UlearnLogger.ConfigureLogging();
 			FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
-			new UpdateCoursesWorker(WebCourseManager.CourseUpdaterInstance).RunCoursesUpdateInThreads();
+			new UpdateCoursesWorker(WebCourseManager.CourseUpdaterInstance).DoInitialCourseLoadAndRunCoursesUpdateInThreads();
 
 			/* Disable identity checks for CSRF tokens.
 			 * See http://stackoverflow.com/questions/14970102/anti-forgery-token-is-meant-for-user-but-the-current-user-is-username for details
