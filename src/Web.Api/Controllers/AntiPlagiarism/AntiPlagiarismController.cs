@@ -38,8 +38,8 @@ namespace Ulearn.Web.Api.Controllers.AntiPlagiarism
 		}
 
 		[Authorize(Policy = "Instructors")]
-		[HttpGet("/{submissionId}")]
-		public async Task<ActionResult<AntiPlagiarismInfoResponse>> Info([FromRoute] string submissionId, [FromQuery] string courseId)
+		[HttpGet("{submissionId}")]
+		public async Task<ActionResult<AntiPlagiarismInfoResponse>> Info([FromRoute] int submissionId, [FromQuery] string courseId)
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 			if (courseStorage.FindCourse(courseId)?.FindSlideByIdNotSafe(submission.SlideId) is not ExerciseSlide slide)
@@ -48,7 +48,7 @@ namespace Ulearn.Web.Api.Controllers.AntiPlagiarism
 			if (!slide.Exercise.CheckForPlagiarism)
 				return new AntiPlagiarismInfoResponse
 				{
-					Status = "not_checked",
+					Status = "notChecked",
 				};
 
 			var antiPlagiarismsResult = await GetAuthorPlagiarismsAsync(submission);
