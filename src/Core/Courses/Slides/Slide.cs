@@ -13,6 +13,7 @@ using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
+using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 using Ulearn.Core.Courses.Units;
@@ -285,10 +286,9 @@ namespace Ulearn.Core.Courses.Slides
 			try
 			{
 				if (this is QuizSlide quizSlide)
-				{
 					return QuizToVerticals(courseId, quizSlide, slideUrl, ltiId).ToList();
-				}
-
+				if (this is FlashcardSlide)
+					return Enumerable.Empty<Vertical>();
 				return OrdinarySlideToVerticals(new EdxComponentBuilderContext("", courseId, this, 0, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory), videoGuids, ltiId).ToList();
 			}
 			catch (Exception e)
