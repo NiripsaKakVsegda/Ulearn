@@ -32,6 +32,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 				throw new FormatException("Sample should match at least one regex. BlockId=" + Id);
 		}
 
+		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			return new TextInputComponent

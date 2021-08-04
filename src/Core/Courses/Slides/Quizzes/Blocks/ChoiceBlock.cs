@@ -38,6 +38,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 				throw new FormatException("'Maybe' items are not allowed for for non-multiple choice. BlockId=" + Id);
 		}
 
+		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var items = Items.Select(x => new Choice

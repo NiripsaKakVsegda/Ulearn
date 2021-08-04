@@ -16,6 +16,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		[XmlAttribute("explanation")]
 		public string Explanation;
 
+		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			throw new NotSupportedException();

@@ -5,6 +5,7 @@ using Ulearn.Common.Extensions;
 
 namespace Ulearn.Core.Model.Edx.EdxComponents
 {
+	[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 	public class ProblemComponent : Component
 	{
 		[XmlIgnore]
@@ -61,6 +62,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 			=> Load<SlideProblemComponent>(folderName, "problem", urlName, options);
 	}
 
+	[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 	[XmlRoot("problem")]
 	public class TextInputComponent : ProblemComponent
 	{
@@ -104,6 +106,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		public int Size;
 	}
 
+	[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 	[XmlRoot("problem")]
 	public class MultipleChoiceComponent : ProblemComponent
 	{

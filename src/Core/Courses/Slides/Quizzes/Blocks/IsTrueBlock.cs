@@ -1,3 +1,4 @@
+using System;
 using System.Xml.Serialization;
 using Ulearn.Core.Model.Edx.EdxComponents;
 
@@ -21,6 +22,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		{
 		}
 
+		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var items = new[]
