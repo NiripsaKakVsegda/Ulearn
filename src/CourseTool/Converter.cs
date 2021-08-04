@@ -13,15 +13,21 @@ namespace uLearn.CourseTool
 	{
 		private static Sequential[] UnitToSequentials(Course course, Config config, List<Unit> units, int unitIndex, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, DirectoryInfo courseDirectory)
 		{
+			var result = new List<Sequential>();
 			var unit = units[unitIndex];
-			var result = new List<Sequential>
+
+			var notHiddenOrIgnoredSlides = unit.GetSlides(false)
+				.Where(s => !config.IgnoredUlearnSlides.Select(Guid.Parse).Contains(s.Id))
+				.ToList();
+			if (notHiddenOrIgnoredSlides.Any())
 			{
-				new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
-					unit.GetSlides(false)
-						.Where(s => !config.IgnoredUlearnSlides.Select(Guid.Parse).Contains(s.Id))
+				var sequentialForNotHiddenSlides = new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
+					notHiddenOrIgnoredSlides
 						.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, config.LtiId, courseDirectory))
-						.ToArray())
-			};
+						.ToArray());
+				result.Add(sequentialForNotHiddenSlides);
+			}
+
 			var note = unit.InstructorNote;
 			var hiddenSlides = unit.GetHiddenSlides();
 			if ((note != null || hiddenSlides.Count > 0) && config.EmitSequentialsForInstructorNotes)
@@ -70,6 +76,7 @@ namespace uLearn.CourseTool
 					units[idx].Title,
 					null,
 					UnitToSequentials(course, config, units, idx, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, courseDirectory)))
+				.Where(c => c.Sequentials.Length > 0)
 				.ToArray();
 		}
 
