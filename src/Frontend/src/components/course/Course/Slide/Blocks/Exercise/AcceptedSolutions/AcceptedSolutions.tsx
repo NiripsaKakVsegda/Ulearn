@@ -204,7 +204,6 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 	renderLikeButton(solution: _AcceptedSolution, asInstructor: boolean) {
 		const className = classnames(styles.button,
 			{ [styles.liked]: solution.likedByMe, [styles.disabled]: asInstructor });
-		debugger;
 		return (
 			<span className={ className } onClick={ () => !asInstructor && this.like(solution.submissionId) }>
 				<Hint text={ asInstructor && solution.likesCount !== null
@@ -277,6 +276,6 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			})
 			.catch(error => error.showToast());
 	};
-};
+}
 
 export { AcceptedSolutionsModal, AcceptedSolutionsProps };
