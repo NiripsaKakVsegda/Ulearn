@@ -24,6 +24,7 @@ namespace Ulearn.Common.Extensions
 
 		public static void EnsureExists(this DirectoryInfo dir)
 		{
+			dir.Refresh(); // экземпляр DirectoryInfo кэширует Exists
 			if (!dir.Exists)
 				dir.Create();
 		}
