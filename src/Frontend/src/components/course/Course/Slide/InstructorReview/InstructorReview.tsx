@@ -10,6 +10,7 @@ import CourseLoader from "../../CourseLoader";
 import AddCommentForm from "./AddCommentForm/AddCommentForm";
 import AntiplagiarismHeader from "./AntiplagiarismHeader/AntiplagiarismHeader";
 import StickyWrapper from "./AntiplagiarismHeader/StickyWrapper";
+import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
 
@@ -39,12 +40,6 @@ class InstructorReview extends React.Component<Props, State> {
 	private shameComment = 'Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. ' +
 		'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 		'Выполняйте задания самостоятельно.';
-
-	removeWhiteSpaces = (text: string): string => {
-		//do not replace spaces in text to avoid scenario with multi line code //
-		// .replace(/\s+/g, ' ');
-		return text.trim();
-	};
 
 	constructor(props: Props) {
 		super(props);
@@ -569,7 +564,6 @@ class InstructorReview extends React.Component<Props, State> {
 						selectedReviewId={ selectedReviewId }
 						onReviewClick={ this.selectComment }
 						reviews={ this.getAllReviewsAsInstructorReviews() }
-						isReviewOrCommentCanBeAdded={ this.isReviewCanBeAdded }
 					/>
 				</div>
 				{ addCommentFormCoords &&
@@ -659,14 +653,10 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 	};
 
-	isReviewCanBeAdded = (reviewText: string): boolean => {
-		return reviewText !== undefined && this.removeWhiteSpaces(reviewText).length > 0;
-	};
-
 	isCommentCanBeAddedToFavourite = (text?: string,): boolean => {
 		const { addCommentValue, favouriteByUserSet, favouriteReviewsSet, } = this.state;
 		text = text ?? addCommentValue;
-		const trimmed = this.removeWhiteSpaces(text);
+		const trimmed = checker.removeWhiteSpaces(text);
 
 		return trimmed.length > 0 && !favouriteByUserSet?.has(trimmed) && !favouriteReviewsSet?.has(trimmed);
 	};
@@ -680,7 +670,7 @@ class InstructorReview extends React.Component<Props, State> {
 		} = this.state;
 
 		if(currentSubmission) {
-			const trimmed = this.removeWhiteSpaces(text);
+			const trimmed = checker.removeWhiteSpaces(text);
 			const oldText = parentReviewId
 				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
 				c => c.id === reviewId)?.text || ''
@@ -836,6 +826,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onMouseUp = (): void => {
 		const { editor, addCommentFormCoords, } = this.state;
+		const { getFavouriteReviews, slideContext, } = this.props;
 
 		if(!editor || addCommentFormCoords) {
 			return;
@@ -870,10 +861,12 @@ class InstructorReview extends React.Component<Props, State> {
 			}
 		}
 		const linesCount = doc.lineCount();
-		this.setState({
-			addCommentFormCoords: coords,
-			addCommentFormExtraSpace: endRange.line + 15 > linesCount ? 20 * (16 - (linesCount - endRange.line)) : undefined,
-			addCommentRanges: { startRange, endRange, },
+		getFavouriteReviews(slideContext.courseId, slideContext.slideId).then(() => {
+			this.setState({
+				addCommentFormCoords: coords,
+				addCommentFormExtraSpace: endRange.line + 15 > linesCount ? 20 * (16 - (linesCount - endRange.line)) : undefined,
+				addCommentRanges: { startRange, endRange, },
+			});
 		});
 		document.addEventListener('keydown', this.onEscPressed);
 		document.removeEventListener('mouseup', this.onMouseUp);
@@ -884,7 +877,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const { currentSubmission, } = this.state;
 
 		if(currentSubmission) {
-			addReviewComment(currentSubmission.id, reviewId, this.removeWhiteSpaces(comment));
+			addReviewComment(currentSubmission.id, reviewId, checker.removeWhiteSpaces(comment));
 		}
 	};
 
@@ -939,7 +932,7 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		const { startRange, endRange, } = addCommentRanges;
 
-		comment = this.removeWhiteSpaces(comment);
+		comment = checker.removeWhiteSpaces(comment);
 
 		if(diffInfo && showDiff) {
 			const actualStartLine = diffInfo.diffByBlocks[startRange.line].line - 1;

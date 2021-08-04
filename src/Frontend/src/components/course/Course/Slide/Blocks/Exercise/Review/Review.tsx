@@ -2,10 +2,23 @@ import React from "react";
 import cn from "classnames";
 
 import Avatar from "src/components/common/Avatar/Avatar";
-import { DropdownMenu, MenuItem, MenuSeparator, Textarea, ThemeContext, Button, Gapped, Hint, } from "ui";
+import {
+	DropdownMenu,
+	MenuItem,
+	MenuSeparator,
+	Textarea,
+	ThemeContext,
+	Button,
+	Gapped,
+	Hint,
+	ScrollContainer,
+} from "ui";
 import { Send3, MenuKebab, } from "icons";
 import { getDataFromReviewToCompareChanges } from "../../../InstructorReview/utils";
+import reviewPolicyChecker from "../../../InstructorReview/reviewPolicyChecker";
 import { InstructorReviewInfo, ReviewCompare, } from "../../../InstructorReview/InstructorReview.types";
+import { CommentReplies, RenderedReview, ReviewProps, ReviewState } from "./Review.types";
+import { ShortUserInfo } from "src/models/users";
 
 import { textareaHidden } from "src/uiTheme";
 
@@ -16,8 +29,6 @@ import { ReviewCommentResponse, ReviewInfo } from "src/models/exercise";
 
 import styles from "./Review.less";
 import texts from "./Review.texts";
-import { CommentReplies, RenderedReview, ReviewProps, ReviewState } from "./Review.types";
-import { ShortUserInfo } from "../../../../../../../models/users";
 
 
 class Review extends React.Component<ReviewProps, ReviewState> {
@@ -338,11 +349,17 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 							placeholder={ texts.sendButton }
 							onValueChange={ this.onEditingTextareaValueChange }
 							value={ editingCommentValue }
+							lengthCounter={ reviewPolicyChecker.maxReviewLength }
+							error={ (editingCommentValue?.length || 0) > reviewPolicyChecker.maxReviewLength }
+							showLengthCounter={ (editingCommentValue?.length || 0) > reviewPolicyChecker.maxReviewLength }
 						/>
 						<Gapped gap={ 14 }>
 							<Button
 								use={ 'primary' }
-								disabled={ content === editingCommentValue?.trim() }
+								disabled={ !editingCommentValue
+								|| editingCommentValue.length == 0
+								|| editingCommentValue.length > reviewPolicyChecker.maxReviewLength
+								|| content === reviewPolicyChecker.removeWhiteSpaces(editingCommentValue) }
 								onClick={ this.saveReviewOrComment }>
 								{ texts.editing.save }
 							</Button>
@@ -456,10 +473,12 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 	};
 
 	static renderCommentContent(content: string): React.ReactNode {
-		return <p
-			className={ styles.commentText }
-			dangerouslySetInnerHTML={ { __html: content } }
-		/>;
+		return <ScrollContainer maxHeight={ 600 }>
+			<p
+				className={ styles.commentText }
+				dangerouslySetInnerHTML={ { __html: content } }
+			/>
+		</ScrollContainer>;
 	}
 
 	startEditingComment = (event: React.MouseEvent | React.SyntheticEvent): void => {
@@ -526,7 +545,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		commentReply: string,
 		id: number,
 	): React.ReactNode => {
-		const isCommentCanBeAdded = this.props.isReviewOrCommentCanBeAdded(commentReply);
+		const isCommentCanBeAdded = reviewPolicyChecker.isReviewOrCommentCanBeAdded(commentReply);
 		return (
 			<ThemeContext.Provider value={ textareaHidden }>
 				<div className={ styles.commentReplyTextArea }>

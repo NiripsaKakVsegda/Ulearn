@@ -11,6 +11,7 @@ import { ShortUserInfo } from "src/models/users";
 
 import { countLines } from "src/utils/domExtensions";
 import renderSimpleMarkdown from "src/utils/simpleMarkdownRender";
+import reviewPolicyChecker from "../reviewPolicyChecker";
 
 import texts from './AddCommentForm.texts';
 import styles from './AddCommentForm.less';
@@ -121,11 +122,8 @@ class AddCommentForm extends React.Component<Props, State> {
 		this.markOverExtendedComments();
 		if(this.wrapper.current) {
 			const rect = this.wrapper.current.getBoundingClientRect();
-			if(
-				rect.top <= 0 ||
-				rect.bottom >= (window.innerHeight || document.documentElement.clientHeight)
-			) {
-				this.wrapper.current.scrollIntoView();
+			if(rect.bottom >= (window.innerHeight || document.documentElement.clientHeight)) {
+				this.wrapper.current.scrollIntoView(false);
 			}
 		}
 	}
@@ -273,14 +271,17 @@ class AddCommentForm extends React.Component<Props, State> {
 				rows={ this.maxRowCount }
 				maxRows={ this.maxRowCount }
 				text={ comment }
-				hasError={ false }
-				isShowFocus={ false }
+				hasError={ comment.length > reviewPolicyChecker.maxReviewLength }
+				isShowFocus
 				handleChange={ this.props.onValueChange }
 				handleSubmit={ this.onAddComment }
 				hideDescription
 				hidePlaceholder
+				lengthCounter={ comment.length > reviewPolicyChecker.maxReviewLength ? reviewPolicyChecker.maxReviewLength : undefined }
 				markupByOperation={ markupByOperation }>
-				{ this.renderControls(comment.length === 0, canBeAddedToFavourite,) }
+				{ this.renderControls(
+					comment.length === 0 || comment.length > reviewPolicyChecker.maxReviewLength,
+					canBeAddedToFavourite && comment.length <= reviewPolicyChecker.maxReviewLength,) }
 			</MarkdownEditor>
 		</div>
 	);
