@@ -27,16 +27,18 @@ namespace Ulearn.Core.Tests.Courses
 			Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
 		}
 
-		private Course LoadCourseFromDirectory(string directory)
+		private Course LoadCourseFromDirectory(string directory, string courseId)
 		{
 			var courseDirectory = new DirectoryInfo(testDataDirectory).GetSubdirectory(directory);
-			return loader.Load(courseDirectory);
+			return loader.Load(courseDirectory, courseId);
 		}
 
 		[Test]
 		public void LoadSimpleCourse()
 		{
-			var course = LoadCourseFromDirectory("SimpleCourse");
+			const string courseId = "SimpleCourse";
+			const string courseDirectory = courseId;
+			var course = LoadCourseFromDirectory(courseDirectory, courseId);
 
 			Assert.AreEqual(2, course.GetUnitsNotSafe().Count);
 			Assert.AreEqual(Language.CSharp, course.Settings.DefaultLanguage);
@@ -46,10 +48,10 @@ namespace Ulearn.Core.Tests.Courses
 
 		[Test]
 		[Explicit("Для проверки загрузки конкретного курса")]
-		[TestCase(@"..\..\..\..\..\..\Courses\Courses\Testing")]
-		public void LoadCourseFromPath(string path)
+		[TestCase(@"..\..\..\..\..\..\Courses\Courses\Testing", "Testing")]
+		public void LoadCourseFromPath(string path, string courseId)
 		{
-			LoadCourseFromDirectory(path);
+			LoadCourseFromDirectory(path, courseId);
 		}
 	}
 }

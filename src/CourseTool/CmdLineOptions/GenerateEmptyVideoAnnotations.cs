@@ -13,7 +13,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 	{
 		public override void DoExecute()
 		{
-			var course = new CourseLoader().Load(CourseDirectory);
+			var course = new CourseLoader().Load(CourseDirectory, Config.ULearnCourseId);
 			Console.WriteLine($"{course.GetSlidesNotSafe().Count} slide(s) have been loaded from {Config.ULearnCourseId}");
 
 			var resultHtmlFilename = $"{Config.ULearnCourseId}.annotations.html";

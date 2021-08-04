@@ -27,16 +27,18 @@ namespace Ulearn.Core.Tests.Courses.ScoringGroups
 			Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
 		}
 
-		private Course LoadCourseFromDirectory(string directory)
+		private Course LoadCourseFromDirectory(string directory, string courseId)
 		{
 			var courseDirectory = new DirectoryInfo(testDataDirectory).GetSubdirectory(directory);
-			return loader.Load(courseDirectory);
+			return loader.Load(courseDirectory, courseId);
 		}
 
 		[Test]
 		public void TestSetAdditionalScoreInUnit()
 		{
-			var course = LoadCourseFromDirectory("SetAdditionalScoreInUnit");
+			const string courseId = "SetAdditionalScoreInUnit";
+			const string courseDirectory = courseId;
+			var course = LoadCourseFromDirectory(courseDirectory, courseId);
 			var unit1 = course.GetUnitsNotSafe().First();
 			var unit2 = course.GetUnitsNotSafe().Last();
 
@@ -55,7 +57,8 @@ namespace Ulearn.Core.Tests.Courses.ScoringGroups
 		[Test]
 		public void TestInheritAdditionalScore()
 		{
-			var course = LoadCourseFromDirectory("InheritAdditionalScore");
+			const string courseId = "InheritAdditionalScore";
+			var course = LoadCourseFromDirectory(courseId, courseId);
 			var unit1 = course.GetUnitsNotSafe()[0];
 			var unit2 = course.GetUnitsNotSafe()[1];
 			var unit3 = course.GetUnitsNotSafe()[2];

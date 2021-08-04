@@ -109,7 +109,7 @@ namespace Ulearn.Core.Courses.Manager
 		{
 			try
 			{
-				var course = loader.Load(extractedCourseDirectory);
+				var course = loader.Load(extractedCourseDirectory, courseId);
 				return (course, null);
 			}
 			catch (Exception e)
@@ -166,7 +166,7 @@ namespace Ulearn.Core.Courses.Manager
 					return;
 				if (!courseDirectory.Exists)
 					return;
-				var course = loader.Load(courseDirectory);
+				var course = loader.Load(courseDirectory, courseId);
 				CourseStorageUpdaterInstance.AddOrUpdateCourse(course);
 			}
 		}

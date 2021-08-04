@@ -27,12 +27,11 @@ namespace Stepik.Api.Tests
 		}
 
 		[Test]
-		//[TestCase(@"..\..\..\..\courses\Linq")]
-		[TestCase(@"..\..\..\..\..\courses\BasicProgramming\OOP\OOP\Slides\")]
-		public async Task TestExportCourseFromDirectory(string coursePath)
+		[TestCase(@"..\..\..\..\..\courses\BasicProgramming\OOP\OOP\Slides\", "OOP")]
+		public async Task TestExportCourseFromDirectory(string coursePath, string courseId)
 		{
 			var courseLoader = new CourseLoader();
-			var stubCourse = courseLoader.Load(new DirectoryInfo(coursePath));
+			var stubCourse = courseLoader.Load(new DirectoryInfo(coursePath), courseId);
 			await courseExporter.InitialExportCourse(stubCourse, new CourseInitialExportOptions(stepikCourseId, stepikXQueueName, new List<Guid>()));
 		}
 	}

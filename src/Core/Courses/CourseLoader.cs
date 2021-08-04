@@ -28,11 +28,11 @@ namespace Ulearn.Core.Courses
 		{
 		}
 
-		public Course Load(DirectoryInfo dir)
+		public Course Load(DirectoryInfo dir, string courseId)
 		{
 			try
 			{
-				return UnsafeLoad(dir);
+				return UnsafeLoad(dir, courseId);
 			}
 			catch (Exception e) when (!e.GetType().IsAssignableFrom(typeof(CourseLoadingException)))
 			{
@@ -40,10 +40,8 @@ namespace Ulearn.Core.Courses
 			}
 		}
 
-		private Course UnsafeLoad(DirectoryInfo courseDirectory)
+		private Course UnsafeLoad(DirectoryInfo courseDirectory, string courseId)
 		{
-			var courseId = courseDirectory.Name.Split(CourseIdDelimiter)[0];
-
 			CourseSettings settings;
 			try
 			{
