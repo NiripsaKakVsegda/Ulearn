@@ -710,7 +710,8 @@ namespace uLearn.Web.Controllers
 			{
 				checking.CourseId,
 				checking.SlideId,
-				CheckQueueItemId = checking.Id,
+				UserId = checking.UserId,
+				SubmissionId = checking.Id,
 				Group = joinedGroupsIds,
 			});
 		}

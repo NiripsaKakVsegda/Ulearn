@@ -155,16 +155,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(AbstractExerciseBlock b, SlideRenderContext context)
 		{
-			var submissions = await solutionsRepo
-				.GetAllSubmissionsByUser(context.CourseId, context.Slide.Id, context.UserId)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.Output)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.CompilationError)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.DebugLogs)
-				.Include(s => s.SolutionCode)
-				.Include(s => s.Reviews).ThenInclude(c => c.Author)
-				.Include(s => s.ManualChecking).ThenInclude(c => c.Reviews).ThenInclude(r => r.Author)
-				.ToListAsync();
-			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(context.CourseId, context.Slide.Id, context.UserId);
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(context.UserId, context.CourseId, CourseRoleType.CourseAdmin);
 			
 			ExerciseAttemptsStatistics exerciseAttemptsStatistics = null;
@@ -183,8 +173,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 			var exerciseSlideRendererContext = new ExerciseSlideRendererContext
 			{
-				Submissions = submissions,
-				CodeReviewComments = codeReviewComments,
 				CanSeeCheckerLogs = isCourseAdmin,
 				AttemptsStatistics = exerciseAttemptsStatistics,
 				markdownRenderContext = new (context.BaseUrlApi, context.BaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse)

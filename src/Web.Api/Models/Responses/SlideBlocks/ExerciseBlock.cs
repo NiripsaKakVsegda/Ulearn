@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
@@ -49,10 +48,6 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 
 		[NotNull]
 		[DataMember]
-		public List<SubmissionInfo> Submissions { get; set; }
-
-		[NotNull]
-		[DataMember]
 		public ExerciseAttemptsStatistics AttemptsStatistics { get; set; }
 		
 		[DataMember]
@@ -61,10 +56,6 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 		public ExerciseBlockResponse(AbstractExerciseBlock exerciseBlock,
 			ExerciseSlideRendererContext context)
 		{
-			var reviewId2Comments = context.CodeReviewComments
-				?.GroupBy(c => c.ReviewId)
-				.ToDictionary(g => g.Key, g => g.AsEnumerable());
-
 			if (exerciseBlock is PolygonExerciseBlock polygonExerciseBlock)
 			{
 				Languages = PolygonExerciseBlock.LanguagesInfo.Keys.ToArray();
@@ -84,10 +75,6 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 			HideSolutions = exerciseBlock.HideShowSolutionsButton;
 			ExpectedOutput = exerciseBlock.HideExpectedOutputOnError ? null : exerciseBlock.ExpectedOutput?.NormalizeEoln();
 			AttemptsStatistics = context.AttemptsStatistics;
-			Submissions = context.Submissions
-				.EmptyIfNull()
-				.Select(s => SubmissionInfo.Build(s, reviewId2Comments, context.CanSeeCheckerLogs))
-				.ToList();
 		}
 
 		private string RenderHtmlWithHint(string hintMd, MarkdownRenderContext markdownRenderContext)

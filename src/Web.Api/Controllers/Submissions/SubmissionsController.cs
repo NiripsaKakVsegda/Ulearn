@@ -73,7 +73,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)
 				.ToDictionary(g => g.Key, g => g.AsEnumerable());
-			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking.ProhibitFurtherManualCheckings);
+			var prohibitFurtherManualChecking = submissions.Any(s =>  s.ManualChecking != null && s.ManualChecking.ProhibitFurtherManualCheckings);
 
 			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
