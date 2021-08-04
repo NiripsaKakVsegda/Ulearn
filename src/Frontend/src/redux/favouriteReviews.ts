@@ -49,6 +49,9 @@ export default function instructor(state = initialFavouriteReviewsState,
 	switch (action.type) {
 		case FAVOURITE_REVIEWS_LOAD_START: {
 			const { courseId, slideId, } = action as FavouriteReviewsLoadStartAction;
+
+			return state;
+			/*
 			const favouriteReviewsBySlideIds = state.favouritesReviewsByCourseIdBySlideId[courseId];
 
 			return {
@@ -60,7 +63,7 @@ export default function instructor(state = initialFavouriteReviewsState,
 						[slideId]: { isLoading: true }
 					}
 				}
-			};
+			};*/
 		}
 		case FAVOURITE_REVIEWS_LOAD_SUCCESS: {
 			const {
