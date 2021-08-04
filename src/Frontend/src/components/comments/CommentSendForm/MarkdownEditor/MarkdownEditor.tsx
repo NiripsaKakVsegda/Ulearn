@@ -48,6 +48,7 @@ interface Props {
 	maxRows?: number;
 	className?: string;
 	width?: string;
+	lengthCounter?: number;
 
 	hasError: boolean;
 	isShowFocus: boolean;
@@ -115,6 +116,7 @@ class MarkdownEditor extends Component<Props> {
 			maxRows = 15,
 			hidePlaceholder,
 			className,
+			lengthCounter,
 			width = '100%',
 		} = this.props;
 
@@ -133,6 +135,8 @@ class MarkdownEditor extends Component<Props> {
 					onValueChange={ this.handleChange }
 					onKeyDown={ this.handleKeyDown }
 					autoResize
+					lengthCounter={ lengthCounter }
+					showLengthCounter={ !!lengthCounter }
 					placeholder={ hidePlaceholder ? undefined : "Комментарий" }/>
 				<div className={ styles.formFooter }>
 					{ children }
@@ -145,101 +149,96 @@ class MarkdownEditor extends Component<Props> {
 		);
 	}
 
-handleChange = (text: string): void => {
-	const {
-	handleChange
-}
+	handleChange = (text: string): void => {
+		const {
+			handleChange
+		}
 
-= this.props;
+			= this.props;
 
-handleChange(text);
-};
+		handleChange(text);
+	};
 
-handleKeyDown = (e: React.KeyboardEvent): void =>
-{
-	const { markupByOperation = markupByOperationDefault } = this.props;
-	for (const operation of Object.values(markupByOperation)) {
-		if(this.isKeyFromMarkdownOperation(e, operation)) {
-			this.transformTextToMarkdown(operation);
-			return;
+	handleKeyDown = (e: React.KeyboardEvent): void => {
+		const { markupByOperation = markupByOperationDefault } = this.props;
+		for (const operation of Object.values(markupByOperation)) {
+			if(this.isKeyFromMarkdownOperation(e, operation)) {
+				this.transformTextToMarkdown(operation);
+				return;
+			}
+		}
+
+		if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+			this.handleChange('');
+			this.props.handleSubmit(e);
 		}
 	}
+	;
 
-	if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-		this.handleChange('');
-		this.props.handleSubmit(e);
+	isKeyFromMarkdownOperation = (event: React.KeyboardEvent, operation: MarkdownOperation): boolean => {
+		return operation.hotkey.key.includes(event.key) &&
+			(event.ctrlKey || event.metaKey) === !!operation.hotkey.ctrl &&
+			event.altKey === !!operation.hotkey.alt;
 	}
-}
-;
+	;
 
-isKeyFromMarkdownOperation = (event: React.KeyboardEvent, operation: MarkdownOperation): boolean =>
-{
-	return operation.hotkey.key.includes(event.key) &&
-		(event.ctrlKey || event.metaKey) === !!operation.hotkey.ctrl &&
-		event.altKey === !!operation.hotkey.alt;
-}
-;
-
-handleClick = (operation: MarkdownOperation): void =>
-{
-	this.transformTextToMarkdown(operation);
-}
-;
-
-transformTextToMarkdown = (operation: MarkdownOperation): void =>
-{
-	const { handleChange, text } = this.props;
-	const range = this.textarea.current?.selectionRange;
-
-	const { finalText, finalSelectionRange } = MarkdownEditor.wrapRangeWithMarkdown(text, range, operation);
-
-	handleChange(finalText, () => {
-		this.textarea.current?.setSelectionRange(
-			finalSelectionRange.start,
-			finalSelectionRange.end,
-		);
-	});
-}
-;
-
-static wrapRangeWithMarkdown(
-text: string,
-range: Range | undefined,
-operation: MarkdownOperation
-):
-{
-	finalText: string, finalSelectionRange
-:
-	Range
-}
-{
-	if(!range) {
-		throw new TypeError("range should be an object with `start` and `end` properties of type `number`");
+	handleClick = (operation: MarkdownOperation): void => {
+		this.transformTextToMarkdown(operation);
 	}
+	;
 
-	const isErrorInRangeLength = range.start < 0 || range.end < range.start || range.end > text.length;
+	transformTextToMarkdown = (operation: MarkdownOperation): void => {
+		const { handleChange, text } = this.props;
+		const range = this.textarea.current?.selectionRange;
 
-	if(isErrorInRangeLength) {
-		throw new RangeError("range should be within 0 and text.length");
+		const { finalText, finalSelectionRange } = MarkdownEditor.wrapRangeWithMarkdown(text, range, operation);
+
+		handleChange(finalText, () => {
+			this.textarea.current?.setSelectionRange(
+				finalSelectionRange.start,
+				finalSelectionRange.end,
+			);
+		});
 	}
+	;
 
-	const before = text.substr(0, range.start);
-	const target = text.substr(range.start, range.end - range.start);
-	const after = text.substr(range.end);
-	const formatted = operation.markup + target + operation.markup;
-	const finalText = before + formatted + after;
-	const finalSelectionRange: Range = { start: 0, end: 0 };
+	static wrapRangeWithMarkdown(
+		text: string,
+		range: Range | undefined,
+		operation: MarkdownOperation
+	):
+		{
+			finalText: string, finalSelectionRange
+				:
+				Range
+		} {
+		if(!range) {
+			throw new TypeError("range should be an object with `start` and `end` properties of type `number`");
+		}
 
-	if(target.length === 0) {
-		finalSelectionRange.start = range.start + operation.markup.length;
-		finalSelectionRange.end = range.end + operation.markup.length;
-	} else {
-		finalSelectionRange.start = range.start;
-		finalSelectionRange.end = range.start + formatted.length;
+		const isErrorInRangeLength = range.start < 0 || range.end < range.start || range.end > text.length;
+
+		if(isErrorInRangeLength) {
+			throw new RangeError("range should be within 0 and text.length");
+		}
+
+		const before = text.substr(0, range.start);
+		const target = text.substr(range.start, range.end - range.start);
+		const after = text.substr(range.end);
+		const formatted = operation.markup + target + operation.markup;
+		const finalText = before + formatted + after;
+		const finalSelectionRange: Range = { start: 0, end: 0 };
+
+		if(target.length === 0) {
+			finalSelectionRange.start = range.start + operation.markup.length;
+			finalSelectionRange.end = range.end + operation.markup.length;
+		} else {
+			finalSelectionRange.start = range.start;
+			finalSelectionRange.end = range.start + formatted.length;
+		}
+
+		return { finalText, finalSelectionRange };
 	}
-
-	return { finalText, finalSelectionRange };
-}
 }
 
 export default MarkdownEditor;
