@@ -11,7 +11,7 @@ const texts = {
 			: `похожих решений не найдено`;
 		return `Проверка на списывание: ${ text }`;
 	},
-	buildLinkToAntiplagiarismText: `Посмотреть подробности`,
+	antiPlagiarismDetailsLinkText: `Посмотреть подробности`,
 	notCheckingText: `Эта задача не проверяется на списывание`,
 	scoreZeroText: `Поставить 0 %`,
 };

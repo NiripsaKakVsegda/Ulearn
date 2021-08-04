@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Button, } from "ui";
 
 import cn from "classnames";
+import { buildQuery } from "src/utils";
+
+import { antiPlagiarismDetailsRoute } from "src/consts/routes";
 
 import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
 
@@ -14,12 +17,16 @@ export interface Props {
 	fixed: boolean;
 	status?: AntiPlagiarismStatusResponse;
 	onZeroScoreButtonPressed: () => void;
+	courseId?: string;
+	submissionId?: number;
 }
 
 function AntiplagiarismHeader({
 	status,
 	onZeroScoreButtonPressed,
 	fixed,
+	submissionId,
+	courseId,
 }: Props): React.ReactElement {
 	let text: React.ReactNode;
 	let color = '';
@@ -57,8 +64,9 @@ function AntiplagiarismHeader({
 			<span className={ styles.text }>{ text }</span>
 			{ status && status.suspicionLevel == 'strong' &&
 			<>
-				<Link className={ cn(styles.seeDetailsLink, styles.text) } to={ '' }>
-					{ texts.buildLinkToAntiplagiarismText }
+				<Link className={ cn(styles.seeDetailsLink, styles.text) }
+					  to={ antiPlagiarismDetailsRoute + buildQuery({ courseId, submissionId }) }>
+					{ texts.antiPlagiarismDetailsLinkText }
 				</Link>
 				<Button
 					className={ styles.scoreZeroButton }

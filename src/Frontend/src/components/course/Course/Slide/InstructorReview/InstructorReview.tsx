@@ -515,6 +515,8 @@ class InstructorReview extends React.Component<Props, State> {
 
 	renderHeader = (fixed: boolean,): React.ReactElement =>
 		<AntiplagiarismHeader
+			courseId={ this.props.slideContext.courseId }
+			submissionId={ this.props.studentSubmissions?.[0].id }
 			status={ this.props.antiPlagiarismStatus }
 			fixed={ fixed }
 			onZeroScoreButtonPressed={ this.onZeroScoreButtonPressed }

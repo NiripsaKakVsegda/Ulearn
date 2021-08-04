@@ -8,6 +8,7 @@ export const commentsPath = "comments";
 export const exerciseStudentSubmissions = 'exercise/studentSubmissions';
 export const submissions = 'submissions';
 export const antiplagiarism = 'antiplagiarism';
+export const antiPlagiarismDetailsRoute = '/AntiPlagiarism/Details';
 export const favouriteReviews = 'favourite-reviews';
 export const reviews = 'reviews';
 export const commentPoliciesPath = "comment-policies";
