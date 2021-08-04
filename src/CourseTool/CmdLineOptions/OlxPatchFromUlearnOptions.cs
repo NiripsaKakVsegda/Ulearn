@@ -45,40 +45,6 @@ namespace uLearn.CourseTool.CmdLineOptions
 					).ToArray()),
 				guids != null || !SkipExistingGuids
 			);
-			if (Config.EmitSequentialsForInstructorNotes)
-				PatchInstructorsNotes(edxCourse, ulearnCourse, patcher.OlxPath);
-		}
-
-		private void PatchInstructorsNotes(EdxCourse edxCourse, Course ulearnCourse, string olxPath)
-		{
-			var ulearnUnits = ulearnCourse.GetUnitsNotSafe();
-			foreach (var chapter in edxCourse.CourseWithChapters.Chapters)
-			{
-				var chapterUnit = ulearnCourse.GetUnitsNotSafe().FirstOrDefault(u => u.Title == chapter.DisplayName);
-				var chapterNote = chapterUnit?.InstructorNote;
-				if (chapterUnit == null || chapterNote == null)
-					continue;
-
-				var unitIndex = ulearnUnits.IndexOf(chapterUnit);
-				var displayName = "Заметки преподавателю";
-				var sequentialId = $"{ulearnCourse.Id}-{unitIndex}-note-seq";
-				var verticalId = $"{ulearnCourse.Id}-{unitIndex}-note-vert";
-				var mdBlockId = $"{ulearnCourse.Id}-{unitIndex}-note-md";
-				var sequentialNote = new Sequential(sequentialId, displayName,
-					new[]
-					{
-						new Vertical(verticalId, displayName,
-							new[] { chapterNote.Blocks.OfType<MarkdownBlock>().First().ToEdxComponent(mdBlockId, displayName, CourseDirectory.FullName, chapterUnit.UnitDirectoryRelativeToCourse) })
-					}) { VisibleToStaffOnly = true };
-				if (!File.Exists($"{olxPath}/sequential/{sequentialNote.UrlName}.xml"))
-				{
-					var sequentials = chapter.Sequentials.ToList();
-					sequentials.Add(sequentialNote);
-					new Chapter(chapter.UrlName, chapter.DisplayName, chapter.Start, sequentials.ToArray()).Save(olxPath);
-				}
-
-				sequentialNote.Save(olxPath);
-			}
 		}
 	}
 }

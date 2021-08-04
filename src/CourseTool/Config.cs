@@ -22,8 +22,6 @@ namespace uLearn.CourseTool
 			set => ignoredUlearnSlides = value.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 		}
 
-		public bool EmitSequentialsForInstructorNotes { get; set; }
-
 		public Profile GetProfile(string profile)
 		{
 			return Profiles.SingleVerbose(x => x.Name == profile, "profile name = " + profile);

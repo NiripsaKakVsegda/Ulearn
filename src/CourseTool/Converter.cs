@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ulearn.Core.Courses;
-using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Model.Edx;
 
@@ -13,57 +12,19 @@ namespace uLearn.CourseTool
 	{
 		private static Sequential[] UnitToSequentials(Course course, Config config, List<Unit> units, int unitIndex, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, DirectoryInfo courseDirectory)
 		{
-			var result = new List<Sequential>();
 			var unit = units[unitIndex];
-
 			var notHiddenOrIgnoredSlides = unit.GetSlides(false)
 				.Where(s => !config.IgnoredUlearnSlides.Select(Guid.Parse).Contains(s.Id))
 				.ToList();
-			if (notHiddenOrIgnoredSlides.Any())
-			{
-				var sequentialForNotHiddenSlides = new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
-					notHiddenOrIgnoredSlides
-						.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, config.LtiId, courseDirectory))
-						.ToArray());
-				result.Add(sequentialForNotHiddenSlides);
-			}
 
-			var note = unit.InstructorNote;
-			var hiddenSlides = unit.GetHiddenSlides();
-			if ((note != null || hiddenSlides.Count > 0) && config.EmitSequentialsForInstructorNotes)
-			{
-				if (hiddenSlides.Count > 0)
-				{
-					result.Add(new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
-							hiddenSlides
-							.Where(s => !config.IgnoredUlearnSlides.Select(Guid.Parse).Contains(s.Id))
-							.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, config.LtiId, courseDirectory))
-							.ToArray()) { VisibleToStaffOnly = true }
-					);
-				}
-				if (note != null)
-				{
-					var displayName = "Заметки преподавателю";
-					var sequentialId = $"{course.Id}-{unitIndex}-note-seq";
-					var verticalId = $"{course.Id}-{unitIndex}-note-vert";
-					var mdBlockId = $"{course.Id}-{unitIndex}-note-md";
-					result.Add(new Sequential(sequentialId, displayName,
-							new[]
-							{
-								new Vertical(
-									verticalId,
-									displayName,
-									new[]
-									{
-										unit.InstructorNote.Blocks.OfType<MarkdownBlock>().First()
-											.ToEdxComponent(mdBlockId, displayName, courseDirectory.FullName, unit.UnitDirectoryRelativeToCourse)
-									})
-							}) { VisibleToStaffOnly = true }
-					);
-				}
-			}
+			if (!notHiddenOrIgnoredSlides.Any())
+				return Array.Empty<Sequential>();
 
-			return result.ToArray();
+			var sequentialForNotHiddenSlides = new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
+				notHiddenOrIgnoredSlides
+					.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, config.LtiId, courseDirectory))
+					.ToArray());
+			return new [] { sequentialForNotHiddenSlides };
 		}
 
 		private static Chapter[] CourseToChapters(Course course, Config config, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, DirectoryInfo courseDirectory)
