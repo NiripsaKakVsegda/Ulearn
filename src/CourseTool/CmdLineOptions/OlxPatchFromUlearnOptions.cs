@@ -11,7 +11,7 @@ using Ulearn.Core.Model.Edx;
 
 namespace uLearn.CourseTool.CmdLineOptions
 {
-	[Verb("olx-patch-from-ulearn", HelpText = "Patch Edx course with new slides from uLearn course")]
+	[Verb("olx-patch-from-ulearn", HelpText = "Patch Edx course from uLearn course")]
 	class OlxPatchFromUlearnOptions : OlxAbstractPatchOptions
 	{
 		public override void Patch(OlxPatcher patcher, Config config, Profile profile, EdxCourse edxCourse)
