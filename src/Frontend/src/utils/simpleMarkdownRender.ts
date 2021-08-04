@@ -8,8 +8,7 @@ export default function renderSimpleMarkdown(text: string,
 	text = text.replace(/__(.+?)__/g, '<i>$1</i>');
 
 	/* ```Multiline code``` */
-	text = text.replace(/(?:<br\/?> + @")*```(?:" + <br\/?> + @")*(.+?)```(?:" + <br\/?> + @")*/g, '<pre>$1</pre>');
-	text = text.replace(/<\/pre><br\/?>/g, '</pre>');
+	text = text.replace(/(?:<br\/?>)*```(?:<br\/?>)*(.+?)```(?:<br\/?>)*/g, '<pre>$1</pre>');
 
 	/* `Inline code` */
 	text = text.replace(/(?<=(?:\s|^|>))`(.+?)`(?!\d)/g, `<span class="inline-pre">$1</span>`);
