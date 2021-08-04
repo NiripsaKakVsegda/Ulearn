@@ -40,6 +40,8 @@ const texts = {
 		};
 	},
 
+	editCommentError: 'При редактировании комментария к ревью произощла ошибка',
+
 	getLanguageLaunchMarkup: (languageLaunchInfo: LanguageLaunchInfo): React.ReactNode => {
 		function renderLine(name: string, value: string) {
 			return value && (<><h5>{ name }</h5><p>{ value }</p></>);

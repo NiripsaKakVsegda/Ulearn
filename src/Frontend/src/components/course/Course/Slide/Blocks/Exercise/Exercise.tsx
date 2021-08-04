@@ -9,6 +9,7 @@ import { ExerciseFormHeader } from "./ExerciseFormHeader/ExerciseFormHeader";
 import Controls from "./Controls/Controls";
 import LoginForContinue from "src/components/notificationModal/LoginForContinue";
 import { AcceptedSolutionsModal } from "./AcceptedSolutions/AcceptedSolutions";
+import CourseLoader from "../../../CourseLoader";
 import { Info } from 'icons';
 
 import { darkFlat } from "src/uiTheme";
@@ -63,11 +64,15 @@ import registerCodeMirrorHelpers from "./CodeMirrorAutocompleteExtension";
 import styles from './Exercise.less';
 
 import texts from './Exercise.texts';
+import checker from "../../InstructorReview/reviewPolicyChecker";
 
 
 export interface FromReduxDispatch {
 	sendCode: (courseId: string, slideId: string, userId: string, value: string, language: Language,) => unknown;
 	addReviewComment: (submissionId: number, reviewId: number, text: string) => unknown;
+	editReviewComment: (submissionId: number, reviewId: number, parentReviewId: number, text: string,
+		oldText: string,
+	) => unknown;
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => unknown;
 	skipExercise: (courseId: string, slideId: string, onSuccess: () => void) => unknown;
 }
@@ -79,7 +84,7 @@ export interface FromReduxProps {
 	slideProgress: SlideUserProgress;
 	submissionError: string | null;
 	deviceType: DeviceType;
-	submissions: SubmissionInfo[];
+	submissions: SubmissionInfo[] | undefined;
 	maxScore: number;
 	forceInitialCode: boolean;
 }
@@ -207,7 +212,7 @@ class Exercise extends React.Component<Props, State> {
 	loadSlideSubmission = (): void => {
 		const { slideContext: { slideId, }, submissions, } = this.props;
 
-		if(submissions.length > 0) {
+		if(submissions && submissions.length > 0) {
 			this.loadSubmissionToState(submissions[this.lastSubmissionIndex]);
 		} else {
 			this.loadLatestCode(slideId);
@@ -225,6 +230,15 @@ class Exercise extends React.Component<Props, State> {
 			isAuthenticated,
 		} = this.props;
 		const { currentSubmission, submissionLoading, selectedReviewId, value, } = this.state;
+
+		if(!submissions) {
+			return;
+		}
+
+		if(!prevProps.submissions) {
+			this.loadSlideSubmission();
+			return;
+		}
 
 		if(submissionError && submissionError !== prevProps.submissionError) {
 			Toast.push("При добавлении или удалении комментария произошла ошибка");
@@ -340,13 +354,17 @@ class Exercise extends React.Component<Props, State> {
 	}
 
 	render(): React.ReactElement {
-		const { className, } = this.props;
+		const { className, submissions, } = this.props;
 
 		const opts = this.codeMirrorOptions;
 
+		if(!submissions) {
+			return <CourseLoader/>;
+		}
+
 		return (
 			<div className={ classNames(styles.wrapper, className) } ref={ this.wrapper }>
-				{ this.renderControlledCodeMirror(opts) }
+				{ this.renderControlledCodeMirror(opts, submissions) }
 			</div>
 		);
 	}
@@ -383,9 +401,9 @@ class Exercise extends React.Component<Props, State> {
 		};
 	}
 
-	renderControlledCodeMirror = (opts: EditorConfiguration): React.ReactElement => {
+	renderControlledCodeMirror = (opts: EditorConfiguration, submissions: SubmissionInfo[]): React.ReactElement => {
 		const {
-			expectedOutput, submissions, user,
+			expectedOutput, user,
 			slideProgress, maxScore, languages,
 			hideSolutions, renderedHints,
 			attemptsStatistics, isAuthenticated,
@@ -426,7 +444,7 @@ class Exercise extends React.Component<Props, State> {
 
 		return (
 			<React.Fragment>
-				{ submissions.length !== 0 && this.renderSubmissionsSelect() }
+				{ submissions.length !== 0 && this.renderSubmissionsSelect(submissions) }
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageSelect() }
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageLaunchInfoTooltip() }
 				{ !isEditable && this.renderHeader(submissionColor, selectedSubmissionIsLast,
@@ -444,15 +462,14 @@ class Exercise extends React.Component<Props, State> {
 					/>
 					{ exerciseCodeDoc && isReview &&
 					<Review
-						isReviewOrCommentCanBeAdded={ () => true }
-						editReviewOrComment={ () => ({}) }
 						user={ user }
 						addReviewComment={ this.addReviewComment }
 						deleteReviewOrComment={ this.deleteReviewComment }
 						selectedReviewId={ selectedReviewId }
 						onReviewClick={ this.selectComment }
+						editReviewOrComment={ this.editReviewComment }
 						reviews={ getReviewsWithoutDeleted(currentReviews).map(
-							r => ({ ...r, anchor: getReviewAnchorTop(r, editor,), })) }
+							r => ({ ...r, markers: undefined, anchor: getReviewAnchorTop(r, editor,), })) }
 					/>
 					}
 				</div>
@@ -500,6 +517,29 @@ class Exercise extends React.Component<Props, State> {
 		);
 	};
 
+	editReviewComment = (text: string, reviewId: number, parentReviewId: number | undefined,): void => {
+		const {
+			editReviewComment,
+		} = this.props;
+		const {
+			currentSubmission,
+		} = this.state;
+
+		if(currentSubmission && parentReviewId) {
+			const trimmed = checker.removeWhiteSpaces(text);
+			const oldText = currentSubmission
+				.manualCheckingReviews
+				.find(r => r.id === parentReviewId)
+				?.comments
+				.find(c => c.id === reviewId)
+				?.text || '';
+
+			editReviewComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
+		} else {
+			Toast.push(texts.editCommentError);
+		}
+	};
+
 	isVisualizerEnabled = (): boolean => {
 		const { pythonVisualizerEnabled, } = this.props;
 		const { language, isEditable, } = this.state;
@@ -528,9 +568,8 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	renderSubmissionsSelect = (): React.ReactElement => {
+	renderSubmissionsSelect = (submissions: SubmissionInfo[]): React.ReactElement => {
 		const { currentSubmission } = this.state;
-		const { submissions, } = this.props;
 		const { waitingForManualChecking } = this.props.slideProgress;
 
 		const lastSuccessSubmission = getLastSuccessSubmission(submissions);
@@ -561,7 +600,10 @@ class Exercise extends React.Component<Props, State> {
 		if(id === this.newTry.id) {
 			this.loadNewTry();
 		}
-		this.loadSubmissionToState(submissions.find(s => s.id === id));
+
+		if(submissions) {
+			this.loadSubmissionToState(submissions.find(s => s.id === id));
+		}
 	};
 
 	renderLanguageSelect = (): React.ReactElement => {
@@ -682,7 +724,7 @@ class Exercise extends React.Component<Props, State> {
 	openAcceptedSolutionsModal = (): void => {
 		const { slideContext: { courseId, slideId, }, submissions, slideProgress, skipExercise, } = this.props;
 
-		if(isAcceptedSolutionsWillNotDiscardScore(submissions, slideProgress.isSkipped)) {
+		if(submissions && isAcceptedSolutionsWillNotDiscardScore(submissions, slideProgress.isSkipped)) {
 			this.openModal({ type: ModalType.acceptedSolutions });
 		} else {
 			skipExercise(courseId, slideId, () => {
@@ -997,7 +1039,7 @@ class Exercise extends React.Component<Props, State> {
 
 		const code = loadExerciseCodeFromCache(slideId);
 		this.resetCode();
-		if(submissions.length > 0 && code) {
+		if(submissions && submissions.length > 0 && code) {
 			let newValue = code.value;
 
 			const lastSubmission = submissions[this.lastSubmissionIndex];
@@ -1016,7 +1058,7 @@ class Exercise extends React.Component<Props, State> {
 			return;
 		}
 
-		if(submissions.length > 0) {
+		if(submissions && submissions.length > 0) {
 			const lastSubmission = submissions[this.lastSubmissionIndex];
 			this.saveCodeDraftToCache(slideId, lastSubmission.code);
 			this.setState({

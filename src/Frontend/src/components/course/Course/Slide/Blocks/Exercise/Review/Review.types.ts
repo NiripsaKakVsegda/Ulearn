@@ -27,7 +27,6 @@ export interface ReviewProps {
 	selectedReviewId: number;
 	user?: UserInfo;
 
-	isReviewOrCommentCanBeAdded: (reviewText: string) => boolean;
 	onReviewClick: (e: React.MouseEvent | React.FocusEvent, id: number,) => void;
 	addReviewComment: (parentReviewId: number, comment: string) => void;
 	deleteReviewOrComment: (reviewId: number, parentReviewId?: number) => void;
