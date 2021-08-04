@@ -260,19 +260,6 @@ namespace Ulearn.Core.Courses.Slides
 				componentIndex++;
 			}
 
-			var exerciseWithSolutionsToShow = slide.Blocks.OfType<AbstractExerciseBlock>().FirstOrDefault(e => !e.HideShowSolutionsButton);
-			if (exerciseWithSolutionsToShow != null)
-			{
-				var exerciseSlide = slide as ExerciseSlide;
-				Debug.Assert(exerciseSlide != null, nameof(exerciseSlide) + " != null");
-				var comp = exerciseSlide.GetSolutionsComponent(
-					"Решения",
-					slide, componentIndex,
-					string.Format(context.UlearnBaseUrlWeb + SolutionsUrlFormat, context.CourseId, slide.Id), ltiId);
-				components.Add(comp);
-				//yield return new Vertical(slide.NormalizedGuid + "0", "Решения", new[] { comp });
-			}
-
 			var exBlock = slide.Blocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
 			if (exBlock == null)
 				yield return new Vertical(slide.NormalizedGuid, slide.Title, components.ToArray());
@@ -291,7 +278,6 @@ namespace Ulearn.Core.Courses.Slides
 		}
 
 		protected const string SlideUrlFormat = "/Course/{0}/LtiSlide?slideId={1}";
-		protected const string SolutionsUrlFormat = "/Course/{0}/AcceptedAlert?slideId={1}&isLti=True";
 
 		public IEnumerable<Vertical> ToVerticals(string courseId, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, string ltiId, DirectoryInfo courseDirectory)
 		{
