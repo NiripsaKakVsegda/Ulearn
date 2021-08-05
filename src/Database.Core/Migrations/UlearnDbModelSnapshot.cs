@@ -688,6 +688,10 @@ namespace Database.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("CourseName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -1956,9 +1960,6 @@ namespace Database.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<DateTime>("LastUpdateTime")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<DateTime>("LoadingTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -2262,7 +2263,8 @@ namespace Database.Migrations
 
                     b.HasIndex("CourseId", "SlideId", "Timestamp");
 
-                    b.HasIndex("CourseId", "SlideId", "UserId");
+                    b.HasIndex("CourseId", "SlideId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("Visits");
                 });

@@ -33,9 +33,10 @@ namespace uLearn.CourseTool
 			Title = "title",
 		};
 
+		private const string courseId = "ForTests";
 		private const string youtubeIdFromCourse = "GZS36w_fxdg";
 		private static readonly Guid slideIdFromCourse = Guid.Parse("108C89D9-36F0-45E3-BBEE-B93AC971063F");
-		private readonly DirectoryInfo testCourseDirectory = new DirectoryInfo(@"..\..\..\..\courses\ForTests\Slides");
+		private readonly DirectoryInfo testCourseDirectory = new DirectoryInfo($@"..\..\..\..\courses\{courseId}\Slides");
 		private const string ulearnBaseUrlWeb = "https://192.168.33.1:44300";
 		private const string ulearnBaseUrlApi = "https://192.168.33.1:8000";
 		private const string ltiId = "edx";
@@ -48,7 +49,7 @@ namespace uLearn.CourseTool
 			if (!Directory.Exists(testFolderName))
 				Directory.CreateDirectory(testFolderName);
 			var loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
-			course = loader.Load(testCourseDirectory);
+			course = loader.Load(testCourseDirectory, courseId);
 		}
 
 		[TearDown]

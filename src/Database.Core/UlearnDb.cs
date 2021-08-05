@@ -374,7 +374,7 @@ namespace Database
 			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
 			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
 
-			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
+			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId }, true);
 			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp }); // посещения за период
 			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.UserId }); // поиск всех слайдов
 

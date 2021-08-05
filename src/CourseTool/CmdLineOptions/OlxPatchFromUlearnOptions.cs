@@ -17,7 +17,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 		public override void Patch(OlxPatcher patcher, Config config, Profile profile, EdxCourse edxCourse)
 		{
 			Console.WriteLine("Loading Ulearn course from {0}", CourseDirectory.Name);
-			var ulearnCourse = new CourseLoader().Load(CourseDirectory);
+			var ulearnCourse = new CourseLoader().Load(CourseDirectory, Config.ULearnCourseId);
 			Console.WriteLine("Patching");
 			var videoJson = string.Format("{0}/{1}", WorkingDirectory, config.Video);
 			var video = File.Exists(videoJson)

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Ulearn.Core.Courses;
 
 namespace Database.Repos
 {
@@ -15,58 +17,57 @@ namespace Database.Repos
 			this.db = db;
 		}
 
-		public async Task<TempCourse> FindAsync(string courseId)
+		public async Task<TempCourse> Find(string courseId)
 		{
-			return await db.TempCourses.SingleOrDefaultAsync(course => course.CourseId == courseId);
+			return await db.TempCourses.Include(t => t.Author).SingleOrDefaultAsync(course => course.CourseId == courseId);
 		}
 
-		public async Task<List<TempCourse>> GetTempCoursesAsync()
+		public async Task<List<TempCourse>> GetAllTempCourses()
 		{
-			return await db.TempCourses.ToListAsync();
+			return await db.TempCourses.Include(t => t.Author).ToListAsync();
 		}
 
-		public async Task<TempCourseError> GetCourseErrorAsync(string courseId)
+		// Временные курсы, которые обновлялись недавно. Только такие будем поднимать в память.
+		public async Task<List<TempCourse>> GetRecentTempCourses()
+		{
+			// Пока что загружаются все временные курсы.
+			// Потому что связанные с курсом объекты могут всплыть в других запросах вроде дай мне все доступные группы.
+			// И это может привести к некорректным данным или исключению.
+			return await GetAllTempCourses();
+			// var monthAgo = DateTime.Now.Subtract(TimeSpan.FromDays(30));
+			// return await db.TempCourses.Where(tc => tc.LoadingTime > monthAgo).ToListAsync();
+		}
+
+		public async Task<TempCourseError> GetCourseError(string courseId)
 		{
 			return await db.TempCourseErrors.SingleOrDefaultAsync(error => error.CourseId == courseId);
 		}
 
-		public async Task<TempCourse> AddTempCourseAsync(string courseId, string authorId)
+		public async Task<TempCourse> AddTempCourse(string courseId, string authorId, CourseVersionToken versionToken)
 		{
 			var tempCourse = new TempCourse
 			{
 				CourseId = courseId,
 				AuthorId = authorId,
-				LoadingTime = DateTime.Now,
-				LastUpdateTime = DateTime.UnixEpoch // Используется вместо default, потому что default нельзя сохранить в базу
+				LoadingTime = versionToken.LoadingTime.Value
 			};
 			db.TempCourses.Add(tempCourse);
 			await db.SaveChangesAsync();
 			return tempCourse;
 		}
 
-		public async Task<DateTime> UpdateTempCourseLoadingTimeAsync(string courseId)
+		public async Task<DateTime> UpdateTempCourseLoadingTime(string courseId, CourseVersionToken versionToken)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
 				return default;
 
-			course.LoadingTime = DateTime.Now;
+			course.LoadingTime = versionToken.LoadingTime.Value;
 			await db.SaveChangesAsync();
 			return course.LoadingTime;
 		}
 
-		public async Task<DateTime> UpdateTempCourseLastUpdateTimeAsync(string courseId)
-		{
-			var course = await db.TempCourses.FindAsync(courseId);
-			if (course == null)
-				return default;
-
-			course.LastUpdateTime = DateTime.Now;
-			await db.SaveChangesAsync();
-			return course.LastUpdateTime;
-		}
-
-		public async Task<TempCourseError> UpdateOrAddTempCourseErrorAsync(string courseId, string error)
+		public async Task<TempCourseError> UpdateOrAddTempCourseError(string courseId, string error)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
@@ -89,7 +90,7 @@ namespace Database.Repos
 			return result;
 		}
 
-		public async Task MarkTempCourseAsNotErroredAsync(string courseId)
+		public async Task MarkTempCourseAsNotErrored(string courseId)
 		{
 			var course = await db.TempCourses.FindAsync(courseId);
 			if (course == null)
@@ -97,7 +98,7 @@ namespace Database.Repos
 			var error = await db.TempCourseErrors.FindAsync(courseId);
 			if (error == null)
 			{
-				await UpdateOrAddTempCourseErrorAsync(courseId, null);
+				await UpdateOrAddTempCourseError(courseId, null);
 				return;
 			}
 

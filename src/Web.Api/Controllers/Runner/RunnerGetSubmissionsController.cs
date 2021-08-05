@@ -16,6 +16,8 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.RunCheckerJobApi;
+using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Controllers.Runner
@@ -60,7 +62,7 @@ namespace Ulearn.Web.Api.Controllers.Runner
 							return new List<RunnerSubmission>();
 
 						var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
-						var courseManager = scope.ServiceProvider.GetService<IWebCourseManager>();
+						var courseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
 						var builtSubmissions = new List<RunnerSubmission> { await ToRunnerSubmission(submission, courseStorage, courseManager) };
 						log.Info($"Собрал решения: [{submission.Id}], отдаю их агенту {agent}");
 						return builtSubmissions;
@@ -73,17 +75,13 @@ namespace Ulearn.Web.Api.Controllers.Runner
 		}
 
 		private async Task<RunnerSubmission> ToRunnerSubmission(UserExerciseSubmission submission,
-			ICourseStorage courseStorage, IWebCourseManager courseManager)
+			ICourseStorage courseStorage, IMasterCourseManager courseManager)
 		{
 			log.Info($"Собираю для отправки в RunCsJob решение {submission.Id}");
 			var slide = courseStorage.FindCourse(submission.CourseId)?.FindSlideByIdNotSafe(submission.SlideId);
 
 			if (slide is ExerciseSlide exerciseSlide)
 			{
-				log.Info($"Ожидаю, если курс {submission.CourseId} заблокирован");
-				courseManager.WaitWhileCourseIsLocked(submission.CourseId);
-				log.Info($"Курс {submission.CourseId} разблокирован");
-
 				var courseDictionary = courseManager.GetExtractedCourseDirectory(submission.CourseId).FullName;
 				if (exerciseSlide is PolygonExerciseSlide)
 					return ((PolygonExerciseBlock)exerciseSlide.Exercise).CreateSubmission(

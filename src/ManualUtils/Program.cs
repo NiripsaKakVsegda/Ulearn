@@ -12,6 +12,7 @@ using Database;
 using Database.Di;
 using Database.Models;
 using Database.Repos;
+using Database.Repos.Users;
 using Ionic.Zip;
 using ManualUtils.AntiPlagiarism;
 using Microsoft.AspNetCore.Identity;
@@ -21,9 +22,12 @@ using Newtonsoft.Json;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
+using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
+using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Utils.LTI;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File;
@@ -61,10 +65,22 @@ namespace ManualUtils
 		{
 			var services = new ServiceCollection();
 			services.AddLogging(builder => builder.AddVostok(LogProvider.Get()));
+
 			services.AddSingleton(db);
-			services.AddDatabaseServices();
-			services.AddSingleton(adb);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
+			services.AddDatabaseServices(false);
+
+			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
+			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
+			services.AddSingleton<MasterCourseManager>();
+			services.AddSingleton<ExerciseStudentZipsCache>();
+			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+
+			services.AddScoped<TempCourseRemover>();
+
+			services.AddSingleton(adb);
+
 			return services.BuildServiceProvider();
 		}
 
@@ -102,7 +118,11 @@ namespace ManualUtils
 			// await UploadCourseVersions(serviceProvider);
 			// await RemoveVersionsWithoutFile(serviceProvider);
 			// await RemoveDuplicateExerciseManualCheckings(serviceProvider);
-			// await UpdateManualCheckingIds(serviceProvider);
+			// await RemoveTempCourse(serviceProvider);
+			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
+			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
+			// await SetCourseNamesToVersions(serviceProvider, false);
+			await UnifyVisits(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -396,7 +416,7 @@ namespace ManualUtils
 
 		private static void ConvertZipsToCourseXmlInRoot()
 		{
-			var mainDirectory = WebCourseManager.GetCoursesDirectory();
+			var mainDirectory = CourseManager.CoursesDirectory;
 			var stagingDirectory = mainDirectory.GetSubdirectory("Courses.Staging");
 			var versionsDirectory = mainDirectory.GetSubdirectory("Courses.Versions");
 
@@ -442,8 +462,7 @@ namespace ManualUtils
 
 		private static async Task UploadStagingToDb(IServiceProvider serviceProvider)
 		{
-			var mainDirectory = WebCourseManager.GetCoursesDirectory();
-			var stagingDirectory = mainDirectory.GetSubdirectory("Courses.Staging");
+			var stagingDirectory = CourseManager.CoursesDirectory.GetSubdirectory("Courses.Staging");
 
 			var db = serviceProvider.GetService<UlearnDb>();
 			var coursesRepo = serviceProvider.GetService<ICoursesRepo>();
@@ -470,10 +489,10 @@ namespace ManualUtils
 			}
 		}
 
-		private static async Task UploadStagingFromDbAndExtractToCourses(IServiceProvider serviceProvider)
+		/*private static async Task UploadStagingFromDbAndExtractToCourses(IServiceProvider serviceProvider)
 		{
 			var db = serviceProvider.GetService<UlearnDb>();
-			var courseManager = serviceProvider.GetService<IWebCourseManager>();
+			var courseManager = serviceProvider.GetService<IMasterCourseManager>();
 			var coursesRepo = serviceProvider.GetService<ICoursesRepo>();
 
 			var publishedCourseVersions = await coursesRepo.GetPublishedCourseVersions();
@@ -494,7 +513,7 @@ namespace ManualUtils
 						f.Attributes &= ~FileAttributes.ReadOnly;
 				}
 			}
-		}
+		}*/
 
 		private static async Task SetCourseIdAndSlideIdInLikesAndPromotes(UlearnDb db)
 		{
@@ -549,7 +568,7 @@ namespace ManualUtils
 			}
 		}
 
-		private static async Task UploadCourseVersions(IServiceProvider serviceProvider)
+		/*private static async Task UploadCourseVersions(IServiceProvider serviceProvider)
 		{
 			using (var scope = serviceProvider.CreateScope())
 			{
@@ -559,7 +578,7 @@ namespace ManualUtils
 				versions = versions.Where(v => !versionsWithFiles.Contains(v.Id)).ToList();
 				Console.WriteLine("Versions without file " + versions.Count);
 
-				var courseManager = scope.ServiceProvider.GetService<IWebCourseManager>();
+				var courseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
 				var i = 0;
 				foreach (var version in versions)
 				{
@@ -580,7 +599,7 @@ namespace ManualUtils
 				}
 				Console.WriteLine($"Uploaded {i}");
 			}
-		}
+		}*/
 
 		private static async Task<byte[]> ReadAllContentAsync(FileInfo file)
 		{
@@ -672,5 +691,118 @@ namespace ManualUtils
 				db.SaveChanges();
 			}
 		}*/
+
+		private static async Task RemoveTempCourse(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var tempCourseRemover = scope.ServiceProvider.GetService<TempCourseRemover>();
+				await tempCourseRemover.RemoveTempCourseWithAllData("ulearn-testing", "71eefd72-7972-4a0a-b04e-645f7f04c9a5");
+			}
+		}
+
+		private static async Task AddVersionFilesToCoursesOnDisk(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
+				var masterCourseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
+				var publishedVersions = await coursesRepo.GetPublishedCourseVersions();
+				var tempCourses = await tempCoursesRepo.GetAllTempCourses();
+				var courseAndTokens =
+					publishedVersions.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.Id)))
+						.Concat(tempCourses.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.LoadingTime)))).ToList();
+				foreach (var (courseId, token) in courseAndTokens)
+				{
+					var dir = masterCourseManager.GetExtractedCourseDirectory(courseId);
+					if (!dir.Exists)
+						continue;
+					var oldToken = CourseVersionToken.Load(dir);
+					if (oldToken.Version != default(Guid))
+						continue;
+					await token.Save(dir);
+				}
+			}
+		}
+
+		private static async Task CreateNewVersionFromZip(IServiceProvider serviceProvider, string courseId, string zipPath)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var usersRepo = scope.ServiceProvider.GetService<IUsersRepo>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
+				var versionId = Guid.NewGuid();
+				var content = await new FileInfo(zipPath).ReadAllContentAsync();
+				var publishedCourseVersion = await coursesRepo.GetPublishedCourseVersion(courseId);
+				await coursesRepo.AddCourseVersion(courseId, publishedCourseVersion.CourseName, versionId, ulearnBotUser.Id, null, null, null, null, content);
+				await coursesRepo.MarkCourseVersionAsPublished(versionId);
+			}
+		}
+
+		private static async Task SetCourseNamesToVersions(IServiceProvider serviceProvider, bool removeVersionIfCourseError)
+		{
+			Console.OutputEncoding = Encoding.UTF8;
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+				var allCourseVersions = await db.CourseVersions.ToListAsync();
+				foreach (var courseVersion in allCourseVersions)
+				{
+					var courseVersionFile = await coursesRepo.GetVersionFile(courseVersion.Id);
+					using (var tempDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseVersion.CourseId, new CourseVersionToken(courseVersion.Id), courseVersionFile.File))
+					{
+						var (course, exception) = courseManager.LoadCourseFromDirectory(courseVersion.CourseId, tempDirectory.DirectoryInfo);
+						if (exception != null)
+						{
+							if (removeVersionIfCourseError)
+								await coursesRepo.DeleteCourseVersion(courseVersion.CourseId, courseVersion.Id);
+							Console.WriteLine($"Error on {courseVersion.CourseId} {courseVersion.Id}");
+							continue;
+						}
+						courseVersion.CourseName = course.Title;
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{courseVersion.CourseId} {courseVersion.Id} {courseVersion.CourseName}");
+					}
+				}
+			}
+		}
+
+		private static async Task UnifyVisits(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var visitsRepo = scope.ServiceProvider.GetService<IVisitsRepo>();
+				var visitsCount = db.Visits.Count();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
+				var dubles = await db.Visits
+					.GroupBy(v => new { v.CourseId, v.SlideId, v.UserId})
+					.Select(g => new { g.Key.CourseId, g.Key.SlideId, g.Key.UserId, Count = g.Count() })
+					.Where(t => t.Count > 1)
+					.ToListAsync();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(0.5));
+				Console.WriteLine($"{dubles.Count} / {visitsCount}");
+				var i = 0;
+				foreach (var duble in dubles)
+				{
+					//Console.WriteLine($"{duble.CourseId} {duble.SlideId} {duble.UserId} {duble.Count}");
+					var actualVisit = await visitsRepo.FindVisit(duble.CourseId, duble.SlideId, duble.UserId);
+					var allVisits = await db.Visits.Where(v => v.CourseId == duble.CourseId && v.SlideId == duble.SlideId && v.UserId == duble.UserId).ToListAsync();
+					var visitsForRemove = allVisits.Where(v => v.Id != actualVisit.Id);
+					db.Visits.RemoveRange(visitsForRemove);
+					i++;
+					if (i % 100 == 0)
+					{
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{i} / {dubles.Count}");
+					}
+				}
+				await db.SaveChangesAsync();
+			}
+		}
 	}
 }

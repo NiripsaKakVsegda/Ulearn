@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
@@ -14,7 +13,7 @@ namespace Database.Repos
 		Task<CourseVersion> GetPublishedCourseVersion(string courseId);
 		Task<List<CourseVersion>> GetCourseVersions(string courseId);
 
-		Task<CourseVersion> AddCourseVersion(string courseId, Guid versionId, string authorId,
+		Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
 			string pathToCourseXml, string repoUrl, string commitHash, string description, byte[] courseContent);
 
 		Task MarkCourseVersionAsPublished(Guid versionId);

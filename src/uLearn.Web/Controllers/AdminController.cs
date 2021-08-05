@@ -18,6 +18,7 @@ using Database.DataContexts;
 using Database.Extensions;
 using Database.Models;
 using GitCourseUpdater;
+using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using Ulearn.Common;
 using uLearn.Web.Extensions;
@@ -33,6 +34,7 @@ using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.CSharp;
 using Ulearn.Core.Extensions;
+using Ulearn.Core.Helpers;
 
 namespace uLearn.Web.Controllers
 {
@@ -82,7 +84,7 @@ namespace uLearn.Web.Controllers
 			styleErrorsRepo = new StyleErrorsRepo(db);
 			certificateGenerator = new CertificateGenerator(db);
 			tempCoursesRepo = new TempCoursesRepo(db);
-			reposDirectory = WebCourseManager.GetCoursesDirectory().GetSubdirectory("Repos");
+			reposDirectory = CourseManager.CoursesDirectory.GetSubdirectory("Repos");
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			gitSecret = configuration.Git.Webhook.Secret;
 			var antiplagiarismClientConfiguration = ApplicationConfiguration.Read<UlearnConfiguration>().AntiplagiarismClient;
@@ -90,11 +92,17 @@ namespace uLearn.Web.Controllers
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
-		public ActionResult SpellingErrors(Guid versionId)
+		public async Task<ActionResult> SpellingErrors(Guid versionId)
 		{
-			var course = courseManager.GetVersion(versionId);
-			courseManager.EnsureVersionIsExtracted(versionId);
-			return PartialView(course.SpellCheck(courseManager.GetExtractedCourseDirectory(course.Id).FullName));
+			var versionFile = coursesRepo.GetVersionFile(versionId);
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
+			{
+				var (course, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
+				var model = course.SpellCheck(courseDirectory.DirectoryInfo.FullName);
+				return PartialView(model);
+			}
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
@@ -141,30 +149,25 @@ namespace uLearn.Web.Controllers
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
-		public ActionResult DownloadPackage(string courseId)
+		public async Task<ActionResult> DownloadPackage(string courseId)
 		{
-			var packageName = courseManager.GetPackageName(courseId);
-			var isTempCourse = tempCoursesRepo.Find(courseId) != null;
-			Stream stream;
-			if (!isTempCourse)
-			{
-				var path = courseManager.GetStagingCoursePath(courseId);
-				stream = System.IO.File.OpenRead(path);
-			}
+			var course = courseStorage.GetCourse(courseId);
+			byte[] content;
+			if (course.IsTempCourse())
+				content = await courseManager.GetTempCourseZipBytes(courseId).ConfigureAwait(false);
 			else
 			{
-				var path = courseManager.GetExtractedCourseDirectory(courseId);
-				stream = ZipUtils.CreateZipFromDirectory(new List<string> { path.FullName }, new List<string> { ".meta" }, null);
+				var publishedVersionFile = coursesRepo.GetPublishedVersionFile(courseId);
+				content = publishedVersionFile.File;
 			}
-
-			return File(stream, "application/zip", packageName);
+			return File(content, "application/zip", courseId + ".zip");
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
 		public ActionResult DownloadVersion(string courseId, Guid versionId)
 		{
-			var packageName = courseManager.GetPackageName(courseId);
-			return File(courseManager.GetCourseVersionFile(versionId).FullName, "application/zip", packageName);
+			var publishedVersionFile = coursesRepo.GetVersionFile(versionId);
+			return File(publishedVersionFile.File, "application/zip", courseId + ".zip");
 		}
 
 		private async Task NotifyAboutCourseVersion(string courseId, Guid versionId, string userId)
@@ -254,18 +257,13 @@ namespace uLearn.Web.Controllers
 			if (fileName == null || !fileName.ToLower().EndsWith(".zip"))
 				return RedirectToAction("Packages", new { courseId });
 
-			var tmpFileName = Path.GetTempFileName();
-			using (var tmpFile = new FileStream(tmpFileName, FileMode.Create, FileAccess.Write))
-				await file.InputStream.CopyToAsync(tmpFile);
-
+			using var tempFile = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(new Guid()), file.InputStream);
 			Guid versionId;
 			Exception error;
-			using (var inputStream = ZipUtils.GetZipWithFileWithNameInRoot(tmpFileName, "course.xml"))
+			using (var inputStream = ZipUtils.GetZipWithFileWithNameInRoot(tempFile.FileInfo.FullName, "course.xml"))
 			{
 				(versionId, error) = await UploadCourse(courseId, inputStream, User.Identity.GetUserId()).ConfigureAwait(false);
 			}
-
-			new FileInfo(tmpFileName).Delete();
 
 			if (error != null)
 			{
@@ -298,7 +296,7 @@ namespace uLearn.Web.Controllers
 			var infoForUpload = new List<(string CourseId, MemoryStream Zip, CommitInfo CommitInfo, string PathToCourseXml)>();
 			try
 			{
-				using (IGitRepo git = new GitRepo(repoUrl, reposDirectory, publicKey, privateKey, new DirectoryInfo(Path.GetTempPath())))
+				using (IGitRepo git = new GitRepo(repoUrl, reposDirectory, publicKey, privateKey, new DirectoryInfo(TempDirectory.TempDirectoryPath)))
 				{
 					// В GitRepo используется Monitor. Он должен быть освобожден в том же потоке, что и взят.
 					git.Checkout(branch);
@@ -362,7 +360,7 @@ namespace uLearn.Web.Controllers
 			CommitInfo commitInfo = null;
 			try
 			{
-				using (IGitRepo git = new GitRepo(courseRepo.RepoUrl, reposDirectory, publicKey, privateKey, new DirectoryInfo(Path.GetTempPath())))
+				using (IGitRepo git = new GitRepo(courseRepo.RepoUrl, reposDirectory, publicKey, privateKey, new DirectoryInfo(TempDirectory.TempDirectoryPath)))
 				{
 					git.Checkout(courseRepo.Branch);
 					commitInfo = git.GetCurrentCommitInfo();
@@ -407,36 +405,41 @@ namespace uLearn.Web.Controllers
 			log.Info($"Start upload course '{courseId}'");
 			var versionId = Guid.NewGuid();
 
-			var destinationFile = courseManager.GetCourseVersionFile(versionId);
-			using (var file = new FileStream(destinationFile.FullName, FileMode.Create, FileAccess.Write))
-				await content.CopyToAsync(file);
-			Course updatedCourse;
-			try
+			using (var zipOnDisk = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(versionId), content))
 			{
-				/* Load version and put it into LRU-cache */
-				updatedCourse = courseManager.GetVersion(versionId);
-			}
-			catch (Exception e)
-			{
-				log.Warn(e, $"Upload course exception '{courseId}'");
-				return (versionId, e);
-			}
+				string courseName;
+				try
+				{
+					using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseId, new CourseVersionToken(versionId), await zipOnDisk.FileInfo.ReadAllContentAsync()))
+					{
+						var (course, exception) = courseManager.LoadCourseFromDirectory(courseId, courseDirectory.DirectoryInfo);
+						if (exception != null)
+							throw exception;
+						courseName = course.Title;
+					}
+				}
+				catch (Exception e)
+				{
+					log.Warn(e, $"Upload course exception '{courseId}'");
+					return (versionId, e);
+				}
 
-			log.Info($"Successfully update course files '{courseId}'");
+				log.Info($"Successfully update course files '{courseId}'");
 
-			await coursesRepo.AddCourseVersion(courseId, versionId, userId,
-				pathToCourseXmlInRepo, uploadedFromRepoUrl, commitInfo?.Hash, commitInfo?.Message, await destinationFile.ReadAllContentAsync());
-			await NotifyAboutCourseVersion(courseId, versionId, userId);
-			try
-			{
-				var courseVersions = coursesRepo.GetCourseVersions(courseId);
-				var previousUnpublishedVersions = courseVersions.Where(v => v.PublishTime == null && v.Id != versionId).ToList();
-				foreach (var unpublishedVersion in previousUnpublishedVersions)
-					await RemoveCourseVersion(courseId, unpublishedVersion.Id).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				log.Warn(ex, "Error during delete previous unpublished versions");
+				await coursesRepo.AddCourseVersion(courseId, courseName, versionId, userId,
+					pathToCourseXmlInRepo, uploadedFromRepoUrl, commitInfo?.Hash, commitInfo?.Message, await zipOnDisk.FileInfo.ReadAllContentAsync());
+				await NotifyAboutCourseVersion(courseId, versionId, userId);
+				try
+				{
+					var courseVersions = coursesRepo.GetCourseVersions(courseId);
+					var previousUnpublishedVersions = courseVersions.Where(v => v.PublishTime == null && v.Id != versionId).ToList();
+					foreach (var unpublishedVersion in previousUnpublishedVersions)
+						await RemoveCourseVersion(courseId, unpublishedVersion.Id).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					log.Warn(ex, "Error during delete previous unpublished versions");
+				}
 			}
 
 			return (versionId, null);
@@ -449,14 +452,17 @@ namespace uLearn.Web.Controllers
 		public async Task<ActionResult> CreateCourse(string courseId, string courseTitle)
 		{
 			var versionId = Guid.NewGuid();
+			var userId = User.Identity.GetUserId();
 
-			if (!courseManager.TryCreateCourse(courseId, courseTitle, versionId))
+			if (courseManager.IsCourseIdAllowed(courseId))
+				throw new Exception("CourseId contains forbidden characters");
+
+			var createdNew = await courseManager.CreateCourseIfNotExists(courseId, versionId, courseTitle, userId);
+			if (!createdNew)
 				return RedirectToAction("Courses", "Course", new { courseId = courseId, courseTitle = courseTitle });
 
-			var userId = User.Identity.GetUserId();
-			var courseFile = courseManager.GetStagingCourseFile(courseId);
-			var courseContent = await courseFile.ReadAllContentAsync();
-			await coursesRepo.AddCourseVersion(courseId, versionId, userId, null, null, null, null, courseContent).ConfigureAwait(false);
+			var courseFile = coursesRepo.GetVersionFile(versionId);
+			await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, courseFile.File).ConfigureAwait(false);
 			await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			await NotifyAboutPublishedCourseVersion(courseId, versionId, userId).ConfigureAwait(false);
 
@@ -467,7 +473,7 @@ namespace uLearn.Web.Controllers
 		[ValidateInput(false)]
 		public ActionResult Packages(string courseId, string error = "")
 		{
-			var isTempCourse = tempCoursesRepo.Find(courseId) != null;
+			var isTempCourse = courseStorage.GetCourse(courseId).IsTempCourse();
 			if (isTempCourse)
 				return null;
 			return PackagesInternal(courseId, error);
@@ -475,7 +481,6 @@ namespace uLearn.Web.Controllers
 
 		private ActionResult PackagesInternal(string courseId, string error = "", bool openStep1 = false, bool openStep2 = false)
 		{
-			var hasPackage = courseManager.HasPackageFor(courseId);
 			var course = courseStorage.GetCourse(courseId);
 			var courseVersions = coursesRepo.GetCourseVersions(courseId).ToList();
 			var publishedVersion = coursesRepo.GetPublishedCourseVersion(courseId);
@@ -483,7 +488,7 @@ namespace uLearn.Web.Controllers
 			return View("Packages", model: new PackagesViewModel
 			{
 				Course = course,
-				HasPackage = hasPackage,
+				HasPackage = true,
 				Versions = courseVersions,
 				PublishedVersion = publishedVersion,
 				CourseGit = courseRepo,
@@ -818,9 +823,10 @@ namespace uLearn.Web.Controllers
 		{
 			var userRolesByEmail = User.IsSystemAdministrator() ? usersRepo.FilterUsersByEmail(queryModel) : null;
 			var userRoles = usersRepo.FilterUsers(queryModel);
-			var tempCourses = tempCoursesRepo.GetTempCourses().Select(s => s.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);;
 			var courses = courseStorage.GetCourses()
-				.ToDictionary(c => c.Id, c => (c, tempCourses.Contains(c.Id)), StringComparer.OrdinalIgnoreCase);
+				.ToDictionary(c => c.Id, c => (c, allTempCourses.GetValueOrDefault(c.Id)), StringComparer.OrdinalIgnoreCase);
 			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList(),
 				courses,
 				queryModel.CourseId);
@@ -829,7 +835,7 @@ namespace uLearn.Web.Controllers
 		}
 
 		private UserListModel GetUserListModel(List<UserRolesInfo> userRoles,
-			Dictionary<string, (Course, bool)> courses,
+			Dictionary<string, (Course Course, TempCourse TempCourse)> courses,
 			string courseId)
 		{
 			var rolesForUsers = userRolesRepo.GetRolesByUsers(courseId);
@@ -857,19 +863,32 @@ namespace uLearn.Web.Controllers
 				if (!rolesForUsers.TryGetValue(userRolesInfo.UserId, out List<CourseRole> roles))
 					roles = new List<CourseRole>();
 
+				string visibleCourseName(string s)
+				{
+					var (course, tempCourse) = courses.GetOrDefault(s);
+					string visibleCourseName = null;
+					if (course != null)
+						visibleCourseName = tempCourse != null
+							? tempCourse.GetVisibleName(course.Title)
+							: courseStorage.GetCourse(course.Id).Title;
+					return visibleCourseName;
+				}
+
 				user.CourseRoles = Enum.GetValues(typeof(CourseRole))
 					.Cast<CourseRole>()
 					.Where(courseRole => courseRole != CourseRole.Student)
 					.ToDictionary(
 						courseRole => courseRole.ToString(),
-						courseRole => (ICoursesRolesListModel)new SingleCourseRolesModel
+						courseRole =>
 						{
-							HasAccess = roles.Contains(courseRole),
-							ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
-							UserName = user.UserVisibleName,
-							Role = courseRole,
-							CourseTitle = courses.GetOrDefault(courseId).Item1?.Title,
-							IsTempCourse = courses.GetOrDefault(courseId).Item2
+	return (ICoursesRolesListModel)new SingleCourseRolesModel
+							{
+								HasAccess = roles.Contains(courseRole),
+								ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
+								UserName = user.UserVisibleName,
+								Role = courseRole,
+								VisibleCourseName = visibleCourseName(courseId)
+							};
 						});
 
 				var courseAccesses = usersCourseAccesses.ContainsKey(user.UserId) ? usersCourseAccesses[user.UserId] : null;
@@ -884,8 +903,7 @@ namespace uLearn.Web.Controllers
 							ToggleUrl = Url.Action("ToggleCourseAccess", "Admin", new { courseId = courseId, userId = user.UserId, accessType = a }),
 							UserName = user.UserVisibleName,
 							AccessType = a,
-							CourseTitle = courses.GetOrDefault(courseId).Item1?.Title,
-							IsTempCourse = courses.GetOrDefault(courseId).Item2
+							VisibleCourseName = visibleCourseName(courseId)
 						}
 					);
 
@@ -899,38 +917,42 @@ namespace uLearn.Web.Controllers
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
-		public ActionResult Diagnostics(string courseId, Guid? versionId)
+		public async Task<ActionResult> Diagnostics(string courseId, Guid? versionId)
 		{
-			var isTempCourse = tempCoursesRepo.Find(courseId) != null;
+			var course = courseStorage.GetCourse(courseId);
 			if (versionId == null)
 			{
 				return View(new DiagnosticsModel
 				{
 					CourseId = courseId,
-					IsTempCourse = isTempCourse
+					IsTempCourse = course.IsTempCourse()
 				});
 			}
 
-			var versionIdGuid = (Guid)versionId;
-
-			var course = courseStorage.GetCourse(courseId);
-			var version = courseManager.GetVersion(versionIdGuid);
-
-			var courseDiff = new CourseDiff(course, version);
-			var schemaPath = Path.Combine(HttpRuntime.BinDirectory, "schema.xsd");
-			var validator = new XmlValidator(schemaPath);
-			var warnings = validator.ValidateSlidesFiles(version.GetSlidesNotSafe()
-				.Select(s => new FileInfo(Path.Combine(courseManager.GetExtractedVersionDirectory(versionIdGuid).FullName, s.SlideFilePathRelativeToCourse))).ToList());
-
-			return View(new DiagnosticsModel
+			var versionFile = coursesRepo.GetVersionFile(versionId.Value);
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
 			{
-				CourseId = courseId,
-				IsDiagnosticsForVersion = true,
-				VersionId = versionIdGuid,
-				CourseDiff = courseDiff,
-				Warnings = warnings,
-				IsTempCourse = isTempCourse
-			});
+				var (version, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
+
+				var courseDiff = new CourseDiff(course, version);
+				var schemaPath = Path.Combine(HttpRuntime.BinDirectory, "schema.xsd");
+				var validator = new XmlValidator(schemaPath);
+				var warnings = validator.ValidateSlidesFiles(version.GetSlidesNotSafe()
+					.Select(s => new FileInfo(Path.Combine(courseDirectory.DirectoryInfo.FullName, s.SlideFilePathRelativeToCourse))).ToList());
+
+				return View(new DiagnosticsModel
+				{
+					CourseId = courseId,
+					IsDiagnosticsForVersion = true,
+					VersionId = versionId.Value,
+					CourseDiff = courseDiff,
+					Warnings = warnings,
+					IsTempCourse = course.IsTempCourse()
+				});
+			}
+
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
@@ -968,41 +990,21 @@ namespace uLearn.Web.Controllers
 		public async Task<ActionResult> PublishVersion(string courseId, Guid versionId)
 		{
 			log.Info($"Публикую версию курса {courseId}. ID версии: {versionId}");
-			var versionFile = courseManager.GetCourseVersionFile(versionId);
-			var courseFile = courseManager.GetStagingCourseFile(courseId);
 			var oldCourse = courseStorage.GetCourse(courseId);
-
-			/* First, try to load course from LRU-cache or zip file */
-			log.Info($"Загружаю версию {versionId}");
-			var version = courseManager.GetVersion(versionId);
-
-			/* Copy version's zip file to course's zip archive, overwrite if need */
-			log.Info($"Копирую архив с версий в архив с курсом: {versionFile.FullName} → {courseFile.FullName}");
-			versionFile.CopyTo(courseFile.FullName, true);
-			courseManager.EnsureVersionIsExtracted(versionId);
-
-			/* Replace courseId */
-			version.Id = courseId;
-
-			/* and move course from version's directory to courses's directory */
-			var extractedVersionDirectory = courseManager.GetExtractedVersionDirectory(versionId);
-			var extractedCourseDirectory = courseManager.GetExtractedCourseDirectory(courseId);
-			log.Info($"Перемещаю папку с версией в папку с курсом: {extractedVersionDirectory.FullName} → {extractedCourseDirectory.FullName}");
-			courseManager.MoveCourse(
-				version,
-				extractedVersionDirectory,
-				extractedCourseDirectory);
 
 			log.Info($"Помечаю версию {versionId} как опубликованную версию курса {courseId}");
 			await coursesRepo.MarkCourseVersionAsPublished(versionId);
 			await NotifyAboutPublishedCourseVersion(courseId, versionId, User.Identity.GetUserId());
 
-			log.Info($"Обновляю курс {courseId} в оперативной памяти");
-			courseManager.UpdateCourseVersion(courseId, versionId);
-			courseManager.ReloadCourseNotSafe(courseId);
-
-			log.Info($"Удаляю совсем старые версии курса {courseId}");
-			await RemoveOldCourseVersions(courseId);
+			Course version;
+			var versionFile = coursesRepo.GetVersionFile(versionId);
+			using (var courseDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(versionFile.CourseId, new CourseVersionToken(versionFile.CourseVersionId), versionFile.File))
+			{
+				Exception exception;
+				(version, exception) = courseManager.LoadCourseFromDirectory(versionFile.CourseId, courseDirectory.DirectoryInfo);
+				if (exception != null)
+					throw exception;
+			}
 
 			var courseDiff = new CourseDiff(oldCourse, version);
 
@@ -1058,20 +1060,6 @@ namespace uLearn.Web.Controllers
 
 			try
 			{
-				/* Remove notifications from database */
-				await notificationsRepo.RemoveNotifications(versionId);
-
-				/* Delete zip-archive from file system */
-				var file = courseManager.GetCourseVersionFile(versionId);
-				if (file.Exists)
-					file.Delete();
-
-				/* Delete extractedVersionDirectory */
-				var directory = courseManager.GetExtractedVersionDirectory(versionId);
-				if (directory.Exists)
-					directory.Delete(true);
-
-				/* Remove information from database */
 				await coursesRepo.DeleteCourseVersion(courseId, versionId);
 			}
 			catch (Exception ex)
@@ -1666,7 +1654,8 @@ namespace uLearn.Web.Controllers
 	{
 		public string Title { get; set; }
 		public string Id { get; set; }
-		public bool IsTemp { get; set; }
+		[CanBeNull]
+		public TempCourse TempCourse { get; set; }
 	}
 
 	public class PackagesViewModel

@@ -10,7 +10,7 @@ namespace uLearn
 		[Test, Explicit("Для профилирования загрузки курса")]
 		public void LoadCourse()
 		{
-			new CourseLoader().Load(new DirectoryInfo(@"c:\work\edu\BasicProgramming\Part01\BasicProgramming\Slides"));
+			new CourseLoader().Load(new DirectoryInfo(@"c:\work\edu\BasicProgramming\Part01\BasicProgramming\Slides"), "BasicProgramming");
 		}
 	}
 }

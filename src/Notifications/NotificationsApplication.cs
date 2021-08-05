@@ -71,6 +71,7 @@ namespace Notifications
 		protected override void ConfigureDi(IServiceCollection services)
 		{
 			base.ConfigureDi(services);
+
 			services.AddSingleton<OneTimeEmailSender>();
 			services.AddSingleton<IEmailSender, KonturSpamEmailSender>();
 			services.AddScoped<INotificationSender, NotificationSender>();
@@ -79,7 +80,8 @@ namespace Notifications
 			services.AddScoped(sp => new MetricSender(
 				((IOptions<NotificationsConfiguration>)sp.GetService(typeof(IOptions<NotificationsConfiguration>)))!.Value.GraphiteServiceName));
 			services.AddSingleton<UpdateCoursesWorker>();
-			services.AddDatabaseServices();
+
+			services.AddDatabaseServices(true);
 		}
 
 		public async Task MainLoop()

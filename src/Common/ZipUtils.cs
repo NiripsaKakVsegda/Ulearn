@@ -106,7 +106,7 @@ namespace Ulearn.Common
 		{
 			using (var ms = new MemoryStream(data))
 			{
-				using (var zip = ZipFile.Read(ms))
+				using (var zip = ZipFile.Read(ms, new ReadOptions { Encoding = Cp866 }))
 				{
 					foreach (var file in zip)
 						try

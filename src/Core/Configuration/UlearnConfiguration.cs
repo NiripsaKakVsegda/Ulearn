@@ -134,12 +134,14 @@ namespace Ulearn.Core.Configuration
 		[CanBeNull] public AntiplagiarismClientConfiguration AntiplagiarismClient { get; set; }
 
 		[CanBeNull] public VideoAnnotationsClientConfiguration VideoAnnotationsClient { get; set; }
-		
+
 		[CanBeNull] public XQueueWatcherConfiguration XQueueWatcher { get; set; }
-		
+
 		public bool DisableKonturServices { get; set; }
 
 		public string GoogleAccessCredentials { get; set; }
+
+		public string TempDirectory { get; set; }
 	}
 
 	public class VideoAnnotationsClientConfiguration

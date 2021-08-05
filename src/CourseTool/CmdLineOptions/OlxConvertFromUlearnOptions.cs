@@ -49,7 +49,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 			VideoHistory.UpdateHistory(WorkingDirectory, video);
 
 			Console.WriteLine($"Loading ulearn course from {Config.ULearnCourseId}");
-			var course = new CourseLoader().Load(CourseDirectory);
+			var course = new CourseLoader().Load(CourseDirectory, Config.ULearnCourseId);
 
 			Console.WriteLine($"Converting ulearn course \"{course.Id}\" to edx course");
 			Converter.ToEdxCourse(

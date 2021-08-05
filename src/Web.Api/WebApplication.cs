@@ -34,6 +34,7 @@ using Ulearn.Common.Extensions;
 using Ulearn.Core;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Helpers;
 using Ulearn.Core.Metrics;
 using Ulearn.Core.RunCheckerJobApi;
 using Ulearn.Core.Telegram;
@@ -48,6 +49,7 @@ using Ulearn.Web.Api.Models.Binders;
 using Ulearn.Web.Api.Models.Responses.SlideBlocks;
 using Ulearn.Web.Api.Swagger;
 using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Workers;
 using Vostok.Applications.AspNetCore.Builders;
 using Vostok.Hosting.Abstractions;
@@ -126,8 +128,6 @@ namespace Ulearn.Web.Api
 		protected override IApplicationBuilder UseStaticFiles(IApplicationBuilder app)
 		{
 			var contentTypeProvider = new FileExtensionContentTypeProvider(CourseStaticFilesHelper.AllowedExtensions);
-			var coursesDirectory = Path.Combine(WebCourseManager.GetCoursesDirectory().FullName, "Courses");
-			new DirectoryInfo(coursesDirectory).EnsureExists();
 
 			var options = new RewriteOptions()
 				.AddRewrite(@"^courses/([^/]+)/files/(.+)", "courses/$1/$2", skipRemainingRules: true);
@@ -139,7 +139,7 @@ namespace Ulearn.Web.Api
 					{
 						ContentTypeProvider = contentTypeProvider,
 						ServeUnknownFileTypes = false,
-						FileProvider = new PhysicalFileProvider(coursesDirectory),
+						FileProvider = new PhysicalFileProvider(CourseManager.ExtractedCoursesDirectory.FullName),
 						RequestPath = "/courses",
 						OnPrepareResponse = ctx => ctx.Context.Response.Headers.Append("Cache-Control", "no-cache")
 					});
@@ -226,6 +226,13 @@ namespace Ulearn.Web.Api
 		{
 			base.ConfigureDi(services);
 
+			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
+			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
+			services.AddSingleton<MasterCourseManager>();
+			services.AddSingleton<ExerciseStudentZipsCache>();
+			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<MasterCourseManager>());
+
 			services.AddScoped<IAuthorizationHandler, CourseRoleAuthorizationHandler>();
 			services.AddScoped<IAuthorizationHandler, CourseAccessAuthorizationHandler>();
 			services.AddScoped<INotificationDataPreloader, NotificationDataPreloader>();
@@ -242,6 +249,7 @@ namespace Ulearn.Web.Api
 			services.AddScoped<AntiPlagiarismResultObserver>();
 			services.AddScoped<StyleErrorsResultObserver>();
 			services.AddScoped<LtiResultObserver>();
+			services.AddScoped<TempCourseRemover>();
 			services.AddScoped<ControllerUtils>();
 			services.AddSingleton<IAntiPlagiarismClient>(sp=>
 			{
@@ -249,7 +257,7 @@ namespace Ulearn.Web.Api
 				return new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
 			});
 
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(false);
 		}
 
 		protected override void ConfigureBackgroundWorkers(IVostokAspNetCoreApplicationBuilder builder)

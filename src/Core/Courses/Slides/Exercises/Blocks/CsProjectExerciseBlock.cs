@@ -10,6 +10,7 @@ using Microsoft.Build.Evaluation;
 using Vostok.Logging.Abstractions;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Extensions;
 using Ulearn.Core.Helpers;
@@ -209,17 +210,20 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 			public MemoryStream GetZipForChecker()
 			{
-				log.Info($"Собираю zip-архив для проверки: курс {CourseId}, слайд «{Slide?.Title}» ({Slide?.Id})");
-				var excluded = (exerciseBlock.PathsToExcludeForChecker ?? new string[0])
-					.Concat(new[] { "/bin/", "/obj/", ".idea/", ".vs/" })
-					.ToList();
+					log.Info($"Собираю zip-архив для проверки: курс {CourseId}, слайд «{Slide?.Title}» ({Slide?.Id})");
+					var excluded = (exerciseBlock.PathsToExcludeForChecker ?? new string[0])
+						.Concat(new[] { "/bin/", "/obj/", ".idea/", ".vs/" })
+						.ToList();
 
-				var toUpdate = GetAdditionalFiles(excluded, fp).ToList();
-				log.Info($"Собираю zip-архив для проверки: дополнительные файлы [{string.Join(", ", toUpdate.Select(c => c.Path))}]");
+				using (CourseLock.AcquireReaderLockAsync(CourseId).Result)
+				{
+					var toUpdate = GetAdditionalFiles(excluded, fp).ToList();
+					log.Info($"Собираю zip-архив для проверки: дополнительные файлы [{string.Join(", ", toUpdate.Select(c => c.Path))}]");
 
-				var ms = ZipUtils.CreateZipFromDirectory(new List<string> { fp.ExerciseDirectory.FullName }, excluded, toUpdate);
-				log.Info($"Собираю zip-архив для проверки: zip-архив собран, {ms.Length} байтов");
-				return ms;
+					var ms = ZipUtils.CreateZipFromDirectory(new List<string> { fp.ExerciseDirectory.FullName }, excluded, toUpdate);
+					log.Info($"Собираю zip-архив для проверки: zip-архив собран, {ms.Length} байтов");
+					return ms;
+				}
 			}
 
 			private FileContent GetCodeFile(string code)
