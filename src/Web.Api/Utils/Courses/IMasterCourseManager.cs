@@ -14,5 +14,6 @@ namespace Ulearn.Web.Api.Utils.Courses
 		Task<TempCourse> CreateTempCourse(string baseCourseId, string userId);
 		string GetTempCourseId(string baseCourseId, string userId);
 		Task<(TempCourse Course, string Error)> UpdateTempCourseFromUserZipStream(string tmpCourseId, Stream updateZipContent, bool isFullCourse);
+		DirectoryInfo GetExtractedCourseDirectory(string courseId);
 	}
 }
