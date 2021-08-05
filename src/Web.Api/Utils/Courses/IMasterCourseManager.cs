@@ -9,7 +9,6 @@ namespace Ulearn.Web.Api.Utils.Courses
 {
 	public interface IMasterCourseManager : ICourseUpdater
 	{
-		DirectoryInfo GetExtractedCourseDirectory(string courseId);
 		Task<FileInfo> GenerateOrFindStudentZip(string courseId, Slide slide);
 		Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId);
 		Task<TempCourse> CreateTempCourse(string baseCourseId, string userId);

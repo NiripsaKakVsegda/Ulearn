@@ -9,6 +9,7 @@ namespace Ulearn.Core.Courses.Manager
 	{
 		Task<TempDirectory> ExtractCourseVersionToTemporaryDirectory(string courseId, CourseVersionToken versionToken, byte[] zipContent);
 		(Course Course, Exception Exception) LoadCourseFromDirectory(string courseId, DirectoryInfo extractedCourseDirectory);
+		DirectoryInfo GetExtractedCourseDirectory(string courseId);
 		TempFile SaveVersionZipToTemporaryDirectory(string courseId, CourseVersionToken versionToken, Stream stream);
 		bool IsCourseIdAllowed(string courseId);
 	}
