@@ -208,25 +208,37 @@ namespace Ulearn.Core.Courses.Slides
 			var slide = context.Slide;
 			var componentIndex = 0;
 			var components = new List<Component>();
-			while (componentIndex < slide.Blocks.Length)
+
+			var visibleSlideBlocks = slide.Blocks;
+			while (visibleSlideBlocks.Any(b => b is SpoilerBlock))
 			{
+				visibleSlideBlocks = slide.Blocks.SelectMany(block =>
+				{
+					if (block.Hide)
+						return Array.Empty<SlideBlock>();
+					if (block is SpoilerBlock sb)
+						return sb.Blocks.Where(b => !b.Hide);
+					return new[] { block };
+				}).ToArray();
+			}
+
+			while (componentIndex < visibleSlideBlocks.Length)
+			{
+				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock склеиваются в один HtmlComponent
 				var blocks = slide.Blocks.Skip(componentIndex).TakeWhile(x => !(x is YoutubeBlock) && !(x is AbstractExerciseBlock)).ToList();
 				if (blocks.Count != 0)
 				{
 					var innerComponents = new List<Component>();
 					foreach (var block in blocks)
 					{
-						if (!block.Hide)
+						try
 						{
-							try
-							{
-								var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
-								innerComponents.Add(component);
-							}
-							catch (NotImplementedException ex)
-							{
-								Console.WriteLine($"{block.GetType().Name} block NotSupportedException");
-							}
+							var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
+							innerComponents.Add(component);
+						}
+						catch (NotSupportedException ex)
+						{
+							Console.WriteLine($"Slide {slide.Id} {block.GetType().Name} block NotSupportedException");
 						}
 
 						componentIndex++;
@@ -239,28 +251,33 @@ namespace Ulearn.Core.Courses.Slides
 						var slideComponent = new HtmlComponent
 						{
 							DisplayName = displayName,
-							UrlName = slide.NormalizedGuid + componentIndex,
+							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в jlby
 							Filename = slide.NormalizedGuid + componentIndex,
-							Source = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
+							HtmlContent = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
 							Subcomponents = innerComponents.ToArray()
 						};
 						components.Add(slideComponent);
 					}
 				}
 
-				if (componentIndex >= slide.Blocks.Length)
+				if (componentIndex >= visibleSlideBlocks.Length)
 					break;
 
-				var exerciseBlock = slide.Blocks[componentIndex] as AbstractExerciseBlock;
-				var otherComponent = exerciseBlock != null
-					? ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId)
-					: ((YoutubeBlock)slide.Blocks[componentIndex]).GetVideoComponent(componentIndex == 0 ? slide.Title : "", slide, componentIndex);
-
-				components.Add(otherComponent);
-				componentIndex++;
+				if (visibleSlideBlocks[componentIndex] is AbstractExerciseBlock)
+				{
+					componentIndex++;
+					var exerciseComponent = ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId);
+					components.Add(exerciseComponent);
+				}
+				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
+				{
+					componentIndex++;
+					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex });
+					components.Add(videoComponent);
+				}
 			}
 
-			var exBlock = slide.Blocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
+			var exBlock = visibleSlideBlocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
 			if (exBlock == null)
 				yield return new Vertical(slide.NormalizedGuid, slide.Title, components.ToArray());
 			else

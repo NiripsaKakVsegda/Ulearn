@@ -26,14 +26,9 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			return $"Video {GetYoutubeUrl()}";
 		}
 
-		public VideoComponent GetVideoComponent(string displayName, Slide slide, int componentIndex)
-		{
-			return new VideoComponent(slide.NormalizedGuid + componentIndex, displayName, VideoId);
-		}
-
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
-			throw new NotSupportedException();
+			return new VideoComponent(context.Slide.NormalizedGuid + context.ComponentIndex, context.DisplayName, VideoId);
 		}
 
 		public string GetYoutubeUrl()
