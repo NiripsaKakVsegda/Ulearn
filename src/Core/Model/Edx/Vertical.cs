@@ -18,7 +18,6 @@ namespace Ulearn.Core.Model.Edx
 
 		[XmlElement("video", Type = typeof(VideoComponentReference))]
 		[XmlElement("html", Type = typeof(HtmlComponentReference))]
-		[XmlElement("problem", Type = typeof(ProblemComponentReference))]
 		[XmlElement("lti", Type = typeof(LtiComponentReference))]
 		public EdxReference[] ComponentReferences
 		{

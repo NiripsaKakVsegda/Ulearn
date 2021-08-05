@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using Ulearn.Core.Courses.Slides.Blocks;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 {
@@ -36,34 +33,6 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 				throw new FormatException("Should be exaclty one correct item for non-multiple choice. BlockId=" + Id);
 			if (!Multiple && Items.Count(i => i.IsCorrect == ChoiceItemCorrectness.Maybe) != 0)
 				throw new FormatException("'Maybe' items are not allowed for for non-multiple choice. BlockId=" + Id);
-		}
-
-		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			var items = Items.Select(x => new Choice
-			{
-				Correct = x.IsCorrect.IsTrueOrMaybe(),
-				Text = EdxTexReplacer.ReplaceTex(x.Description)
-			}).ToArray();
-			ChoiceResponse cr;
-			if (Multiple)
-			{
-				var cg = new CheckboxGroup { Label = Text, Direction = "vertical", Choices = items };
-				cr = new ChoiceResponse { ChoiceGroup = cg };
-			}
-			else
-			{
-				var cg = new MultipleChoiceGroup { Label = Text, Type = "MultipleChoice", Choices = items };
-				cr = new MultipleChoiceResponse { ChoiceGroup = cg };
-			}
-
-			return new MultipleChoiceComponent
-			{
-				UrlName = context.Slide.NormalizedGuid + context.ComponentIndex,
-				ChoiceResponse = cr,
-				Title = EdxTexReplacer.ReplaceTex(Text)
-			};
 		}
 
 		public override string TryGetText()

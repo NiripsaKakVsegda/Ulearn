@@ -31,12 +31,6 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 			return Matches.ToList();
 		}
 
-		[Obsolete("Не используется, т.к. тесты показываются как iframe")]
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
-		}
-
 		public override bool HasEqualStructureWith(SlideBlock other)
 		{
 			var block = other as MatchingBlock;
