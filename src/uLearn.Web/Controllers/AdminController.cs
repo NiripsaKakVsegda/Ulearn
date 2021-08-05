@@ -454,7 +454,7 @@ namespace uLearn.Web.Controllers
 			var versionId = Guid.NewGuid();
 			var userId = User.Identity.GetUserId();
 
-			if (courseManager.IsCourseIdAllowed(courseId))
+			if (!courseManager.IsCourseIdAllowed(courseId))
 				throw new Exception("CourseId contains forbidden characters");
 
 			var createdNew = await courseManager.CreateCourseIfNotExists(courseId, versionId, courseTitle, userId);

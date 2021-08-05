@@ -23,6 +23,11 @@ namespace Database
 		{
 		}
 
+		public new DirectoryInfo GetExtractedCourseDirectory(string courseId)
+		{
+			return CourseManager.GetExtractedCourseDirectory(courseId);
+		}
+
 		public async Task UpdateCoursesAsync()
 		{
 			var coursesRepo = new CoursesRepo();
