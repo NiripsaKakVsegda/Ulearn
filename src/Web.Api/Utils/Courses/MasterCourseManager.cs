@@ -37,11 +37,6 @@ namespace Ulearn.Web.Api.Utils.Courses
 			};
 		}
 
-		public new DirectoryInfo GetExtractedCourseDirectory(string courseId)
-		{
-			return CourseManager.GetExtractedCourseDirectory(courseId);
-		}
-
 		// Невременные курсы не выкладываются на диск сразу, а публикуются в базу и UpdateCourses их обновляет на диске.
 		public override async Task UpdateCoursesAsync()
 		{

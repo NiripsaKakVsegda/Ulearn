@@ -51,6 +51,11 @@ namespace Database
 			}
 		}
 
+		public new DirectoryInfo GetExtractedCourseDirectory(string courseId)
+		{
+			return CourseManager.GetExtractedCourseDirectory(courseId);
+		}
+
 		public async Task<bool> CreateCourseIfNotExists(string courseId, Guid versionId, string courseTitle, string userId)
 		{
 			using (var scope = serviceScopeFactory.CreateScope())

@@ -53,6 +53,11 @@ namespace ManualUtils
 					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2));
 				var adb = new AntiPlagiarismDb(aOptionsBuilder.Options);
 				var serviceProvider = ConfigureDI(adb, db);
+
+				var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
+				await courseManager.UpdateCoursesAsync();
+				await courseManager.UpdateTempCoursesAsync();
+
 				await Run(adb, db, serviceProvider);
 			}
 			finally
@@ -70,12 +75,10 @@ namespace ManualUtils
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
 			services.AddDatabaseServices(false);
 
-			services.AddSingleton(MasterCourseManager.CourseStorageInstance);
-			services.AddSingleton(MasterCourseManager.CourseStorageUpdaterInstance);
-			services.AddSingleton<MasterCourseManager>();
+			services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
+			services.AddSingleton(SlaveCourseManager.CourseStorageUpdaterInstance);
+			services.AddSingleton<ISlaveCourseManager>();
 			services.AddSingleton<ExerciseStudentZipsCache>();
-			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
-			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 
 			services.AddScoped<TempCourseRemover>();
 
@@ -492,7 +495,7 @@ namespace ManualUtils
 		/*private static async Task UploadStagingFromDbAndExtractToCourses(IServiceProvider serviceProvider)
 		{
 			var db = serviceProvider.GetService<UlearnDb>();
-			var courseManager = serviceProvider.GetService<IMasterCourseManager>();
+			var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
 			var coursesRepo = serviceProvider.GetService<ICoursesRepo>();
 
 			var publishedCourseVersions = await coursesRepo.GetPublishedCourseVersions();
@@ -578,7 +581,7 @@ namespace ManualUtils
 				versions = versions.Where(v => !versionsWithFiles.Contains(v.Id)).ToList();
 				Console.WriteLine("Versions without file " + versions.Count);
 
-				var courseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
 				var i = 0;
 				foreach (var version in versions)
 				{
@@ -707,7 +710,7 @@ namespace ManualUtils
 			{
 				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
 				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
-				var masterCourseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
 				var publishedVersions = await coursesRepo.GetPublishedCourseVersions();
 				var tempCourses = await tempCoursesRepo.GetAllTempCourses();
 				var courseAndTokens =
@@ -715,7 +718,7 @@ namespace ManualUtils
 						.Concat(tempCourses.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.LoadingTime)))).ToList();
 				foreach (var (courseId, token) in courseAndTokens)
 				{
-					var dir = masterCourseManager.GetExtractedCourseDirectory(courseId);
+					var dir = courseManager.GetExtractedCourseDirectory(courseId);
 					if (!dir.Exists)
 						continue;
 					var oldToken = CourseVersionToken.Load(dir);
