@@ -26,6 +26,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		}
 	}
 
+	[Obsolete("Не используется, т.к. тесты показываются как iframe")]
 	[XmlRoot("problem")]
 	public class SlideProblemComponent : Component
 	{

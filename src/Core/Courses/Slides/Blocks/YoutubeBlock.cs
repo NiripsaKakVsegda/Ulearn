@@ -26,10 +26,8 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			return $"Video {GetYoutubeUrl()}";
 		}
 
-		public VideoComponent GetVideoComponent(string displayName, Slide slide, int componentIndex, Dictionary<string, string> videoGuids)
+		public VideoComponent GetVideoComponent(string displayName, Slide slide, int componentIndex)
 		{
-			if (videoGuids.ContainsKey(VideoId))
-				return new VideoComponent(videoGuids[VideoId], displayName, VideoId);
 			return new VideoComponent(slide.NormalizedGuid + componentIndex, displayName, VideoId);
 		}
 

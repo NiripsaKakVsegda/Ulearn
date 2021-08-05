@@ -10,7 +10,7 @@ namespace uLearn.CourseTool
 {
 	public static class Converter
 	{
-		private static Sequential[] UnitToSequentials(Course course, Config config, List<Unit> units, int unitIndex, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, DirectoryInfo courseDirectory)
+		private static Sequential[] UnitToSequentials(Course course, Config config, List<Unit> units, int unitIndex, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, DirectoryInfo courseDirectory)
 		{
 			var unit = units[unitIndex];
 			var notHiddenOrIgnoredSlides = unit.GetSlides(false)
@@ -22,12 +22,12 @@ namespace uLearn.CourseTool
 
 			var sequentialForNotHiddenSlides = new Sequential($"{course.Id}-{unitIndex}-{0}", unit.Title,
 				notHiddenOrIgnoredSlides
-					.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, config.LtiId, courseDirectory))
+					.SelectMany(y => y.ToVerticals(course.Id, ulearnBaseUrlApi, ulearnBaseUrlWeb, config.LtiId, courseDirectory))
 					.ToArray());
 			return new [] { sequentialForNotHiddenSlides };
 		}
 
-		private static Chapter[] CourseToChapters(Course course, Config config, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, DirectoryInfo courseDirectory)
+		private static Chapter[] CourseToChapters(Course course, Config config, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, DirectoryInfo courseDirectory)
 		{
 			var units = course.GetUnitsNotSafe();
 			return Enumerable
@@ -36,13 +36,12 @@ namespace uLearn.CourseTool
 					$"{course.Id}-{idx}",
 					units[idx].Title,
 					null,
-					UnitToSequentials(course, config, units, idx, ulearnBaseUrlApi, ulearnBaseUrlWeb, videoGuids, courseDirectory)))
+					UnitToSequentials(course, config, units, idx, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory)))
 				.Where(c => c.Sequentials.Length > 0)
 				.ToArray();
 		}
 
-		public static EdxCourse ToEdxCourse(Course course, Config config, string ulearnBaseUrlApi, string ulearnBaseUrlWeb,
-			Dictionary<string, string> youtubeId2UlearnVideoIds, DirectoryInfo courseDirectory)
+		public static EdxCourse ToEdxCourse(Course course, Config config, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, DirectoryInfo courseDirectory)
 		{
 			return new EdxCourse(
 				course.Id,
@@ -50,7 +49,7 @@ namespace uLearn.CourseTool
 				course.Title,
 				new[] { "lti" },
 				null,
-				CourseToChapters(course, config, ulearnBaseUrlApi, ulearnBaseUrlWeb, youtubeId2UlearnVideoIds, courseDirectory));
+				CourseToChapters(course, config, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory));
 		}
 	}
 }

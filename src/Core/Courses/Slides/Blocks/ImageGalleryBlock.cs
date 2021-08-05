@@ -40,7 +40,13 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
-			return new GalleryComponent(urlName, context.DisplayName, urlName, GetAbsoluteImageUrls(context.UlearnBaseUrlApi, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse).ToArray());
+			var imageFiles = RelativeToUnitDirectoryImagePaths
+				.Select(p => (
+					ImageFile: new FileInfo(Path.Combine(context.CourseDirectory.FullName, context.Slide.Unit.UnitDirectoryRelativeToCourse, p)),
+					RelativeToUnitDirectoryImagePath: p.Replace('\\', '/')
+					))
+				.ToArray();
+			return new GalleryComponent(urlName, context.DisplayName, urlName, imageFiles);
 		}
 	}
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -204,7 +203,7 @@ namespace Ulearn.Core.Courses.Slides
 
 		#region ExportToEdx
 
-		private static IEnumerable<Vertical> OrdinarySlideToVerticals(EdxComponentBuilderContext context, Dictionary<string, string> videoGuids, string ltiId)
+		private static IEnumerable<Vertical> OrdinarySlideToVerticals(EdxComponentBuilderContext context, string ltiId)
 		{
 			var slide = context.Slide;
 			var componentIndex = 0;
@@ -255,7 +254,7 @@ namespace Ulearn.Core.Courses.Slides
 				var exerciseBlock = slide.Blocks[componentIndex] as AbstractExerciseBlock;
 				var otherComponent = exerciseBlock != null
 					? ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId)
-					: ((YoutubeBlock)slide.Blocks[componentIndex]).GetVideoComponent(componentIndex == 0 ? slide.Title : "", slide, componentIndex, videoGuids);
+					: ((YoutubeBlock)slide.Blocks[componentIndex]).GetVideoComponent(componentIndex == 0 ? slide.Title : "", slide, componentIndex);
 
 				components.Add(otherComponent);
 				componentIndex++;
@@ -280,21 +279,14 @@ namespace Ulearn.Core.Courses.Slides
 
 		protected const string SlideUrlFormat = "/Course/{0}/LtiSlide?slideId={1}";
 
-		public IEnumerable<Vertical> ToVerticals(string courseId, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, string ltiId, DirectoryInfo courseDirectory)
+		public IEnumerable<Vertical> ToVerticals(string courseId, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, string ltiId, DirectoryInfo courseDirectory)
 		{
 			var slideUrl = ulearnBaseUrlWeb + SlideUrlFormat;
-			try
-			{
-				if (this is QuizSlide quizSlide)
-					return QuizToVerticals(courseId, quizSlide, slideUrl, ltiId).ToList();
-				if (this is FlashcardSlide)
-					return Enumerable.Empty<Vertical>();
-				return OrdinarySlideToVerticals(new EdxComponentBuilderContext("", courseId, this, 0, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory), videoGuids, ltiId).ToList();
-			}
-			catch (Exception e)
-			{
-				throw new Exception($"Slide {this}. {e.Message}", e);
-			}
+			if (this is QuizSlide quizSlide)
+				return QuizToVerticals(courseId, quizSlide, slideUrl, ltiId).ToList();
+			if (this is FlashcardSlide)
+				return Enumerable.Empty<Vertical>();
+			return OrdinarySlideToVerticals(new EdxComponentBuilderContext("", courseId, this, 0, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory), ltiId).ToList();
 		}
 
 		#endregion

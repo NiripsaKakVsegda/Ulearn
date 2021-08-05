@@ -135,13 +135,13 @@ namespace Ulearn.Core.Model.Edx
 				.FirstOrDefault(x => x.UrlName == id);
 		}
 
-		public VideoComponent GetVideoById(string id)
+		public VideoComponent GetVideoBySlideId(string slideId)
 		{
 			return CourseWithChapters
 				.Chapters
 				.SelectMany(x => x.Sequentials.SelectMany(y => y.Verticals.SelectMany(z => z.Components)))
 				.OfType<VideoComponent>()
-				.FirstOrDefault(x => x.UrlName == id);
+				.FirstOrDefault(x => x.UrlName.StartsWith(slideId));
 		}
 	}
 }

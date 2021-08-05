@@ -6,8 +6,6 @@
 	<LtiId>edx</LtiId>
 	<!-- Id of corresponding uLearn course -->
 	<ULearnCourseId>BasicProgramming</ULearnCourseId>
-	<!-- Path to video json -->
-	<Video>video.json</Video>
 	<IgnoredUlearnSlides>
 		<!-- ULearn slides to skip during conversion and patching	-->
 		<!--
@@ -15,7 +13,6 @@
 		<SlideId>2</SlideId>
 		-->
 	</IgnoredUlearnSlides>
-	<EmitSequentialsForInstructorNotes>false</EmitSequentialsForInstructorNotes>
 	<!-- Here you can set up your profiles -->
 	<Profiles>
 		<!-- the 'default' profile will be used when patching/converting if not specified -->

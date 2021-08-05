@@ -9,7 +9,6 @@ namespace uLearn.CourseTool
 		public string LtiId;
 		public string ULearnCourseId;
 		public string ULearnCoursePackageRoot; // Путь от папки с config.xml до папки с course.xml
-		public string Video;
 		public Profile[] Profiles;
 
 		[XmlIgnore]

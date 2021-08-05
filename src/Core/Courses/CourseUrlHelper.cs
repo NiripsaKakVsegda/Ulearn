@@ -27,7 +27,7 @@ namespace Ulearn.Core.Courses
 		{
 			var ps = parts
 				.Where(p => p != null)
-				.Select(p => p.Trim('/'))
+				.Select(p => p.Replace('\\', '/').Trim('/'))
 				.Where(p => !string.IsNullOrEmpty(p))
 				.ToArray();
 			return string.Join("/", ps);

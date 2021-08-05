@@ -17,7 +17,6 @@ namespace uLearn.CourseTool
 					OlxUnpackTarGzOptions, OlxUnpackTarOptions,
 					OlxPackTarGzOptions, OlxPackTarOptions,
 					OlxSetChapterStartDatesOptions,
-					OlxPatchVideoOptions,
 					ULearnOptions,
 					TestCourseOptions,
 					GenerateEmptyVideoAnnotations,
