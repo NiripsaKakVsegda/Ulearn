@@ -15,10 +15,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		public string CourseDirectory;
 
 		[XmlIgnore]
-		public string UnitDirectoryRelativeToCourse;
-
-		[XmlIgnore]
-		public List<string> LocalFiles;
+		public List<string> LocalFilesPathsRelativeToCourse;
 
 		[XmlAttribute("filename")]
 		public string Filename;
@@ -44,15 +41,14 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 			HtmlContent = htmlContent;
 		}
 
-		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent, string courseDirectory, string unitDirectoryRelativeToCourse, List<string> localFiles)
+		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent, string courseDirectory, string unitDirectoryRelativeToCourse, List<string> localFilesPathsRelativeToCourse)
 		{
 			UrlName = urlName;
 			DisplayName = displayName;
 			Filename = filename;
 			HtmlContent = htmlContent;
 			CourseDirectory = courseDirectory;
-			UnitDirectoryRelativeToCourse = unitDirectoryRelativeToCourse;
-			LocalFiles = localFiles;
+			LocalFilesPathsRelativeToCourse = localFilesPathsRelativeToCourse;
 		}
 
 		public override void Save(string folderName)
@@ -68,10 +64,10 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 					subcomponent.SaveAdditional(folderName);
 			try
 			{
-				foreach (var localFile in LocalFiles ?? new List<string>())
+				foreach (var localFilesPathsRelativeToCourse in LocalFilesPathsRelativeToCourse ?? new List<string>())
 					File.Copy(
-						Path.Combine(CourseDirectory, UnitDirectoryRelativeToCourse, localFile),
-						string.Format("{0}/static/{1}_{2}", folderName, UrlName, localFile.Replace("/", "_")),
+						Path.Combine(CourseDirectory, localFilesPathsRelativeToCourse),
+						string.Format("{0}/static/{1}_{2}", folderName, UrlName, localFilesPathsRelativeToCourse.Replace("/", "_")),
 						overwrite: true);
 			}
 			catch (Exception e)

@@ -10,6 +10,7 @@ using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Web.Api.Controllers.Slides;
 using Ulearn.Web.Api.Models.Responses.Exercise;
 using Ulearn.Core;
+using Ulearn.Core.Markdown;
 
 namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 {

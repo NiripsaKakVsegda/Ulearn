@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Ulearn.Core;
+using Ulearn.Core.Markdown;
 using Markdown = MarkdownDeep.Markdown;
 
 namespace uLearn

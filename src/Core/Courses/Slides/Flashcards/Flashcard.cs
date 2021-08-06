@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Serialization;
 using Ulearn.Common;
 using Ulearn.Core.Courses.Slides.Blocks;
+using Ulearn.Core.Markdown;
 
 namespace Ulearn.Core.Courses.Slides.Flashcards
 {

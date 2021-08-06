@@ -6,9 +6,8 @@ using MarkdownDeep;
 using Microsoft.AspNetCore.Html;
 using Ulearn.Core.Courses;
 
-namespace Ulearn.Core
+namespace Ulearn.Core.Markdown
 {
-
 	public record MarkdownRenderContext(string BaseUrlApi, string BaseUrlWeb, string CourseId, string UnitDirectoryRelativeToCourse);
 
 	public static class Markdown
@@ -78,11 +77,11 @@ namespace Ulearn.Core
 			return $"<textarea class='code code-sample' data-lang='{language.ToLowerInvariant()}'>{code}</textarea>\n";
 		}
 
-		public static Tuple<string, List<string>> GetHtmlWithUrls(this string md, string baseUrl = null)
+		public static (string Html, List<string> RelativeToCourseUrls) GetHtmlWithUrls(this string md, string baseUrl = null)
 		{
 			var texReplacer = new EdxTexReplacer(md);
 
-			var markdown = new Markdown2(baseUrl, false)
+			var markdownObject = new Markdown2(baseUrl, false)
 			{
 				NewWindowForExternalLinks = true,
 				ExtraMode = true,
@@ -91,11 +90,12 @@ namespace Ulearn.Core
 			};
 
 			var relativeUrls = new List<string>();
-			markdown.RelativeUrl += relativeUrls.Add;
+			markdownObject.RelativeUrl += relativeUrls.Add;
 
-			var html = markdown.Transform(texReplacer.ReplacedText);
-
-			return Tuple.Create(texReplacer.PlaceTexInsertsBack(html), relativeUrls);
+			//markdownObject.FormatCodeBlock += FormatCodePrettyPrint;
+			var html = markdownObject.Transform(texReplacer.ReplacedText);
+			html = texReplacer.PlaceTexInsertsBack(html);
+			return (html, relativeUrls);
 		}
 
 		private class ExtendedMarkdownDeep : MarkdownDeep.Markdown

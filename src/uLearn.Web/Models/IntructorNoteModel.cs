@@ -2,6 +2,7 @@ using System.Linq;
 using Ulearn.Core;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
+using Ulearn.Core.Markdown;
 
 namespace uLearn.Web.Models
 {

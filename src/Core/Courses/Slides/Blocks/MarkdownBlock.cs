@@ -10,6 +10,7 @@ using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
+using Ulearn.Core.Markdown;
 using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
@@ -69,12 +70,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			var html = RenderMarkdown(context.Slide, new MarkdownRenderContext(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse));
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
 			return new HtmlComponent(urlName, context.DisplayName, urlName, html);
-		}
-
-		public Component ToEdxComponent(string urlName, string displayName, string courseDirectory, string unitDirectoryRelativeToCourse)
-		{
-			var htmlWithUrls = Markdown.GetHtmlWithUrls("/static/" + urlName + "_");
-			return new HtmlComponent(urlName, displayName, urlName, htmlWithUrls.Item1, courseDirectory, unitDirectoryRelativeToCourse, htmlWithUrls.Item2);
 		}
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)
