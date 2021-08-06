@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -461,10 +462,9 @@ namespace uLearn.Web.Controllers
 			if (!createdNew)
 				return RedirectToAction("Courses", "Course", new { courseId = courseId, courseTitle = courseTitle });
 
-			var courseFile = coursesRepo.GetVersionFile(versionId);
-			await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, courseFile.File).ConfigureAwait(false);
-			await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			await NotifyAboutPublishedCourseVersion(courseId, versionId, userId).ConfigureAwait(false);
+
+			Thread.Sleep(TimeSpan.FromSeconds(3)); // Чтобы с большой вероятностью курс уже загрузился.
 
 			return RedirectToAction("Packages", new { courseId, onlyPrivileged = true });
 		}
