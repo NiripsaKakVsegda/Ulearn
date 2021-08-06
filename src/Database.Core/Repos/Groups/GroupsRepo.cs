@@ -161,8 +161,20 @@ namespace Database.Repos.Groups
 				return true;
 
 			return await db.GroupMembers
-				.Include(m => m.Group)
 				.AnyAsync(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled);
+		}
+
+		public async Task<HashSet<string>> GetUsersIdsWithEnabledManualChecking(Course course, List<string> userIds)
+		{
+			if (course.Settings.IsManualCheckingEnabled)
+				return userIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+			return (await db.GroupMembers
+				.Where(m => m.Group.CourseId == course.Id && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled)
+				.Where(m => userIds.Contains(m.UserId))
+				.Select(m => m.UserId)
+				.ToListAsync())
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		}
 
 		public async Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId)

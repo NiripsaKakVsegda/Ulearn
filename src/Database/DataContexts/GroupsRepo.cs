@@ -553,7 +553,6 @@ namespace Database.DataContexts
 				return true;
 
 			return db.GroupMembers
-				.Include(m => m.Group)
 				.Any(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled);
 		}
 

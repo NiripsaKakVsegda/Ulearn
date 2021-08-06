@@ -43,5 +43,6 @@ namespace Database.Repos.Groups
 		Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId);
 		Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupAsync(int groupId);
 		IQueryable<Group> GetCourseGroupsQueryable(string courseId, bool includeArchived = false);
+		Task<HashSet<string>> GetUsersIdsWithEnabledManualChecking(Course course, List<string> userIds);
 	}
 }
