@@ -825,15 +825,22 @@ namespace ManualUtils
 				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
 				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
 				var courses = courseStorage.GetCourses().ToList();
+				
 				var updateDbCounter = 0;
 				var updateDbMaxCount = 1000;
+				var courseCounter = 0;
 
 				foreach (var course in courses)
 				{
+					courseCounter++;
+					Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
 					var slides = course.GetSlides(false, null);
 					var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
+					var slideCounter = 0;
 					foreach (var slide in slides)
 					{
+						slideCounter++;
+						Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
 						var slideTopReviews = db.ExerciseCodeReviews
 							.Include(r => r.Author)
 							.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && !r.HiddenFromTopComments && !r.IsDeleted)
