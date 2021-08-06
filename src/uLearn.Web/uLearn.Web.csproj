@@ -899,7 +899,6 @@
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\HtmlExtensions.cs" />
     <Compile Include="Controllers\LoginController.cs" />
-    <Compile Include="Controllers\QuestionsController.cs" />
     <Compile Include="Controllers\RestorePasswordController.cs" />
     <Compile Include="Controllers\SandboxController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
@@ -1046,7 +1045,6 @@
     <Content Include="Views\Admin\Units.cshtml" />
     <Content Include="Views\Analytics\UnitSheet.cshtml" />
     <Content Include="Views\Course\InstructorNote.cshtml" />
-    <Content Include="Views\Questions\Items.cshtml" />
     <Content Include="Views\Analytics\UsersProgress.cshtml" />
     <Content Include="Views\Analytics\UserSolutions.cshtml" />
     <Content Include="Views\Account\ChangeDetailsPartial.cshtml" />

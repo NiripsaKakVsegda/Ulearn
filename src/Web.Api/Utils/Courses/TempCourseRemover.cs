@@ -55,7 +55,7 @@ order by t.table_name;
 				db.CourseVersionFiles.RemoveRange(db.CourseVersionFiles.Where(e => e.CourseId == tempCourseId));
 				db.CourseVersions.RemoveRange(db.CourseVersions.Where(e => e.CourseId == tempCourseId));
 				db.ExerciseCodeReviews.RemoveRange(db.ExerciseCodeReviews.Where(e => e.CourseId == tempCourseId));
-				db.GraderClients.RemoveRange(db.GraderClients.Where(e => e.CourseId == tempCourseId));
+				// db.GraderClients.RemoveRange(db.GraderClients.Where(e => e.CourseId == tempCourseId));
 				db.Groups.RemoveRange(db.Groups.Where(e => e.CourseId == tempCourseId));
 				db.LastVisits.RemoveRange(db.LastVisits.Where(e => e.CourseId == tempCourseId));
 				// Likes
@@ -66,14 +66,14 @@ order by t.table_name;
 				db.NotificationTransportSettings.RemoveRange(db.NotificationTransportSettings.Where(e => e.CourseId == tempCourseId));
 				db.Notifications.RemoveRange(db.Notifications.Where(e => e.CourseId == tempCourseId));
 				db.Hints.RemoveRange(db.Hints.Where(e => e.CourseId == tempCourseId));
-				db.SlideRates.RemoveRange(db.SlideRates.Where(e => e.CourseId == tempCourseId));
+				//db.SlideRates.RemoveRange(db.SlideRates.Where(e => e.CourseId == tempCourseId));
 				db.TempCourseErrors.RemoveRange(db.TempCourseErrors.Where(e => e.CourseId == tempCourseId));
 				db.TempCourses.RemoveRange(db.TempCourses.Where(e => e.CourseId == tempCourseId));
 				db.UnitAppearances.RemoveRange(db.UnitAppearances.Where(e => e.CourseId == tempCourseId));
 				db.UserExerciseSubmissions.RemoveRange(db.UserExerciseSubmissions.Where(e => e.CourseId == tempCourseId));
 				db.UserFlashcardsUnlocking.RemoveRange(db.UserFlashcardsUnlocking.Where(e => e.CourseId == tempCourseId));
 				db.UserFlashcardsVisits.RemoveRange(db.UserFlashcardsVisits.Where(e => e.CourseId == tempCourseId));
-				db.UserQuestions.RemoveRange(db.UserQuestions.Where(e => e.CourseId == tempCourseId));
+				//db.UserQuestions.RemoveRange(db.UserQuestions.Where(e => e.CourseId == tempCourseId));
 				db.UserQuizSubmissions.RemoveRange(db.UserQuizSubmissions.Where(e => e.CourseId == tempCourseId));
 				db.Visits.RemoveRange(db.Visits.Where(e => e.CourseId == tempCourseId));
 				// UserRoles

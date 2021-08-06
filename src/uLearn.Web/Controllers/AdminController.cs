@@ -1478,28 +1478,6 @@ namespace uLearn.Web.Controllers
 			return Json(new { status = "ok", score = scoreInt });
 		}
 
-		[HttpPost]
-		public async Task<ActionResult> AddLabelToGroup(int groupId, int labelId)
-		{
-			var label = groupsRepo.FindLabelById(labelId);
-			if (label == null || label.OwnerId != User.Identity.GetUserId())
-				return Json(new { status = "error", message = "Label not found or not owned by you" });
-
-			await groupsRepo.AddLabelToGroup(groupId, labelId).ConfigureAwait(false);
-			return Json(new { status = "ok" });
-		}
-
-		[HttpPost]
-		public async Task<ActionResult> RemoveLabelFromGroup(int groupId, int labelId)
-		{
-			var label = groupsRepo.FindLabelById(labelId);
-			if (label == null || label.OwnerId != User.Identity.GetUserId())
-				return Json(new { status = "error", message = "Label not found or not owned by you" });
-
-			await groupsRepo.RemoveLabelFromGroup(groupId, labelId);
-			return Json(new { status = "ok" });
-		}
-
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
 		[HttpPost]
 		public async Task<ActionResult> ToggleCourseAccess(string courseId, string userId, CourseAccessType accessType, bool isEnabled)

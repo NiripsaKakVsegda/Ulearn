@@ -162,8 +162,7 @@ namespace Database.Repos.Groups
 
 			return await db.GroupMembers
 				.Include(m => m.Group)
-				.AnyAsync(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && m.Group.IsManualCheckingEnabled)
-				.ConfigureAwait(false);
+				.AnyAsync(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled);
 		}
 
 		public async Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId)
@@ -171,7 +170,7 @@ namespace Database.Repos.Groups
 			var accessibleGroups = await GetMyGroupsFilterAccessibleToUserAsync(courseId, instructorId).ConfigureAwait(false);
 			var accessibleGroupsIds = accessibleGroups.Select(g => g.Id).ToHashSet();
 			var userGroupsIdsWithDefaultProhibitFutherReview = await db.GroupMembers
-				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && m.Group.DefaultProhibitFutherReview)
+				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.DefaultProhibitFutherReview)
 				.Select(m => m.GroupId)
 				.Distinct()
 				.ToListAsync()

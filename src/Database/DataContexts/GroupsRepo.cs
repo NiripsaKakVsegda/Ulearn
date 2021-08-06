@@ -554,7 +554,7 @@ namespace Database.DataContexts
 
 			return db.GroupMembers
 				.Include(m => m.Group)
-				.Any(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && m.Group.IsManualCheckingEnabled);
+				.Any(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled);
 		}
 
 		public bool GetDefaultProhibitFutherReviewForUser(string courseId, string userId, IPrincipal instructor)
@@ -562,7 +562,7 @@ namespace Database.DataContexts
 			var accessibleGroupsIds = new HashSet<int>(GetMyGroupsFilterAccessibleToUser(courseId, instructor).Select(g => g.Id));
 			var userGroupsIdsWithDefaultProhibitFutherReview = db.GroupMembers
 				.Include(m => m.Group)
-				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && m.Group.DefaultProhibitFutherReview)
+				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.DefaultProhibitFutherReview)
 				.Select(m => m.GroupId)
 				.Distinct()
 				.ToList();
@@ -599,74 +599,6 @@ namespace Database.DataContexts
 		public List<EnabledAdditionalScoringGroup> GetEnabledAdditionalScoringGroupsForGroup(int groupId)
 		{
 			return db.EnabledAdditionalScoringGroups.Where(e => e.GroupId == groupId).ToList();
-		}
-
-		public List<GroupLabel> GetLabels(string ownerId)
-		{
-			return db.GroupLabels.Where(l => !l.IsDeleted && l.OwnerId == ownerId).ToList();
-		}
-
-		public async Task<GroupLabel> CreateLabel(string ownerId, string name, string colorHex)
-		{
-			var label = new GroupLabel
-			{
-				OwnerId = ownerId,
-				Name = name,
-				IsDeleted = false,
-				ColorHex = colorHex
-			};
-			db.GroupLabels.Add(label);
-			await db.SaveChangesAsync();
-			return label;
-		}
-
-		public async Task AddLabelToGroup(int groupId, int labelId)
-		{
-			using (var transaction = db.Database.BeginTransaction())
-			{
-				if (db.LabelsOnGroups.Any(g => g.LabelId == labelId && g.GroupId == groupId))
-					return;
-
-				var labelOnGroup = new LabelOnGroup
-				{
-					GroupId = groupId,
-					LabelId = labelId,
-				};
-				db.LabelsOnGroups.Add(labelOnGroup);
-				await db.SaveChangesAsync();
-
-				transaction.Commit();
-			}
-		}
-
-		public async Task RemoveLabelFromGroup(int groupId, int labelId)
-		{
-			var labels = db.LabelsOnGroups.Where(g => g.LabelId == labelId && g.GroupId == groupId);
-			db.LabelsOnGroups.RemoveRange(labels);
-			await db.SaveChangesAsync();
-		}
-
-		public List<int> GetGroupsWithSpecificLabel(int labelId)
-		{
-			return db.LabelsOnGroups.Where(l => l.LabelId == labelId).Select(l => l.GroupId).ToList();
-		}
-
-		public DefaultDictionary<int, List<int>> GetGroupsLabels(IEnumerable<int> groupsIds)
-		{
-			var groupsIdsSet = new HashSet<int>(groupsIds);
-			return db.LabelsOnGroups
-				.Where(l => groupsIdsSet.Contains(l.GroupId))
-				.Select(m => new {m.GroupId, m.LabelId})
-				.AsEnumerable()
-				.GroupBy(l => l.GroupId)
-				.ToDictionary(g => g.Key, g => g.Select(l => l.LabelId).ToList())
-				.ToDefaultDictionary();
-		}
-
-		[CanBeNull]
-		public GroupLabel FindLabelById(int labelId)
-		{
-			return db.GroupLabels.Find(labelId);
 		}
 
 		/* Group accesses */
