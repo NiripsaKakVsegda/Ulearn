@@ -62,7 +62,7 @@ namespace Ulearn.Web.Api.Controllers.Runner
 							return new List<RunnerSubmission>();
 
 						var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
-						var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+						var courseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
 						var builtSubmissions = new List<RunnerSubmission> { await ToRunnerSubmission(submission, courseStorage, courseManager) };
 						log.Info($"Собрал решения: [{submission.Id}], отдаю их агенту {agent}");
 						return builtSubmissions;
@@ -75,7 +75,7 @@ namespace Ulearn.Web.Api.Controllers.Runner
 		}
 
 		private async Task<RunnerSubmission> ToRunnerSubmission(UserExerciseSubmission submission,
-			ICourseStorage courseStorage, ISlaveCourseManager courseManager)
+			ICourseStorage courseStorage, IMasterCourseManager courseManager)
 		{
 			log.Info($"Собираю для отправки в RunCsJob решение {submission.Id}");
 			var slide = courseStorage.FindCourse(submission.CourseId)?.FindSlideByIdNotSafe(submission.SlideId);
