@@ -67,13 +67,14 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 
 			var submissions = await userSolutionsRepo
 				.GetAllSubmissionsByUserAllInclude(courseId, slideId, userId)
+				.OrderByDescending(s => s.Timestamp)
 				.ToListAsync();
 			var submissionsScores = await slideCheckingsRepo.GetCheckedPercentsBySubmissions(courseId, slideId, userId, null);
 			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(courseId, slideId, userId);
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)
 				.ToDictionary(g => g.Key, g => g.AsEnumerable());
-			var prohibitFurtherManualChecking = submissions.Any(s =>  s.ManualChecking != null && s.ManualChecking.ProhibitFurtherManualCheckings);
+			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking != null && s.ManualChecking.ProhibitFurtherManualCheckings);
 
 			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
