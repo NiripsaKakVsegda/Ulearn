@@ -5,17 +5,17 @@ import { ShortGroupInfo } from "src/models/comments";
 import {
 	AntiPlagiarismStatusResponse,
 	FavouriteReview,
-	FavouriteReviewResponse
+	FavouriteReviewResponse,
 } from "src/models/instructor";
 import { ShortUserInfo } from "src/models/users";
 import { ReviewCommentResponse, ReviewInfo, SubmissionInfo } from "src/models/exercise";
 import { GroupsInfoResponse } from "src/models/groups";
-import { SlideContext } from "../Slide";
 import { ReviewInfoWithMarker, TextMarkersByReviewId } from "../Blocks/Exercise/ExerciseUtils";
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { DiffInfo } from "./utils";
 import CodeMirror, { Editor } from "codemirror";
 import { FavouriteReviewRedux, } from "src/redux/instructor";
+import { SlideContext } from "../Slide.types";
 
 export interface PropsFromRedux {
 	user?: UserInfo;
@@ -33,9 +33,6 @@ export interface PropsFromRedux {
 
 export interface ApiFromRedux {
 	getStudentInfo: (studentId: string,) => Promise<ShortUserInfo | string>;
-	getStudentSubmissions: (studentId: string, courseId: string,
-		slideId: string,
-	) => Promise<SubmissionInfo[] | string>;
 	getAntiPlagiarismStatus: (courseId: string,
 		submissionId: number,
 	) => Promise<AntiPlagiarismStatusResponse | string>;
@@ -72,7 +69,6 @@ export interface Props extends PropsFromRedux, ApiFromRedux {
 	authorSolution?: React.ReactNode;
 	formulation?: React.ReactNode;
 	slideContext: SlideContext;
-	studentId: string;
 }
 
 export interface InstructorExtraFields {

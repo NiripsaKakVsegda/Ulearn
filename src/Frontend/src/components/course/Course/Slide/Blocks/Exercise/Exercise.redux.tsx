@@ -11,18 +11,16 @@ import { skipExercise } from "src/actions/userProgress";
 
 import { Language } from "src/consts/languages";
 import { buildUserInfo } from "src/utils/courseRoles";
-import { getSlideInfoById } from "../../../CourseUtils";
-import { getSubmissionsWithReviews } from "../../InstructorReview/InstructorReview.redux";
+import { getSubmissionsWithReviews } from "../../../CourseUtils";
 
 const mapStateToProps = (state: RootState,
-	{ slideContext: { slideId, courseId, }, }: Pick<Props, 'slideContext'>
+	{ slideContext: { slideId, courseId, slideInfo }, }: Pick<Props, 'slideContext'>
 ): FromReduxProps => {
-	const { account, userProgress, device, instructor, courses, } = state;
+	const { account, userProgress, device, instructor, } = state;
 	const {
 		submissionError,
 		lastCheckingResponse,
 	} = state.submissions;
-	const slideInfo = getSlideInfoById(slideId, courses.fullCoursesInfo[courseId])!.current;
 	const slideProgress = userProgress?.progress[courseId]?.[slideId] || {};
 
 	const submissions = getSubmissionsWithReviews(
@@ -32,8 +30,8 @@ const mapStateToProps = (state: RootState,
 		state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
 		state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
 	)?.filter((s, i, arr) =>
-			(i === arr.length - 1)
-			|| (!s.automaticChecking || s.automaticChecking.result === CheckingResult.RightAnswer));
+		(i === arr.length - 1)
+		|| (!s.automaticChecking || s.automaticChecking.result === CheckingResult.RightAnswer));
 
 	//newer is first
 	submissions?.sort((s1, s2) => (new Date(s2.timestamp).getTime() - new Date(s1.timestamp).getTime()));
@@ -42,11 +40,11 @@ const mapStateToProps = (state: RootState,
 		isAuthenticated: account.isAuthenticated,
 		submissions,
 		submissionError,
+		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		lastCheckingResponse: !(lastCheckingResponse && lastCheckingResponse.courseId === courseId && lastCheckingResponse.slideId === slideId) ? null : lastCheckingResponse,
 		user: buildUserInfo(account, courseId),
 		slideProgress,
 		deviceType: device.deviceType,
-		maxScore: slideInfo!.maxScore,
 		forceInitialCode: !instructor.isStudentMode,
 	};
 };

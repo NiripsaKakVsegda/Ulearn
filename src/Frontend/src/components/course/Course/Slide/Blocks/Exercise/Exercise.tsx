@@ -354,9 +354,15 @@ class Exercise extends React.Component<Props, State> {
 	}
 
 	render(): React.ReactElement {
-		const { className, submissions, } = this.props;
+		const { className, submissions, isAuthenticated } = this.props;
 
 		const opts = this.codeMirrorOptions;
+
+		if(!isAuthenticated) {
+			return (<div className={ classNames(styles.wrapper, className) } ref={ this.wrapper }>
+				{ this.renderControlledCodeMirror(opts, []) }
+			</div>);
+		}
 
 		if(!submissions) {
 			return <CourseLoader/>;
@@ -468,8 +474,12 @@ class Exercise extends React.Component<Props, State> {
 						selectedReviewId={ selectedReviewId }
 						onReviewClick={ this.selectComment }
 						editReviewOrComment={ this.editReviewComment }
-						reviews={ getReviewsWithoutDeleted(currentReviews).map(
-							r => ({ ...r, markers: undefined, anchor: getReviewAnchorTop(r, editor,), })) }
+						reviews={ getReviewsWithoutDeleted(currentReviews)
+							.map(r => ({
+								...r,
+								markers: undefined,
+								anchor: getReviewAnchorTop(r, editor,),
+							})) }
 					/>
 					}
 				</div>

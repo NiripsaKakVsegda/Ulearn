@@ -28,3 +28,13 @@ export interface FavouriteReviewResponse {
 	favouriteReviews: FavouriteReview[];
 	userFavouriteReviews: FavouriteReview[];
 }
+
+export interface ReviewQueueResponse {
+	checkings: ReviewQueueItem[];
+}
+
+export interface ReviewQueueItem {
+	isLocked: boolean;
+	submissionId: number;
+	userId: string;
+}

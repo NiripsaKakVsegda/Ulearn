@@ -56,7 +56,7 @@ import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { ReduxData } from "./index";
 import renderSimpleMarkdown from "../utils/simpleMarkdownRender";
 
-interface SubmissionsState {
+export interface SubmissionsState {
 	submissionError: string | null;
 	lastCheckingResponse: RunSolutionResponse | null;
 
@@ -68,27 +68,32 @@ interface SubmissionsState {
 		} | undefined;
 	};
 
+	submissionsLoadingForUser: {
+		[userId: string]: undefined | { courseId: string; slideId: string; }[];
+	};
+
 	submissionsById: {
 		[submissionId: string]: SubmissionInfoRedux | undefined;
-	}
+	};
 
 	reviewsBySubmissionId: {
 		[submissionId: string]: {
 			automaticCheckingReviews: ReviewInfoRedux[] | null;
 			manualCheckingReviews: ReviewInfoRedux[];
 		} | undefined;
-	}
+	};
 
 	reviewScoresByUserIdBySubmissionId: {
 		[userId: string]: {
 			[submissionId: string]: number | undefined;
 		} | undefined;
-	}
+	};
 }
 
 const initialSubmissionsState: SubmissionsState = {
 	lastCheckingResponse: null,
 	submissionsIdsByCourseIdBySlideIdByUserId: {},
+	submissionsLoadingForUser: {},
 	submissionsById: {},
 	reviewsBySubmissionId: {},
 	reviewScoresByUserIdBySubmissionId: {},
@@ -135,8 +140,8 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 							[slideId]: {
 								...slideSubmissions,
 								[userId]: [
+									submission.id,
 									...userSubmissions,
-									submission.id
 								]
 							}
 						}
@@ -178,13 +183,15 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 
 		case SUBMISSIONS_LOAD_START: {
 			const { userId, courseId, slideId, } = action as SubmissionsLoadStartAction;
-			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
-			const slideSubmissions = courseSubmissions?.[slideId] || {};
-			const userSubmissions = slideSubmissions?.[userId] || [];
+			const userLoadings = state.submissionsLoadingForUser[userId] || [];
 
-			//TODO isLoading?
-
-			return state;
+			return {
+				...state,
+				submissionsLoadingForUser: {
+					...state.submissionsLoadingForUser,
+					[userId]: [...userLoadings, { courseId, slideId, }],
+				}
+			};
 		}
 		case SUBMISSIONS_LOAD_SUCCESS: {
 			const {
@@ -215,9 +222,15 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					manualCheckingReviews: ReviewInfoRedux[];
 				}
 			});
+			const userLoadings = state.submissionsLoadingForUser[userId]
+				?.filter(loading => loading.courseId !== courseId || loading.slideId !== slideId);
 
 			return {
 				...state,
+				submissionsLoadingForUser: {
+					...state.submissionsLoadingForUser,
+					[userId]: userLoadings,
+				},
 				submissionsById: {
 					...state.submissionsById,
 					...submissionsByIds,
@@ -238,7 +251,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 						...courseSubmissions,
 						[slideId]: {
 							...slideSubmissions,
-							[userId]: Object.keys(submissionsByIds).map(id => parseInt(id)),
+							[userId]: submissions.map(s => s.id),
 						}
 					}
 				},

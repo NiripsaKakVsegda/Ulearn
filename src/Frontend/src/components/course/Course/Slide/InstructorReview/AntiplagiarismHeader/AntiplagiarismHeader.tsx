@@ -52,6 +52,10 @@ function AntiplagiarismHeader({
 					color = styles.suspicionColor;
 					break;
 				}
+				default: {
+					text = texts.errorText;
+					color = styles.notCheckingColor;
+				}
 			}
 		}
 	} else {

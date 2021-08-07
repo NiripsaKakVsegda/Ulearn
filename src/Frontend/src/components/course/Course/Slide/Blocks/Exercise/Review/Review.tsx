@@ -72,6 +72,17 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		return newCommentReplies;
 	};
 
+	componentDidMount(): void {
+		const { renderedReviews, } = this.state;
+		const { selectedReviewId, } = this.props;
+
+		if(renderedReviews.length > 0 && (!renderedReviews[0].prevMargin || renderedReviews[0].prevMargin === 0)) {
+			this.setState({
+				renderedReviews: this.addMarginsToReviews(renderedReviews, selectedReviewId),
+			});
+		}
+	}
+
 	componentDidUpdate(prevProps: ReviewProps): void {
 		const { reviews, selectedReviewId, } = this.props;
 		const { replies, renderedReviews, } = this.state;
@@ -81,7 +92,6 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		const newReviewsChanges = newReviews.map(getDataFromReviewToCompareChanges);
 		const oldReviewsChanges = oldReviews.map(getDataFromReviewToCompareChanges);
 		const sameReviews = this.areReviewsSame(newReviewsChanges, oldReviewsChanges);
-
 		if(sameReviews === 'containsChangedReviews') {
 			this.setState({
 				renderedReviews: renderedReviews

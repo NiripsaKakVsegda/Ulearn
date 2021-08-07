@@ -1,169 +1,102 @@
 import React from "react";
 
+import { clone } from "src/utils/jsonExtensions";
+
 import { BlocksWrapper, } from "./Blocks";
 import BlocksRenderer from "./BlocksRenderer";
 import CourseLoader from "src/components/course/Course/CourseLoader";
 
-import { Block, BlockTypes, ShortSlideInfo, SlideType, SpoilerBlock, } from "src/models/slide";
-
+import { Block, BlockTypes, SlideType, SpoilerBlock, } from "src/models/slide";
+import { Props, SlideProps, SlidePropsWithContext } from "./Slide.types";
+import SubmissionsLoader from "./SubmissionsLoader";
 import InstructorReview from "./InstructorReview/InstructorReview.redux";
-import { getQueryStringParameter } from "src/utils";
 
-export interface SlideContext {
-	courseId: string;
-	slideId: string;
-	title: string;
-}
-
-export interface PropsFromRedux extends SlideProps {
-	showHiddenBlocks: boolean;
-	userId: string | undefined;
-}
-
-interface SlideProps {
-	slideBlocks: Block[];
-	slideError: string | null;
-
-	slideLoading: boolean;
-}
-
-interface SlidePropsWithContext extends SlideProps {
-	slideContext: SlideContext;
-}
-
-export interface DispatchFromRedux {
-	loadSlide: (courseId: string, slideId: string,) => void;
-	loadSubmissions: (userId: string, courseId: string, slideId: string) => void;
-}
-
-export interface PropsFromCourse {
-	courseId: string;
-	slideInfo: ShortSlideInfo;
-
-	isLti: boolean;
-	isReview: boolean;
-}
-
-export type Props = PropsFromRedux & DispatchFromRedux & PropsFromCourse;
 
 class Slide extends React.Component<Props> {
 	componentDidMount(): void {
 		const { slideBlocks, } = this.props;
+
 		if(slideBlocks.length === 0) {
 			this.loadSlide();
 		}
 	}
 
-	componentDidUpdate(prevProps: Props): void {
-		const { slideBlocks, slideLoading, slideError, slideInfo, } = this.props;
+	componentDidUpdate(): void {
+		const { slideBlocks, slideLoading, slideError, } = this.props;
 
-		if(prevProps.slideInfo.id !== slideInfo.id || slideBlocks.length === 0 && !slideLoading && !slideError) {
+		if(slideBlocks.length === 0 && !slideLoading && !slideError) {
 			this.loadSlide();
 		}
 	}
 
 	loadSlide = (): void => {
-		const { loadSlide, courseId, slideInfo, loadSubmissions, userId, } = this.props;
-		loadSlide(courseId, slideInfo.id);
-		if(slideInfo.type === SlideType.Exercise && userId) {
-			loadSubmissions(userId, courseId, slideInfo.id);
+		const { loadSlide, slideInfo, } = this.props;
+		const { courseId, slideId, } = slideInfo;
+
+		if(!slideId) {
+			return;
 		}
+
+		loadSlide(courseId, slideId);
 	};
 
-	render = (): React.ReactElement => {
+	render = (): React.ReactNode => {
 		const {
 			slideBlocks,
 			showHiddenBlocks,
 			slideInfo,
-			isLti,
-			isReview,
 			slideError,
 			slideLoading,
-			courseId,
 		} = this.props;
+		const { courseId, slideId, navigationInfo, isReview, isLti, } = slideInfo;
 
-		const slideProps = {
-			slideBlocks: JSON.parse(JSON.stringify(slideBlocks)),
-			slideError,
-			slideLoading,
-			slideContext: { slideId: slideInfo.id, courseId, title: slideInfo.title, },
-		};
-
-		if(isLti && slideInfo.type == SlideType.Exercise) {
-			return <LtiExerciseSlide { ...slideProps }/>;
+		if(!slideId || !navigationInfo) {
+			throw new Error("Slide been rendered without slide id or without title");
 		}
 
-		if(isReview && slideInfo.type == SlideType.Exercise) {
-			return <ReviewSlide { ...slideProps }/>;
+		const slideProps: SlidePropsWithContext = {
+			slideBlocks: clone(slideBlocks),
+			slideError,
+			slideLoading,
+			slideContext: {
+				slideId,
+				courseId,
+				title: navigationInfo.current.title,
+				slideInfo,
+			},
+		};
+
+		let withLoaders = (child: React.ReactNode) => (child);
+
+		if(slideInfo.slideType == SlideType.Exercise) {
+			const previousLoaders = withLoaders.bind({});
+			withLoaders = (child) => {
+				return (<SubmissionsLoader { ...slideProps }>
+					{ previousLoaders(child) }
+				</SubmissionsLoader>);
+			};
 		}
 
 		if(!showHiddenBlocks) {
-			return <StudentModeSlide { ...slideProps } isHiddenSlide={ slideInfo.hide }/>;
+			return withLoaders(
+				<StudentModeSlide
+					{ ...slideProps }
+					isHiddenSlide={ slideInfo.navigationInfo?.current.hide }
+				/>);
+		}
+		if(isReview) {
+			return withLoaders(<ReviewSlide { ...slideProps }/>);
 		}
 
-		return <DefaultSlide { ...slideProps }/>;
+		if(isLti) {
+			return withLoaders(<LtiExerciseSlide { ...slideProps }/>);
+		}
+
+		return withLoaders(<DefaultSlide { ...slideProps }/>);
 	};
 }
 
-const LtiExerciseSlide = ({
-	slideBlocks,
-	slideError,
-}: SlideProps): React.ReactElement => {
-	if(slideError) {
-		return <p>{ slideError }</p>;
-	}
-
-	if(slideBlocks.length === 0) {
-		return (<CourseLoader/>);
-	}
-
-	const exerciseSlideBlock = slideBlocks.find(sb => sb.$type === BlockTypes.exercise);
-
-	if(!exerciseSlideBlock) {
-		return <p>No exercise found</p>;
-	}
-
-	return <>{ BlocksRenderer.renderBlocks([exerciseSlideBlock]) }</>;
-};
-
-const ReviewSlide: React.FC<SlidePropsWithContext> = ({
-	slideBlocks,
-	slideError,
-	slideContext,
-}): React.ReactElement => {
-	if(slideError) {
-		return <p>slideError</p>;
-	}
-
-	const exerciseSlideBlockIndex = slideBlocks.findIndex(sb => sb.$type === BlockTypes.exercise);
-	const authorSolution = slideBlocks.length > 0 && slideBlocks[slideBlocks.length - 1].$type === BlockTypes.code
-		? [{
-			...slideBlocks[slideBlocks.length - 1],
-			hide: false,
-		}]
-		: undefined;
-	const formulation = slideBlocks.length > 0
-		? slideBlocks.slice(0, exerciseSlideBlockIndex)
-		: undefined;
-	const userId = getQueryStringParameter('userId');
-
-	if(!userId) {
-		throw new Error("User id was not provided in query of " + window.location.href);
-	}
-
-	return <InstructorReview
-		studentId={ userId }
-		slideContext={ slideContext }
-		authorSolution={ authorSolution
-			? BlocksRenderer.renderBlocks(authorSolution)
-			: undefined }
-		formulation={ formulation && formulation.length > 0
-			? BlocksRenderer.renderBlocks(formulation)
-			: undefined }
-	/>;
-};
-
-const DefaultSlide = ({
+export const DefaultSlide = ({
 	slideBlocks,
 	slideError,
 	slideContext,
@@ -183,7 +116,7 @@ interface StudentModeProps extends SlidePropsWithContext {
 	isHiddenSlide?: boolean;
 }
 
-const StudentModeSlide = ({
+export const StudentModeSlide = ({
 	slideBlocks,
 	slideError,
 	isHiddenSlide,
@@ -236,6 +169,58 @@ const StudentModeSlide = ({
 			</BlocksWrapper>
 		);
 	}
+};
+
+export const LtiExerciseSlide = ({
+	slideBlocks,
+	slideError,
+}: SlideProps): React.ReactElement => {
+	if(slideError) {
+		return <p>{ slideError }</p>;
+	}
+
+	if(slideBlocks.length === 0) {
+		return (<CourseLoader/>);
+	}
+
+	const exerciseSlideBlock = slideBlocks.find(sb => sb.$type === BlockTypes.exercise);
+
+	if(!exerciseSlideBlock) {
+		return <p>No exercise found</p>;
+	}
+
+	return <>{ BlocksRenderer.renderBlocks([exerciseSlideBlock]) }</>;
+};
+
+export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
+	slideBlocks,
+	slideError,
+	slideContext,
+}): React.ReactElement => {
+	if(slideError) {
+		return <p>slideError</p>;
+	}
+
+	const exerciseSlideBlockIndex = slideBlocks.findIndex(sb => sb.$type === BlockTypes.exercise);
+	const authorSolution = slideBlocks.length > 0 && slideBlocks[slideBlocks.length - 1].$type === BlockTypes.code
+		? [{
+			...slideBlocks[slideBlocks.length - 1],
+			hide: false,
+		}]
+		: undefined;
+	const formulation = slideBlocks.length > 0
+		? slideBlocks.slice(0, exerciseSlideBlockIndex)
+		: undefined;
+
+	return <InstructorReview
+		slideContext={ slideContext }
+		authorSolution={ authorSolution
+			? BlocksRenderer.renderBlocks(authorSolution)
+			: undefined }
+		formulation={ formulation && formulation.length > 0
+			? BlocksRenderer.renderBlocks(formulation)
+			: undefined }
+	/>;
 };
 
 export default Slide;

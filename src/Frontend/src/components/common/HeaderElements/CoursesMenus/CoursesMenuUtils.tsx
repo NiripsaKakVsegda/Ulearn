@@ -3,11 +3,12 @@ import React from "react";
 import { MenuHeader, MenuItem, MenuSeparator } from "ui";
 import LinkComponent from "../../LinkComponent";
 
-import { coursesPath, coursePath } from "src/consts/routes";
+import { coursesPath, coursePath, adminCheckingQueuePath } from "src/consts/routes";
 
 import { CourseInfo } from "src/models/course";
 import { CourseAccessType, CourseRoleType, } from "src/consts/accessType";
 import { DeviceType } from "src/consts/deviceType";
+import { buildQuery } from "src/utils";
 
 const VISIBLE_COURSES_COUNT = 10;
 const COURSES_TO_BE_SORTED_BY_LAST_VISIT_COUNT = 4;
@@ -145,7 +146,7 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 			Комментарии
 		</MenuItem>,
 
-		<MenuItem href={ "/Admin/CheckingQueue?courseId=" + courseId } key="ManualCheckingQueue"
+		<MenuItem href={ adminCheckingQueuePath + buildQuery({ courseId }) } key="ManualCheckingQueue"
 				  component={ LinkComponent }>
 			Код-ревью и проверка тестов
 		</MenuItem>,

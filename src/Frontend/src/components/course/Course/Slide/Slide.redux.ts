@@ -1,13 +1,13 @@
 import { RootState } from "src/redux/reducers";
 import { Dispatch } from "redux";
-import { loadSlide } from "src/actions/slides";
-import api from "src/api";
+import { loadSlide } from "src/actions/slides";;
 import { connect } from "react-redux";
-import Slide, { DispatchFromRedux, PropsFromCourse, PropsFromRedux } from "./Slide";
+import Slide from "./Slide";
+import { DispatchFromRedux, PropsFromCourse, PropsFromRedux } from "./Slide.types";
 
-const mapStateToProps = (state: RootState, { courseId, slideInfo, }: PropsFromCourse
+const mapStateToProps = (state: RootState, { slideInfo, }: PropsFromCourse
 ): PropsFromRedux => {
-	const { slides, instructor, account, } = state;
+	const { slides, instructor, } = state;
 	const { slidesByCourses, slideLoading, slideError, } = slides;
 
 	const props: PropsFromRedux = {
@@ -15,13 +15,12 @@ const mapStateToProps = (state: RootState, { courseId, slideInfo, }: PropsFromCo
 		slideBlocks: [],
 		slideError,
 		showHiddenBlocks: !instructor.isStudentMode,
-		userId: account.id,
 	};
 
-	const coursesSlides = slidesByCourses[courseId];
+	const coursesSlides = slidesByCourses[slideInfo.courseId];
 
-	if(coursesSlides) {
-		props.slideBlocks = coursesSlides[slideInfo.id] || [];
+	if(coursesSlides && slideInfo.slideId) {
+		props.slideBlocks = coursesSlides[slideInfo.slideId] || [];
 	}
 
 	return props;
@@ -29,8 +28,6 @@ const mapStateToProps = (state: RootState, { courseId, slideInfo, }: PropsFromCo
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchFromRedux => ({
 	loadSlide: (courseId: string, slideId: string) => loadSlide(courseId, slideId)(dispatch),
-	loadSubmissions: (userId: string, courseId: string, slideId: string) =>
-		api.submissions.redux.getUserSubmissions(userId, courseId, slideId,)(dispatch)
 });
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(Slide);

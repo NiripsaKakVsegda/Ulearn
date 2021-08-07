@@ -13,6 +13,7 @@ const texts = {
 	},
 	antiPlagiarismDetailsLinkText: `Посмотреть подробности`,
 	notCheckingText: `Эта задача не проверяется на списывание`,
+	errorText: `Нам не удалось проверить эту задачу`,
 	scoreZeroText: `Поставить 0 %`,
 };
 

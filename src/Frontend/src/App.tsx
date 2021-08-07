@@ -125,11 +125,7 @@ class InternalUlearnApp extends Component<Props, State> {
 			<BrowserRouter>
 				<ThemeContext.Provider value={ theme }>
 					<ErrorBoundary>
-						{ isHeaderVisible &&
-						<React.Fragment>
-							<Header initializing={ initializing }/>
-						</React.Fragment>
-						}
+						{ isHeaderVisible && <Header initializing={ initializing }/> }
 						<NotFoundErrorBoundary>
 							{ !initializing && // Avoiding bug: don't show page while initializing.
 							// Otherwise we make two GET requests sequentially.

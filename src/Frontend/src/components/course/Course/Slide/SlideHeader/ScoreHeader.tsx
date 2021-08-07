@@ -6,7 +6,6 @@ import DownloadedHtmlContent from 'src/components/common/DownloadedHtmlContent.j
 import { Modal, } from "ui";
 
 import { isInstructor } from "src/utils/courseRoles";
-import { getSlideInfoById } from "../../CourseUtils";
 
 import { SlideType } from "src/models/slide";
 import { constructPathToStudentSubmissions } from "src/consts/routes";
@@ -15,7 +14,7 @@ import { RootState } from "src/models/reduxState";
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
 import { SubmissionInfo } from "../../../../../models/exercise";
-import { getSubmissionsWithReviews } from "../InstructorReview/InstructorReview.redux";
+import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
 
 
 const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
@@ -91,17 +90,19 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 };
 
 interface ScoreHeaderProps {
-	courseId: string;
-	slideId: string;
+	slideInfo: SlideInfo;
 }
 
 const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
-	const { userProgress, courses, account, } = state;
-	const { courseId, slideId } = ownProps;
+	const { userProgress, account, } = state;
+	const { slideInfo, } = ownProps;
+	const { slideId, courseId, slideType, } = slideInfo;
+
+	if(!slideId) {
+		throw new Error('No slide id provided');
+	}
 
 	const slideProgress = userProgress.progress[courseId]?.[slideId];
-	const courseInfo = courses.fullCoursesInfo[courseId];
-	const slideInfo = getSlideInfoById(slideId, courseInfo)?.current;
 	const submissions: SubmissionInfo[] | undefined =
 		getSubmissionsWithReviews(
 			courseId,
@@ -123,9 +124,9 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		isSkipped: slideProgress?.isSkipped ?? false,
 		waitingForManualChecking: slideProgress?.waitingForManualChecking ?? false,
 		prohibitFurtherManualChecking: slideProgress?.prohibitFurtherManualChecking ?? false,
-		maxScore: slideInfo?.maxScore || 0,
+		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		hasReviewedSubmissions: hasReviewedSubmissions,
-		showStudentSubmissions: slideInfo?.type === SlideType.Exercise && instructor,
+		showStudentSubmissions: slideType === SlideType.Exercise && instructor,
 	};
 };
 const connector = connect(mapState);

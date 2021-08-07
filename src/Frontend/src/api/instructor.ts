@@ -14,7 +14,7 @@ import { ShortUserInfo } from "src/models/users";
 import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
 import {
-	AntiPlagiarismStatusResponse,
+	AntiPlagiarismStatusResponse, ReviewQueueResponse,
 } from "src/models/instructor";
 
 export function getAntiPlagiarismStatus(courseId: string,
@@ -33,6 +33,26 @@ export function prohibitFurtherManualChecking(
 	const url = `user-progress/${ courseId }/${ slideId }/prohibit-further-manual-checking`
 		+ buildQuery({ userId, prohibit });
 	return api.put(url);
+}
+
+export function getReviewQueue(
+	courseId: string,
+	groupsIds: string[] | 'all' | 'not-in-group',
+	slideId: string | undefined,
+	userIds: string[] | undefined,
+	done: boolean,
+): Promise<ReviewQueueResponse> {
+	const url = `review-queue/${ courseId }`
+		+ buildQuery({ groupsIds, slideId, userIds, done, });
+	return api.get(url);
+}
+
+export function lockSubmissionCheck(
+	courseId: string,
+	submissionId: number,
+): Promise<Response> {
+	const url = `review-queue/${ courseId }/${ submissionId }`;
+	return api.post(url);
 }
 
 //REDUX

@@ -1,6 +1,8 @@
 import { buildQuery } from "src/utils";
+import { SlideInfo } from "../components/course/Course/CourseUtils";
 
 export const coursePath = "course";
+export const adminCheckingQueuePath = "/admin/checkingQueue";
 export const coursesPath = "/course/courses";
 export const flashcards = "flashcards";
 export const flashcardsPreview = "preview";
@@ -17,7 +19,7 @@ export const courseStatistics = analytics + '/courseStatistics';
 export const users = 'users';
 export const userSolutions = analytics + '/userSolutions';
 export const slides = "slides";
-export const ltiSlide = "ltislide";
+export const ltiSlide = "ltiSlide";
 export const resetStudentsLimits = "/students/reset-limits";
 export const acceptedSolutions = "accepted-solutions";
 export const signalrWS = 'ws';
@@ -36,6 +38,18 @@ export const groups = 'groups';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return `/${ coursePath }/${ courseId }/${ slideId }`;
+}
+
+export function getPreviousSlideUrl(courseId: string, slideInfo: SlideInfo): string | null {
+	const { navigationInfo, } = slideInfo;
+
+	return navigationInfo?.previous
+		? constructPathToSlide(courseId, navigationInfo.previous.slug)
+		: null;
+}
+
+export function constructPathWithAutoplay(baseHref: string): string {
+	return baseHref + buildQuery({ autoplay: true });
 }
 
 export function constructPathToComment(commentId: number, isLike?: boolean): string {

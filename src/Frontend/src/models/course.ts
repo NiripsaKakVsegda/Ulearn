@@ -78,11 +78,6 @@ interface UnitsInfo {
 	[p: string]: UnitInfo;
 }
 
-interface PageInfo {
-	isLti: boolean;
-	isReview: boolean;
-	isNavigationVisible: boolean;
-}
 
 export {
 	CourseInfo,
@@ -92,5 +87,4 @@ export {
 	InfoByUnit,
 	ScoringGroup,
 	UnitsInfo,
-	PageInfo,
 };

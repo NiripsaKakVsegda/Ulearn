@@ -8,66 +8,26 @@ import { Dispatch } from "redux";
 import { RootState } from "src/redux/reducers";
 import api from "src/api";
 import { getDataIfLoaded } from "src/redux";
-import { SlideContext } from "../Slide";
 import { ShortGroupInfo } from "src/models/comments";
 import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
 import { SubmissionInfo } from "src/models/exercise";
-import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
+import { SlideContext } from "../Slide.types";
+import { getSubmissionsWithReviews } from "../../CourseUtils";
 
 interface Props {
 	slideContext: SlideContext;
-	studentId: string;
 }
-
-export const getSubmissionsWithReviews = (
-	courseId: string,
-	slideId: string,
-	userId: string | undefined,
-	submissionsIdsByCourseIdBySlideIdByUserId: {
-		[courseId: string]: {
-			[slideId: string]: {
-				[studentId: string]: number[];
-			} | undefined;
-		} | undefined;
-	},
-	submissionsById: {
-		[submissionId: string]: SubmissionInfoRedux | undefined;
-	},
-	reviewsBySubmissionId: {
-		[submissionId: string]: {
-			automaticCheckingReviews: ReviewInfoRedux[] | null;
-			manualCheckingReviews: ReviewInfoRedux[];
-		} | undefined;
-	}
-): SubmissionInfo[] | undefined => {
-	if(!userId) {
-		return undefined;
-	}
-	const studentSubmissionsIds = getDataIfLoaded(
-		submissionsIdsByCourseIdBySlideIdByUserId[courseId]
-			?.[slideId]
-			?.[userId]);
-
-	return studentSubmissionsIds
-		?.map(id => submissionsById[id]!)
-		.map(r => {
-			const reviews = reviewsBySubmissionId[r.id];
-
-			return ({
-				...r,
-				manualCheckingReviews: reviews?.manualCheckingReviews || [],
-				automaticChecking: {
-					...r.automaticChecking,
-					reviews: reviews?.automaticCheckingReviews || null,
-				},
-			} as SubmissionInfo);
-		});
-};
 
 const mapStateToProps = (
 	state: RootState,
-	{ slideContext: { courseId, slideId, }, studentId }: Props
+	{ slideContext: { courseId, slideId, slideInfo, } }: Props
 ): PropsFromRedux => {
+	const studentId = slideInfo.query.userId;
+
+	if(!studentId) {
+		throw new Error('User id was not provided');
+	}
+
 	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
 
 	const studentSubmissions: SubmissionInfo[] | undefined =
@@ -76,7 +36,8 @@ const mapStateToProps = (
 			slideId,
 			studentId,
 			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
-			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+			state.submissions.submissionsById,
+			state.submissions.reviewsBySubmissionId
 		);
 
 	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
@@ -92,6 +53,11 @@ const mapStateToProps = (
 	const antiPlagiarismStatus = studentSubmissions && getDataIfLoaded(
 		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id]);
 
+	const prohibitFurtherManualChecking = state.instructor
+		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
+		?.[slideId]
+		?.[studentId] || false;
+
 	return {
 		user: buildUserInfo(state.account, courseId,),
 		favouriteReviews,
@@ -99,7 +65,7 @@ const mapStateToProps = (
 		student,
 		studentSubmissions,
 		antiPlagiarismStatus,
-		prohibitFurtherManualChecking: state.instructor.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]?.[slideId]?.[studentId] || false,
+		prohibitFurtherManualChecking,
 		scoresBySubmissionId,
 	};
 };
@@ -139,14 +105,12 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 		getStudentInfo: (studentId: string,) =>
 			api.instructor.redux.getStudentInfo(studentId)(dispatch),
-		getStudentSubmissions: (userId: string, courseId: string, slideId: string,) =>
-			api.submissions.redux.getUserSubmissions(userId, courseId, slideId)(dispatch),
 		getAntiPlagiarismStatus: (courseId: string, submissionId: number,) =>
 			api.instructor.redux.getAntiPlagiarismStatus(courseId, submissionId)(dispatch),
 		getFavouriteReviews: (courseId: string, slideId: string,) =>
 			api.favouriteReviews.redux.getFavouriteReviews(courseId, slideId,)(dispatch),
 		getStudentGroups: (courseId: string, userId: string,) =>
-			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch)
+			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch),
 	};
 };
 

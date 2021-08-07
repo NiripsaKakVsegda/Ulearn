@@ -90,49 +90,68 @@ class InstructorReview extends React.Component<Props, State> {
 
 	componentDidMount(): void {
 		const {
-			student,
-			studentGroups,
-			studentSubmissions,
-			getStudentInfo,
-			getStudentSubmissions,
-			getStudentGroups,
-			studentId,
-			favouriteReviews,
-			getFavouriteReviews,
-			slideContext: { courseId, slideId, },
-		} = this.props;
-		const {
 			currentSubmission,
 		} = this.state;
 
-		if(!student) {
-			getStudentInfo(studentId);
-		}
-		if(!studentSubmissions) {
-			getStudentSubmissions(studentId, courseId, slideId);
-		}
-		if(!studentGroups) {
-			getStudentGroups(courseId, studentId);
-		}
-		if(!favouriteReviews) {
-			getFavouriteReviews(courseId, slideId);
-		}
+		this.loadData();
 
 		if(currentSubmission) {
 			this.addMarkers();
 		}
 	}
 
-	componentDidUpdate = (prevProps: Readonly<Props>, prevState: Readonly<State>): void => {
-		const { studentSubmissions, scoresBySubmissionId, getAntiPlagiarismStatus, slideContext, } = this.props;
-		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
+	loadData = (): void => {
+		const {
+			student,
+			studentGroups,
+			getStudentInfo,
+			getStudentGroups,
+			favouriteReviews,
+			getFavouriteReviews,
+			slideContext: { courseId, slideId, slideInfo: { query, }, },
+		} = this.props;
 
+		if(!query.userId) {
+			return;
+		}
+
+		if(!student) {
+			getStudentInfo(query.userId);
+		}
+		if(!studentGroups) {
+			getStudentGroups(courseId, query.userId);
+		}
+		if(!favouriteReviews) {
+			getFavouriteReviews(courseId, slideId);
+		}
+	};
+
+	componentDidUpdate = (prevProps: Readonly<Props>, prevState: Readonly<State>): void => {
+		const {
+			studentSubmissions,
+			scoresBySubmissionId,
+			getAntiPlagiarismStatus,
+			slideContext,
+		} = this.props;
+		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
 
 		if(currentTab !== prevState.currentTab) {
 			this.setState({
 				addCommentFormCoords: undefined,
 				addCommentRanges: undefined,
 			});
+		}
+
+		if(slideContext.slideInfo.query.submissionId !== prevProps.slideContext.slideInfo.query.submissionId) {
+			this.loadData();
+			window.scroll(0, 0);
+			this.setState({
+				currentSubmission: undefined,
+				selectedReviewId: -1,
+				addCommentFormCoords: undefined,
+				addCommentRanges: undefined,
+			});
+			return;
 		}
 
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
@@ -189,7 +208,6 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmission: submission,
 			diffInfo,
 			selectedReviewId: -1,
-			markers: {},
 			addCommentFormCoords: undefined,
 			reviews,
 			outdatedReviews,
