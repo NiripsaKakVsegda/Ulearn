@@ -78,11 +78,10 @@ class Slide extends React.Component<Props> {
 		}
 
 		if(!showHiddenBlocks) {
-			return withLoaders(
-				<StudentModeSlide
-					{ ...slideProps }
-					isHiddenSlide={ slideInfo.navigationInfo?.current.hide }
-				/>);
+			return <StudentModeSlide
+				{ ...slideProps }
+				isHiddenSlide={ slideInfo.navigationInfo?.current.hide }
+			/>;
 		}
 		if(isReview) {
 			return withLoaders(<ReviewSlide { ...slideProps }/>);
