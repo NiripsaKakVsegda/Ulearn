@@ -33,7 +33,13 @@ import { UserInfo, UserRoles } from "src/utils/courseRoles";
 import documentReadyFunctions from "src/legacy/legacy";
 import runLegacy from "src/legacy/legacyRunner";
 
-import { constructPathToSlide, flashcards, flashcardsPreview, signalrWS, } from 'src/consts/routes';
+import {
+	adminCheckingQueuePath,
+	constructPathToSlide,
+	flashcards,
+	flashcardsPreview,
+	signalrWS,
+} from 'src/consts/routes';
 import { ShortSlideInfo, SlideType, } from 'src/models/slide';
 import Meta from "src/consts/Meta";
 import { CourseInfo, UnitInfo, UnitsInfo } from "src/models/course";
@@ -51,6 +57,7 @@ import {
 } from "../Navigation/types";
 
 import styles from "./Course.less";
+import { buildQuery } from "../../../utils";
 
 interface State {
 	Page: React.ComponentType | React.ElementType;
@@ -390,6 +397,12 @@ class Course extends Component<CourseProps, State> {
 		};
 		return (
 			<main className={ wrapperClassName }>
+				{ isReview &&
+				<label className={ styles.reviewReturnToQueueLink }>
+					<Link to={ adminCheckingQueuePath + buildQuery({ courseId, }) }>
+						← Код-ревью и проверка тестов
+					</Link>
+				</label> }
 				{ (isNavigationVisible || isReview) && title &&
 				<h1 className={ styles.title }>
 					{ title }
