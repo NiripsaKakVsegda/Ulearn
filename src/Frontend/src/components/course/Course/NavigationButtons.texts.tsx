@@ -11,7 +11,7 @@ const texts = {
 	returnToCheckingQueuePage: 'Вернуться',
 	buildNextReviewText: (count: number): React.ReactText =>
 		count > 0
-			? `Осталось ${ count } ${ getPluralForm(count, 'работа', 'работ', 'работ') }`
+			? `${ getPluralForm(count, 'Осталась', 'Осталось', 'Осталось') } ${ count } ${ getPluralForm(count, 'работа', 'работ', 'работ') }`
 			: 'Поздравляем, очередь пуста! Работ для проверки нет',
 };
 
