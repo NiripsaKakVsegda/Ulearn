@@ -56,13 +56,15 @@ const mapDispatchToProps = (dispatch: Dispatch): FromReduxDispatch => ({
 	addReviewComment: (submissionId: number, reviewId: number,
 		comment: string
 	) => api.submissions.redux.addReviewComment(submissionId, reviewId, comment)(dispatch),
-	editReviewComment: (submissionId: number, reviewId: number, parentReviewId: number, text: string,
+	editReviewOrComment: (submissionId: number, reviewId: number, parentReviewId: number | undefined, text: string,
 		oldText: string,
 	) => api.submissions.redux.editReviewOrComment(submissionId, reviewId, parentReviewId, text, oldText,)(
 		dispatch),
 
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number
 	) => api.submissions.redux.deleteReviewComment(submissionId, reviewId, commentId)(dispatch),
+	deleteReview: (submissionId: number, reviewId: number
+	) => api.submissions.redux.deleteReview(submissionId, reviewId)(dispatch),
 
 	skipExercise: (courseId: string, slideId: string, onSuccess: () => void,
 	) => skipExercise(courseId, slideId, onSuccess)(dispatch),

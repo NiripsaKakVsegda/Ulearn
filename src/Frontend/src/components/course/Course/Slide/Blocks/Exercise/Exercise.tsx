@@ -37,6 +37,7 @@ import {
 	isAcceptedSolutionsWillNotDiscardScore
 } from "./ExerciseUtils";
 import { getReviewAnchorTop } from "../../InstructorReview/utils";
+import checker from "../../InstructorReview/reviewPolicyChecker";
 
 import { Language, } from "src/consts/languages";
 import { DeviceType } from "src/consts/deviceType";
@@ -48,9 +49,9 @@ import {
 } from "src/models/exercise";
 import { SlideUserProgress } from "src/models/userProgress";
 import { ExerciseBlockProps } from "src/models/slide";
-import { SlideContext } from "../../Slide";
 import { UserInfo } from "src/utils/courseRoles";
 import { ShortUserInfo } from "src/models/users";
+import { SlideContext } from "../../Slide.types";
 
 import CodeMirror, { Doc, Editor, EditorChange, EditorConfiguration, } from "codemirror";
 import 'codemirror/lib/codemirror.css';
@@ -64,16 +65,16 @@ import registerCodeMirrorHelpers from "./CodeMirrorAutocompleteExtension";
 import styles from './Exercise.less';
 
 import texts from './Exercise.texts';
-import checker from "../../InstructorReview/reviewPolicyChecker";
 
 
 export interface FromReduxDispatch {
 	sendCode: (courseId: string, slideId: string, userId: string, value: string, language: Language,) => unknown;
 	addReviewComment: (submissionId: number, reviewId: number, text: string) => unknown;
-	editReviewComment: (submissionId: number, reviewId: number, parentReviewId: number, text: string,
+	editReviewOrComment: (submissionId: number, reviewId: number, parentReviewId: number | undefined, text: string,
 		oldText: string,
 	) => unknown;
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => unknown;
+	deleteReview: (submissionId: number, reviewId: number) => unknown;
 	skipExercise: (courseId: string, slideId: string, onSuccess: () => void) => unknown;
 }
 
@@ -470,10 +471,10 @@ class Exercise extends React.Component<Props, State> {
 					<Review
 						user={ user }
 						addReviewComment={ this.addReviewComment }
-						deleteReviewOrComment={ this.deleteReviewComment }
+						deleteReviewOrComment={ this.deleteReviewOrComment }
 						selectedReviewId={ selectedReviewId }
 						onReviewClick={ this.selectComment }
-						editReviewOrComment={ this.editReviewComment }
+						editReviewOrComment={ this.editReviewOrComment }
 						reviews={ getReviewsWithoutDeleted(currentReviews)
 							.map(r => ({
 								...r,
@@ -527,9 +528,9 @@ class Exercise extends React.Component<Props, State> {
 		);
 	};
 
-	editReviewComment = (text: string, reviewId: number, parentReviewId: number | undefined,): void => {
+	editReviewOrComment = (text: string, reviewId: number, parentReviewId: number | undefined,): void => {
 		const {
-			editReviewComment,
+			editReviewOrComment,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -537,14 +538,12 @@ class Exercise extends React.Component<Props, State> {
 
 		if(currentSubmission && parentReviewId) {
 			const trimmed = checker.removeWhiteSpaces(text);
-			const oldText = currentSubmission
-				.manualCheckingReviews
-				.find(r => r.id === parentReviewId)
-				?.comments
-				.find(c => c.id === reviewId)
-				?.text || '';
+			const oldText = parentReviewId
+				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
+				c => c.id === reviewId)?.text || ''
+				: currentSubmission.manualCheckingReviews.find(r => r.id === reviewId)?.comment || '';
 
-			editReviewComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
+			editReviewOrComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
 		} else {
 			Toast.push(texts.editCommentError);
 		}
@@ -848,11 +847,13 @@ class Exercise extends React.Component<Props, State> {
 			case ModalType.studentsSubmissions:
 				break;
 			case ModalType.acceptedSolutions: {
-				const instructor = isInstructor(
-					{
-						isSystemAdministrator: user!.isSystemAdministrator,
-						courseRole: user!.courseRole
-					});
+				const instructor = user
+					? isInstructor(
+						{
+							isSystemAdministrator: user.isSystemAdministrator,
+							courseRole: user.courseRole
+						})
+					: false;
 				return (
 					<AcceptedSolutionsModal
 						courseId={ courseId }
@@ -1007,12 +1008,16 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	deleteReviewComment = (reviewId: number, commentId?: number,): void => {
-		const { deleteReviewComment } = this.props;
+	deleteReviewOrComment = (reviewId: number, commentId?: number,): void => {
+		const { deleteReviewComment, deleteReview, } = this.props;
 		const { currentSubmission, } = this.state;
 
 		if(currentSubmission) {
-			deleteReviewComment(currentSubmission.id, reviewId, commentId!,);
+			if(commentId) {
+				deleteReviewComment(currentSubmission.id, reviewId, commentId,);
+			} else {
+				deleteReview(currentSubmission.id, reviewId,);
+			}
 		}
 	};
 
