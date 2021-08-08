@@ -28,6 +28,7 @@ export interface PropsFromRedux {
 	scoresBySubmissionId?: { [submissionId: number]: number | undefined; };
 
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
+	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
 }
 

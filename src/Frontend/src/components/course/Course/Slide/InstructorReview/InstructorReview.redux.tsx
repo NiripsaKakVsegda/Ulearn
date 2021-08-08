@@ -7,7 +7,7 @@ import { buildUserInfo } from "src/utils/courseRoles";
 import { Dispatch } from "redux";
 import { RootState } from "src/redux/reducers";
 import api from "src/api";
-import { getDataIfLoaded } from "src/redux";
+import { getDataIfLoaded, ReduxData } from "src/redux";
 import { ShortGroupInfo } from "src/models/comments";
 import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
 import { SubmissionInfo } from "src/models/exercise";
@@ -50,8 +50,8 @@ const mapStateToProps = (
 	const favouriteReviews = getDataIfLoaded(
 		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
 
-	const antiPlagiarismStatus = studentSubmissions && getDataIfLoaded(
-		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id]);
+	const antiPlagiarismStatus = studentSubmissions &&
+		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
 
 	const prohibitFurtherManualChecking = state.instructor
 		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
@@ -64,7 +64,8 @@ const mapStateToProps = (
 		studentGroups,
 		student,
 		studentSubmissions,
-		antiPlagiarismStatus,
+		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
+		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
 		scoresBySubmissionId,
 	};

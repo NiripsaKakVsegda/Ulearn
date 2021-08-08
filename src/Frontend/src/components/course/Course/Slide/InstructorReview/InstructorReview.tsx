@@ -131,6 +131,8 @@ class InstructorReview extends React.Component<Props, State> {
 			studentSubmissions,
 			scoresBySubmissionId,
 			getAntiPlagiarismStatus,
+			antiPlagiarismStatus,
+			antiPlagiarismStatusLoading,
 			slideContext,
 		} = this.props;
 		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
@@ -154,9 +156,12 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
+		if(!antiPlagiarismStatus && !antiPlagiarismStatusLoading && studentSubmissions && studentSubmissions.length > 0){
+			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
+		}
+
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
 			this.loadSubmission(studentSubmissions, 0);
-			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
 			return;
 		}
 
