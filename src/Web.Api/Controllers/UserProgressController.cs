@@ -36,11 +36,12 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly ILtiRequestsRepo ltiRequestsRepo;
 		private readonly ILtiConsumersRepo ltiConsumersRepo;
 		private readonly IUnitsRepo unitsRepo;
+		private readonly IGroupsRepo groupsRepo;
 
 		public UserProgressController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			IVisitsRepo visitsRepo, IUserQuizzesRepo userQuizzesRepo, IAdditionalScoresRepo additionalScoresRepo,
 			ICourseRolesRepo courseRolesRepo, IGroupAccessesRepo groupAccessesRepo, IGroupMembersRepo groupMembersRepo,
-			ISlideCheckingsRepo slideCheckingsRepo, ILtiRequestsRepo ltiRequestsRepo, ILtiConsumersRepo ltiConsumersRepo, IUnitsRepo unitsRepo)
+			ISlideCheckingsRepo slideCheckingsRepo, ILtiRequestsRepo ltiRequestsRepo, ILtiConsumersRepo ltiConsumersRepo, IUnitsRepo unitsRepo, IGroupsRepo groupsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.visitsRepo = visitsRepo;
@@ -53,6 +54,7 @@ namespace Ulearn.Web.Api.Controllers
 			this.ltiRequestsRepo = ltiRequestsRepo;
 			this.ltiConsumersRepo = ltiConsumersRepo;
 			this.unitsRepo = unitsRepo;
+			this.groupsRepo = groupsRepo;
 		}
 
 		/// <summary>
@@ -99,6 +101,7 @@ namespace Ulearn.Web.Api.Controllers
 			var waitingExerciseSlides = await slideCheckingsRepo.GetSlideIdsWaitingForManualExerciseCheckAsync(course.Id, userIds).ConfigureAwait(false);
 			var prohibitFurtherManualCheckingSlides = await slideCheckingsRepo.GetProhibitFurtherManualCheckingSlides(course.Id, userIds).ConfigureAwait(false);
 			var skippedSlides = await visitsRepo.GetSkippedSlides(course.Id, userIds);
+			var usersIdsWithEnabledManualChecking = await groupsRepo.GetUsersIdsWithEnabledManualChecking(course, userIds);
 
 			var usersProgress = new Dictionary<string, UserProgress>();
 			foreach (var userId in scores.Keys)
@@ -113,8 +116,9 @@ namespace Ulearn.Web.Api.Controllers
 							Score = kvp.Value,
 							IsSkipped = skippedSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false,
 							UsedAttempts = attempts.GetValueOrDefault(userId)?.GetValueOrDefault(kvp.Key) ?? 0,
-							WaitingForManualChecking = (waitingExerciseSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false)
-														|| (waitingQuizSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false),
+							WaitingForManualChecking =
+								usersIdsWithEnabledManualChecking.Contains(userId)
+								&& ((waitingExerciseSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false) || (waitingQuizSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false)),
 							ProhibitFurtherManualChecking = prohibitFurtherManualCheckingSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false
 						});
 				var userAdditionalScores = additionalScores.GetValueOrDefault(userId);
