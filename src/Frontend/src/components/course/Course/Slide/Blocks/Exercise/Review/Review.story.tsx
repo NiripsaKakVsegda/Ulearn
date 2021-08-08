@@ -70,7 +70,6 @@ const props: ReviewProps = {
 	editReviewOrComment: () => void (0),
 	toggleReviewFavourite: () => void (0),
 	assignBotComment: () => void (0),
-	isReviewOrCommentCanBeAdded: () => true,
 };
 
 const Template: Story<ReviewProps> = (args: ReviewProps) =>

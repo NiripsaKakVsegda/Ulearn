@@ -40,7 +40,7 @@ const addCommentToFavourite = (comment: string) => {
 	return returnPromiseAfterDelay(100, newComment);
 };
 
-function toggleCommentFavourite(commentId: number) {
+function deleteFavouriteReview(commentId: number) {
 	const comment = comments.find(c => c.id === commentId);
 	if(!comment) {
 		return;
@@ -54,7 +54,7 @@ const args: Props = {
 	favouriteReviews: comments,
 	addFavouriteReview: addCommentToFavourite,
 	addComment,
-	toggleCommentFavourite,
+	deleteFavouriteReview,
 	onClose: mockFunc,
 	onValueChange: function (value) {
 		this.value = value;
