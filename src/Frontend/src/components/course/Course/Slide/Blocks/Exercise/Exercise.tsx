@@ -36,8 +36,9 @@ import {
 	submissionIsLast,
 	isAcceptedSolutionsWillNotDiscardScore
 } from "./ExerciseUtils";
-import { getReviewAnchorTop } from "../../InstructorReview/utils";
+import { getDataFromReviewToCompareChanges, getReviewAnchorTop } from "../../InstructorReview/utils";
 import checker from "../../InstructorReview/reviewPolicyChecker";
+import { clone } from "src/utils/jsonExtensions";
 
 import { Language, } from "src/consts/languages";
 import { DeviceType } from "src/consts/deviceType";
@@ -309,8 +310,14 @@ class Exercise extends React.Component<Props, State> {
 			}
 		} else if(currentSubmission) {
 			const submission = submissions.find(s => s.id === currentSubmission.id);
+			if(!submission) {
+				return;
+			}
 
-			if(submission && currentSubmission !== submission) { // Сравнение по ссылке. Отличаться должны только в случае изменения комментериев
+			const reviewsCompare = submission.manualCheckingReviews.map(getDataFromReviewToCompareChanges);
+			const newReviewsCompare = currentSubmission.manualCheckingReviews.map(getDataFromReviewToCompareChanges);
+
+			if(submission && JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) { // Отличаться должны только в случае изменения комментериев
 				this.setCurrentSubmission(submission,
 					() => this.highlightReview(selectedReviewId)); //Сохраняем выделение выбранного ревью
 			}
@@ -536,7 +543,7 @@ class Exercise extends React.Component<Props, State> {
 			currentSubmission,
 		} = this.state;
 
-		if(currentSubmission && parentReviewId) {
+		if(currentSubmission) {
 			const trimmed = checker.removeWhiteSpaces(text);
 			const oldText = parentReviewId
 				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
@@ -708,10 +715,11 @@ class Exercise extends React.Component<Props, State> {
 	setCurrentSubmission = (submission: SubmissionInfo, callback?: () => void): void => {
 		const { exerciseCodeDoc, } = this.state;
 		this.clearAllTextMarkers();
+		const clonedSubmission = clone(submission);
 		this.setState({
-			currentSubmission: submission,
+			currentSubmission: clonedSubmission,
 			currentReviews: exerciseCodeDoc
-				? getReviewsWithTextMarkers(submission, exerciseCodeDoc, styles.reviewCode)
+				? getReviewsWithTextMarkers(clonedSubmission, exerciseCodeDoc, styles.reviewCode)
 				: [],
 		}, () => {
 			const { editor } = this.state;

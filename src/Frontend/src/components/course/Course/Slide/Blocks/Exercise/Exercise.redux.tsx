@@ -28,7 +28,8 @@ const mapStateToProps = (state: RootState,
 		slideId,
 		account.id,
 		state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
-		state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+		state.submissions.submissionsById,
+		state.submissions.reviewsBySubmissionId
 	)?.filter((s, i, arr) =>
 		(i === arr.length - 1)
 		|| (!s.automaticChecking || s.automaticChecking.result === CheckingResult.RightAnswer));

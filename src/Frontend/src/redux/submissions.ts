@@ -206,7 +206,11 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			const reviewScoresByUsers = state.reviewScoresByUserIdBySubmissionId;
 
 			const submissionsByIds = submissions.reduce((pv, cv) => {
-				pv[cv.id] = cv;
+				pv[cv.id] = {
+					...cv,
+					manualCheckingReviews: undefined,
+					automaticChecking: cv.automaticChecking ? { ...cv.automaticChecking, reviews: null, } : null,
+				} as SubmissionInfoRedux;
 				return pv;
 			}, {} as { [submissionId: string]: SubmissionInfoRedux });
 
@@ -381,7 +385,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					return state;
 				}
 
-				const parentReview = manualReviews[parentReviewIndex];
+				const parentReview = { ...manualReviews[parentReviewIndex] };
 				const index = parentReview.comments
 					.findIndex(c => (c as ReviewCommentResponse).id === reviewId);
 				parentReview.comments = [...parentReview.comments];
@@ -502,7 +506,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					return state;
 				}
 
-				const parentReview = manualReviews[parentReviewIndex];
+				const parentReview = { ...manualReviews[parentReviewIndex] };
 				const index = parentReview.comments
 					.findIndex(c => (c as ReviewCommentResponse).id === reviewId);
 				parentReview.comments = [...parentReview.comments];

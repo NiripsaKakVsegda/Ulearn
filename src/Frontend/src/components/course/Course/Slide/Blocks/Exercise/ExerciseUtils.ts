@@ -125,7 +125,6 @@ function getReviewsWithTextMarkers(
 	markerClassName: string,
 ): ReviewInfoWithMarker[] {
 	const reviews = getAllReviewsFromSubmission(submission);
-
 	const reviewsWithTextMarkers: ReviewInfoWithMarker[] = [];
 
 	for (const review of reviews) {
