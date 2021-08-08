@@ -483,7 +483,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 	};
 
 	static renderCommentContent(content: string): React.ReactNode {
-		return <ScrollContainer maxHeight={ 600 }>
+		return <ScrollContainer maxHeight={ 600 } className={ styles.scrollContainer }>
 			<p
 				className={ styles.commentText }
 				dangerouslySetInnerHTML={ { __html: content } }
