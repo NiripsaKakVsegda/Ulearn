@@ -45,7 +45,7 @@ const mapStateToProps = (state: RootState,
 		user: buildUserInfo(account, courseId),
 		slideProgress,
 		deviceType: device.deviceType,
-		forceInitialCode: !instructor.isStudentMode,
+		forceInitialCode: instructor.isStudentMode,
 	};
 };
 
