@@ -30,7 +30,7 @@ namespace Ulearn.Core.Markdown
 				if (!href.StartsWith("/") && IsFile(href))
 					tag.attributes["href"] = GetLinkToFile(href);
 				else
-					tag.attributes["href"] = CourseUrlHelper.GetAbsoluteUrl(context.BaseUrlWeb, href);
+					tag.attributes["href"] = href;
 			}
 			else
 			{
