@@ -87,7 +87,7 @@ namespace Ulearn.Core.Markdown
 			}
 
 			// Common replacements
-			if (language == "C#")
+			if (language == "C#" || language == "cs")
 				language = "csharp";
 			if (language == "C++")
 				language = "cpp";
