@@ -15,8 +15,8 @@ namespace uLearn
 		{
 			Assert.That("[a](a.html)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"https://api.ulearn.me/courses/BasicProgramming/files/Unit1/a.html\""));
 			Assert.That("[a](a.html)".RenderMarkdown(DefaultMdContext with { UnitDirectoryRelativeToCourse = "Unit1/" }), Does.Contain("href=\"https://api.ulearn.me/courses/BasicProgramming/files/Unit1/a.html\""));
-			Assert.That("[a](/a.html)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"https://ulearn.me/a.html\""));
-			Assert.That("[a](abc)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"https://ulearn.me/abc\""));
+			Assert.That("[a](/a.html)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"/a.html\""));
+			Assert.That("[a](abc)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"abc\""));
 		}
 
 		[Test]
@@ -146,7 +146,7 @@ $$3$$".RenderMarkdown(DefaultMdContext).Trim());
 		public void add_root_url()
 		{
 			Assert.AreEqual(
-				"<p><a href=\"https://ulearn.me/Link\">Hello world</a></p>\n",
+				"<p><a href=\"/Link\">Hello world</a></p>\n",
 				@"[Hello world](/Link)".RenderMarkdown(DefaultMdContext));
 		}
 	}
