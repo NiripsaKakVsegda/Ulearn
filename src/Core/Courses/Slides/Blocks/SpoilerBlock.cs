@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Ulearn.Core.Courses.Slides.Quizzes;
@@ -63,7 +63,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
-			throw new System.NotImplementedException();
+			throw new Exception("Не должен вызываться. Используются внутренние блоки.");
 		}
 	}
 }

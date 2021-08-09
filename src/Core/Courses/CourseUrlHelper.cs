@@ -17,17 +17,11 @@ namespace Ulearn.Core.Courses
 			return GetUrlFromParts(baseUrlApi, $"slides/{courseId}/{slideId}/exercise/student-zip/{studentZipName}");
 		}
 
-		// Не учитывает возможность /../
-		public static string GetAbsoluteUrl(string baseUrl, string relative)
-		{
-			return GetUrlFromParts(baseUrl, relative);
-		}
-
 		private static string GetUrlFromParts(params string[] parts)
 		{
 			var ps = parts
 				.Where(p => p != null)
-				.Select(p => p.Trim('/'))
+				.Select(p => p.Replace('\\', '/').Trim('/'))
 				.Where(p => !string.IsNullOrEmpty(p))
 				.ToArray();
 			return string.Join("/", ps);

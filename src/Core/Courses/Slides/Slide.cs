@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -204,30 +203,40 @@ namespace Ulearn.Core.Courses.Slides
 
 		#region ExportToEdx
 
-		private static IEnumerable<Vertical> OrdinarySlideToVerticals(EdxComponentBuilderContext context, Dictionary<string, string> videoGuids, string ltiId)
+		private static IEnumerable<Vertical> OrdinarySlideToVerticals(EdxComponentBuilderContext context, string ltiId)
 		{
 			var slide = context.Slide;
 			var componentIndex = 0;
 			var components = new List<Component>();
-			while (componentIndex < slide.Blocks.Length)
+
+			var visibleSlideBlocks = slide.Blocks.Where(b => !b.Hide).ToArray();
+			while (visibleSlideBlocks.Any(b => b is SpoilerBlock))
 			{
-				var blocks = slide.Blocks.Skip(componentIndex).TakeWhile(x => !(x is YoutubeBlock) && !(x is AbstractExerciseBlock)).ToList();
+				visibleSlideBlocks = visibleSlideBlocks.SelectMany(block =>
+				{
+					if (block is SpoilerBlock sb)
+						return sb.Blocks.Where(b => !b.Hide);
+					return new[] { block };
+				}).ToArray();
+			}
+
+			while (componentIndex < visibleSlideBlocks.Length)
+			{
+				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock, склеиваются в один HtmlComponent
+				var blocks = visibleSlideBlocks.Skip(componentIndex).TakeWhile(x => !(x is YoutubeBlock) && !(x is AbstractExerciseBlock)).ToList();
 				if (blocks.Count != 0)
 				{
 					var innerComponents = new List<Component>();
 					foreach (var block in blocks)
 					{
-						if (!block.Hide)
+						try
 						{
-							try
-							{
-								var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
-								innerComponents.Add(component);
-							}
-							catch (NotImplementedException ex)
-							{
-								Console.WriteLine($"{block.GetType().Name} block NotSupportedException");
-							}
+							var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
+							innerComponents.Add(component);
+						}
+						catch (NotSupportedException ex)
+						{
+							Console.WriteLine($"Slide {slide.Id} {block.GetType().Name} block NotSupportedException");
 						}
 
 						componentIndex++;
@@ -235,33 +244,39 @@ namespace Ulearn.Core.Courses.Slides
 
 					if (innerComponents.Any())
 					{
-						var displayName = componentIndex == blocks.Count ? slide.Title : "";
+						componentIndex--; // Иначе компонент будет иметь индекс на один больший, и потом следующий компонент будет с тем же индексом. В конце if возвращаю.
+						var displayName = componentIndex == blocks.Count - 1 ? slide.Title : "";
 						var header = displayName == "" ? "" : "<h2>" + displayName + "</h2>";
 						var slideComponent = new HtmlComponent
 						{
 							DisplayName = displayName,
-							UrlName = slide.NormalizedGuid + componentIndex,
+							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в html
 							Filename = slide.NormalizedGuid + componentIndex,
-							Source = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
+							HtmlContent = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
 							Subcomponents = innerComponents.ToArray()
 						};
 						components.Add(slideComponent);
+						componentIndex++;
 					}
 				}
 
-				if (componentIndex >= slide.Blocks.Length)
+				if (componentIndex >= visibleSlideBlocks.Length)
 					break;
 
-				var exerciseBlock = slide.Blocks[componentIndex] as AbstractExerciseBlock;
-				var otherComponent = exerciseBlock != null
-					? ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId)
-					: ((YoutubeBlock)slide.Blocks[componentIndex]).GetVideoComponent(componentIndex == 0 ? slide.Title : "", slide, componentIndex, videoGuids);
-
-				components.Add(otherComponent);
+				if (visibleSlideBlocks[componentIndex] is AbstractExerciseBlock)
+				{
+					var exerciseComponent = ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId);
+					components.Add(exerciseComponent);
+				}
+				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
+				{
+					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
+					components.Add(videoComponent);
+				}
 				componentIndex++;
 			}
 
-			var exBlock = slide.Blocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
+			var exBlock = visibleSlideBlocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
 			if (exBlock == null)
 				yield return new Vertical(slide.NormalizedGuid, slide.Title, components.ToArray());
 			else
@@ -280,21 +295,14 @@ namespace Ulearn.Core.Courses.Slides
 
 		protected const string SlideUrlFormat = "/Course/{0}/LtiSlide?slideId={1}";
 
-		public IEnumerable<Vertical> ToVerticals(string courseId, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, Dictionary<string, string> videoGuids, string ltiId, DirectoryInfo courseDirectory)
+		public IEnumerable<Vertical> ToVerticals(string courseId, string ulearnBaseUrlApi, string ulearnBaseUrlWeb, string ltiId, DirectoryInfo courseDirectory)
 		{
 			var slideUrl = ulearnBaseUrlWeb + SlideUrlFormat;
-			try
-			{
-				if (this is QuizSlide quizSlide)
-					return QuizToVerticals(courseId, quizSlide, slideUrl, ltiId).ToList();
-				if (this is FlashcardSlide)
-					return Enumerable.Empty<Vertical>();
-				return OrdinarySlideToVerticals(new EdxComponentBuilderContext("", courseId, this, 0, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory), videoGuids, ltiId).ToList();
-			}
-			catch (Exception e)
-			{
-				throw new Exception($"Slide {this}. {e.Message}", e);
-			}
+			if (this is QuizSlide quizSlide)
+				return QuizToVerticals(courseId, quizSlide, slideUrl, ltiId).ToList();
+			if (this is FlashcardSlide)
+				return Enumerable.Empty<Vertical>();
+			return OrdinarySlideToVerticals(new EdxComponentBuilderContext("", courseId, this, 0, ulearnBaseUrlApi, ulearnBaseUrlWeb, courseDirectory), ltiId).ToList();
 		}
 
 		#endregion

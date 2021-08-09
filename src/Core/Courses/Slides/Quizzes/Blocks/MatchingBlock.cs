@@ -31,11 +31,6 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 			return Matches.ToList();
 		}
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
-		}
-
 		public override bool HasEqualStructureWith(SlideBlock other)
 		{
 			var block = other as MatchingBlock;

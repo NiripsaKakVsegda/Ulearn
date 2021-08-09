@@ -75,8 +75,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			base.Validate(context);
 		}
 
-		public Component GetExerciseComponent(string displayName, Slide slide, int componentIndex, string launchUrl,
-			string ltiId)
+		public Component GetExerciseComponent(string displayName, Slide slide, int componentIndex, string launchUrl, string ltiId)
 		{
 			return new LtiComponent(displayName, slide.NormalizedGuid + componentIndex, launchUrl, ltiId, true, Scoring.PassedTestsScore, false);
 		}

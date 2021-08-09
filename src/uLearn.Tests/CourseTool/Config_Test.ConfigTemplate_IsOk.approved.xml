@@ -2,7 +2,6 @@
   <Organization>UrFU</Organization>
   <LtiId>edx</LtiId>
   <ULearnCourseId>BasicProgramming</ULearnCourseId>
-  <Video>video.json</Video>
   <Profiles>
     <Profile name="default">
       <UlearnBaseUrlWeb>https://ulearn.me</UlearnBaseUrlWeb>
@@ -17,5 +16,4 @@
     <SlideId>1</SlideId>
     <SlideId>2</SlideId>
   </IgnoredUlearnSlides>
-  <EmitSequentialsForInstructorNotes>false</EmitSequentialsForInstructorNotes>
 </Config>
