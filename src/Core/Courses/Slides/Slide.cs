@@ -244,17 +244,19 @@ namespace Ulearn.Core.Courses.Slides
 
 					if (innerComponents.Any())
 					{
-						var displayName = componentIndex == blocks.Count ? slide.Title : "";
+						componentIndex--; // Иначе компонент будет иметь индекс на один больший, и потом следующий компонент будет с тем же индексом. В конце if возвращаю.
+						var displayName = componentIndex == blocks.Count - 1 ? slide.Title : "";
 						var header = displayName == "" ? "" : "<h2>" + displayName + "</h2>";
 						var slideComponent = new HtmlComponent
 						{
 							DisplayName = displayName,
-							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в jlby
+							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в html
 							Filename = slide.NormalizedGuid + componentIndex,
 							HtmlContent = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
 							Subcomponents = innerComponents.ToArray()
 						};
 						components.Add(slideComponent);
+						componentIndex++;
 					}
 				}
 
