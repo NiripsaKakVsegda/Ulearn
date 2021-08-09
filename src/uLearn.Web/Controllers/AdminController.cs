@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -461,10 +462,9 @@ namespace uLearn.Web.Controllers
 			if (!createdNew)
 				return RedirectToAction("Courses", "Course", new { courseId = courseId, courseTitle = courseTitle });
 
-			var courseFile = coursesRepo.GetVersionFile(versionId);
-			await coursesRepo.AddCourseVersion(courseId, courseTitle, versionId, userId, null, null, null, null, courseFile.File).ConfigureAwait(false);
-			await coursesRepo.MarkCourseVersionAsPublished(versionId).ConfigureAwait(false);
 			await NotifyAboutPublishedCourseVersion(courseId, versionId, userId).ConfigureAwait(false);
+
+			Thread.Sleep(TimeSpan.FromSeconds(3)); // Чтобы с большой вероятностью курс уже загрузился.
 
 			return RedirectToAction("Packages", new { courseId, onlyPrivileged = true });
 		}
@@ -1476,28 +1476,6 @@ namespace uLearn.Web.Controllers
 				await NotifyAboutAdditionalScore(additionalScore).ConfigureAwait(false);
 
 			return Json(new { status = "ok", score = scoreInt });
-		}
-
-		[HttpPost]
-		public async Task<ActionResult> AddLabelToGroup(int groupId, int labelId)
-		{
-			var label = groupsRepo.FindLabelById(labelId);
-			if (label == null || label.OwnerId != User.Identity.GetUserId())
-				return Json(new { status = "error", message = "Label not found or not owned by you" });
-
-			await groupsRepo.AddLabelToGroup(groupId, labelId).ConfigureAwait(false);
-			return Json(new { status = "ok" });
-		}
-
-		[HttpPost]
-		public async Task<ActionResult> RemoveLabelFromGroup(int groupId, int labelId)
-		{
-			var label = groupsRepo.FindLabelById(labelId);
-			if (label == null || label.OwnerId != User.Identity.GetUserId())
-				return Json(new { status = "error", message = "Label not found or not owned by you" });
-
-			await groupsRepo.RemoveLabelFromGroup(groupId, labelId);
-			return Json(new { status = "ok" });
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]

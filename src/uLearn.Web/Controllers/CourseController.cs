@@ -404,8 +404,6 @@ namespace uLearn.Web.Controllers
 			db.Visits.RemoveSlideAction(courseId, slideId, userId);
 			await slideCheckingsRepo.RemoveAttempts(courseId, slideId, userId, false);
 
-			db.UserQuestions.RemoveSlideAction(courseId, slideId, userId);
-			db.SlideRates.RemoveSlideAction(courseId, slideId, userId);
 			db.Hints.RemoveSlideAction(courseId, slideId, userId);
 			await db.SaveChangesAsync();
 

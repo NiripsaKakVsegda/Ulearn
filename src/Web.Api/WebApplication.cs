@@ -230,6 +230,7 @@ namespace Ulearn.Web.Api
 			services.AddSingleton<MasterCourseManager>();
 			services.AddSingleton<ExerciseStudentZipsCache>();
 			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
+			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<MasterCourseManager>());
 
 			services.AddScoped<IAuthorizationHandler, CourseRoleAuthorizationHandler>();
