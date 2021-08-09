@@ -209,13 +209,11 @@ namespace Ulearn.Core.Courses.Slides
 			var componentIndex = 0;
 			var components = new List<Component>();
 
-			var visibleSlideBlocks = slide.Blocks;
+			var visibleSlideBlocks = slide.Blocks.Where(b => !b.Hide).ToArray();
 			while (visibleSlideBlocks.Any(b => b is SpoilerBlock))
 			{
-				visibleSlideBlocks = slide.Blocks.SelectMany(block =>
+				visibleSlideBlocks = visibleSlideBlocks.SelectMany(block =>
 				{
-					if (block.Hide)
-						return Array.Empty<SlideBlock>();
 					if (block is SpoilerBlock sb)
 						return sb.Blocks.Where(b => !b.Hide);
 					return new[] { block };
@@ -224,8 +222,8 @@ namespace Ulearn.Core.Courses.Slides
 
 			while (componentIndex < visibleSlideBlocks.Length)
 			{
-				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock склеиваются в один HtmlComponent
-				var blocks = slide.Blocks.Skip(componentIndex).TakeWhile(x => !(x is YoutubeBlock) && !(x is AbstractExerciseBlock)).ToList();
+				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock, склеиваются в один HtmlComponent
+				var blocks = visibleSlideBlocks.Skip(componentIndex).TakeWhile(x => !(x is YoutubeBlock) && !(x is AbstractExerciseBlock)).ToList();
 				if (blocks.Count != 0)
 				{
 					var innerComponents = new List<Component>();
@@ -265,16 +263,15 @@ namespace Ulearn.Core.Courses.Slides
 
 				if (visibleSlideBlocks[componentIndex] is AbstractExerciseBlock)
 				{
-					componentIndex++;
 					var exerciseComponent = ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId);
 					components.Add(exerciseComponent);
 				}
 				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
 				{
-					componentIndex++;
-					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex });
+					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
 					components.Add(videoComponent);
 				}
+				componentIndex++;
 			}
 
 			var exBlock = visibleSlideBlocks.OfType<AbstractExerciseBlock>().FirstOrDefault();
