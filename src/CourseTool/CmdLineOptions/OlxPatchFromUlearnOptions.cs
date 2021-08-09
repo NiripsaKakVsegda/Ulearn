@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using Ulearn.Core;
@@ -31,6 +32,8 @@ namespace uLearn.CourseTool.CmdLineOptions
 					).ToArray()),
 				guids != null || !SkipExistingGuids
 			);
+
+			CopyStaticFilesToOlx();
 		}
 	}
 }

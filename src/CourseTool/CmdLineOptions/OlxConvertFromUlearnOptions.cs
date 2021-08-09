@@ -52,6 +52,8 @@ namespace uLearn.CourseTool.CmdLineOptions
 				profile.UlearnBaseUrlWeb,
 				CourseDirectory).Save(WorkingDirectory + "/olx");
 
+			CopyStaticFilesToOlx();
+
 			EdxInteraction.CreateEdxCourseArchive(WorkingDirectory, course.Id);
 
 			Console.WriteLine($"Now you can upload {course.Id}.tar.gz to edx via Tools - Import menu");

@@ -116,8 +116,8 @@
     <Content Include="templates\iframe.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Update="static\flexslider-icon.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="static\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
