@@ -67,9 +67,11 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
-			var html = RenderMarkdown(context.Slide, new MarkdownRenderContext(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse));
+			var markdownRenderContext = new MarkdownRenderContext(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse);
+			var (html, staticFiles) = GetMarkdownWithReplacedLinksToStudentZips(context.CourseId, context.Slide, context.UlearnBaseUrlApi)
+				.RenderMarkdownForEdx(markdownRenderContext, context.CourseDirectory, "/static");
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
-			return new HtmlComponent(urlName, context.DisplayName, urlName, html);
+			return new HtmlComponent(urlName, context.DisplayName, urlName, html, staticFiles);
 		}
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)

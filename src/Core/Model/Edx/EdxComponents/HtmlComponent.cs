@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace Ulearn.Core.Model.Edx.EdxComponents
 {
+	public record StaticFileForEdx(FileInfo StaticFile, string EdxFileName);
+
 	[XmlRoot("html")]
 	public class HtmlComponent : Component
 	{
@@ -12,10 +15,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		public string HtmlContent;
 
 		[XmlIgnore]
-		public string CourseDirectory;
-
-		[XmlIgnore]
-		public List<string> LocalFilesPathsRelativeToCourse;
+		public List<StaticFileForEdx> StaticFiles;
 
 		[XmlAttribute("filename")]
 		public string Filename;
@@ -41,14 +41,13 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 			HtmlContent = htmlContent;
 		}
 
-		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent, string courseDirectory, string unitDirectoryRelativeToCourse, List<string> localFilesPathsRelativeToCourse)
+		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent, List<StaticFileForEdx> staticFiles)
 		{
 			UrlName = urlName;
 			DisplayName = displayName;
 			Filename = filename;
 			HtmlContent = htmlContent;
-			CourseDirectory = courseDirectory;
-			LocalFilesPathsRelativeToCourse = localFilesPathsRelativeToCourse;
+			StaticFiles = staticFiles;
 		}
 
 		public override void Save(string folderName)
@@ -64,11 +63,8 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 					subcomponent.SaveAdditional(folderName);
 			try
 			{
-				foreach (var localFilesPathsRelativeToCourse in LocalFilesPathsRelativeToCourse ?? new List<string>())
-					File.Copy(
-						Path.Combine(CourseDirectory, localFilesPathsRelativeToCourse),
-						string.Format("{0}/static/{1}_{2}", folderName, UrlName, localFilesPathsRelativeToCourse.Replace("/", "_")),
-						overwrite: true);
+				foreach (var (file, edxFileName) in StaticFiles.EmptyIfNull())
+					File.Copy(file.FullName, $"{folderName}/static/{edxFileName}", overwrite: true);
 			}
 			catch (Exception e)
 			{
