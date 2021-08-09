@@ -7,7 +7,6 @@ using System.IO;
 using System.Xml.Serialization;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Model.Edx.EdxComponents;
 using Component = Ulearn.Core.Model.Edx.EdxComponents.Component;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
@@ -68,9 +67,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
-			if (!string.IsNullOrEmpty(CodeFile))
-				throw new Exception("IncludeCodeBlock: File string is not empty.");
-			return new CodeComponent();
+			throw new Exception("Не должен вызываться. В овремя BuildUp конвертируется в CodeBlock.");
 		}
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)
