@@ -135,7 +135,7 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 		return (
 			<div className={ styles.reviewButtonsWrapper }>
 				{
-					check.submissionId !== state.checkings[currentCheckIndex]?.submissionId
+					check && check.submissionId !== state.checkings[currentCheckIndex]?.submissionId
 						?
 						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
 							  to={ constructPathToSlide(courseId, slideId)
