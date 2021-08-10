@@ -157,6 +157,13 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 
 			return {
 				...state,
+				submissionsById: {
+					...state.submissionsById,
+					[submissionId]: {
+						...state.submissionsById[submissionId],
+						manualCheckingPassed: true,
+					}
+				},
 				reviewScoresByUserIdBySubmissionId: {
 					...state.reviewScoresByUserIdBySubmissionId,
 					[userId]: {
