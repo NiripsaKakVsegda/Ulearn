@@ -79,6 +79,24 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
 
+		[HttpPost("{submissionId}/manual-checking")]
+		[Authorize]
+		public async Task<ActionResult> EnableManualChecking([FromRoute] string submissionId)
+		{
+			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
+
+			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), submission.UserId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
+
+			if (submission.ManualChecking != null)
+				return StatusCode((int)HttpStatusCode.Conflict, "Manual checking already enabled");
+
+			await slideCheckingsRepo.AddManualExerciseChecking(submission.CourseId, submission.SlideId, submission.UserId, submission.Id);
+			await visitsRepo.MarkVisitsAsWithManualChecking(submission.CourseId, submission.SlideId, submission.UserId);
+
+			return Ok($"Manual checking enabled for submission {submissionId}");
+		}
+
 		[HttpPost("{submissionId}/score")]
 		[Authorize]
 		public async Task<ActionResult> Score([FromRoute] string submissionId, [FromQuery] int percent)
