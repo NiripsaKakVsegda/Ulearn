@@ -27,7 +27,7 @@ namespace Ulearn.Core.Model.Edx
 			Save(folderName, true);
 		}
 
-		public void Save(string folderName, bool withAdditionals)
+		public virtual void Save(string folderName, bool withAdditionals)
 		{
 			var path = Path.Combine(folderName, SubfolderName);
 			if (!Directory.Exists(path))

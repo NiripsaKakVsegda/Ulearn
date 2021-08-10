@@ -53,7 +53,7 @@ namespace Ulearn.Core.Model.Edx
 			ChapterReferences = chapters.Select(x => x.GetReference()).ToArray();
 		}
 
-		public override void Save(string folderName)
+		public override void Save(string folderName, bool withAdditionals)
 		{
 			var courseFile = $"{folderName}/{SubfolderName}/{UrlName}.xml";
 			if (File.Exists(courseFile))
@@ -83,7 +83,8 @@ namespace Ulearn.Core.Model.Edx
 				}
 
 				File.WriteAllText(courseFile, doc.XmlSerialize());
-				SaveAdditional(folderName);
+				if (withAdditionals)
+					SaveAdditional(folderName);
 			}
 			else
 				base.Save(folderName);

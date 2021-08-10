@@ -95,8 +95,7 @@ namespace Ulearn.Core.Model.Edx
 				chapters.Add(newChapter);
 				CourseWithChapters.Chapters = chapters.ToArray();
 				CourseWithChapters.ChapterReferences = CourseWithChapters.Chapters.Select(x => new ChapterReference { UrlName = x.UrlName }).ToArray();
-
-				File.WriteAllText(string.Format("{0}/course/{1}.xml", folderName, CourseWithChapters.UrlName), CourseWithChapters.XmlSerialize());
+				CourseWithChapters.Save(folderName, false);
 				newChapter.Save(folderName);
 			}
 			else
