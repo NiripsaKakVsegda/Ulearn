@@ -10,11 +10,13 @@ using Ulearn.Core.Model.Edx.EdxComponents;
 namespace Ulearn.Core.Model.Edx
 {
 	public delegate void NonExistentItemHandler(string type, string urlName);
+	public record FileInEdxCourse(string Directory, string FileName, string Extension); // Строки в record сравниваются по значению
 
 	public class EdxLoadOptions
 	{
 		public bool FailOnNonExistingItem = true;
 		public NonExistentItemHandler HandleNonExistentItemTypeName;
+		public Action<FileInEdxCourse> OnLoadExistingEdxItem; // Соответствует загруженным xml файлам
 	}
 
 	[XmlRoot("course")]

@@ -70,6 +70,7 @@ namespace Ulearn.Core.Model.Edx
 						return null;
 					}
 				}
+				options.OnLoadExistingEdxItem?.Invoke(new FileInEdxCourse(type, urlName, "xml"));
 
 				var component = fileInfo.DeserializeXml<TComponent>();
 				component.UrlName = urlName;

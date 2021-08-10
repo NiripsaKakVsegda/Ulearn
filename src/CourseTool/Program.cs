@@ -13,6 +13,7 @@ namespace uLearn.CourseTool
 					OlxConvertFromUlearnOptions,
 					OlxPatchFromUlearnOptions,
 					OlxSquashChaptersOptions, OlxDesquashChaptersOptions,
+					OlxRemoveUnusedFilesOptions,
 					OlxRemoveLinksToMissingFilesOptions,
 					OlxUnpackTarGzOptions, OlxUnpackTarOptions,
 					OlxPackTarGzOptions, OlxPackTarOptions,
