@@ -19,9 +19,12 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 				Checkings = checkings
 					.Select(c => new ReviewQueueItem
 					{
-						SubmissionId = c.Id, 
+						SubmissionId = c.Id,
 						UserId = c.UserId,
 						IsLocked = c.IsLocked,
+						Type = c is ManualExerciseChecking
+							? QueueItemType.Exercise
+							: QueueItemType.Quiz,
 					})
 					.ToList(),
 			};
@@ -33,11 +36,20 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	{
 		[DataMember]
 		public int SubmissionId { get; set; }
-		
+
 		[DataMember]
 		public string UserId { get; set; }
-		
+
 		[DataMember]
 		public bool IsLocked { get; set; }
+
+		[DataMember]
+		public QueueItemType Type { get; set; }
+	}
+
+	public enum QueueItemType
+	{
+		Exercise,
+		Quiz,
 	}
 }

@@ -716,6 +716,7 @@ namespace uLearn.Web.Controllers
 				checking.CourseId,
 				checking.SlideId,
 				UserId = checking.UserId,
+				CheckQueueItemId = checking.Id,
 				SubmissionId = checking.Id,
 				Group = joinedGroupsIds,
 			});

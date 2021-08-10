@@ -140,6 +140,7 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
 							  to={ constructPathToSlide(courseId, slideId)
 							  + buildQuery({
+								  checkQueueItemId: check.submissionId,
 								  submissionId: check.submissionId,
 								  userId: check.userId,
 							  }) }>

@@ -37,4 +37,10 @@ export interface ReviewQueueItem {
 	isLocked: boolean;
 	submissionId: number;
 	userId: string;
+	type: QueueItemType;
+}
+
+enum QueueItemType {
+	Exercise,
+	Quiz,
 }
