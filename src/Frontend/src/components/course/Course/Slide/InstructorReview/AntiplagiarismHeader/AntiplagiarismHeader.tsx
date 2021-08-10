@@ -11,20 +11,25 @@ import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
 
 import styles from './AntiplagiarismHeader.less';
 import texts from './AntiplagiarismHeader.texts';
+import { Hint } from "@skbkontur/react-ui/index";
 
 
 export interface Props {
-	fixed: boolean;
 	status?: AntiPlagiarismStatusResponse;
-	onZeroScoreButtonPressed: () => void;
 	courseId?: string;
 	submissionId?: number;
+
+	fixed: boolean;
+	zeroButtonDisabled: boolean;
+
+	onZeroScoreButtonPressed: () => void;
 }
 
 function AntiplagiarismHeader({
 	status,
 	onZeroScoreButtonPressed,
 	fixed,
+	zeroButtonDisabled,
 	submissionId,
 	courseId,
 }: Props): React.ReactElement {
@@ -72,12 +77,15 @@ function AntiplagiarismHeader({
 					  to={ antiPlagiarismDetailsRoute + buildQuery({ courseId, submissionId }) }>
 					{ texts.antiPlagiarismDetailsLinkText }
 				</Link>
-				<Button
-					className={ styles.scoreZeroButton }
-					onClick={ onZeroScoreButtonPressed }
-					use={ 'danger' }>
-					{ texts.scoreZeroText }
-				</Button>
+				<Hint text={ zeroButtonDisabled ? texts.disabledZeroText : '' }>
+					<Button
+						disabled={ zeroButtonDisabled }
+						className={ styles.scoreZeroButton }
+						onClick={ onZeroScoreButtonPressed }
+						use={ 'danger' }>
+						{ texts.scoreZeroText }
+					</Button>
+				</Hint>
 			</> }
 		</div>
 	);

@@ -15,6 +15,7 @@ const texts = {
 	notCheckingText: `Эта задача не проверяется на списывание`,
 	errorText: `Нам не удалось проверить эту задачу`,
 	scoreZeroText: `Поставить 0 %`,
+	disabledZeroText: `Задача уже оценена на 0 %`,
 };
 
 export default texts;
