@@ -173,7 +173,8 @@ export const StudentModeSlide = ({
 export const LtiExerciseSlide = ({
 	slideBlocks,
 	slideError,
-}: SlideProps): React.ReactElement => {
+	slideContext,
+}: SlidePropsWithContext): React.ReactElement => {
 	if(slideError) {
 		return <p>{ slideError }</p>;
 	}
@@ -188,7 +189,7 @@ export const LtiExerciseSlide = ({
 		return <p>No exercise found</p>;
 	}
 
-	return <>{ BlocksRenderer.renderBlocks([exerciseSlideBlock]) }</>;
+	return <>{ BlocksRenderer.renderBlocks([exerciseSlideBlock], slideContext) }</>;
 };
 
 export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
@@ -214,10 +215,10 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 	return <InstructorReview
 		slideContext={ slideContext }
 		authorSolution={ authorSolution
-			? BlocksRenderer.renderBlocks(authorSolution)
+			? BlocksRenderer.renderBlocks(authorSolution, slideContext)
 			: undefined }
 		formulation={ formulation && formulation.length > 0
-			? BlocksRenderer.renderBlocks(formulation)
+			? BlocksRenderer.renderBlocks(formulation, slideContext)
 			: undefined }
 	/>;
 };
