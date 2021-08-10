@@ -46,6 +46,12 @@ namespace Ulearn.Web.Api.Controllers.Review
 				context.Result = NotFound(new ErrorResponse($"Submission {submissionId} not found"));
 				return;
 			}
+			
+			if (submission.ManualChecking == null)
+			{
+				context.Result = NotFound(new ErrorResponse($"Submission {submissionId} doesn't contain manual checking"));
+				return;
+			}
 
 			/* check below will return false if user is not sys admin and/or can't view student submission */
 			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
