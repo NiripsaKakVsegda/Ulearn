@@ -69,7 +69,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 				InitializeDirectoryIfNotYet();
 		}
 
-		protected void CopyStaticFilesToOlx()
+		protected void CopyStaticDirectoryFromCourseToolToOlx()
 		{
 			var staticDirectory = Path.Combine(Utils.GetAppPath(), "static"); // Статическая директоря проекта CourseTool
 			foreach(var file in Directory.GetFiles(staticDirectory))
