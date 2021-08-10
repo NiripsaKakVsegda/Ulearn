@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using JetBrains.Annotations;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Exercises;
@@ -28,6 +29,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			set => markdown = value.RemoveCommonNesting();
 		}
 
+		[CanBeNull] // null, если состоит их одного элемента. Тогда нужно использовать this 
 		public SlideBlock[] InnerBlocks { get; set; } // может содержать MarkdownBlock или CodeBlock
 
 		public MarkdownBlock(string markdown)

@@ -220,6 +220,14 @@ namespace Ulearn.Core.Courses.Slides
 				}).ToArray();
 			}
 
+			// MarkdownBlock имеет поле InnerBlocks, которое содержит MarkdownBlock или CodeBlock
+			visibleSlideBlocks = visibleSlideBlocks.SelectMany(b =>
+			{
+				if (b is MarkdownBlock mb && mb.InnerBlocks != null)
+					return mb.InnerBlocks;
+				return new[] { b };
+			}).ToArray();
+
 			while (componentIndex < visibleSlideBlocks.Length)
 			{
 				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock, склеиваются в один HtmlComponent
