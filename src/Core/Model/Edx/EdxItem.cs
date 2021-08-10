@@ -55,7 +55,8 @@ namespace Ulearn.Core.Model.Edx
 		{
 		}
 
-		public static TComponent Load<TComponent>(string folderName, string type, string urlName, EdxLoadOptions options, Action<TComponent> loadInner = null) where TComponent : EdxItem
+		public static TComponent Load<TComponent>(string folderName, string type, string urlName, EdxLoadOptions options,
+			Action<TComponent> loadInner = null, Func<TComponent> customDeserialize = null) where TComponent : EdxItem
 		{
 			try
 			{
@@ -72,7 +73,9 @@ namespace Ulearn.Core.Model.Edx
 				}
 				options.OnLoadExistingEdxItem?.Invoke(new FileInEdxCourse(type, urlName, "xml"));
 
-				var component = fileInfo.DeserializeXml<TComponent>();
+				var component = customDeserialize == null
+					? fileInfo.DeserializeXml<TComponent>()
+					: customDeserialize();
 				component.UrlName = urlName;
 				loadInner?.Invoke(component);
 				return component;
