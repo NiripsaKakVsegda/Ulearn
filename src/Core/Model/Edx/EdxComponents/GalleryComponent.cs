@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -36,11 +37,12 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 
 		public override void SaveAdditional(string folderName)
 		{
-			foreach (var (file, path) in Images)
-				File.Copy(file.FullName, $"{folderName}/static/{UrlName}_{path.Replace("/", "_")}", true);
+			string PathToEdxFileName(string path) => path.Replace("\\", "/").Replace("/", "_").Replace(" ", "_");
+			foreach (var (file, relativeToUnitDirectoryImagePath) in Images)
+				File.Copy(file.FullName, $"{folderName}/static/{UrlName}_{PathToEdxFileName(relativeToUnitDirectoryImagePath)}", true);
 			File.WriteAllText($"{folderName}/static/gallery_{UrlName}.html",
 				File.ReadAllText($"{Utils.GetRootDirectory()}/templates/gallery.html")
-					.Replace("{0}", string.Join("", Images.Select(t => "<li><img src='" + UrlName + "_" + t.RelativeToUnitDirectoryImagePath.Replace("/", "_") + "' alt=''/></li>"))));
+					.Replace("{0}", string.Join("", Images.Select(t => "<li><img src='" + UrlName + "_" + PathToEdxFileName(t.RelativeToUnitDirectoryImagePath) + "' alt=''/></li>"))));
 		}
 
 		public override EdxReference GetReference()
