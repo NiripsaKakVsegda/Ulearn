@@ -14,7 +14,6 @@ import { MatchParams } from "src/models/router";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { SubmissionInfo } from "src/models/exercise";
 import { getDataIfLoaded } from "src/redux";
-import { SubmissionsState } from "../../../redux/submissions";
 
 
 export interface SlideInfo {

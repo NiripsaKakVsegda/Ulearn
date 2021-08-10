@@ -3,11 +3,11 @@ import React from "react";
 import { BlocksWrapper, Exercise, Image, Spoiler, StaticCode, Text, Video } from "./Blocks";
 
 import { Block, BlockTypes } from "src/models/slide";
+import { SlideContext } from "./Slide.types";
 
 import cn from "classnames";
 
 import styles from './Slide.less';
-import { SlideContext } from "./Slide";
 
 export interface BlocksRenderContext {
 	[index: number]: BlockRenderContext;
