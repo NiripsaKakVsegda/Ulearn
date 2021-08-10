@@ -34,6 +34,7 @@ export interface SubmissionInfo {
 	timestamp: string;
 	automaticChecking: ExerciseAutomaticCheckingResponse | null; // null если задача не имеет автоматических тестов, это не отменяет возможности ревью.
 	manualCheckingPassed: boolean;
+	manualCheckingEnabled: boolean;
 	manualCheckingReviews: ReviewInfo[];
 }
 
