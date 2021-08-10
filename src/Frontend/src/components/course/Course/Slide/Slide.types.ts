@@ -9,7 +9,7 @@ export interface SlideContext {
 }
 
 export interface PropsFromRedux extends SlideProps {
-	showHiddenBlocks: boolean;
+	isStudentMode: boolean;
 }
 
 export interface SlideProps {

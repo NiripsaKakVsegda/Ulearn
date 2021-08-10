@@ -1,6 +1,7 @@
 import { RootState } from "src/redux/reducers";
 import { Dispatch } from "redux";
-import { loadSlide } from "src/actions/slides";;
+import { loadSlide } from "src/actions/slides";
+
 import { connect } from "react-redux";
 import Slide from "./Slide";
 import { DispatchFromRedux, PropsFromCourse, PropsFromRedux } from "./Slide.types";
@@ -14,7 +15,7 @@ const mapStateToProps = (state: RootState, { slideInfo, }: PropsFromCourse
 		slideLoading: !!slideLoading,
 		slideBlocks: [],
 		slideError,
-		showHiddenBlocks: !instructor.isStudentMode,
+		isStudentMode: instructor.isStudentMode && !slideInfo.isReview && !slideInfo.isLti,
 	};
 
 	const coursesSlides = slidesByCourses[slideInfo.courseId];

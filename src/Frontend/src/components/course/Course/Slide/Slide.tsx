@@ -43,7 +43,7 @@ class Slide extends React.Component<Props> {
 	render = (): React.ReactNode => {
 		const {
 			slideBlocks,
-			showHiddenBlocks,
+			isStudentMode,
 			slideInfo,
 			slideError,
 			slideLoading,
@@ -77,12 +77,13 @@ class Slide extends React.Component<Props> {
 			};
 		}
 
-		if(!showHiddenBlocks) {
+		if(isStudentMode) {
 			return <StudentModeSlide
 				{ ...slideProps }
 				isHiddenSlide={ slideInfo.navigationInfo?.current.hide }
 			/>;
 		}
+
 		if(isReview) {
 			return withLoaders(<ReviewSlide { ...slideProps }/>);
 		}
