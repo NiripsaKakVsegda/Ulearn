@@ -376,12 +376,12 @@ class Course extends Component<CourseProps, State> {
 		const { user, courseId, isStudentMode, slideInfo, } = this.props;
 		const { Page, title, openedUnit, } = this.state;
 
-		const { isNavigationVisible, isReview, } = slideInfo;
+		const { isNavigationVisible, isReview, isLti } = slideInfo;
 
 		const wrapperClassName = classnames(
 			styles.rootWrapper,
-			{ [styles.withoutNavigation]: !isNavigationVisible }, // TODO remove isNavMenuVisible flag
-			{ [styles.review]: isReview }, // TODO remove isNavMenuVisible flag
+			{ [styles.review]: isReview },
+			{ [styles.lti]: isLti },
 			{ [styles.forStudents]: isNavigationVisible && isStudentMode },
 		);
 
