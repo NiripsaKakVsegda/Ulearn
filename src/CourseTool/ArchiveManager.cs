@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 
@@ -14,7 +15,7 @@ namespace uLearn.CourseTool
 		public static void ExtractTar(string filename, string directory)
 		{
 			using (Stream inStream = File.OpenRead(filename))
-			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(inStream))
+			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(inStream, Encoding.UTF8))
 				tarArchive.ExtractContents(directory);
 		}
 
@@ -27,7 +28,7 @@ namespace uLearn.CourseTool
 		{
 			using (Stream inStream = File.OpenRead(filename))
 			using (Stream gzipStream = new GZipInputStream(inStream))
-			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream))
+			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8))
 				tarArchive.ExtractContents(directory);
 		}
 
@@ -41,7 +42,7 @@ namespace uLearn.CourseTool
 		{
 			using (FileStream fs = new FileStream(outputTarFilename, FileMode.Create, FileAccess.Write, FileShare.None))
 			using (Stream gzipStream = new GZipOutputStream(fs))
-			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(gzipStream))
+			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(gzipStream, Encoding.UTF8))
 				AddDirectoryFilesToTar(tarArchive, sourceDirectory, true);
 		}
 
