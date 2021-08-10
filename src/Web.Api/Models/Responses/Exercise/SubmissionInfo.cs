@@ -35,6 +35,9 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 		[DataMember]
 		public List<ReviewInfo> ManualCheckingReviews;
 
+		[DataMember]
+		public bool ManualCheckingEnabled;
+
 		public static SubmissionInfo Build(
 			UserExerciseSubmission submission,
 			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments,
@@ -56,10 +59,11 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 				Timestamp = submission.Timestamp,
 				AutomaticChecking = automaticChecking,
 				ManualCheckingPassed = submission.ManualChecking?.IsChecked ?? false,
-				ManualCheckingReviews =  manualCheckingReviews.Where(r => r.Author != null).ToList()
+				ManualCheckingReviews = manualCheckingReviews.Where(r => r.Author != null).ToList(),
+				ManualCheckingEnabled = submission.ManualChecking != null,
 			};
 		}
-		
+
 		private static ReviewInfo ToReviewInfo(ExerciseCodeReview r, bool isUlearnBot,
 			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments)
 		{
