@@ -129,7 +129,7 @@ namespace Ulearn.Core.Model.Edx
 				var count = root.ChildNodes.Count;
 				for (var i = 0; i < count; i++)
 					foreach (XmlElement childNode in root.ChildNodes)
-						if (childNode.Name == "chapter")
+						if (childNode.Name is "chapter" or "wiki")
 							root.RemoveChild(childNode);
 
 				foreach (var chapter in Chapters)
@@ -138,7 +138,12 @@ namespace Ulearn.Core.Model.Edx
 					elem.SetAttribute("url_name", chapter.UrlName);
 					root.AppendChild(elem);
 				}
-				//Console.WriteLine(doc.XmlSerialize());
+				foreach (var wiki in Wiki)
+				{
+					var elem = doc.CreateElement("wiki");
+					elem.SetAttribute("slug", wiki.Slug);
+					root.AppendChild(elem);
+				}
 
 				File.WriteAllText(courseFile, doc.XmlSerialize());
 				SaveAdditional(folderName);
