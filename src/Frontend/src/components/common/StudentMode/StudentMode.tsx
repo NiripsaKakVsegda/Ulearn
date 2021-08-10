@@ -6,6 +6,7 @@ import cn from "classnames";
 
 import { Toggle } from "ui";
 
+import { parseKnownQueryParams } from "../../course/Course/CourseUtils";
 import { studentModeToggleAction, } from "src/actions/instructor";
 
 import { MatchParams } from "src/models/router";
@@ -25,8 +26,9 @@ function StudentMode({ isStudentMode, setStudentMode, deviceType, containerClass
 	const refButton: RefObject<HTMLButtonElement> = React.createRef();
 	const refSpan: RefObject<HTMLSpanElement> = React.createRef();
 	const match = useRouteMatch<MatchParams>("/course/:courseId/:slideSlugOrAction");
+	const queryParams = parseKnownQueryParams(location.search);
 
-	if(!match?.params.slideSlugOrAction) {
+	if(!match?.params.slideSlugOrAction || queryParams.isLti || queryParams.submissionId) {
 		return null;
 	}
 
