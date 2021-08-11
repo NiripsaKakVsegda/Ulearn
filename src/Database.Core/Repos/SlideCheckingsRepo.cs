@@ -372,7 +372,7 @@ namespace Database.Repos
 		public async Task ProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId)
 		{
 			var checkings = await db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId && c.ProhibitFurtherManualCheckings)
+				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId && !c.ProhibitFurtherManualCheckings)
 				.ToListAsync();
 			if (checkings.Count == 0)
 				return;
@@ -383,7 +383,7 @@ namespace Database.Repos
 
 		public async Task ResetManualCheckingLimitsForUser(string courseId, string userId)
 		{
-			await DisableProhibitFurtherManualCheckings(courseId, userId);
+			await EnableFurtherManualCheckings(courseId, userId);
 			await NotCountOldAttemptsToQuizzesWithManualChecking(courseId, userId);
 		}
 
@@ -394,7 +394,7 @@ namespace Database.Repos
 				await visitsRepo.Value.UnskipAllSlides(courseId, userId);
 		}
 
-		public async Task DisableProhibitFurtherManualCheckings(string courseId, string userId, Guid? slideId = null)
+		public async Task EnableFurtherManualCheckings(string courseId, string userId, Guid? slideId = null)
 		{
 			var query = db.ManualExerciseCheckings
 				.Where(c => c.CourseId == courseId && c.UserId == userId && c.ProhibitFurtherManualCheckings);

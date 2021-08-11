@@ -207,7 +207,7 @@ namespace Ulearn.Web.Api.Controllers
 			if (prohibit)
 				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
 			else
-				await slideCheckingsRepo.DisableProhibitFurtherManualCheckings(courseId, userId, slideId);
+				await slideCheckingsRepo.EnableFurtherManualCheckings(courseId, userId, slideId);
 
 			return Ok($"{(prohibit ? "Prohibited" : "Enabled")} further exercise manual checking  for {courseId}/{slideId}");
 		}

@@ -37,7 +37,7 @@ namespace Database.Repos
 		Task ProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId);
 		Task ResetManualCheckingLimitsForUser(string courseId, string userId);
 		Task ResetAutomaticCheckingLimitsForUser(string courseId, string userId);
-		Task DisableProhibitFurtherManualCheckings(string courseId, string userId, Guid? slideId = null);
+		Task EnableFurtherManualCheckings(string courseId, string userId, Guid? slideId = null);
 		Task NotCountOldAttemptsToQuizzesWithManualChecking(string courseId, string userId);
 		Task NotCountOldAttemptsToQuizzesWithAutomaticChecking(string courseId, string userId);
 		Task<ExerciseCodeReview> AddExerciseCodeReview(ManualExerciseChecking checking, string userId, int startLine, int startPosition, int finishLine, int finishPosition, string comment, bool setAddingTime = true);
