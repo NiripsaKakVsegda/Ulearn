@@ -825,7 +825,7 @@ namespace ManualUtils
 				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
 				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
 				var courses = courseStorage.GetCourses().ToList();
-				
+
 				var updateDbCounter = 0;
 				var updateDbMaxCount = 1000;
 				var courseCounter = 0;
@@ -850,6 +850,9 @@ namespace ManualUtils
 
 						foreach (var instructorId in instructorIds)
 						{
+							if (!slideTopReviews.ContainsKey(instructorId))
+								continue;
+
 							var userTopReviews = slideTopReviews[instructorId]
 								.GroupBy(r => r.Comment)
 								.OrderByDescending(g => g.Count())
@@ -861,8 +864,7 @@ namespace ManualUtils
 							var favouriteReviewByText = new Dictionary<string, FavouriteReview>();
 							foreach (var review in userTopReviews)
 							{
-								var favouriteReview = favouriteReviewByText[review];
-								if (favouriteReview == null)
+								if (!favouriteReviewByText.TryGetValue(review, out var favouriteReview))
 								{
 									favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
 									favouriteReviewByText[review] = favouriteReview;
@@ -870,7 +872,14 @@ namespace ManualUtils
 									updateDbCounter++;
 								}
 
-								var favouriteReviewByUser = new FavouriteReviewByUser { CourseId = course.Id, SlideId = slide.Id, UserId = instructorId, Timestamp = DateTime.Now, FavouriteReview = favouriteReview, };
+								var favouriteReviewByUser = new FavouriteReviewByUser
+								{
+									CourseId = course.Id,
+									SlideId = slide.Id,
+									UserId = instructorId,
+									Timestamp = DateTime.Now,
+									FavouriteReview = favouriteReview,
+								};
 								db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
 								updateDbCounter++;
 
