@@ -834,7 +834,7 @@ namespace ManualUtils
 				{
 					courseCounter++;
 					Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
-					var slides = course.GetSlides(false, null);
+					var slides = course.GetSlidesNotSafe();
 					var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
 					var slideCounter = 0;
 					foreach (var slide in slides)
