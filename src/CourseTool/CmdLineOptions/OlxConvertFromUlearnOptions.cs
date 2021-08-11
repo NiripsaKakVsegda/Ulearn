@@ -52,7 +52,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 				profile.UlearnBaseUrlWeb,
 				CourseDirectory).Save(WorkingDirectory + "/olx");
 
-			CopyStaticFilesToOlx();
+			CopyStaticDirectoryFromCourseToolToOlx();
 
 			EdxInteraction.CreateEdxCourseArchive(WorkingDirectory, course.Id);
 

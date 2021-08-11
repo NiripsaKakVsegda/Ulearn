@@ -16,74 +16,11 @@ namespace Ulearn.Core.Model.Edx
 		[XmlAttribute("advanced_modules")]
 		public string AdvancedModules;
 
-		[XmlAttribute("advertised_start")]
-		public string AdvertisedStart;
-
-		[XmlAttribute("allow_anonymous")]
-		public bool AllowAnonymous;
-
-		[XmlAttribute("allow_proctoring_opt_out")]
-		public bool AllowProctoringOptOut;
-
-		[XmlAttribute("available_proctoring_services")]
-		public string AvailableProctoringServices;
-
-		[XmlAttribute("cert_html_view_enabled")]
-		public string CertHtmlViewEnabled;
-
-		[XmlAttribute("days_early_for_beta")]
-		public string DaysEarlyForBeta;
-
-		[XmlAttribute("due_date_display_format")]
-		public string DueDateDisplayFormat;
-
-		[XmlAttribute("enable_proctored_exams")]
-		public bool EnableProctoredExams;
-
-		[XmlAttribute("enable_subsection_gating")]
-		public bool EnableSubsectionGating;
-
-		[XmlAttribute("enable_timed_exams")]
-		public bool EnableTimedExams;
-
-		[XmlAttribute("end")]
-		public string End;
-
-		[XmlAttribute("enrollment_end")]
-		public string EnrollmentEnd;
-
-		[XmlAttribute("enrollment_start")]
-		public string EnrollmentStart;
-
-		[XmlAttribute("graceperiod")]
-		public string Graceperiod;
-
-		[XmlAttribute("instructor_info")]
-		public string InstructorInfo;
-
-		[XmlAttribute("language")]
-		public string Language;
-
-		[XmlAttribute("learning_info")]
-		public string LearningInfo;
-
 		[XmlAttribute("lti_passports")]
 		public string LtiPassports;
 
-		[XmlAttribute("minimum_grade_credit")]
-		public string MinimumGradeCredit;
-
-		[XmlAttribute("start")]
-		public string Start;
-
 		[XmlAttribute("use_latex_compiler")]
 		public bool UseLatexCompiler;
-
-		[XmlAttribute("user_partitions")]
-		public string UserPartitions;
-
-		[XmlAttribute("video_upload_pipeline")]
-		public string VideoUploadPipeline;
 
 		[XmlElement("chapter", Order = 1)]
 		public ChapterReference[] ChapterReferences
@@ -116,7 +53,7 @@ namespace Ulearn.Core.Model.Edx
 			ChapterReferences = chapters.Select(x => x.GetReference()).ToArray();
 		}
 
-		public override void Save(string folderName)
+		public override void Save(string folderName, bool withAdditionals)
 		{
 			var courseFile = $"{folderName}/{SubfolderName}/{UrlName}.xml";
 			if (File.Exists(courseFile))
@@ -129,7 +66,7 @@ namespace Ulearn.Core.Model.Edx
 				var count = root.ChildNodes.Count;
 				for (var i = 0; i < count; i++)
 					foreach (XmlElement childNode in root.ChildNodes)
-						if (childNode.Name == "chapter")
+						if (childNode.Name is "chapter" or "wiki")
 							root.RemoveChild(childNode);
 
 				foreach (var chapter in Chapters)
@@ -138,13 +75,19 @@ namespace Ulearn.Core.Model.Edx
 					elem.SetAttribute("url_name", chapter.UrlName);
 					root.AppendChild(elem);
 				}
-				//Console.WriteLine(doc.XmlSerialize());
+				foreach (var wiki in Wiki.EmptyIfNull())
+				{
+					var elem = doc.CreateElement("wiki");
+					elem.SetAttribute("slug", wiki.Slug);
+					root.AppendChild(elem);
+				}
 
 				File.WriteAllText(courseFile, doc.XmlSerialize());
-				SaveAdditional(folderName);
+				if (withAdditionals)
+					SaveAdditional(folderName);
 			}
 			else
-				base.Save(folderName);
+				base.Save(folderName, withAdditionals);
 		}
 
 		public override void SaveAdditional(string folderName)

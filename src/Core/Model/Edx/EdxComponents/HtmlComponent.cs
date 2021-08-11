@@ -61,9 +61,14 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 			if (Subcomponents != null)
 				foreach (var subcomponent in Subcomponents)
 					subcomponent.SaveAdditional(folderName);
+			SaveStaticFiles(folderName, StaticFiles);
+		}
+
+		private static void SaveStaticFiles(string folderName, List<StaticFileForEdx> staticFiles)
+		{
 			try
 			{
-				foreach (var (file, edxFileName) in StaticFiles.EmptyIfNull())
+				foreach (var (file, edxFileName) in staticFiles.EmptyIfNull())
 					File.Copy(file.FullName, $"{folderName}/static/{edxFileName}", overwrite: true);
 			}
 			catch (Exception e)

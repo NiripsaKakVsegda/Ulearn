@@ -27,7 +27,7 @@ namespace Ulearn.Core.Model.Edx
 			Save(folderName, true);
 		}
 
-		public void Save(string folderName, bool withAdditionals)
+		public virtual void Save(string folderName, bool withAdditionals)
 		{
 			var path = Path.Combine(folderName, SubfolderName);
 			if (!Directory.Exists(path))
@@ -55,7 +55,8 @@ namespace Ulearn.Core.Model.Edx
 		{
 		}
 
-		public static TComponent Load<TComponent>(string folderName, string type, string urlName, EdxLoadOptions options, Action<TComponent> loadInner = null) where TComponent : EdxItem
+		public static TComponent Load<TComponent>(string folderName, string type, string urlName, EdxLoadOptions options,
+			Action<TComponent> loadInner = null, Func<TComponent> customDeserialize = null) where TComponent : EdxItem
 		{
 			try
 			{
@@ -70,8 +71,11 @@ namespace Ulearn.Core.Model.Edx
 						return null;
 					}
 				}
+				options.OnLoadExistingEdxItem?.Invoke(new FileInEdxCourse(type, urlName, "xml"));
 
-				var component = fileInfo.DeserializeXml<TComponent>();
+				var component = customDeserialize == null
+					? fileInfo.DeserializeXml<TComponent>()
+					: customDeserialize();
 				component.UrlName = urlName;
 				loadInner?.Invoke(component);
 				return component;

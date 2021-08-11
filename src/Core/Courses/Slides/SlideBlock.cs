@@ -22,8 +22,6 @@ namespace Ulearn.Core.Courses.Slides
 			yield return this;
 		}
 
-		public abstract Component ToEdxComponent(EdxComponentBuilderContext context);
-
 		public virtual string TryGetText()
 		{
 			return null;

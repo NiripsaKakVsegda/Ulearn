@@ -10,11 +10,13 @@ using Ulearn.Core.Model.Edx.EdxComponents;
 namespace Ulearn.Core.Model.Edx
 {
 	public delegate void NonExistentItemHandler(string type, string urlName);
+	public record FileInEdxCourse(string Directory, string FileName, string Extension); // Строки в record сравниваются по значению
 
 	public class EdxLoadOptions
 	{
 		public bool FailOnNonExistingItem = true;
 		public NonExistentItemHandler HandleNonExistentItemTypeName;
+		public Action<FileInEdxCourse> OnLoadExistingEdxItem; // Соответствует загруженным xml файлам
 	}
 
 	[XmlRoot("course")]
@@ -93,8 +95,7 @@ namespace Ulearn.Core.Model.Edx
 				chapters.Add(newChapter);
 				CourseWithChapters.Chapters = chapters.ToArray();
 				CourseWithChapters.ChapterReferences = CourseWithChapters.Chapters.Select(x => new ChapterReference { UrlName = x.UrlName }).ToArray();
-
-				File.WriteAllText(string.Format("{0}/course/{1}.xml", folderName, CourseWithChapters.UrlName), CourseWithChapters.XmlSerialize());
+				CourseWithChapters.Save(folderName, false);
 				newChapter.Save(folderName);
 			}
 			else

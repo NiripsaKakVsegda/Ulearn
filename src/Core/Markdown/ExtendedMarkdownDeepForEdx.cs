@@ -20,7 +20,7 @@ namespace Ulearn.Core.Markdown
 
 		protected override string GetLinkToFile(string pathFromUnit)
 		{
-			var edxFileName = Path.Combine(context.UnitDirectoryRelativeToCourse, pathFromUnit).Replace("\\", "/").Replace("/", "_");
+			var edxFileName = Path.Combine(context.UnitDirectoryRelativeToCourse, pathFromUnit).Replace("\\", "/").Replace("/", "_").Replace(" ", "_");
 			var path = Path.Combine(courseDirectory.FullName, context.UnitDirectoryRelativeToCourse, pathFromUnit);
 			var file = new FileInfo(path);
 			OnStaticFile?.Invoke(new StaticFileForEdx(file, edxFileName));

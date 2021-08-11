@@ -33,7 +33,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 				guids != null || !SkipExistingGuids
 			);
 
-			CopyStaticFilesToOlx();
+			CopyStaticDirectoryFromCourseToolToOlx();
 		}
 	}
 }

@@ -49,4 +49,12 @@ namespace Ulearn.Core.Model.Edx
 			return VideoComponent.Load(folderName, urlName, options);
 		}
 	}
+
+	public class ProblemComponentReference : EdxReference
+	{
+		public override Component LoadComponent(string folderName, string urlName, EdxLoadOptions options)
+		{
+			return ProblemComponent.Load(folderName, urlName, options);
+		}
+	}
 }

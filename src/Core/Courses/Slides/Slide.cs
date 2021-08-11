@@ -220,6 +220,19 @@ namespace Ulearn.Core.Courses.Slides
 				}).ToArray();
 			}
 
+			var staticFilesFromMarkdown = new List<StaticFileForEdx>();
+			visibleSlideBlocks = visibleSlideBlocks.SelectMany(b =>
+			{
+				if (b is MarkdownBlock mb)
+				{
+					var (blocks, staticFiles)
+						= mb.ToHtmlAndCodeBlocks(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide, context.CourseDirectory);
+					staticFilesFromMarkdown.AddRange(staticFiles);
+					return blocks;
+				}
+				return new List<SlideBlock> { b };
+			}).ToArray();
+
 			while (componentIndex < visibleSlideBlocks.Length)
 			{
 				// Соседние блоки, кроме YoutubeBlock и AbstractExerciseBlock, склеиваются в один HtmlComponent
@@ -229,12 +242,12 @@ namespace Ulearn.Core.Courses.Slides
 					var innerComponents = new List<Component>();
 					foreach (var block in blocks)
 					{
-						try
+						if (block is IConvertibleToEdx convertibleBlock)
 						{
-							var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
+							var component = convertibleBlock.ToEdxComponent(context with { ComponentIndex = componentIndex });
 							innerComponents.Add(component);
 						}
-						catch (NotSupportedException ex)
+						else
 						{
 							Console.WriteLine($"Slide {slide.Id} {block.GetType().Name} block NotSupportedException");
 						}
@@ -253,8 +266,10 @@ namespace Ulearn.Core.Courses.Slides
 							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в html
 							Filename = slide.NormalizedGuid + componentIndex,
 							HtmlContent = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
-							Subcomponents = innerComponents.ToArray()
+							Subcomponents = innerComponents.ToArray(),
+							StaticFiles = staticFilesFromMarkdown
 						};
+						staticFilesFromMarkdown = null; // Сохраняем один раз
 						components.Add(slideComponent);
 						componentIndex++;
 					}
@@ -268,9 +283,9 @@ namespace Ulearn.Core.Courses.Slides
 					var exerciseComponent = ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId);
 					components.Add(exerciseComponent);
 				}
-				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
+				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock youtubeBlock)
 				{
-					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
+					var videoComponent = youtubeBlock.ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
 					components.Add(videoComponent);
 				}
 				componentIndex++;

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Xml.Serialization;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -12,7 +11,7 @@ using Component = Ulearn.Core.Model.Edx.EdxComponents.Component;
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
 	[XmlType("code")]
-	public class CodeBlock : SlideBlock
+	public class CodeBlock : SlideBlock, IConvertibleToEdx
 	{
 		private string code;
 
@@ -66,7 +65,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			yield return this;
 		}
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
+		public Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
 			Debug.Assert(Language != null, nameof(Language) + " != null");
