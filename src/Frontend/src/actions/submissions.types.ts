@@ -16,6 +16,7 @@ import { SubmissionsResponse } from "../models/instructor";
 const submissions = "SUBMISSIONS";
 const reviews = "REVIEWS";
 const comment = "_COMMENT";
+const enableManualChecking = "_ENABLE_MANUAL_CHECKING";
 const score = "_SCORE";
 
 const reviewsAdd = reviews + ADD;
@@ -31,6 +32,9 @@ export const SUBMISSIONS_ADD_SUBMISSION = submissions + ADD + "_SUBMISSION";
 export const SUBMISSIONS_LOAD_START = submissions + loadStart;
 export const SUBMISSIONS_LOAD_SUCCESS = submissions + loadSuccess;
 export const SUBMISSIONS_LOAD_FAIL = submissions + loadFail;
+
+export const SUBMISSIONS_ENABLE_MANUAL_CHECKING_START = submissions + enableManualChecking + START;
+export const SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL = submissions + enableManualChecking + FAIL;
 
 export const REVIEWS_ADD_START = reviewsAdd + START;
 export const REVIEWS_ADD_SUCCESS = reviewsAdd + SUCCESS;
@@ -79,12 +83,21 @@ export interface SubmissionsLoadSuccessAction {
 	response: SubmissionsResponse;
 }
 
-export interface SubmissionsLoadFailAction {
+export interface SubmissionsLoadFailAction extends FailAction {
 	type: typeof SUBMISSIONS_LOAD_FAIL;
 	userId: string;
 	courseId: string;
 	slideId: string;
-	error: string;
+}
+
+export interface SubmissionsEnableManualCheckingStartAction {
+	type: typeof SUBMISSIONS_ENABLE_MANUAL_CHECKING_START;
+	submissionId: number;
+}
+
+export interface SubmissionsEnableManualCheckingFailAction extends FailAction {
+	type: typeof SUBMISSIONS_ENABLE_MANUAL_CHECKING_START;
+	submissionId: number;
 }
 
 export interface ReviewsAddCommentStartAction {
@@ -212,6 +225,9 @@ export type SubmissionsAction =
 	| SubmissionsLoadStartAction
 	| SubmissionsLoadSuccessAction
 	| SubmissionsLoadFailAction
+
+	| SubmissionsEnableManualCheckingStartAction
+	| SubmissionsEnableManualCheckingFailAction
 
 	| ReviewsAddScoreStartAction
 	| ReviewsAddScoreFailAction

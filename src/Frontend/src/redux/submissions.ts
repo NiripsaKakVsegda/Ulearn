@@ -50,6 +50,11 @@ import {
 	ReviewsDeleteStartAction,
 	ReviewsDeleteSuccessAction,
 	ReviewsDeleteFailAction,
+
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_START,
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
+	SubmissionsEnableManualCheckingStartAction,
+	SubmissionsEnableManualCheckingFailAction,
 } from 'src/actions/submissions.types';
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse, } from "src/models/exercise";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
@@ -275,6 +280,35 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			return {
 				...state,
 				submissionError: error,
+			};
+		}
+
+		case SUBMISSIONS_ENABLE_MANUAL_CHECKING_START: {
+			const { submissionId, } = action as SubmissionsEnableManualCheckingStartAction;
+
+			return {
+				...state,
+				submissionsById: {
+					...state.submissionsById,
+					[submissionId]: {
+						...state.submissionsById[submissionId],
+						manualCheckingEnabled: true,
+					}
+				}
+			};
+		}
+		case SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL: {
+			const { submissionId, error, } = action as SubmissionsEnableManualCheckingFailAction;
+
+			return {
+				...state,
+				submissionsById: {
+					...state.submissionsById,
+					[submissionId]: {
+						...state.submissionsById[submissionId],
+						manualCheckingEnabled: false,
+					}
+				}
 			};
 		}
 

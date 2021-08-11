@@ -1,6 +1,6 @@
 import React from "react";
 
-import { FLAT_THEME, Select, Tabs, ThemeContext, Toggle } from "ui";
+import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toggle } from "ui";
 import { UnControlled, } from "react-codemirror2";
 
 import Review from "../Blocks/Exercise/Review";
@@ -43,7 +43,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	constructor(props: Props) {
 		super(props);
-		const { studentSubmissions, favouriteReviews, scoresBySubmissionId, } = props;
+		const { studentSubmissions, favouriteReviews, scoresBySubmissionId, slideContext, } = props;
 
 		let currentSubmission: SubmissionInfo | undefined = undefined;
 		let diffInfo: DiffInfo | undefined = undefined;
@@ -58,7 +58,9 @@ class InstructorReview extends React.Component<Props, State> {
 		const favouriteByUserSet = new Set(favReviewsByUser?.map(r => r.text));
 
 		if(studentSubmissions && scoresBySubmissionId) {
-			const submissionInfo = this.getSubmissionInfo(studentSubmissions, 0);
+			const index = Math.max(
+				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
+			const submissionInfo = this.getSubmissionInfo(studentSubmissions, index);
 			currentSubmission = submissionInfo.submission;
 			diffInfo = submissionInfo.diffInfo;
 
@@ -156,12 +158,14 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		if(!antiPlagiarismStatus && !antiPlagiarismStatusLoading && studentSubmissions && studentSubmissions.length > 0){
+		if(!antiPlagiarismStatus && !antiPlagiarismStatusLoading && studentSubmissions && studentSubmissions.length > 0) {
 			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
 		}
 
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
-			this.loadSubmission(studentSubmissions, 0);
+			const index = Math.max(
+				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
+			this.loadSubmission(studentSubmissions, index);
 			return;
 		}
 
@@ -256,7 +260,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	resetMarkers = (): void => {
 		const {
-			markers,
 			editor,
 			diffInfo,
 			showDiff,
@@ -266,9 +269,10 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		Object.values(markers)
-			?.forEach((markers: TextMarker[]) => markers
-				.forEach((m: TextMarker) => m.clear()));
+		editor
+			.getAllMarks()
+			.forEach((m: TextMarker) => m.clear());
+		editor.refresh();
 
 		this.addMarkers();
 		if(showDiff && diffInfo) {
@@ -279,7 +283,10 @@ class InstructorReview extends React.Component<Props, State> {
 	addLineClasses = (editor: Editor, diffInfo: DiffInfo,): void => {
 		//addding a line class via addLineClass triggers rerender on each method call, it cause perfomance issues
 		//instead of it we can add class directly to line wrappers
-		const linesWrapper = editor.getWrapperElement().getElementsByClassName('CodeMirror-code')[0];
+		const linesWrapper = editor
+			.getWrapperElement()
+			.getElementsByClassName('CodeMirror-code')
+			?.[0];
 		for (let i = 0; i < diffInfo.diffByBlocks.length; i++) {
 			const { type, } = diffInfo.diffByBlocks[i];
 			if(type) {
@@ -431,38 +438,75 @@ class InstructorReview extends React.Component<Props, State> {
 		const {
 			currentSubmission,
 			diffInfo,
+			showDiff,
 		} = this.state;
 
-		if(!favouriteReviews || !currentSubmission || !studentSubmissions) {
+		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !scoresBySubmissionId) {
 			return null;
 		}
-		const lastSubmissionId = studentSubmissions[0].id;
-		const isNewReview = currentSubmission.id === lastSubmissionId;
+		const isNewSubmission = currentSubmission.id === studentSubmissions[0].id;
+		const lastSubmissionId = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
+		const isLastCheckedSubmission = currentSubmission.id === lastSubmissionId;
+		const isEditable = isNewSubmission || isLastCheckedSubmission;
 
 		return (
-			<BlocksWrapper>
-				{ this.renderTopControls() }
-				<StickyWrapper
-					stickerClass={ styles.wrapperStickerStopper }
-					renderSticker={ this.renderHeader }
-					renderContent={ this.renderEditor }
-				/>
+			<BlocksWrapper withoutBottomPaddings>
+				{ this.renderTopControls(isEditable) }
+				{
+					!isEditable
+						?
+						<div className={ styles.wrapper }>
+							<UnControlled
+								className={ styles.editor }
+								editorDidMount={ this.onEditorMount }
+								options={ this.getEditorOptions(currentSubmission.language) }
+								value={ diffInfo && showDiff
+									? diffInfo.code
+									: currentSubmission.code
+								}
+							/>
+						</div>
+						:
+						<StickyWrapper
+							stickerClass={ styles.wrapperStickerStopper }
+							renderSticker={ this.renderHeader }
+							renderContent={ this.renderEditor }
+						/>
+				}
+				{ (isNewSubmission || isLastCheckedSubmission || scoresBySubmissionId[currentSubmission.id]) &&
 				<ScoreControls
-					scoreSaved={ isNewReview && scoresBySubmissionId && !!scoresBySubmissionId[currentSubmission.id] }
-					isCurReviewNew={ isNewReview }
-					curReviewDate={ !isNewReview ? currentSubmission.timestamp : undefined }
-					curReviewScore={ scoresBySubmissionId ? scoresBySubmissionId[currentSubmission.id] : undefined }
-					prevReviewScore={ isNewReview && scoresBySubmissionId && diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
+					date={ !isNewSubmission ? currentSubmission.timestamp : undefined }
+					score={ scoresBySubmissionId[currentSubmission.id] }
+					prevReviewScore={ diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
 					exerciseTitle={ slideContext.title }
 					onSubmit={ this.onScoreButtonPressed }
 					onToggleChange={ this.prohibitFurtherReview }
-					toggleChecked={ prohibitFurtherManualChecking }
-				/>
+					toggleChecked={ !prohibitFurtherManualChecking }
+				/> }
+				{ !currentSubmission.manualCheckingEnabled && currentSubmission.id === studentSubmissions[0].id && <>
+					<p> { texts.submissionAfterDisablingManualChecking } </p>
+					<Button
+						use={ 'primary' }
+						onClick={ this.enableManualChecking }>
+						{ texts.enableManualChecking }
+					</Button>
+				</> }
 			</BlocksWrapper>
 		);
 	}
 
-	prohibitFurtherReview = (prohibit: boolean): void => {
+	enableManualChecking = (): void => {
+		const { currentSubmission } = this.state;
+		const { enableManualChecking, } = this.props;
+
+		if(!currentSubmission) {
+			return;
+		}
+
+		enableManualChecking(currentSubmission.id);
+	};
+
+	prohibitFurtherReview = (enabled: boolean): void => {
 		const {
 			prohibitFurtherReview,
 			slideContext,
@@ -473,7 +517,7 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, prohibit);
+		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, !enabled);
 	};
 
 	onScoreButtonPressed = (score: number): void => {
@@ -515,14 +559,16 @@ class InstructorReview extends React.Component<Props, State> {
 		addReview(currentSubmission.id, this.shameComment, 0, 0, 0, 1).then(r => this.highlightReview(r.id));
 	};
 
-	renderTopControls(): React.ReactElement {
+	renderTopControls(commentsEnabled = true): React.ReactElement {
 		const { showDiff, diffInfo, } = this.state;
 
 		return (
 			<div className={ styles.topControlsWrapper }>
 				{ this.renderSubmissionsSelect() }
 				{ diffInfo &&
-				<Toggle onValueChange={ this.onDiffToggleValueChanged } checked={ showDiff }>
+				<Toggle
+					onValueChange={ this.onDiffToggleValueChanged }
+					checked={ showDiff }>
 					{ texts.getDiffText(
 						diffInfo.addedLinesCount,
 						styles.diffAddedLinesTextColor,
@@ -530,20 +576,31 @@ class InstructorReview extends React.Component<Props, State> {
 						styles.diffRemovedLinesTextColor)
 					}
 				</Toggle> }
-				<span className={ styles.leaveCommentGuideText }>{ texts.leaveCommentGuideText }</span>
+				{ commentsEnabled &&
+				<span className={ styles.leaveCommentGuideText }>{ texts.leaveCommentGuideText }</span> }
 			</div>
 
 		);
 	}
 
-	renderHeader = (fixed: boolean,): React.ReactElement =>
-		<AntiplagiarismHeader
-			courseId={ this.props.slideContext.courseId }
-			submissionId={ this.props.studentSubmissions?.[0].id }
-			status={ this.props.antiPlagiarismStatus }
+	renderHeader = (fixed: boolean,): React.ReactElement => {
+		const {
+			studentSubmissions,
+			scoresBySubmissionId,
+			antiPlagiarismStatus,
+			slideContext: { courseId, },
+		} = this.props;
+		const submissionId = studentSubmissions?.[0].id;
+
+		return (<AntiplagiarismHeader
+			zeroButtonDisabled={ submissionId && !!scoresBySubmissionId?.[submissionId] || false }
+			courseId={ courseId }
+			submissionId={ submissionId }
+			status={ antiPlagiarismStatus }
 			fixed={ fixed }
 			onZeroScoreButtonPressed={ this.onZeroScoreButtonPressed }
-		/>;
+		/>);
+	};
 
 	renderEditor = (): React.ReactNode => {
 		const {
@@ -738,7 +795,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	renderSubmissionsSelect = (): React.ReactNode => {
 		const { currentSubmission } = this.state;
-		const { studentSubmissions, } = this.props;
+		const { studentSubmissions, prohibitFurtherManualChecking } = this.props;
 
 		if(!studentSubmissions || !currentSubmission) {
 			return null;
@@ -750,7 +807,7 @@ class InstructorReview extends React.Component<Props, State> {
 				texts.getSubmissionCaption(
 					submission,
 					index === 0,
-					index === 0)
+					!prohibitFurtherManualChecking && submission.manualCheckingEnabled)
 			]))
 		];
 

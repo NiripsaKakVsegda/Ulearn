@@ -10,19 +10,19 @@ const defaultScores = ['0', '25', '50', '75', '100'];
 export interface Props {
 	scores?: string[];
 	exerciseTitle: string;
+
 	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100;
-	curReviewScore?: number | 0 | 25 | 50 | 75 | 100;
-	curReviewDate?: string;
-	isCurReviewNew?: boolean;
+	score?: number | 0 | 25 | 50 | 75 | 100;
+	date?: string;
+
 	toggleChecked: boolean;
-	scoreSaved?: boolean;
 
 	onSubmit: (score: number) => void;
 	onToggleChange: (value: boolean) => void;
 }
 
 interface State {
-	score?: number;
+	curScore?: number;
 	scoreSaved: boolean;
 	toggleChecked: boolean;
 }
@@ -31,26 +31,25 @@ class ScoreControls extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		const {
-			curReviewScore,
+			score,
 			toggleChecked,
-			scoreSaved
 		} = this.props;
 
 		this.state = {
-			score: curReviewScore,
-			scoreSaved: scoreSaved || false,
+			curScore: score,
+			scoreSaved: !!score,
 			toggleChecked: toggleChecked,
 		};
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>): void {
-		const { curReviewScore, toggleChecked } = this.props;
+		const { score, toggleChecked } = this.props;
 
-		if(prevProps.curReviewScore !== curReviewScore) {
+		if(prevProps.score !== score) {
 			this.setState({
 				toggleChecked,
-				score: curReviewScore,
-				scoreSaved: curReviewScore !== undefined,
+				curScore: score,
+				scoreSaved: score !== undefined,
 			});
 		}
 
@@ -66,38 +65,32 @@ class ScoreControls extends React.Component<Props, State> {
 			scores = defaultScores,
 			exerciseTitle,
 			prevReviewScore,
-			isCurReviewNew,
-			curReviewDate,
-			curReviewScore,
+			date,
 		} = this.props;
 		const {
 			scoreSaved,
-			score,
+			curScore,
 			toggleChecked,
 		} = this.state;
 
-		if(!isCurReviewNew && !curReviewScore) {
-			return null;
-		}
-
 		return (
 			<Gapped gap={ 24 } vertical>
-				{ scoreSaved && score !== undefined
-					? this.renderControlsAfterSubmit(score, isCurReviewNew, curReviewDate,)
-					: this.renderControls(scores, score, prevReviewScore)
+				{ scoreSaved && curScore !== undefined
+					? this.renderControlsAfterSubmit(curScore, date,)
+					: this.renderControls(scores, curScore, prevReviewScore)
 				}
-				{ isCurReviewNew && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle,) }
+				{ !date && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle,) }
 			</Gapped>
 		);
 	}
 
-	renderControlsAfterSubmit = (score: number, isCurReviewNew?: boolean, date?: string,): React.ReactElement => {
+	renderControlsAfterSubmit = (score: number, date?: string,): React.ReactElement => {
 		return (
 			<Gapped gap={ 16 } vertical={ false }>
 				<span className={ styles.successLabel }>
-					{ texts.getScoreText(score, !isCurReviewNew ? date : undefined) }
+					{ texts.getScoreText(score, date) }
 				</span>
-				{ isCurReviewNew && <Button
+				{ !date && <Button
 					size={ "medium" }
 					use={ "link" }
 					onClick={ this.resetScore }
@@ -197,7 +190,7 @@ class ScoreControls extends React.Component<Props, State> {
 
 	onValueChange = (score: string): void => {
 		this.setState({
-			score: parseInt(score),
+			curScore: parseInt(score),
 		});
 	};
 
@@ -210,13 +203,13 @@ class ScoreControls extends React.Component<Props, State> {
 
 	onSubmitClick = (): void => {
 		const {
-			score,
+			curScore,
 		} = this.state;
 		const {
 			onSubmit,
 		} = this.props;
-		if(score !== undefined) {
-			onSubmit(score);
+		if(curScore !== undefined) {
+			onSubmit(curScore);
 		}
 		this.setState({
 			scoreSaved: true,

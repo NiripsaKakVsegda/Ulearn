@@ -43,10 +43,16 @@ import {
 	ReviewsDeleteCommentStartAction,
 	ReviewsDeleteCommentSuccessAction,
 	ReviewsDeleteCommentFailAction,
-	ReviewsAddScoreStartAction,
+
 	REVIEWS_ADD_SCORE_START,
-	ReviewsAddScoreFailAction,
 	REVIEWS_ADD_SCORE_FAIL,
+	ReviewsAddScoreStartAction,
+	ReviewsAddScoreFailAction,
+
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_START,
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
+	SubmissionsEnableManualCheckingStartAction,
+	SubmissionsEnableManualCheckingFailAction,
 } from "./submissions.types";
 import { SubmissionsResponse } from "../models/instructor";
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse } from "../models/exercise";
@@ -96,6 +102,21 @@ export const submissionsLoadFailAction = (
 	userId,
 	courseId,
 	slideId,
+	error,
+});
+
+export const submissionsEnableManualCheckingStartAction = (
+	submissionId: number,
+): SubmissionsEnableManualCheckingStartAction => ({
+	type: SUBMISSIONS_ENABLE_MANUAL_CHECKING_START,
+	submissionId,
+});
+export const submissionsEnableManualCheckingFailAction = (
+	submissionId: number,
+	error: string,
+): SubmissionsEnableManualCheckingFailAction => ({
+	type: SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
+	submissionId,
 	error,
 });
 

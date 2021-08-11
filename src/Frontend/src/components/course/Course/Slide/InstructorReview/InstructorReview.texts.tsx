@@ -57,6 +57,9 @@ const texts = {
 			'строк') } добавили</span>,
 		<span className={ removedColor }> { removedCount } – удалили</span>
 	</>,
+
+	submissionAfterDisablingManualChecking: 'Это решение было послано после отключения код-ревью',
+	enableManualChecking: 'Возобновить код-ревью',
 };
 
 export default texts;

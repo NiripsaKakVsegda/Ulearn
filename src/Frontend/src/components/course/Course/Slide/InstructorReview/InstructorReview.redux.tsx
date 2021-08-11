@@ -112,6 +112,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			api.favouriteReviews.redux.getFavouriteReviews(courseId, slideId,)(dispatch),
 		getStudentGroups: (courseId: string, userId: string,) =>
 			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch),
+		enableManualChecking: (submissionId: number,) =>
+			api.submissions.redux.enableManualChecking(submissionId)(dispatch),
 	};
 };
 

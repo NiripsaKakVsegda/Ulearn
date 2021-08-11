@@ -59,6 +59,7 @@ export interface ApiFromRedux {
 	addReviewComment: (submissionId: number, reviewId: number,
 		comment: string
 	) => Promise<ReviewCommentResponse | string>;
+	enableManualChecking: (submissionId: number,) => Promise<Response | string>;
 	deleteReview: (submissionId: number, reviewId: number) => Promise<Response>;
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => Promise<Response>;
 	editReviewOrComment: (submissionId: number, reviewId: number,

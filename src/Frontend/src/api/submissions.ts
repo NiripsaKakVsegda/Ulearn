@@ -40,6 +40,9 @@ import {
 
 	reviewsAddScoreStart,
 	reviewsAddScoreFail,
+
+	submissionsEnableManualCheckingStartAction,
+	submissionsEnableManualCheckingFailAction,
 } from "../actions/submissions";
 
 import { reviews, submissions } from "../consts/routes";
@@ -111,6 +114,13 @@ export function deleteReview(
 ): Promise<Response> {
 	const url = reviews + buildQuery({ submissionId, reviewId, });
 	return api.delete(url);
+}
+
+export function enableManualChecking(
+	submissionId: number,
+): Promise<Response> {
+	const url = `${ submissions }/${ submissionId }/manual-checking`;
+	return api.post(url);
 }
 
 //REDUX
@@ -287,6 +297,19 @@ export function submitReviewScoreRedux(submissionId: number, userId: string, per
 	};
 }
 
+const enableManualCheckingRedux = (
+	submissionId: number,
+) => {
+	return (dispatch: Dispatch): Promise<Response | string> => {
+		dispatch(submissionsEnableManualCheckingStartAction(submissionId));
+		return enableManualChecking(submissionId)
+			.catch(error => {
+				dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
+				return error;
+			});
+	};
+};
+
 export const redux = {
 	submitCode: submitCodeRedux,
 	submitReviewScore: submitReviewScoreRedux,
@@ -299,4 +322,6 @@ export const redux = {
 	deleteReviewComment: deleteReviewCommentRedux,
 
 	getUserSubmissions: getUserSubmissionsRedux,
+
+	enableManualChecking: enableManualCheckingRedux,
 };
