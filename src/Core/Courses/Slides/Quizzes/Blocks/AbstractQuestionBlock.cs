@@ -1,6 +1,4 @@
-using System;
 using System.Xml.Serialization;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 {
@@ -32,11 +30,5 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		public abstract bool HasEqualStructureWith(SlideBlock other);
 
 		public bool IsScoring => MaxScore > 0;
-
-		// Не используется, т.к. тесты показываются как iframe
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
-		}
 	}
 }

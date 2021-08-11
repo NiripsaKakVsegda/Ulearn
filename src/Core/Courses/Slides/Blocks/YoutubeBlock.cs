@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Xml.Serialization;
 using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
 	[XmlType("youtube")]
-	public class YoutubeBlock : SlideBlock
+	public class YoutubeBlock : SlideBlock, IConvertibleToEdx
 	{
 		[XmlText]
 		public string VideoId { get; set; }
@@ -26,7 +23,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			return $"Video {GetYoutubeUrl()}";
 		}
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
+		public Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			return new VideoComponent(context.Slide.NormalizedGuid + context.ComponentIndex, context.DisplayName, VideoId);
 		}

@@ -230,7 +230,6 @@ namespace Ulearn.Core.Courses.Slides
 					staticFilesFromMarkdown.AddRange(staticFiles);
 					return blocks;
 				}
-
 				return new List<SlideBlock> { b };
 			}).ToArray();
 
@@ -243,12 +242,12 @@ namespace Ulearn.Core.Courses.Slides
 					var innerComponents = new List<Component>();
 					foreach (var block in blocks)
 					{
-						try
+						if (block is IConvertibleToEdx convertibleBlock)
 						{
-							var component = block.ToEdxComponent(context with { ComponentIndex = componentIndex });
+							var component = convertibleBlock.ToEdxComponent(context with { ComponentIndex = componentIndex });
 							innerComponents.Add(component);
 						}
-						catch (NotSupportedException ex)
+						else
 						{
 							Console.WriteLine($"Slide {slide.Id} {block.GetType().Name} block NotSupportedException");
 						}
@@ -284,12 +283,11 @@ namespace Ulearn.Core.Courses.Slides
 					var exerciseComponent = ((ExerciseSlide)slide).GetExerciseComponent(componentIndex == 0 ? slide.Title : "Упражнение", slide, componentIndex, string.Format(context.UlearnBaseUrlWeb + SlideUrlFormat, context.CourseId, slide.Id), ltiId);
 					components.Add(exerciseComponent);
 				}
-				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
+				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock youtubeBlock)
 				{
-					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : "" });
+					var videoComponent = youtubeBlock.ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
 					components.Add(videoComponent);
 				}
-
 				componentIndex++;
 			}
 
