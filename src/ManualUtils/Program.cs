@@ -125,7 +125,7 @@ namespace ManualUtils
 			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
 			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
 			// await SetCourseNamesToVersions(serviceProvider, false);
-			await UnifyVisits(serviceProvider);
+			// await UnifyVisits(serviceProvider);
 			await BuildFavouriteReviewsFromReviews(serviceProvider);
 		}
 
