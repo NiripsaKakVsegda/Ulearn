@@ -432,7 +432,7 @@ class Exercise extends React.Component<Props, State> {
 		const isReview = !isEditable && currentReviews.length > 0;
 		const automaticChecking = currentSubmission?.automaticChecking ?? visibleCheckingResponse?.automaticChecking ?? visibleCheckingResponse?.submission?.automaticChecking;
 		const selectedSubmissionIsLast = submissionIsLast(submissions, currentSubmission);
-		const selectedSubmissionIsLastSuccess = getLastSuccessSubmission(submissions) === currentSubmission;
+		const selectedSubmissionIsLastSuccess = getLastSuccessSubmission(submissions)?.id === currentSubmission?.id;
 		const isMaxScore = slideProgress.score === maxScore;
 		const submissionColor = getSubmissionColor(visibleCheckingResponse?.solutionRunStatus,
 			automaticChecking?.result,
