@@ -75,7 +75,7 @@ namespace Ulearn.Core.Model.Edx
 					elem.SetAttribute("url_name", chapter.UrlName);
 					root.AppendChild(elem);
 				}
-				foreach (var wiki in Wiki)
+				foreach (var wiki in Wiki.EmptyIfNull())
 				{
 					var elem = doc.CreateElement("wiki");
 					elem.SetAttribute("slug", wiki.Slug);
