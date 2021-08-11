@@ -87,7 +87,7 @@ namespace Ulearn.Core.Model.Edx
 					SaveAdditional(folderName);
 			}
 			else
-				base.Save(folderName);
+				base.Save(folderName, withAdditionals);
 		}
 
 		public override void SaveAdditional(string folderName)
