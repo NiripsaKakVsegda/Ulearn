@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -30,7 +28,8 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public override Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
-			throw new NotSupportedException();
+			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
+			return new HtmlComponent(urlName, context.DisplayName, urlName, Content);
 		}
 
 		public XmlSchema GetSchema()

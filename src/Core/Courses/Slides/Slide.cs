@@ -220,12 +220,18 @@ namespace Ulearn.Core.Courses.Slides
 				}).ToArray();
 			}
 
-			// MarkdownBlock имеет поле InnerBlocks, которое содержит MarkdownBlock или CodeBlock
+			var staticFilesFromMarkdown = new List<StaticFileForEdx>();
 			visibleSlideBlocks = visibleSlideBlocks.SelectMany(b =>
 			{
-				if (b is MarkdownBlock mb && mb.InnerBlocks != null)
-					return mb.InnerBlocks;
-				return new[] { b };
+				if (b is MarkdownBlock mb)
+				{
+					var (blocks, staticFiles)
+						= mb.ToHtmlAndCodeBlocks(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide, context.CourseDirectory);
+					staticFilesFromMarkdown.AddRange(staticFiles);
+					return blocks;
+				}
+
+				return new List<SlideBlock> { b };
 			}).ToArray();
 
 			while (componentIndex < visibleSlideBlocks.Length)
@@ -261,8 +267,10 @@ namespace Ulearn.Core.Courses.Slides
 							UrlName = slide.NormalizedGuid + componentIndex, // Поскольку склеиваем несколько компонент в html
 							Filename = slide.NormalizedGuid + componentIndex,
 							HtmlContent = header + string.Join("", innerComponents.Select(x => x.AsHtmlString())),
-							Subcomponents = innerComponents.ToArray()
+							Subcomponents = innerComponents.ToArray(),
+							StaticFiles = staticFilesFromMarkdown
 						};
+						staticFilesFromMarkdown = null; // Сохраняем один раз
 						components.Add(slideComponent);
 						componentIndex++;
 					}
@@ -278,9 +286,10 @@ namespace Ulearn.Core.Courses.Slides
 				}
 				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock)
 				{
-					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
+					var videoComponent = visibleSlideBlocks[componentIndex].ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : "" });
 					components.Add(videoComponent);
 				}
+
 				componentIndex++;
 			}
 

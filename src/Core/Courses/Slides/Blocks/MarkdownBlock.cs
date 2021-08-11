@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using AngleSharp.Html.Parser;
 using JetBrains.Annotations;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -44,22 +45,22 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public string RenderMarkdown(Slide slide, MarkdownRenderContext context)
 		{
-			return GetMarkdownWithReplacedLinksToStudentZips(context.CourseId, slide, context.BaseUrlApi).RenderMarkdown(context);
+			return GetMarkdownWithReplacedLinksToStudentZips(Markdown, context.CourseId, slide, context.BaseUrlApi).RenderMarkdown(context);
 		}
 
 		/* Replace links to (/Exercise/StudentZip) and to (ExerciseZip): automagically add courseId and slideId */
-		private string GetMarkdownWithReplacedLinksToStudentZips(string courseId, Slide slide, string baseUrlApi)
+		private static string GetMarkdownWithReplacedLinksToStudentZips(string markdown, string courseId, Slide slide, string baseUrlApi)
 		{
-			if (string.IsNullOrEmpty(Markdown))
+			if (string.IsNullOrEmpty(markdown))
 				return "";
 			var exerciseSlide = slide as ExerciseSlide;
 			if (exerciseSlide == null)
-				return Markdown;
-			if (!(Markdown.Contains("(/Exercise/StudentZip)") || Markdown.Contains("(ExerciseZip)")))
-				return Markdown;
+				return markdown;
+			if (!(markdown.Contains("(/Exercise/StudentZip)") || markdown.Contains("(ExerciseZip)")))
+				return markdown;
 			var studentZipName = (exerciseSlide.Exercise as CsProjectExerciseBlock)?.CsprojFileName ?? new DirectoryInfo((exerciseSlide.Exercise as UniversalExerciseBlock).ExerciseDirPath).Name;
 			var studentZipFullPath = CourseUrlHelper.GetAbsoluteUrlToStudentZip(baseUrlApi, courseId, slide.Id, $"{studentZipName}.zip");
-			return Markdown.Replace("(/Exercise/StudentZip)", $"({studentZipFullPath})").Replace("(ExerciseZip)", $"({studentZipFullPath})");
+			return markdown.Replace("(/Exercise/StudentZip)", $"({studentZipFullPath})").Replace("(ExerciseZip)", $"({studentZipFullPath})");
 		}
 
 		public override string ToString()
@@ -67,13 +68,28 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			return $"Markdown {Markdown}";
 		}
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
+		public (List<SlideBlock> HtmlAndCodeBlocks, List<StaticFileForEdx> StaticFiles) ToHtmlAndCodeBlocks(
+			string ulearnBaseUrlApi, string ulearnBaseUrlWeb, string courseId, Slide slide, DirectoryInfo courseDirectory)
 		{
-			var markdownRenderContext = new MarkdownRenderContext(context.UlearnBaseUrlApi, context.UlearnBaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse);
-			var (html, staticFiles) = GetMarkdownWithReplacedLinksToStudentZips(context.CourseId, context.Slide, context.UlearnBaseUrlApi)
-				.RenderMarkdownForEdx(markdownRenderContext, context.CourseDirectory, "/static");
-			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
-			return new HtmlComponent(urlName, context.DisplayName, urlName, html, staticFiles);
+			var htmlAndCodeBlocks = new List<SlideBlock>();
+			var allStaticFiles = new List<StaticFileForEdx>();
+			var subBlocks = InnerBlocks ?? new[] { this };
+			foreach (var subBlock in subBlocks)
+			{
+				if (subBlock is MarkdownBlock mb)
+				{
+					var markdownRenderContext = new MarkdownRenderContext(ulearnBaseUrlApi, ulearnBaseUrlWeb, courseId, slide.Unit.UnitDirectoryRelativeToCourse);
+					var (html, staticFiles) = GetMarkdownWithReplacedLinksToStudentZips(mb.Markdown, courseId, slide, ulearnBaseUrlApi)
+						.RenderMarkdownForEdx(markdownRenderContext, courseDirectory, "/static");
+					var parsedBlocks = ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(html, subBlock.Hide);
+					htmlAndCodeBlocks.AddRange(parsedBlocks);
+					allStaticFiles.AddRange(staticFiles);
+				}
+				else
+					htmlAndCodeBlocks.Add(subBlock);
+			}
+
+			return (htmlAndCodeBlocks, allStaticFiles);
 		}
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)
@@ -157,6 +173,38 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			if (Hide)
 				writer.WriteAttributeString("hide", "true");
 			writer.WriteString(markdown);
+		}
+
+		private static List<SlideBlock> ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(string renderedMarkdown, bool hide)
+		{
+			var parser = new HtmlParser();
+			var document = parser.ParseDocument(renderedMarkdown);
+			var rootElements = document.Body.Children;
+			var blocks = new List<SlideBlock>();
+			foreach (var element in rootElements)
+			{
+				var tagName = element.TagName.ToLower();
+				if (tagName == "textarea")
+				{
+					var langStr = element.GetAttribute("data-lang");
+					var lang = (Language)Enum.Parse(typeof(Language), langStr, true);
+					var code = element.TextContent;
+					blocks.Add(new CodeBlock(code, lang) { Hide = hide });
+				}
+				else
+				{
+					var htmlContent = element.OuterHtml;
+					if (blocks.Count > 0 && blocks.Last() is HtmlBlock last)
+					{
+						htmlContent = last.Content + "\n" + htmlContent;
+						blocks[blocks.Count - 1] = new HtmlBlock(htmlContent) { Hide = hide };
+					}
+					else
+						blocks.Add(new HtmlBlock(htmlContent) { Hide = hide });
+				}
+			}
+
+			return blocks;
 		}
 	}
 }
