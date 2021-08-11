@@ -381,18 +381,6 @@ namespace Database.Repos
 			await db.SaveChangesAsync();
 		}
 
-		public async Task EnableProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId)
-		{
-			var checkings = await db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId)
-				.ToListAsync();
-			if (checkings.Count == 0)
-				return;
-			foreach (var checking in checkings)
-				checking.ProhibitFurtherManualCheckings = true;
-			await db.SaveChangesAsync();
-		}
-
 		public async Task ResetManualCheckingLimitsForUser(string courseId, string userId)
 		{
 			await DisableProhibitFurtherManualCheckings(courseId, userId);

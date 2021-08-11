@@ -58,6 +58,5 @@ namespace Database.Repos
 		Task<int> GetExerciseUsersWithRightAnswerCount(string courseId, Guid slideId);
 		Task RefreshExerciseStatisticsMaterializedViews();
 		Task EditExerciseCodeReviewComment(ExerciseCodeReviewComment codeReviewComment, string text);
-		Task EnableProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId);
 	}
 }

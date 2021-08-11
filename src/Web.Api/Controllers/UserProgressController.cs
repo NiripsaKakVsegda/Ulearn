@@ -204,12 +204,12 @@ namespace Ulearn.Web.Api.Controllers
 			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), userId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "This student should be member of one of accessible for you groups");
 
-			if (!prohibit)
-				await slideCheckingsRepo.DisableProhibitFurtherManualCheckings(courseId, userId, slideId);
+			if (prohibit)
+				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
 			else
-				await slideCheckingsRepo.EnableProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
+				await slideCheckingsRepo.DisableProhibitFurtherManualCheckings(courseId, userId, slideId);
 
-			return Ok("Prohibit further exercise manual checking " + (prohibit ? "enabled" : "disabled"));
+			return Ok($"{(prohibit ? "Prohibited" : "Enabled")} further exercise manual checking  for {courseId}/{slideId}");
 		}
 
 		/// <summary>
