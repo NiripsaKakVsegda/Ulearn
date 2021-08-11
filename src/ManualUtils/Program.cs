@@ -77,7 +77,7 @@ namespace ManualUtils
 
 			services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
 			services.AddSingleton(SlaveCourseManager.CourseStorageUpdaterInstance);
-			services.AddSingleton<ISlaveCourseManager>();
+			services.AddSingleton<ISlaveCourseManager, SlaveCourseManager>();
 			services.AddSingleton<ExerciseStudentZipsCache>();
 
 			services.AddScoped<TempCourseRemover>();
