@@ -861,7 +861,7 @@ namespace ManualUtils
 								.Select(g => g.Key)
 								.ToList();
 
-							var favouriteReviewByText = new Dictionary<string, FavouriteReview>();
+							var favouriteReviewByText = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
 							foreach (var review in userTopReviews)
 							{
 								if (!favouriteReviewByText.TryGetValue(review, out var favouriteReview))
