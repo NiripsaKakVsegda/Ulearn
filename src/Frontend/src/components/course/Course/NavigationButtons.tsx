@@ -109,7 +109,6 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 			isLoading: true,
 		});
 
-		api.instructor.lockSubmissionCheck(courseId, query.submissionId);
 		api.instructor.getReviewQueue(courseId, groupsIds, slideId, undefined, query.done)
 			.then(c => setState({
 				courseId,
@@ -130,6 +129,10 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 				check = curCheck;
 				break;
 			}
+		}
+
+		if(check) {
+			api.instructor.lockSubmissionCheck(courseId, query.submissionId, check.type);
 		}
 
 		return (
