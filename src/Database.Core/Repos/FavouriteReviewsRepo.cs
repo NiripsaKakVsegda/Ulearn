@@ -85,9 +85,6 @@ namespace Database.Repos
 
 		public async Task DeleteFavouriteReviewByUser(FavouriteReviewByUser favouriteReviewByUser)
 		{
-			if (favouriteReviewByUser == null)
-				return;
-
 			db.FavouriteReviewsByUsers.Remove(favouriteReviewByUser);
 			await db.SaveChangesAsync();
 

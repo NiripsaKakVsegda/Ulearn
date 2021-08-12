@@ -74,7 +74,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)
 				.ToDictionary(g => g.Key, g => g.AsEnumerable());
-			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking != null && s.ManualChecking.ProhibitFurtherManualCheckings);
+			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking?.ProhibitFurtherManualCheckings ?? false);
 
 			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
@@ -85,11 +85,11 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 
-			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(User.GetUserId(), submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to edit EnableManualChecking flag for this submission");
+			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(UserId, submission.UserId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to edit ProhibitFurtherReview flag for this submission");
 
 			if (submission.ManualChecking != null)
-				return StatusCode((int)HttpStatusCode.Conflict, "Manual checking already enabled");
+				Ok($"Manual checking already enabled for submission {submissionId}");
 
 			await slideCheckingsRepo.AddManualExerciseChecking(submission.CourseId, submission.SlideId, submission.UserId, submission.Id);
 			await visitsRepo.MarkVisitsAsWithManualChecking(submission.CourseId, submission.SlideId, submission.UserId);
@@ -104,8 +104,8 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 			var checking = submission.ManualChecking;
 
-			if (!await groupAccessesRepo.HasInstructorViewAccessToStudentGroup(User.GetUserId(), submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
+			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(User.GetUserId(), submission.UserId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to score this submission");
 
 			/* Invalid form: score isn't from range 0..100 */
 			if (percent is < 0 or > 100)
@@ -113,17 +113,17 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {percent}");
 			}
 
+			var course = courseStorage.GetCourse(submission.CourseId);
+			var slide = course.FindSlideByIdNotSafe(submission.SlideId);
+
 			await using (var transaction = await db.Database.BeginTransactionAsync())
 			{
-				var course = courseStorage.GetCourse(submission.CourseId);
-				var slide = course.FindSlideByIdNotSafe(submission.SlideId);
-
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent);
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking);
 				await visitsRepo.UpdateScoreForVisit(checking.CourseId, slide, checking.UserId);
 
-				var unit = course.FindUnitBySlideIdNotSafe(checking.SlideId, true);
-				if (unit != null && await unitsRepo.IsUnitVisibleForStudents(course, unit.Id))
+				var visibleUnits = await unitsRepo.GetPublishedUnitIds(course);
+				if (course.FindSlideById(submission.SlideId, false, visibleUnits) != null)
 					await NotifyAboutManualExerciseChecking(checking);
 
 				await transaction.CommitAsync();

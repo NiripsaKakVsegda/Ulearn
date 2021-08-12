@@ -35,7 +35,7 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	public class ReviewQueueItem
 	{
 		[DataMember]
-		public int SubmissionId { get; set; }
+		public int SubmissionId { get; set; } // ExerciseSubmission id or QuizSubmission id
 
 		[DataMember]
 		public string UserId { get; set; }

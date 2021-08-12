@@ -14,7 +14,6 @@ using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Responses.Review;
 using Ulearn.Web.Api.Utils;
-using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Web.Api.Controllers.Review
 {
@@ -51,7 +50,6 @@ namespace Ulearn.Web.Api.Controllers.Review
 			await base.OnActionExecutionAsync(context, next);
 		}
 
-
 		[HttpGet("{courseId}")]
 		public async Task<ReviewQueueResponse> GetReviewQueueInfo(
 			[FromRoute] string courseId,
@@ -61,7 +59,6 @@ namespace Ulearn.Web.Api.Controllers.Review
 			[FromQuery] Guid? slideId = null
 		)
 		{
-			courseStorage.HasCourse(courseId);
 			const int maxShownQueueSize = 500;
 
 			var filterOptions = await GetManualCheckingFilterOptionsByGroup(courseId, groupsIds);

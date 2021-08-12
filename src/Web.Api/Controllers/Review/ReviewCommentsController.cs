@@ -5,6 +5,7 @@ using Database;
 using Database.Extensions;
 using Database.Models;
 using Database.Repos;
+using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,9 @@ namespace Ulearn.Web.Api.Controllers.Review
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IUnitsRepo unitsRepo;
 		private readonly INotificationsRepo notificationsRepo;
+		private readonly IGroupAccessesRepo groupAccessesRepo;
 
-		public ReviewCommentsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
+		public ReviewCommentsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, IGroupAccessesRepo groupAccessesRepo,
 			ISlideCheckingsRepo slideCheckingsRepo, ICourseRolesRepo courseRolesRepo, IUnitsRepo unitsRepo, INotificationsRepo notificationsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
@@ -31,7 +33,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			this.courseRolesRepo = courseRolesRepo;
 			this.unitsRepo = unitsRepo;
 			this.notificationsRepo = notificationsRepo;
-			this.notificationsRepo = notificationsRepo;
+			this.groupAccessesRepo = groupAccessesRepo;
 		}
 
 		/// <summary>
@@ -46,9 +48,10 @@ namespace Ulearn.Web.Api.Controllers.Review
 		{
 			var review = await slideCheckingsRepo.FindExerciseCodeReviewById(reviewId);
 
-			var submissionUserId = review.ExerciseCheckingId.HasValue ? review.ExerciseChecking.UserId : review.Submission.UserId;
-			var submissionCourseId = review.ExerciseCheckingId.HasValue ? review.ExerciseChecking.CourseId : review.Submission.CourseId;
-			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, submissionCourseId, CourseRoleType.Instructor);
+			var submissionUserId = review.SubmissionAuthorId;
+			var submissionCourseId = review.CourseId;
+			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, submissionCourseId, CourseRoleType.Instructor)
+								&& await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(UserId, submissionUserId);
 			if (submissionUserId != UserId && !isInstructor)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You can't comment this review"));
 
@@ -58,12 +61,12 @@ namespace Ulearn.Web.Api.Controllers.Review
 
 			var comment = await slideCheckingsRepo.AddExerciseCodeReviewComment(UserId, reviewId, parameters.Text);
 
-			if (review.ExerciseCheckingId.HasValue && review.ExerciseChecking.IsChecked)
+			if (review.ExerciseChecking?.IsChecked ?? false)
 			{
 				var course = courseStorage.FindCourse(submissionCourseId);
-				var slideId = review.ExerciseChecking.SlideId;
-				var unit = course?.FindUnitBySlideIdNotSafe(slideId, isInstructor);
-				if (unit != null && await unitsRepo.IsUnitVisibleForStudents(course, unit.Id))
+				var slideId = review.SlideId;
+				var visibleUnits = await unitsRepo.GetPublishedUnitIds(course);
+				if (course.FindSlideById(slideId, false, visibleUnits) != null)
 					await NotifyAboutCodeReviewComment(comment);
 			}
 
@@ -81,7 +84,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			if (comment == null)
 				return NotFound(new ErrorResponse($"Comment {commentId} not found"));
 
-			var courseId = comment.Review.ExerciseCheckingId.HasValue ? comment.Review.ExerciseChecking.CourseId : comment.Review.Submission.CourseId;
+			var courseId = comment.Review.CourseId;
 			if (comment.AuthorId != UserId && !await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin))
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You can't delete this comment"));
 
@@ -102,7 +105,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			if (comment == null)
 				return NotFound(new ErrorResponse($"Comment {commentId} not found"));
 
-			var courseId = comment.Review.ExerciseCheckingId.HasValue ? comment.Review.ExerciseChecking.CourseId : comment.Review.Submission.CourseId;
+			var courseId = comment.Review.CourseId;
 			if (comment.AuthorId != UserId && !await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin))
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You can't delete this comment"));
 
@@ -112,9 +115,10 @@ namespace Ulearn.Web.Api.Controllers.Review
 		}
 
 		// Оповещает о создании комментария к ревью, а не самого ревью (т.е. замечения к коду)
+		// Перед вызовом этого метода нужно проверить, что посылка уже проверена, чтобы не отправить сообщение раньше.
 		private async Task NotifyAboutCodeReviewComment(ExerciseCodeReviewComment comment)
 		{
-			var courseId = comment.Review.ExerciseCheckingId.HasValue ? comment.Review.ExerciseChecking.CourseId : comment.Review.Submission.CourseId;
+			var courseId = comment.Review.CourseId;
 			await notificationsRepo.AddNotification(courseId, new ReceivedCommentToCodeReviewNotification
 			{
 				CommentId = comment.Id,
