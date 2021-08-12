@@ -40,6 +40,7 @@ namespace ManualUtils
 		public static async Task Main(string[] args)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+			Console.OutputEncoding = Encoding.UTF8;
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			LoggerSetup.Setup(configuration.HostLog, configuration.GraphiteServiceName);
 			try
@@ -753,7 +754,6 @@ namespace ManualUtils
 
 		private static async Task SetCourseNamesToVersions(IServiceProvider serviceProvider, bool removeVersionIfCourseError)
 		{
-			Console.OutputEncoding = Encoding.UTF8;
 			using (var scope = serviceProvider.CreateScope())
 			{
 				var db = scope.ServiceProvider.GetService<UlearnDb>();
@@ -832,68 +832,72 @@ namespace ManualUtils
 
 				foreach (var course in courses)
 				{
-					courseCounter++;
-					Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
-					var slides = course.GetSlidesNotSafe();
-					var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
-					var slideCounter = 0;
-					foreach (var slide in slides)
+					using (var transaction = db.Database.BeginTransaction())
 					{
-						slideCounter++;
-						Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
-						var slideTopReviews = db.ExerciseCodeReviews
-							.Include(r => r.Author)
-							.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && !r.HiddenFromTopComments && !r.IsDeleted)
-							.ToList()
-							.GroupBy(r => r.Author.Id)
-							.ToDictionary(r => r.Key, r => r);
-
-						foreach (var instructorId in instructorIds)
+						courseCounter++;
+						Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
+						var slides = course.GetSlidesNotSafe();
+						var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
+						var slideCounter = 0;
+						foreach (var slide in slides)
 						{
-							if (!slideTopReviews.ContainsKey(instructorId))
-								continue;
+							slideCounter++;
+							Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
+							var slideTopReviews = db.ExerciseCodeReviews
+								.Include(r => r.Author)
+								.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && !r.HiddenFromTopComments && !r.IsDeleted)
+								.ToList()
+								.GroupBy(r => r.Author.Id)
+								.ToDictionary(r => r.Key, r => r);
 
-							var userTopReviews = slideTopReviews[instructorId]
-								.GroupBy(r => r.Comment)
-								.OrderByDescending(g => g.Count())
-								.ThenByDescending(g => g.Max(r => r.AddingTime))
-								.Take(5)
-								.Select(g => g.Key)
-								.ToList();
-
-							var favouriteReviewByText = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
-							foreach (var review in userTopReviews)
+							foreach (var instructorId in instructorIds)
 							{
-								if (!favouriteReviewByText.TryGetValue(review, out var favouriteReview))
+								if (!slideTopReviews.ContainsKey(instructorId))
+									continue;
+
+								var userTopReviews = slideTopReviews[instructorId]
+									.GroupBy(r => r.Comment)
+									.OrderByDescending(g => g.Count())
+									.ThenByDescending(g => g.Max(r => r.AddingTime))
+									.Take(5)
+									.Select(g => g.Key)
+									.ToList();
+
+								var textToFavoriteReview = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
+								foreach (var review in userTopReviews)
 								{
-									favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
-									favouriteReviewByText[review] = favouriteReview;
-									db.FavouriteReviews.Add(favouriteReview);
+									if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
+									{
+										favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
+										textToFavoriteReview[review] = favouriteReview;
+										db.FavouriteReviews.Add(favouriteReview);
+										updateDbCounter++;
+									}
+
+									var favouriteReviewByUser = new FavouriteReviewByUser
+									{
+										CourseId = course.Id,
+										SlideId = slide.Id,
+										UserId = instructorId,
+										Timestamp = DateTime.Now,
+										FavouriteReview = favouriteReview,
+									};
+									db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
 									updateDbCounter++;
-								}
 
-								var favouriteReviewByUser = new FavouriteReviewByUser
-								{
-									CourseId = course.Id,
-									SlideId = slide.Id,
-									UserId = instructorId,
-									Timestamp = DateTime.Now,
-									FavouriteReview = favouriteReview,
-								};
-								db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
-								updateDbCounter++;
-
-								if (updateDbCounter >= updateDbMaxCount)
-								{
-									await db.SaveChangesAsync();
-									updateDbCounter = 0;
+									if (updateDbCounter >= updateDbMaxCount)
+									{
+										await db.SaveChangesAsync();
+										updateDbCounter = 0;
+									}
 								}
 							}
 						}
+
+						await db.SaveChangesAsync();
+						transaction.Commit();
 					}
 				}
-
-				await db.SaveChangesAsync();
 			}
 		}
 	}
