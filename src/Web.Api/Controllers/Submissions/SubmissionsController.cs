@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Web.Api.Models.Responses.Submissions;
 
 namespace Ulearn.Web.Api.Controllers.Submissions
@@ -69,7 +70,16 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				.GetAllSubmissionsByUserAllInclude(courseId, slideId, userId)
 				.OrderByDescending(s => s.Timestamp)
 				.ToListAsync();
-			var submissionsScores = await slideCheckingsRepo.GetCheckedPercentsBySubmissions(courseId, slideId, userId, null);
+			
+			if(!courseStorage.HasCourse(courseId))
+				return NotFound($"Course {courseId} not found");
+
+			if (courseStorage
+				.GetCourse(courseId)
+				.GetSlideByIdNotSafe(slideId) is not ExerciseSlide slide)
+				return NotFound($"Slide with id {slideId} not found");
+			
+			var submissionsScores = await slideCheckingsRepo.GetCheckedPercentsBySubmissions(courseId, slideId, userId, slide.Scoring.ScoreWithCodeReview);
 			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(courseId, slideId, userId);
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)

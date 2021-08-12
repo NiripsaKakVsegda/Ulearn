@@ -199,17 +199,23 @@ namespace Database.Repos
 			return checkedScoresAndPercents;
 		}
 
-		public async Task<Dictionary<int, int?>> GetCheckedPercentsBySubmissions(string courseId, Guid slideId, string userId, DateTime? submissionBefore)
+		public async Task<Dictionary<int, int?>> GetCheckedPercentsBySubmissions(string courseId, Guid slideId, string userId, int maxScoreForSlide)
 		{
-			var query = GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slideId, userId)
+			var checkings = GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slideId, userId)
 				.Where(c => c.IsChecked);
-			if (submissionBefore != null)
-				query = query.Where(c => c.Submission.Timestamp < submissionBefore);
-			var checkedScoresAndPercents = (await query
-					.Select(c => new { c.Percent, c.Id })
+
+			var percentBySubmissions = (await checkings
+					.Select(c => new { c.Percent, c.Id, c.Score, })
 					.ToListAsync())
-				.ToDictionary(k => k.Id, v => v.Percent);
-			return checkedScoresAndPercents;
+				.Where(c => c.Score != null)
+				.ToDictionary(k => k.Id, v =>
+				{
+					if (v.Percent.HasValue)
+						return v.Percent;
+					
+					return (int)Math.Ceiling(v.Score.Value * 100m / maxScoreForSlide);
+				});
+			return percentBySubmissions;
 		}
 
 		public async Task<List<(Guid SlideId, int Score, int Percent)>> GetPassedManualExerciseCheckingsScoresAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)
