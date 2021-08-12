@@ -77,9 +77,13 @@ namespace Ulearn.Web.Api.Controllers.Review
 		}
 
 		[HttpPost("{courseId}/{submissionId}")]
-		public async Task<ActionResult> LockSubmission([FromRoute] string courseId, [FromRoute] int submissionId)
+		public async Task<ActionResult> LockSubmission([FromRoute] string courseId, [FromRoute] int submissionId, [FromQuery] QueueItemType type)
 		{
-			var checking = await slideCheckingsRepo.FindManualCheckingById<ManualExerciseChecking>(submissionId);
+			AbstractManualSlideChecking checking =
+				type == QueueItemType.Exercise
+					? await slideCheckingsRepo.FindManualCheckingById<ManualExerciseChecking>(submissionId)
+					: await slideCheckingsRepo.FindManualCheckingById<ManualQuizChecking>(submissionId);
+			
 			if (checking == null)
 				return NotFound(new ErrorResponse($"Submission {submissionId} not found"));
 
