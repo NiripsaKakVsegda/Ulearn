@@ -223,7 +223,7 @@ export default function getSlideInfo(
 	return {
 		slideType: navigationInfo?.current.type || slideType,
 		slideId,
-		courseId,
+		courseId: courseId.toLowerCase(),
 		isReview,
 		isLti,
 		isNavigationVisible,

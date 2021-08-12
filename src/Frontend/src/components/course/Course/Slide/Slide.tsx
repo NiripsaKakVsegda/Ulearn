@@ -7,7 +7,7 @@ import BlocksRenderer from "./BlocksRenderer";
 import CourseLoader from "src/components/course/Course/CourseLoader";
 
 import { Block, BlockTypes, SlideType, SpoilerBlock, } from "src/models/slide";
-import { Props, SlideProps, SlidePropsWithContext } from "./Slide.types";
+import { Props, SlidePropsWithContext } from "./Slide.types";
 import SubmissionsLoader from "./SubmissionsLoader";
 import InstructorReview from "./InstructorReview/InstructorReview.redux";
 
