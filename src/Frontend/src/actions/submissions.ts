@@ -53,6 +53,13 @@ import {
 	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
 	SubmissionsEnableManualCheckingStartAction,
 	SubmissionsEnableManualCheckingFailAction,
+
+	REVIEWS_ASSIGN_BOT_START,
+	REVIEWS_ASSIGN_BOT_SUCCESS,
+	REVIEWS_ASSIGN_BOT_FAIL,
+	ReviewsAssignBotStartAction,
+	ReviewsAssignBotSuccessAction,
+	ReviewsAssignBotFailAction,
 } from "./submissions.types";
 import { SubmissionsResponse } from "../models/instructor";
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse } from "../models/exercise";
@@ -195,28 +202,34 @@ export const reviewsEditFailAction = (
 export const reviewsDeleteStartAction = (
 	submissionId: number,
 	reviewId: number,
+	isBotReview?: boolean,
 ): ReviewsDeleteStartAction => ({
 	type: REVIEWS_DELETE_START,
 	submissionId,
 	reviewId,
+	isBotReview,
 });
 export const reviewsDeleteSuccessAction = (
 	submissionId: number,
 	reviewId: number,
+	isBotReview?: boolean,
 ): ReviewsDeleteSuccessAction => ({
 	type: REVIEWS_DELETE_SUCCESS,
 	submissionId,
 	reviewId,
+	isBotReview,
 });
 export const reviewsDeleteFailAction = (
 	submissionId: number,
 	reviewId: number,
 	error: string,
+	isBotReview?: boolean,
 ): ReviewsDeleteFailAction => ({
 	type: REVIEWS_DELETE_FAIL,
 	submissionId,
 	reviewId,
 	error,
+	isBotReview,
 });
 
 export const reviewsAddCommentStartAction = (
@@ -308,4 +321,32 @@ export const reviewsAddScoreFail = (
 	error,
 });
 
+export const reviewsAssignBotReviewStart = (
+	submissionId: number,
+	botReviewId: number,
+): ReviewsAssignBotStartAction => ({
+	type: REVIEWS_ASSIGN_BOT_START,
+	submissionId,
+	botReviewId,
+});
+export const reviewsAssignBotReviewSuccess = (
+	submissionId: number,
+	botReviewId: number,
+	review: ReviewInfo,
+): ReviewsAssignBotSuccessAction => ({
+	type: REVIEWS_ASSIGN_BOT_SUCCESS,
+	submissionId,
+	botReviewId,
+	review,
+});
+export const reviewsAssignBotReviewFail = (
+	submissionId: number,
+	botReviewId: number,
+	error: string,
+): ReviewsAssignBotFailAction => ({
+	type: REVIEWS_ASSIGN_BOT_FAIL,
+	submissionId,
+	botReviewId,
+	error,
+});
 

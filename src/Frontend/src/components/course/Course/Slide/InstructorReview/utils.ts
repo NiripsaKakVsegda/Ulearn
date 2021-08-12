@@ -7,6 +7,7 @@ export const getDataFromReviewToCompareChanges = (review: InstructorReviewInfoWi
 	const reviewWithAnchor = (review as InstructorReviewInfoWithAnchor);
 	if(reviewWithAnchor.anchor) {
 		return {
+			id: reviewWithAnchor.id,
 			comment: reviewWithAnchor.comment,
 			anchor: reviewWithAnchor.anchor,
 			instructor: reviewWithAnchor.instructor,
@@ -17,6 +18,7 @@ export const getDataFromReviewToCompareChanges = (review: InstructorReviewInfoWi
 	const instructorReview = (review as InstructorReviewInfo);
 	if(instructorReview.instructor) {
 		return {
+			id: instructorReview.id,
 			comment: instructorReview.comment,
 			instructor: instructorReview.instructor,
 			comments: instructorReview.comments.map(c => c.text),
@@ -25,6 +27,7 @@ export const getDataFromReviewToCompareChanges = (review: InstructorReviewInfoWi
 	}
 
 	return {
+		id: review.id,
 		comment: review.comment,
 		comments: review.comments.map(c => c.text),
 		startLine: review.startLine,

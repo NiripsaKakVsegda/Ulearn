@@ -60,11 +60,13 @@ export interface ApiFromRedux {
 		comment: string
 	) => Promise<ReviewCommentResponse | string>;
 	enableManualChecking: (submissionId: number,) => Promise<Response | string>;
-	deleteReview: (submissionId: number, reviewId: number) => Promise<Response>;
+	deleteReview: (submissionId: number, reviewId: number, isBotReview?: boolean) => Promise<Response>;
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => Promise<Response>;
 	editReviewOrComment: (submissionId: number, reviewId: number,
 		parentReviewId: number | undefined, text: string, oldText: string,
 	) => Promise<ReviewInfo | ReviewCommentResponse | string>;
+
+	assignBotReview: (submissionId: number, review: ReviewInfo) => Promise<ReviewInfo>;
 }
 
 export interface Props extends PropsFromRedux, ApiFromRedux {
@@ -80,6 +82,7 @@ export interface InstructorExtraFields {
 
 export interface ReviewCompare {
 	comment: string;
+	id: number;
 	comments: string[];
 	startLine: number;
 	anchor?: number;
@@ -100,6 +103,7 @@ export interface State {
 	currentTab: InstructorReviewTabs;
 
 	currentSubmission: SubmissionInfo | undefined;
+	currentSubmissionContext: SubmissionContext | undefined;
 
 	showDiff: boolean;
 	diffInfo?: DiffInfo;
@@ -123,4 +127,10 @@ export interface State {
 
 	favouriteReviewsSet: Set<string>;
 	favouriteByUserSet: Set<string>;
+}
+
+export interface SubmissionContext {
+	isNewSubmission: boolean;
+	isLastCheckedSubmission: boolean;
+	isEditable: boolean;
 }

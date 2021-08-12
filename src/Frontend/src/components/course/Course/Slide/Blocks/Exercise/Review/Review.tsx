@@ -136,6 +136,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 
 			if(review.startLine !== compareReview.startLine
 				|| review.comment !== compareReview.comment
+				|| review.id !== compareReview.id
 				|| review.anchor !== compareReview.anchor
 				|| review.instructor?.outdated !== compareReview.instructor?.outdated
 				|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite) {

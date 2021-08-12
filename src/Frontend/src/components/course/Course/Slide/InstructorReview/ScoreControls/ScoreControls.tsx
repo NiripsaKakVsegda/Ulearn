@@ -11,11 +11,12 @@ export interface Props {
 	scores?: string[];
 	exerciseTitle: string;
 
-	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100 | null;
+	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100;
 	score?: number | 0 | 25 | 50 | 75 | 100;
 	date?: string;
 
 	toggleChecked: boolean;
+	canChangeScore: boolean;
 
 	onSubmit: (score: number) => void;
 	onToggleChange: (value: boolean) => void;
@@ -37,7 +38,7 @@ class ScoreControls extends React.Component<Props, State> {
 
 		this.state = {
 			curScore: score,
-			scoreSaved: !!score,
+			scoreSaved: score !== undefined,
 			toggleChecked: toggleChecked,
 		};
 	}
@@ -65,6 +66,7 @@ class ScoreControls extends React.Component<Props, State> {
 			scores = defaultScores,
 			exerciseTitle,
 			prevReviewScore,
+			canChangeScore,
 			date,
 		} = this.props;
 		const {
@@ -76,21 +78,21 @@ class ScoreControls extends React.Component<Props, State> {
 		return (
 			<Gapped gap={ 24 } vertical>
 				{ scoreSaved && curScore !== undefined
-					? this.renderControlsAfterSubmit(curScore, date,)
+					? this.renderControlsAfterSubmit(curScore, date, canChangeScore,)
 					: this.renderControls(scores, curScore, prevReviewScore)
 				}
-				{ !date && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle,) }
+				{ canChangeScore && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle,) }
 			</Gapped>
 		);
 	}
 
-	renderControlsAfterSubmit = (score: number, date?: string,): React.ReactElement => {
+	renderControlsAfterSubmit = (score: number, date?: string, canChangeScore?: boolean): React.ReactElement => {
 		return (
 			<Gapped gap={ 16 } vertical={ false }>
 				<span className={ styles.successLabel }>
 					{ texts.getScoreText(score, date) }
 				</span>
-				{ !date && <Button
+				{ canChangeScore && <Button
 					size={ "medium" }
 					use={ "link" }
 					onClick={ this.resetScore }

@@ -81,8 +81,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		) =>
 			api.submissions.redux
 				.addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
-		deleteReview: (submissionId, reviewId) =>
-			api.submissions.redux.deleteReview(submissionId, reviewId)(dispatch),
+		deleteReview: (submissionId, reviewId, isBotReview) =>
+			api.submissions.redux.deleteReview(submissionId, reviewId, isBotReview)(dispatch),
 
 		addReviewComment: (submissionId: number, reviewId: number, comment: string) =>
 			api.submissions.redux.addReviewComment(submissionId, reviewId, comment)(dispatch),
@@ -114,6 +114,9 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch),
 		enableManualChecking: (submissionId: number,) =>
 			api.submissions.redux.enableManualChecking(submissionId)(dispatch),
+
+		assignBotReview: (submissionId, review) =>
+			api.submissions.redux.assignBotReview(submissionId, review)(dispatch),
 	};
 };
 

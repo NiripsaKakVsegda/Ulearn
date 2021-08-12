@@ -207,7 +207,7 @@ namespace Database.Repos
 			var percentBySubmissions = (await checkings
 					.Select(c => new { c.Percent, c.Id, c.Score, })
 					.ToListAsync())
-				.Where(c => c.Score != null)
+				.Where(c => c.Score != null || c.Percent != null)
 				.ToDictionary(k => k.Id, v =>
 				{
 					if (v.Percent.HasValue)

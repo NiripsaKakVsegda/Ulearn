@@ -131,8 +131,19 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 			}
 		}
 
-		if(check) {
+		const checkings = [...state.checkings];
+		const newCheck = checkings.find(c => c.submissionId === query.submissionId);
+		if(newCheck && !newCheck.isLocked) {
 			api.instructor.lockSubmissionCheck(courseId, query.submissionId, check.type);
+
+			if(newCheck) {
+				newCheck.isLocked = true;
+			}
+
+			setState({
+				...state,
+				checkings,
+			});
 		}
 
 		return (

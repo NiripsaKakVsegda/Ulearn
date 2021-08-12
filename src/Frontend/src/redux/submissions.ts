@@ -55,6 +55,13 @@ import {
 	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
 	SubmissionsEnableManualCheckingStartAction,
 	SubmissionsEnableManualCheckingFailAction,
+
+	REVIEWS_ASSIGN_BOT_START,
+	REVIEWS_ASSIGN_BOT_SUCCESS,
+	REVIEWS_ASSIGN_BOT_FAIL,
+	ReviewsAssignBotStartAction,
+	ReviewsAssignBotSuccessAction,
+	ReviewsAssignBotFailAction,
 } from 'src/actions/submissions.types';
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse, } from "src/models/exercise";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
@@ -90,7 +97,7 @@ export interface SubmissionsState {
 
 	reviewScoresByUserIdBySubmissionId: {
 		[userId: string]: {
-			[submissionId: string]: number | undefined | null;
+			[submissionId: string]: number | undefined;
 		} | undefined;
 	};
 }
@@ -343,69 +350,92 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 		}
 
 		case REVIEWS_DELETE_START: {
-			const { submissionId, reviewId, } = action as ReviewsDeleteStartAction;
-			let reviews = state.reviewsBySubmissionId[submissionId];
+			const { submissionId, reviewId, isBotReview, } = action as ReviewsDeleteStartAction;
 
-			if(!reviews) {
+			let review = state.reviewsBySubmissionId[submissionId];
+
+			if(!review) {
 				return state;
 			}
-			reviews = { ...reviews };
+			review = { ...review };
 
-			const index = reviews.manualCheckingReviews.findIndex(r => r.id === reviewId);
-			reviews.manualCheckingReviews = [...reviews.manualCheckingReviews];
-			reviews.manualCheckingReviews[index] = {
-				...reviews.manualCheckingReviews[index],
-				isDeleted: true,
-			};
+			if(!isBotReview) {
+				const index = review.manualCheckingReviews.findIndex(r => r.id === reviewId);
+				review.manualCheckingReviews = [...review.manualCheckingReviews];
+				review.manualCheckingReviews[index] = {
+					...review.manualCheckingReviews[index],
+					isDeleted: true,
+				};
+			} else if(review.automaticCheckingReviews) {
+				const index = review.automaticCheckingReviews.findIndex(r => r.id === reviewId);
+				review.automaticCheckingReviews = [...review.automaticCheckingReviews];
+				review.automaticCheckingReviews[index] = {
+					...review.automaticCheckingReviews[index],
+					isDeleted: true,
+				};
+			}
 
 			return {
 				...state,
 				reviewsBySubmissionId: {
 					...state.reviewsBySubmissionId,
-					[submissionId]: reviews,
+					[submissionId]: review,
 				}
 			};
 		}
 		case REVIEWS_DELETE_SUCCESS: {
-			const { submissionId, reviewId, } = action as ReviewsDeleteSuccessAction;
-			let reviews = state.reviewsBySubmissionId[submissionId];
+			const { submissionId, reviewId, isBotReview, } = action as ReviewsDeleteSuccessAction;
+			let review = state.reviewsBySubmissionId[submissionId];
 
-			if(!reviews) {
+			if(!review) {
 				return state;
 			}
-			reviews = { ...reviews };
+			review = { ...review };
 
-			reviews.manualCheckingReviews = reviews.manualCheckingReviews.filter(r => r.id !== reviewId);
+			if(!isBotReview) {
+				review.manualCheckingReviews = review.manualCheckingReviews.filter(r => r.id !== reviewId);
+			} else if(review.automaticCheckingReviews) {
+				review.automaticCheckingReviews = review.automaticCheckingReviews.filter(r => r.id !== reviewId);
+			}
 
 			return {
 				...state,
 				reviewsBySubmissionId: {
 					...state.reviewsBySubmissionId,
-					[submissionId]: reviews,
+					[submissionId]: review,
 				}
 			};
 		}
 		case REVIEWS_DELETE_FAIL: {
-			const { submissionId, reviewId, } = action as ReviewsDeleteFailAction;
-			let reviews = state.reviewsBySubmissionId[submissionId];
+			const { submissionId, reviewId, isBotReview, } = action as ReviewsDeleteFailAction;
+			let review = state.reviewsBySubmissionId[submissionId];
 
-			if(!reviews) {
+			if(!review) {
 				return state;
 			}
-			reviews = { ...reviews };
+			review = { ...review };
 
-			const index = reviews.manualCheckingReviews.findIndex(r => r.id === reviewId);
-			reviews.manualCheckingReviews = [...reviews.manualCheckingReviews];
-			reviews.manualCheckingReviews[index] = {
-				...reviews.manualCheckingReviews[index],
-				isDeleted: undefined,
-			};
+			if(!isBotReview) {
+				const index = review.manualCheckingReviews.findIndex(r => r.id === reviewId);
+				review.manualCheckingReviews = [...review.manualCheckingReviews];
+				review.manualCheckingReviews[index] = {
+					...review.manualCheckingReviews[index],
+					isDeleted: undefined,
+				};
+			} else if(review.automaticCheckingReviews) {
+				const index = review.automaticCheckingReviews.findIndex(r => r.id === reviewId);
+				review.automaticCheckingReviews = [...review.automaticCheckingReviews];
+				review.automaticCheckingReviews[index] = {
+					...review.automaticCheckingReviews[index],
+					isDeleted: undefined,
+				};
+			}
 
 			return {
 				...state,
 				reviewsBySubmissionId: {
 					...state.reviewsBySubmissionId,
-					[submissionId]: reviews,
+					[submissionId]: review,
 				}
 			};
 		}
@@ -784,6 +814,37 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					}
 				}
 			};
+		}
+
+		case REVIEWS_ASSIGN_BOT_START: {
+			const { submissionId, botReviewId, } = action as ReviewsAssignBotStartAction;
+			return state;
+		}
+		case REVIEWS_ASSIGN_BOT_SUCCESS: {
+			const { submissionId, botReviewId, review, } = action as ReviewsAssignBotSuccessAction;
+
+			const stateReview = { ...state.reviewsBySubmissionId[submissionId] };
+
+			if(!stateReview || !stateReview.automaticCheckingReviews) {
+				return state;
+			}
+
+			stateReview.manualCheckingReviews = stateReview.manualCheckingReviews ? [...stateReview.manualCheckingReviews] : [];
+			stateReview.manualCheckingReviews.push(review);
+			stateReview.automaticCheckingReviews = stateReview.automaticCheckingReviews.filter(
+				r => r.id !== botReviewId);
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: stateReview,
+				}
+			};
+		}
+		case REVIEWS_ASSIGN_BOT_FAIL: {
+			const { submissionId, botReviewId, error, } = action as ReviewsAssignBotFailAction;
+			return state;
 		}
 
 		default:

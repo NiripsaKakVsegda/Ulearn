@@ -18,11 +18,13 @@ const reviews = "REVIEWS";
 const comment = "_COMMENT";
 const enableManualChecking = "_ENABLE_MANUAL_CHECKING";
 const score = "_SCORE";
+const assignBot = "_ASSIGN_BOT";
 
 const reviewsAdd = reviews + ADD;
 const reviewsAddScore = reviews + ADD + score;
 const reviewsEdit = reviews + EDIT;
 const reviewsDelete = reviews + DELETE;
+const reviewsAssignBot = reviews + assignBot;
 
 const reviewAddComment = reviews + ADD + comment;
 const reviewDeleteComment = reviews + DELETE + comment;
@@ -50,6 +52,10 @@ export const REVIEWS_EDIT_FAIL = reviewsEdit + FAIL;
 export const REVIEWS_DELETE_START = reviewsDelete + START;
 export const REVIEWS_DELETE_SUCCESS = reviewsDelete + SUCCESS;
 export const REVIEWS_DELETE_FAIL = reviewsDelete + FAIL;
+
+export const REVIEWS_ASSIGN_BOT_START = reviewsAssignBot + START;
+export const REVIEWS_ASSIGN_BOT_SUCCESS = reviewsAssignBot + SUCCESS;
+export const REVIEWS_ASSIGN_BOT_FAIL = reviewsAssignBot + FAIL;
 
 export const REVIEWS_ADD_COMMENT_START = reviewAddComment + START;
 export const REVIEWS_ADD_COMMENT_SUCCESS = reviewAddComment + SUCCESS;
@@ -191,18 +197,21 @@ export interface ReviewsDeleteStartAction {
 	type: typeof REVIEWS_DELETE_START;
 	submissionId: number;
 	reviewId: number;
+	isBotReview?: boolean;
 }
 
 export interface ReviewsDeleteSuccessAction {
 	type: typeof REVIEWS_DELETE_SUCCESS;
 	submissionId: number;
 	reviewId: number;
+	isBotReview?: boolean;
 }
 
 export interface ReviewsDeleteFailAction extends FailAction {
 	type: typeof REVIEWS_DELETE_FAIL;
 	submissionId: number;
 	reviewId: number;
+	isBotReview?: boolean;
 }
 
 export interface ReviewsAddScoreStartAction {
@@ -218,6 +227,26 @@ export interface ReviewsAddScoreFailAction extends FailAction {
 	userId: string;
 	oldScore: number | undefined;
 }
+
+export interface ReviewsAssignBotStartAction {
+	type: typeof REVIEWS_ASSIGN_BOT_START;
+	submissionId: number;
+	botReviewId: number;
+}
+
+export interface ReviewsAssignBotSuccessAction {
+	type: typeof REVIEWS_ASSIGN_BOT_SUCCESS;
+	submissionId: number;
+	botReviewId: number;
+	review: ReviewInfo;
+}
+
+export interface ReviewsAssignBotFailAction extends FailAction {
+	type: typeof REVIEWS_ASSIGN_BOT_FAIL;
+	submissionId: number;
+	botReviewId: number;
+}
+
 
 export type SubmissionsAction =
 	SubmissionsAddSubmissionAction
@@ -251,5 +280,9 @@ export type SubmissionsAction =
 	| ReviewsDeleteCommentStartAction
 	| ReviewsDeleteCommentSuccessAction
 	| ReviewsDeleteCommentFailAction
+
+	| ReviewsAssignBotStartAction
+	| ReviewsAssignBotSuccessAction
+	| ReviewsAssignBotFailAction
 	;
 

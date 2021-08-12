@@ -30,7 +30,13 @@ import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { Language } from "src/consts/languages";
 import { ReviewInfo, SubmissionInfo } from "src/models/exercise";
 import CodeMirror, { Editor, EditorConfiguration, MarkerRange, TextMarker, } from "codemirror";
-import { InstructorReviewInfo, InstructorReviewInfoWithAnchor, Props, State } from "./InstructorReview.types";
+import {
+	InstructorReviewInfo,
+	InstructorReviewInfoWithAnchor,
+	Props,
+	State,
+	SubmissionContext
+} from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
 import { FavouriteReview } from "src/models/instructor";
@@ -46,6 +52,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const { studentSubmissions, favouriteReviews, scoresBySubmissionId, slideContext, } = props;
 
 		let currentSubmission: SubmissionInfo | undefined = undefined;
+		let currentSubmissionContext: SubmissionContext | undefined = undefined;
 		let diffInfo: DiffInfo | undefined = undefined;
 		let reviews: InstructorReviewInfo[] | undefined = [];
 		let outdatedReviews: InstructorReviewInfo[] | undefined = [];
@@ -64,6 +71,16 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmission = submissionInfo.submission;
 			diffInfo = submissionInfo.diffInfo;
 
+			const isNewSubmission = currentSubmission.id === studentSubmissions[0].id;
+			const lastCheckedSubmission = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
+			const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmission;
+			const isEditable = (isNewSubmission || isLastCheckedSubmission) && currentSubmission.manualCheckingEnabled;
+			currentSubmissionContext = {
+				isNewSubmission,
+				isLastCheckedSubmission,
+				isEditable,
+			};
+
 			curScore = scoresBySubmissionId[currentSubmission.id];
 			prevScore = diffInfo && scoresBySubmissionId[diffInfo.prevReviewedSubmission.id];
 
@@ -79,6 +96,7 @@ class InstructorReview extends React.Component<Props, State> {
 			markers: {},
 			currentTab: InstructorReviewTabs.Review,
 			currentSubmission,
+			currentSubmissionContext,
 			editor: null,
 			addCommentValue: '',
 			showDiff: false,
@@ -162,6 +180,7 @@ class InstructorReview extends React.Component<Props, State> {
 			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
 		}
 
+
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
 			const index = Math.max(
 				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
@@ -198,14 +217,44 @@ class InstructorReview extends React.Component<Props, State> {
 				//  const outdatedReviewsCompare = outdatedReviews.map(r => getDataFromReviewToCompareChanges(r));
 				//  if(JSON.stringify(outdatedReviewsCompare) !== JSON.stringify(newOutdatedReviewsCompare)) {}
 				if(JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) {
-					this.setState({
-						currentSubmission: submission,
-						reviews: newReviews.reviews,
-						outdatedReviews: newReviews.outdatedReviews,
-					}, this.resetMarkers);
+					this.updateSubmission(submission, newReviews.reviews, newReviews.outdatedReviews);
+				}
+
+				if(currentSubmission.manualCheckingEnabled !== submission.manualCheckingEnabled) {
+					this.updateSubmission(submission);
 				}
 			}
 		}
+	};
+
+	updateSubmission = (
+		submission: SubmissionInfo,
+		newReviews?: ReviewInfo[],
+		newOutdatedReviews?: ReviewInfo[],
+	): void => {
+		const { studentSubmissions, } = this.props;
+		const { reviews, outdatedReviews, } = this.state;
+
+		if(!studentSubmissions) {
+			return;
+		}
+
+		const isNewSubmission = submission.id === studentSubmissions[0].id;
+		const lastCheckedSubmission = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
+		const isLastCheckedSubmission = submission.id === lastCheckedSubmission;
+		const isEditable = (isNewSubmission || isLastCheckedSubmission) && submission.manualCheckingEnabled;
+		const currentSubmissionContext = {
+			isNewSubmission,
+			isLastCheckedSubmission,
+			isEditable,
+		};
+
+		this.setState({
+			currentSubmission: submission,
+			currentSubmissionContext,
+			reviews: newReviews || reviews,
+			outdatedReviews: newOutdatedReviews || outdatedReviews,
+		}, this.resetMarkers);
 	};
 
 	loadSubmission = (studentSubmissions: SubmissionInfo[], index: number,): void => {
@@ -214,13 +263,11 @@ class InstructorReview extends React.Component<Props, State> {
 		const { reviews, outdatedReviews } = this.getReviewsFromSubmission(submission, diffInfo, showDiff);
 
 		this.setState({
-			currentSubmission: submission,
 			diffInfo,
 			selectedReviewId: -1,
 			addCommentFormCoords: undefined,
-			reviews,
-			outdatedReviews,
-		}, this.resetMarkers);
+		});
+		this.updateSubmission(submission, reviews, outdatedReviews);
 	};
 
 	getSubmissionInfo = (studentSubmissions: SubmissionInfo[],
@@ -437,44 +484,27 @@ class InstructorReview extends React.Component<Props, State> {
 		} = this.props;
 		const {
 			currentSubmission,
+			currentSubmissionContext,
 			diffInfo,
-			showDiff,
 		} = this.state;
 
-		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !scoresBySubmissionId) {
+		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !scoresBySubmissionId || !currentSubmissionContext) {
 			return null;
 		}
-		const isNewSubmission = currentSubmission.id === studentSubmissions[0].id;
-		const lastSubmissionId = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
-		const isLastCheckedSubmission = currentSubmission.id === lastSubmissionId;
-		const isEditable = isNewSubmission || isLastCheckedSubmission;
+
+		const { isLastCheckedSubmission, isNewSubmission, isEditable, } = currentSubmissionContext;
 
 		return (
 			<BlocksWrapper withoutBottomPaddings>
 				{ this.renderTopControls(isEditable) }
-				{
-					!isEditable
-						?
-						<div className={ styles.wrapper }>
-							<UnControlled
-								className={ styles.editor }
-								editorDidMount={ this.onEditorMount }
-								options={ this.getEditorOptions(currentSubmission.language) }
-								value={ diffInfo && showDiff
-									? diffInfo.code
-									: currentSubmission.code
-								}
-							/>
-						</div>
-						:
-						<StickyWrapper
-							stickerClass={ styles.wrapperStickerStopper }
-							renderSticker={ this.renderHeader }
-							renderContent={ this.renderEditor }
-						/>
-				}
-				{ (isNewSubmission || isLastCheckedSubmission || scoresBySubmissionId[currentSubmission.id]) &&
+				<StickyWrapper
+					stickerClass={ styles.wrapperStickerStopper }
+					renderSticker={ this.renderHeader }
+					renderContent={ this.renderEditor }
+				/>
+				{ currentSubmission.manualCheckingEnabled && (isNewSubmission || isLastCheckedSubmission || scoresBySubmissionId[currentSubmission.id]) &&
 				<ScoreControls
+					canChangeScore={ isNewSubmission || isLastCheckedSubmission }
 					date={ !isNewSubmission ? currentSubmission.timestamp : undefined }
 					score={ scoresBySubmissionId[currentSubmission.id] }
 					prevReviewScore={ diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
@@ -606,23 +636,28 @@ class InstructorReview extends React.Component<Props, State> {
 		const {
 			user,
 			favouriteReviews,
+			studentSubmissions,
 		} = this.props;
 		const {
 			currentSubmission,
+			currentSubmissionContext,
 			selectedReviewId,
 			diffInfo,
 			showDiff,
 			addCommentFormCoords,
 			addCommentFormExtraSpace,
 			addCommentValue,
+
 		} = this.state;
 
-		if(!favouriteReviews || !currentSubmission) {
+		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !currentSubmissionContext) {
 			return null;
 		}
+		const { isEditable, } = currentSubmissionContext;
+
 		return (
 			<div className={ styles.positionWrapper }
-				 style={ { marginBottom: addCommentFormCoords && addCommentFormExtraSpace } }>
+				 style={ { marginBottom: isEditable && addCommentFormCoords && addCommentFormExtraSpace || 0 } }>
 				<div className={ styles.wrapper }>
 					<UnControlled
 						onSelection={ this.onSelectionChange }
@@ -639,7 +674,7 @@ class InstructorReview extends React.Component<Props, State> {
 						backgroundColor={ 'gray' }
 						user={ user }
 						addReviewComment={ this.onAddReviewComment }
-						assignBotComment={ this.assignBotComment }
+						assignBotComment={ isEditable ? this.assignBotReview : undefined }
 						toggleReviewFavourite={ this.onToggleReviewFavouriteByReviewId }
 						deleteReviewOrComment={ this.onDeleteReviewOrComment }
 						editReviewOrComment={ this.editReviewOrComment }
@@ -648,7 +683,7 @@ class InstructorReview extends React.Component<Props, State> {
 						reviews={ this.getAllReviewsAsInstructorReviews() }
 					/>
 				</div>
-				{ addCommentFormCoords &&
+				{ isEditable && addCommentFormCoords &&
 				<AddCommentForm
 					user={ this.props.user }
 					value={ addCommentValue }
@@ -776,7 +811,8 @@ class InstructorReview extends React.Component<Props, State> {
 			if(commentId) {
 				deleteReviewComment(currentSubmission.id, reviewId, commentId);
 			} else {
-				deleteReview(currentSubmission.id, reviewId);
+				const isBotReview = currentSubmission.automaticChecking?.reviews?.some(r => r.id === reviewId);
+				deleteReview(currentSubmission.id, reviewId, isBotReview);
 			}
 		}
 	};
@@ -807,7 +843,7 @@ class InstructorReview extends React.Component<Props, State> {
 				texts.getSubmissionCaption(
 					submission,
 					index === 0,
-					!prohibitFurtherManualChecking && submission.manualCheckingEnabled)
+					!prohibitFurtherManualChecking && !submission.manualCheckingPassed)
 			]))
 		];
 
@@ -963,10 +999,9 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 	};
 
-	assignBotComment = (reviewId: number): void => {
+	assignBotReview = (reviewId: number): void => {
 		const {
-			addReview,
-			deleteReview,
+			assignBotReview,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -980,15 +1015,8 @@ class InstructorReview extends React.Component<Props, State> {
 		const review = reviews.find(r => r.id === reviewId);
 
 		if(review) {
-			deleteReview(currentSubmission.id, reviewId);
-
-			addReview(
-				currentSubmission.id,
-				review.comment,
-				review.startLine,
-				review.startPosition,
-				review.finishLine,
-				review.finishPosition).then(r => this.highlightReview(r.id));
+			assignBotReview(currentSubmission.id, review)
+				.then(r => this.highlightReview(r.id));
 		}
 	};
 

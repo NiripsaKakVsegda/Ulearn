@@ -43,6 +43,9 @@ import {
 
 	submissionsEnableManualCheckingStartAction,
 	submissionsEnableManualCheckingFailAction,
+	reviewsAssignBotReviewStart,
+	reviewsAssignBotReviewFail,
+	reviewsAssignBotReviewSuccess,
 } from "../actions/submissions";
 
 import { reviews, submissions } from "../consts/routes";
@@ -121,6 +124,16 @@ export function enableManualChecking(
 ): Promise<Response> {
 	const url = `${ submissions }/${ submissionId }/manual-checking`;
 	return api.post(url);
+}
+
+export function assignBotReview(submissionId: number, review: ReviewInfo): Promise<[ReviewInfo, Response]> {
+	return Promise
+		.all(
+			[
+				addReview(submissionId, review.comment, review.startLine, review.startPosition, review.finishLine,
+					review.finishPosition),
+				deleteReview(submissionId, review.id)
+			]);
 }
 
 //REDUX
@@ -212,17 +225,36 @@ const editReviewOrCommentRedux = (
 const deleteReviewRedux = (
 	submissionId: number,
 	reviewId: number,
+	isBotReview?: boolean,
 ) => {
 	return (dispatch: Dispatch): Promise<Response> => {
-		dispatch(reviewsDeleteStartAction(submissionId, reviewId,));
+		dispatch(reviewsDeleteStartAction(submissionId, reviewId, isBotReview));
 		return deleteReview(submissionId, reviewId)
 			.then(review => {
-				dispatch(reviewsDeleteSuccessAction(submissionId, reviewId,));
+				dispatch(reviewsDeleteSuccessAction(submissionId, reviewId, isBotReview));
 				return review;
 			})
 			.catch(error => {
-				dispatch(reviewsDeleteFailAction(submissionId, reviewId, error,));
+				dispatch(reviewsDeleteFailAction(submissionId, reviewId, error, isBotReview));
 				return error;
+			});
+	};
+};
+
+const assignBotReviewRedux = (
+	submissionId: number,
+	botReview: ReviewInfo,
+) => {
+	return (dispatch: Dispatch): Promise<ReviewInfo> => {
+		dispatch(reviewsAssignBotReviewStart(submissionId, botReview.id));
+		return assignBotReview(submissionId, botReview)
+			.then(([review, deletedResponse]) => {
+				dispatch(reviewsAssignBotReviewSuccess(submissionId, botReview.id, review));
+				return review;
+			})
+			.catch(err => {
+				dispatch(reviewsAssignBotReviewFail(submissionId, botReview.id, err));
+				return err;
 			});
 	};
 };
@@ -317,6 +349,8 @@ export const redux = {
 	addReview: addReviewRedux,
 	editReviewOrComment: editReviewOrCommentRedux,
 	deleteReview: deleteReviewRedux,
+
+	assignBotReview: assignBotReviewRedux,
 
 	addReviewComment: addReviewCommentRedux,
 	deleteReviewComment: deleteReviewCommentRedux,
