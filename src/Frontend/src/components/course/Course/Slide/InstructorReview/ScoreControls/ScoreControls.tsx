@@ -11,7 +11,7 @@ export interface Props {
 	scores?: string[];
 	exerciseTitle: string;
 
-	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100;
+	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100 | null;
 	score?: number | 0 | 25 | 50 | 75 | 100;
 	date?: string;
 
@@ -101,7 +101,7 @@ class ScoreControls extends React.Component<Props, State> {
 		);
 	};
 
-	renderControls = (scores: string[], score?: number, prevReviewScore?: number,): React.ReactElement => {
+	renderControls = (scores: string[], score?: number, prevReviewScore?: number | null,): React.ReactElement => {
 		return (
 			<Gapped gap={ 24 } vertical={ false } className={ styles.controlsWrapper }>
 				{ this.renderSwitcherWithLastReviewMarker(scores, score, prevReviewScore,) }
@@ -118,9 +118,9 @@ class ScoreControls extends React.Component<Props, State> {
 	};
 
 	renderSwitcherWithLastReviewMarker = (scores: string[], score?: number,
-		prevReviewScore?: number,
+		prevReviewScore?: number | null,
 	): React.ReactElement => {
-		if(prevReviewScore === undefined) {
+		if(prevReviewScore === undefined || prevReviewScore === null) {
 			return (
 				<Switcher
 					className={ styles.scoresLabel }
@@ -136,7 +136,7 @@ class ScoreControls extends React.Component<Props, State> {
 		*/
 		return (
 			<span ref={ (ref) =>
-				prevReviewScore !== undefined
+				prevReviewScore !== undefined && prevReviewScore !== null
 				&& ref?.children[0]
 				&& this.injectPrevReviewScore(ref, scores.findIndex(s => s === prevReviewScore.toString())) }>
 				<Switcher

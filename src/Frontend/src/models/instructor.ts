@@ -40,7 +40,7 @@ export interface ReviewQueueItem {
 	type: QueueItemType;
 }
 
-enum QueueItemType {
+export enum QueueItemType {
 	Exercise,
 	Quiz,
 }

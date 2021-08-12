@@ -90,7 +90,7 @@ export interface SubmissionsState {
 
 	reviewScoresByUserIdBySubmissionId: {
 		[userId: string]: {
-			[submissionId: string]: number | undefined;
+			[submissionId: string]: number | undefined | null;
 		} | undefined;
 	};
 }
