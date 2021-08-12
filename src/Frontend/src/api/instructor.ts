@@ -14,7 +14,7 @@ import { ShortUserInfo } from "src/models/users";
 import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
 import {
-	AntiPlagiarismStatusResponse, ReviewQueueResponse,
+	AntiPlagiarismStatusResponse, QueueItemType, ReviewQueueResponse,
 } from "src/models/instructor";
 
 export function getAntiPlagiarismStatus(courseId: string,
@@ -50,8 +50,9 @@ export function getReviewQueue(
 export function lockSubmissionCheck(
 	courseId: string,
 	submissionId: number,
+	type: QueueItemType,
 ): Promise<Response> {
-	const url = `review-queue/${ courseId }/${ submissionId }`;
+	const url = `review-queue/${ courseId }/${ submissionId }` + buildQuery({ type });
 	return api.post(url);
 }
 
