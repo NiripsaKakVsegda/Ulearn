@@ -85,8 +85,8 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), submission.UserId))
-				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
+			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(User.GetUserId(), submission.UserId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to edit EnableManualChecking flag for this submission");
 
 			if (submission.ManualChecking != null)
 				return StatusCode((int)HttpStatusCode.Conflict, "Manual checking already enabled");
@@ -104,7 +104,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 			var checking = submission.ManualChecking;
 
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(User.GetUserId(), submission.UserId))
+			if (!await groupAccessesRepo.HasInstructorViewAccessToStudentGroup(User.GetUserId(), submission.UserId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to view this submission");
 
 			/* Invalid form: score isn't from range 0..100 */

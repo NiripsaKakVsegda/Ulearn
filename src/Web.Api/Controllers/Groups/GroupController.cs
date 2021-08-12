@@ -423,7 +423,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (!hasDestinationGroupEditAccess)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse($"You have no edit access to group {groupId}"));
 
-			var membersOfAllGroupsAvailableForUser = (await groupAccessesRepo.GetMembersOfAllGroupsAvailableForUserAsync(UserId).ConfigureAwait(false))
+			var membersOfAllGroupsAvailableForUser = (await groupAccessesRepo.GetMembersOfAllGroupsVisibleForUserAsync(UserId).ConfigureAwait(false))
 				.Select(gm => gm.UserId);
 
 			var studentsToCopySet = parameters.StudentIds.ToHashSet();

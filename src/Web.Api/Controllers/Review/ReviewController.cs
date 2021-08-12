@@ -54,7 +54,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			}
 
 			/* check below will return false if user is not sys admin and/or can't view student submission */
-			if (!await groupAccessesRepo.CanInstructorViewStudentAsync(UserId, submission.UserId))
+			if (!await groupAccessesRepo.HasInstructorViewAccessToStudentGroup(UserId, submission.UserId))
 			{
 				context.Result = StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You don't have access to view this submission"));
 				return;
