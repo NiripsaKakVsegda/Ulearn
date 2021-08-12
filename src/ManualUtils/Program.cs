@@ -850,6 +850,7 @@ namespace ManualUtils
 								.GroupBy(r => r.Author.Id)
 								.ToDictionary(r => r.Key, r => r);
 
+							var textToFavoriteReview = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
 							foreach (var instructorId in instructorIds)
 							{
 								if (!slideTopReviews.ContainsKey(instructorId))
@@ -863,7 +864,6 @@ namespace ManualUtils
 									.Select(g => g.Key)
 									.ToList();
 
-								var textToFavoriteReview = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
 								foreach (var review in userTopReviews)
 								{
 									if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
