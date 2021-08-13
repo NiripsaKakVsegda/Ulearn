@@ -982,10 +982,17 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		getFavouriteReviews(slideContext.courseId, slideContext.slideId)
 			.then(() => {
-				const wrapperHeight = editor.getWrapperElement().getBoundingClientRect().height;
+				const wrapperHeight = editor
+					.getWrapperElement()
+					.getBoundingClientRect()
+					.height;
 				const lineHeight = 20;
 				const padding = 16;
 				if(coords) {
+					coords.left = editor
+						.getGutterElement()
+						.getBoundingClientRect()
+						.width + padding / 2;
 					coords.bottom += padding;
 				}
 				this.setState({

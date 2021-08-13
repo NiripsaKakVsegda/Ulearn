@@ -248,7 +248,7 @@ class AddCommentForm extends React.Component<Props, State> {
 
 		const style: CSSProperties = {
 			top: coordinates.bottom,
-			left: 30,
+			left: coordinates.left,
 		};
 
 		return (
