@@ -60,11 +60,13 @@ namespace AntiPlagiarism.Web.CodeAnalyzing
 			if (Math.Abs(sigma) < 1e-7)
 				return (1, 1);
 			var (alpha, beta) = GetBetaParameters(mean, sigma);
-			var betaDistribution = new BetaDistribution(alpha, beta);
+			UnivariateContinuousDistribution distribution = alpha > 0 && beta > 0 // иное запрещено по определению BetaDistribution
+				? new BetaDistribution(alpha, beta)
+				: new NormalDistribution(mean, sigma);
 			var faintSigmaToProbability = new NormalDistribution(0, 1).DistributionFunction(faintSuspicionCoefficient);
 			var strongSigmaToProbability = new NormalDistribution(0, 1).DistributionFunction(strongSuspicionCoefficient);
-			var faintSuspicion = betaDistribution.InverseDistributionFunction(faintSigmaToProbability);
-			var strongSuspicion = betaDistribution.InverseDistributionFunction(strongSigmaToProbability);
+			var faintSuspicion = distribution.InverseDistributionFunction(faintSigmaToProbability);
+			var strongSuspicion = distribution.InverseDistributionFunction(strongSigmaToProbability);
 			return (faintSuspicion, strongSuspicion);
 		}
 
