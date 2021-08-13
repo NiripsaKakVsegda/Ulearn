@@ -937,7 +937,7 @@ namespace ManualUtils
 				}
 			}
 		}
-		
+
 		private static async Task SetPercentByScore(IServiceProvider serviceProvider)
 		{
 			using (var scope = serviceProvider.CreateScope())
@@ -966,22 +966,35 @@ namespace ManualUtils
 					var slideId = triple.SlideId;
 					var userId = triple.UserId;
 
-					var course = courseStorage.GetCourse(courseId);
-					if (course == null)
-						continue;
+					int scoreWithCodeReview;
+					int passedTestsScore;
+					if (string.Equals(courseId, "BasicProgramming", StringComparison.OrdinalIgnoreCase) && slideId == new Guid("617d8f67-491f-4172-8ed4-e7c230c2120f"))
+					{
+						scoreWithCodeReview = 25;
+						passedTestsScore = 5;
+					}
+					else
+					{
+						var course = courseStorage.GetCourse(courseId);
+						if (course == null)
+							continue;
 
-					var slide = course.FindSlideByIdNotSafe(slideId) as ExerciseSlide;
-					if (slide == null)
-						continue;
+						var slide = course.FindSlideByIdNotSafe(slideId) as ExerciseSlide;
+						if (slide == null)
+							continue;
+
+						scoreWithCodeReview = slide.Scoring.ScoreWithCodeReview;
+						passedTestsScore = slide.Scoring.PassedTestsScore;
+					}
 
 					var checkings = await db.ManualExerciseCheckings
 						.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked && (c.Score != null || c.Percent != null))
 						.OrderBy(c => c.Submission.Timestamp)
 						.ToListAsync();
 
-					int ScoreToPercent(int s) => Math.Min(100, (int)Math.Ceiling(s == 0 ? 0 : s * 100m / slide.Scoring.ScoreWithCodeReview));
+					int ScoreToPercent(int s) => Math.Min(100, (int)Math.Ceiling(s == 0 ? 0 : s * 100m / scoreWithCodeReview));
 					var maxScore = 0;
-					var automaticScore = slide.Scoring.PassedTestsScore;
+					var automaticScore = passedTestsScore;
 					foreach (var checking in checkings)
 					{
 						if (checking.Score != null)
