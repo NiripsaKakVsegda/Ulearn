@@ -137,10 +137,7 @@ class ScoreControls extends React.Component<Props, State> {
 			injecting/changing something down here? check injectPrevReviewScore first or you can break something
 		*/
 		return (
-			<span ref={ (ref) =>
-				prevReviewScore !== undefined && prevReviewScore !== null
-				&& ref?.children[0]
-				&& this.injectPrevReviewScore(ref, scores.findIndex(s => s === prevReviewScore.toString())) }>
+			<span ref={ this.injectPrevReviewScore }>
 				<Switcher
 					className={ styles.scoresLabel }
 					label={ texts.scoresText }
@@ -156,10 +153,22 @@ class ScoreControls extends React.Component<Props, State> {
 	//[1] parent span should not have any childs except switcher, or it will not render last review span
 	//[2] switcher should be the first child of span
 	//[3] switcher should have buttons with correct positions
-	injectPrevReviewScore(element: HTMLSpanElement, index: number): void {
-		if(element.children.length > 1) { //[1]
+	injectPrevReviewScore(element: HTMLSpanElement): void {
+		const {
+			scores = defaultScores,
+			prevReviewScore,
+		} = this.props;
+
+		if(prevReviewScore === undefined || prevReviewScore === null || !element?.children[0] || element.children.length > 1) { //[1]
 			return;
 		}
+
+		const index = scores.findIndex(s => s === prevReviewScore.toString());
+
+		if(index === -1) {
+			return;
+		}
+
 		const buttons = element.children[0].getElementsByTagName('button'); //[2]
 		const button = buttons[index];
 
