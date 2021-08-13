@@ -299,7 +299,6 @@ namespace Database.DataContexts
 
 		public async Task MarkManualQuizCheckingAsChecked(ManualQuizChecking queueItem, int score)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Score = score;
@@ -308,7 +307,6 @@ namespace Database.DataContexts
 
 		public async Task MarkManualExerciseCheckingAsChecked(ManualExerciseChecking queueItem, int percent)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Percent = percent;
@@ -336,7 +334,6 @@ namespace Database.DataContexts
 				}
 				else
 				{
-					item.LockedBy = null;
 					item.LockedUntil = null;
 					item.IsChecked = true;
 					queueItem.Percent = percent;

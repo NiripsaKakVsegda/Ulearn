@@ -325,7 +325,6 @@ namespace Database.Repos
 
 		public async Task MarkManualQuizCheckingAsChecked(ManualQuizChecking queueItem, int score)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Score = score;
@@ -334,7 +333,6 @@ namespace Database.Repos
 
 		public async Task MarkManualExerciseCheckingAsChecked(ManualExerciseChecking queueItem, int percent)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Percent = percent;
@@ -362,7 +360,6 @@ namespace Database.Repos
 				}
 				else
 				{
-					item.LockedBy = null;
 					item.LockedUntil = null;
 					item.IsChecked = true;
 					queueItem.Percent = percent;
