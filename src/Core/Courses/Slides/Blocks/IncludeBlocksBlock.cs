@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
@@ -34,11 +33,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			var slideBlocks = (SlideBlock[])serializer.Deserialize(xmlStream);
 			var newInProgress = filesInProgress.Add(File);
 			return slideBlocks.SelectMany(b => b.BuildUp(context, newInProgress));
-		}
-
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
 		}
 	}
 }

@@ -9,7 +9,6 @@ using JetBrains.Annotations;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.RunCheckerJobApi;
-using Component = Ulearn.Core.Model.Edx.EdxComponents.Component;
 
 namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 {
@@ -131,11 +130,6 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		public override string ToString()
 		{
 			return $"Exercise: {ExerciseInitialCode}, Hints: {string.Join("; ", HintsMd)}";
-		}
-
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
 		}
 
 		public override string TryGetText()

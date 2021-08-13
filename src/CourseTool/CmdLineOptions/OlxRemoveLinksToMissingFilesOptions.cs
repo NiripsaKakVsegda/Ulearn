@@ -5,8 +5,8 @@ using Ulearn.Core.Model.Edx;
 
 namespace uLearn.CourseTool.CmdLineOptions
 {
-	[Verb("olx-gc", HelpText = "Remove not existent items from course")]
-	public class OlxGcOptions : AbstractOptions
+	[Verb("olx-remove-links-to-missing-files", HelpText = "Removes links to missing files from the course")]
+	public class OlxRemoveLinksToMissingFilesOptions : AbstractOptions
 	{
 		public override void DoExecute()
 		{

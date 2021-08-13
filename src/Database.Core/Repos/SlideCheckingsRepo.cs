@@ -362,8 +362,8 @@ namespace Database.Repos
 				{
 					item.LockedUntil = null;
 					item.IsChecked = true;
-					queueItem.Percent = percent;
-					queueItem.Score = score;
+					item.Percent = percent;
+					item.Score = percent != null ? null : score;
 					changed = true;
 				}
 			}

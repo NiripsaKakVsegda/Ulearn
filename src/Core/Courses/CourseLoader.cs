@@ -61,7 +61,7 @@ namespace Ulearn.Core.Courses
 				catch (Exception e)
 				{
 					throw new CourseLoadingException(
-						"Не удалось прочитать настройки курса. Скорее всего, отсутствует или неправильно заполнен файл course.xml"
+						$"Не удалось прочитать настройки курса. Скорее всего, отсутствует или неправильно заполнен файл course.xml. {e.Message}", e.InnerException
 					);
 				}
 			}
@@ -131,7 +131,6 @@ namespace Ulearn.Core.Courses
 					unit.Scoring.Groups.Add(defaultScoringGroup.Id, defaultScoringGroup);
 			}
 		}
-
 
 
 		private IEnumerable<Unit> LoadUnits(CourseLoadingContext context)

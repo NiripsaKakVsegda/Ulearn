@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Ulearn.Core.Courses.Slides.Quizzes;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
@@ -59,11 +57,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 		{
 			if (HideQuizButton && !(slideBuildingContext.Slide is QuizSlide))
 				throw new CourseLoadingException("У блока <spoiler> указан атрибут hideQuizButton=\"true\", хотя слайд не является тестом. Этот атрибут можно использовать только внутри <slide.quiz>");
-		}
-
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new System.NotImplementedException();
 		}
 	}
 }

@@ -27,6 +27,7 @@ using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Units;
+using Ulearn.Core.Markdown;
 
 namespace uLearn.Web.Controllers
 {

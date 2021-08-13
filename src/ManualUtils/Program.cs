@@ -128,6 +128,7 @@ namespace ManualUtils
 			// await SetCourseNamesToVersions(serviceProvider, false);
 			// await UnifyVisits(serviceProvider);
 			// await BuildFavouriteReviewsFromReviews(serviceProvider);
+			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
 			// await SetPercentByScore(serviceProvider);
 		}
 
@@ -902,6 +903,41 @@ namespace ManualUtils
 			}
 		}
 
+		private static async Task FixCheckedManualCheckingsWithoutScoreAndPercent(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var slideCheckingsRepo = scope.ServiceProvider.GetService<ISlideCheckingsRepo>();
+
+				using (var transaction = db.Database.BeginTransaction())
+				{
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.IsChecked && c.Score == null && c.Percent == null)
+						.ToListAsync();
+					Console.WriteLine($"{checkings.Count}");
+
+					foreach (var checking in checkings)
+					{
+						checking.IsChecked = false;
+					}
+
+					await db.SaveChangesAsync();
+
+					foreach (var checking in checkings)
+					{
+						var lastChecking = await db.ManualExerciseCheckings
+							.Where(c => c.UserId == checking.UserId && c.CourseId == checking.CourseId && c.SlideId == checking.SlideId)
+							.OrderByDescending(c => c.Submission.Timestamp)
+							.FirstOrDefaultAsync();
+						await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(lastChecking);
+					}
+
+					await transaction.CommitAsync();
+				}
+			}
+		}
+		
 		private static async Task SetPercentByScore(IServiceProvider serviceProvider)
 		{
 			using (var scope = serviceProvider.CreateScope())

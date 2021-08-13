@@ -8,7 +8,7 @@ using Ulearn.Core.Model.Edx.EdxComponents;
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
 	[XmlType("galleryImages")]
-	public class ImageGalleryBlock : SlideBlock
+	public class ImageGalleryBlock : SlideBlock, IConvertibleToEdx
 	{
 		[XmlElement("image")]
 		public string[] RelativeToUnitDirectoryImagePaths { get; set; }
@@ -37,10 +37,16 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			return $"Gallery with images:\n{string.Join("\n", RelativeToUnitDirectoryImagePaths)}";
 		}
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
+		public Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
-			return new GalleryComponent(urlName, context.DisplayName, urlName, GetAbsoluteImageUrls(context.UlearnBaseUrlApi, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse).ToArray());
+			var imageFiles = RelativeToUnitDirectoryImagePaths
+				.Select(p => (
+					ImageFile: new FileInfo(Path.Combine(context.CourseDirectory.FullName, context.Slide.Unit.UnitDirectoryRelativeToCourse, p)),
+					RelativeToUnitDirectoryImagePath: p.Replace('\\', '/')
+					))
+				.ToArray();
+			return new GalleryComponent(urlName, context.DisplayName, urlName, imageFiles);
 		}
 	}
 }
