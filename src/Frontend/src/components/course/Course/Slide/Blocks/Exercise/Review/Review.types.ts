@@ -26,6 +26,7 @@ export interface ReviewProps {
 	reviews: InstructorReviewInfoWithAnchor[];
 	selectedReviewId: number;
 	user?: UserInfo;
+	className?: string;
 
 	onReviewClick: (e: React.MouseEvent | React.FocusEvent, id: number,) => void;
 	addReviewComment: (parentReviewId: number, comment: string) => void;

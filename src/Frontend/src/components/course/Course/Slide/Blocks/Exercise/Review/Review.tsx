@@ -234,13 +234,16 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 
 	render = (): React.ReactNode => {
 		const { renderedReviews, } = this.state;
-		const { backgroundColor = 'orange', } = this.props;
+		const { backgroundColor = 'orange', className, } = this.props;
 
 		return (
-			<ol className={ cn(styles.reviewsContainer,
-				backgroundColor === 'orange'
-					? styles.reviewOrange
-					: styles.reviewGray) }
+			<ol className={
+				cn(styles.reviewsContainer,
+					backgroundColor === 'orange'
+						? styles.reviewOrange
+						: styles.reviewGray,
+					className
+				) }
 			>
 				{ renderedReviews.map(this.renderTopLevelComment) }
 			</ol>

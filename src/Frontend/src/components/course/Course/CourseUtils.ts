@@ -207,7 +207,7 @@ export default function getSlideInfo(
 
 	const queryParams = parseKnownQueryParams(search);
 
-	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0];
+	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
 	const isLti = queryParams.isLti || !!slideSlugOrAction?.match(slideActionsRegex.ltiSlide);
 	const isReview = !!queryParams.submissionId && !!queryParams.userId;
 

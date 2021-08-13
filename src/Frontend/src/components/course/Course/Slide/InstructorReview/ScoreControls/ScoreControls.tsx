@@ -153,7 +153,7 @@ class ScoreControls extends React.Component<Props, State> {
 	//[1] parent span should not have any childs except switcher, or it will not render last review span
 	//[2] switcher should be the first child of span
 	//[3] switcher should have buttons with correct positions
-	injectPrevReviewScore(element: HTMLSpanElement): void {
+	injectPrevReviewScore = (element: HTMLSpanElement): void => {
 		const {
 			scores = defaultScores,
 			prevReviewScore,
@@ -181,7 +181,7 @@ class ScoreControls extends React.Component<Props, State> {
 		//[3]
 		lastReviewNode.style.top = `${ button.offsetHeight + 6 }px`; // 6 = 2px borders + 4px margin
 		lastReviewNode.style.left = `${ button.offsetLeft + (button.offsetWidth - lastReviewNode.offsetWidth) / 2 }px`;
-	}
+	};
 
 	renderKeepReviewingToggle(toggleChecked: boolean, exerciseTitle: string,): React.ReactElement {
 		return (

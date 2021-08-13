@@ -46,6 +46,7 @@ class InstructorReview extends React.Component<Props, State> {
 	private shameComment = 'Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. ' +
 		'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 		'Выполняйте задания самостоятельно.';
+	private addCommentFormRef = React.createRef<AddCommentForm>();
 
 	constructor(props: Props) {
 		super(props);
@@ -166,7 +167,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 		if(slideContext.slideInfo.query.submissionId !== prevProps.slideContext.slideInfo.query.submissionId) {
 			this.loadData();
-			window.scroll(0, 0);
 			this.setState({
 				currentSubmission: undefined,
 				selectedReviewId: -1,
@@ -233,7 +233,7 @@ class InstructorReview extends React.Component<Props, State> {
 		newOutdatedReviews?: ReviewInfo[],
 	): void => {
 		const { studentSubmissions, } = this.props;
-		const { reviews, outdatedReviews, } = this.state;
+		const { reviews, outdatedReviews, currentSubmissionContext, addCommentFormCoords, } = this.state;
 
 		if(!studentSubmissions) {
 			return;
@@ -243,7 +243,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const lastCheckedSubmission = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
 		const isLastCheckedSubmission = submission.id === lastCheckedSubmission;
 		const isEditable = (isNewSubmission || isLastCheckedSubmission) && submission.manualCheckingEnabled;
-		const currentSubmissionContext = {
+		const newSubmissionContext = {
 			isNewSubmission,
 			isLastCheckedSubmission,
 			isEditable,
@@ -251,9 +251,10 @@ class InstructorReview extends React.Component<Props, State> {
 
 		this.setState({
 			currentSubmission: submission,
-			currentSubmissionContext,
+			currentSubmissionContext: newSubmissionContext,
 			reviews: newReviews || reviews,
 			outdatedReviews: newOutdatedReviews || outdatedReviews,
+			addCommentFormCoords: newSubmissionContext.isEditable !== currentSubmissionContext?.isEditable ? undefined : addCommentFormCoords,
 		}, this.resetMarkers);
 	};
 
@@ -341,19 +342,19 @@ class InstructorReview extends React.Component<Props, State> {
 				if(!lineWrapper) {
 					return;
 				}
-				const lineNumberWrapper = document.createElement('div');
+				//const lineNumberWrapper = document.createElement('div');
 
-				lineWrapper.prepend(lineNumberWrapper);
+				//lineWrapper.prepend(lineNumberWrapper);
 
 				switch (type) {
 					case "added": {
 						lineWrapper.classList.add(styles.addedLinesCodeMirror);
-						lineNumberWrapper.classList.add(styles.addedLinesGutter);
+						//lineNumberWrapper.classList.add(styles.addedLinesGutter);
 						break;
 					}
 					case "removed": {
 						lineWrapper.classList.add(styles.removedLinesCodeMirror);
-						lineNumberWrapper.classList.add(styles.removedLinesGutter);
+						//lineNumberWrapper.classList.add(styles.removedLinesGutter);
 						break;
 					}
 				}
@@ -671,6 +672,7 @@ class InstructorReview extends React.Component<Props, State> {
 						onCursorActivity={ this.onCursorActivity }
 					/>
 					<Review
+						className={ styles.reviewsContainer }
 						backgroundColor={ 'gray' }
 						user={ user }
 						addReviewComment={ this.onAddReviewComment }
@@ -683,8 +685,9 @@ class InstructorReview extends React.Component<Props, State> {
 						reviews={ this.getAllReviewsAsInstructorReviews() }
 					/>
 				</div>
-				{ isEditable && addCommentFormCoords &&
+				{ isEditable && addCommentFormCoords !== undefined &&
 				<AddCommentForm
+					ref={ this.addCommentFormRef }
 					user={ this.props.user }
 					value={ addCommentValue }
 					valueCanBeAddedToFavourite={ this.isCommentCanBeAddedToFavourite() }
@@ -968,7 +971,6 @@ class InstructorReview extends React.Component<Props, State> {
 			if(selectedText.length > 0) {
 				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
 				coords = editor.charCoords({ line: endRange.line, ch: 0 }, 'local');
-
 				createTextMarker(
 					endRange.line,
 					endRange.ch,
@@ -978,14 +980,30 @@ class InstructorReview extends React.Component<Props, State> {
 					doc);
 			}
 		}
-		const linesCount = doc.lineCount();
-		getFavouriteReviews(slideContext.courseId, slideContext.slideId).then(() => {
-			this.setState({
-				addCommentFormCoords: coords,
-				addCommentFormExtraSpace: endRange.line + 15 > linesCount ? 20 * (16 - (linesCount - endRange.line)) : undefined,
-				addCommentRanges: { startRange, endRange, },
+		getFavouriteReviews(slideContext.courseId, slideContext.slideId)
+			.then(() => {
+				const wrapperHeight = editor.getWrapperElement().getBoundingClientRect().height;
+				const lineHeight = 20;
+				const padding = 16;
+				if(coords) {
+					coords.bottom += padding;
+				}
+				this.setState({
+					addCommentFormCoords: coords,
+					addCommentRanges: { startRange, endRange, },
+				}, () => {
+					//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
+					const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
+					if(addCommentFormHeight) {
+						const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
+						if(extraSpace > 0) {
+							this.setState({
+								addCommentFormExtraSpace: extraSpace,
+							});
+						}
+					}
+				});
 			});
-		});
 		document.addEventListener('keydown', this.onEscPressed);
 		document.removeEventListener('mouseup', this.onMouseUp);
 	};
@@ -1069,7 +1087,6 @@ class InstructorReview extends React.Component<Props, State> {
 		doc
 			.getAllMarks()
 			.forEach(m => m.className === styles.selectionToReviewMarker && m.clear());
-		doc.setSelection({ ch: 0, line: 0, });
 	};
 
 	getStartAndEndFromRange = ({

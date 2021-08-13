@@ -127,7 +127,7 @@
 }
 
 .scrollContainer {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .commentText pre {
@@ -157,6 +157,8 @@
 
 .commentReply {
   margin-bottom: 16px;
+  border-top: 1px solid @whiteSmoke;
+  padding: 12px 0 0;
 }
 
 .commentReply&:last-child {
@@ -176,6 +178,12 @@
 .commentReplyTextArea label,
 .commentEditTextArea label {
   margin-bottom: 0; //TODO remove it after removing ulearn.back.bundle css 16 -16px -35px cuz we have global LABEL margin-bottom: 5px
+}
+
+li:not(:only-child) {
+  .commentEditTextArea {
+    margin-bottom: 12px;
+  }
 }
 
 .commentEditTextArea textarea {
@@ -205,9 +213,7 @@
 
 .commentRepliesList {
   list-style: none;
-  border-top: 1px solid @whiteSmoke;
-  margin-top: -4px;
-  padding: 12px 0 0;
+  padding: 0;
 }
 
 .commentDeleteButton {

@@ -16,6 +16,10 @@
   justify-content: space-between;
 }
 
+.reviewsContainer {
+  padding-top: 16px; //similar to CodeMirror-sizer margin top
+}
+
 .reviewStudentName {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -100,8 +104,16 @@
       min-width: unset;
     }
 
+    .CodeMirror-sizer {
+      margin-top: 16px;
+      margin-bottom: -1px !important;
+    }
+
     .CodeMirror-gutters {
       background-color: @whiteSmoke;
+    }
+
+    .CodeMirror-gutter-elt {
       color: @additionalColor;
     }
 
@@ -110,21 +122,9 @@
         padding-left: @gutterPadding;
       }
 
-      :local(.addedLinesCodeMirror),
-      :local(.removedLinesCodeMirror) {
-        .CodeMirror-gutter-wrapper:after {
-          position: absolute;
-          font-size: 10px;
-          line-height: 20px;
-          font-family: @monoFonts;
-          color: @additionalColor;
-          left: 39px;
-        }
-      }
-
       :local(.addedLinesCodeMirror) {
-        .CodeMirror-gutter-wrapper:after {
-          content: '\002B';
+        .CodeMirror-gutter-elt {
+          background: #d6ead1;;
         }
 
         pre.CodeMirror-line {
@@ -133,8 +133,8 @@
       }
 
       :local(.removedLinesCodeMirror) {
-        .CodeMirror-gutter-wrapper:after {
-          content: '\002D';
+        .CodeMirror-gutter-elt {
+          background: #f2cbcb;
         }
 
         pre.CodeMirror-line {
@@ -155,21 +155,21 @@
 
 .gutter {
   position: absolute;
-  width: 38px;
   z-index: 4;
   top: 0;
-  left: -38px;
+  left: 1px;
   bottom: 0;
+  color: @additionalColor;
 }
 
-.addedLinesGutter {
+.addedLinesCodeMirror:before {
   .gutter;
-  background: #d6ead1;
+  content: '\002B';
 }
 
-.removedLinesGutter {
+.removedLinesCodeMirror:before {
   .gutter;
-  background: #f2cbcb;
+  content: '\002D';
 }
 
 .marker {
