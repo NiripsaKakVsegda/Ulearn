@@ -9,8 +9,8 @@ import { antiPlagiarismDetailsRoute } from "src/consts/routes";
 
 import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
 
-import styles from './AntiplagiarismHeader.less';
-import texts from './AntiplagiarismHeader.texts';
+import styles from './AntiPlagiarismHeader.less';
+import texts from './AntiPlagiarismHeader.texts';
 import { Hint } from "@skbkontur/react-ui/index";
 
 
@@ -25,7 +25,7 @@ export interface Props {
 	onZeroScoreButtonPressed: () => void;
 }
 
-function AntiplagiarismHeader({
+function AntiPlagiarismHeader({
 	status,
 	onZeroScoreButtonPressed,
 	fixed,
@@ -91,4 +91,4 @@ function AntiplagiarismHeader({
 	);
 }
 
-export default AntiplagiarismHeader;
+export default AntiPlagiarismHeader;

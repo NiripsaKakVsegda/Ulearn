@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Sticky } from "ui";
 
-import styles from './AntiplagiarismHeader.less';
+import styles from './AntiPlagiarismHeader.less';
 import cn from "classnames";
 
 interface StickyWrapper {

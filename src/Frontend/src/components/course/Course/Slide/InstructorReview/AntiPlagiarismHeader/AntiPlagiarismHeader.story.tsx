@@ -1,5 +1,5 @@
 import React from "react";
-import AntiplagiarismHeader, { Props } from "./AntiplagiarismHeader";
+import AntiPlagiarismHeader, { Props } from "./AntiPlagiarismHeader";
 
 import { mockFunc, } from "src/utils/storyMock";
 import { Gapped } from "ui";
@@ -16,7 +16,7 @@ const Template: Story<PropsWithDecorator[]> = (args) => (
 		{ Object.values(args).map(arg => (
 			<div key={ arg.title }>
 				<h1>{ arg.title }</h1>
-				<AntiplagiarismHeader { ...arg } />
+				<AntiPlagiarismHeader { ...arg } />
 			</div>)) }
 	</Gapped>);
 

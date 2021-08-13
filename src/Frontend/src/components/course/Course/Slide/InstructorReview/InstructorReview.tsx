@@ -8,8 +8,8 @@ import { BlocksWrapper, } from "../Blocks";
 import ScoreControls from "./ScoreControls/ScoreControls";
 import CourseLoader from "../../CourseLoader";
 import AddCommentForm from "./AddCommentForm/AddCommentForm";
-import AntiplagiarismHeader from "./AntiplagiarismHeader/AntiplagiarismHeader";
-import StickyWrapper from "./AntiplagiarismHeader/StickyWrapper";
+import AntiPlagiarismHeader from "./AntiPlagiarismHeader/AntiPlagiarismHeader";
+import StickyWrapper from "./AntiPlagiarismHeader/StickyWrapper";
 import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
@@ -623,7 +623,7 @@ class InstructorReview extends React.Component<Props, State> {
 		} = this.props;
 		const submissionId = studentSubmissions?.[0].id;
 
-		return (<AntiplagiarismHeader
+		return (<AntiPlagiarismHeader
 			zeroButtonDisabled={ submissionId && !!scoresBySubmissionId?.[submissionId] || false }
 			courseId={ courseId }
 			submissionId={ submissionId }
