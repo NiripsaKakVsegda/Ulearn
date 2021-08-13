@@ -127,7 +127,8 @@ namespace ManualUtils
 			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
 			// await SetCourseNamesToVersions(serviceProvider, false);
 			// await UnifyVisits(serviceProvider);
-			await BuildFavouriteReviewsFromReviews(serviceProvider);
+			// await BuildFavouriteReviewsFromReviews(serviceProvider);
+			// await SetPercentByScore(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -898,6 +899,87 @@ namespace ManualUtils
 						transaction.Commit();
 					}
 				}
+			}
+		}
+
+		private static async Task SetPercentByScore(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
+
+				var tasksWithScore = (await db.ManualExerciseCheckings
+					.Where(c => c.IsChecked && c.Score != null && c.Percent == null)
+					.Select(c => new { c.CourseId, c.SlideId, c.UserId })
+					.Distinct()
+					.ToListAsync())
+					.OrderBy(c => c.CourseId)
+					.ThenBy(c => c.SlideId)
+					.ThenBy(c => c.UserId)
+					.ToList();
+				Console.WriteLine($"tasks to process count {tasksWithScore.Count}");
+
+				var updateDbCounter = 0;
+				var updateDbMaxCount = 1000;
+				var tasksCount = 0;
+
+				foreach (var triple in tasksWithScore)
+				{
+					var courseId = triple.CourseId;
+					var slideId = triple.SlideId;
+					var userId = triple.UserId;
+
+					var course = courseStorage.GetCourse(courseId);
+					if (course == null)
+						continue;
+
+					var slide = course.FindSlideByIdNotSafe(slideId) as ExerciseSlide;
+					if (slide == null)
+						continue;
+
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked && (c.Score != null || c.Percent != null))
+						.OrderBy(c => c.Submission.Timestamp)
+						.ToListAsync();
+
+					int ScoreToPercent(int s) => Math.Min(100, (int)Math.Ceiling(s == 0 ? 0 : s * 100m / slide.Scoring.ScoreWithCodeReview));
+					var maxScore = 0;
+					var automaticScore = slide.Scoring.PassedTestsScore;
+					foreach (var checking in checkings)
+					{
+						if (checking.Score != null)
+						{
+							maxScore = Math.Max(maxScore, checking.Score.Value);
+							var finalScoreForNowWithAutomatic = automaticScore + maxScore;
+							var percent = ScoreToPercent(finalScoreForNowWithAutomatic);
+							checking.Percent = percent;
+							updateDbCounter++;
+						}
+						else if (checking.Percent != null)
+						{
+							// До этого были проверки со score, потому что иначе для этой задачи и пользователя бы не запрашивали
+							var finalScoreFromScoreWithAutomatic = automaticScore + maxScore;
+							var percentFromScore = ScoreToPercent(finalScoreFromScoreWithAutomatic);
+							if (percentFromScore > checking.Percent)
+							{
+								checking.Percent = percentFromScore;
+								updateDbCounter++;
+							}
+						}
+					}
+
+					if (updateDbCounter > updateDbMaxCount)
+					{
+						await db.SaveChangesAsync();
+						updateDbCounter = 0;
+					}
+
+					tasksCount++;
+					if (tasksCount % 100 == 0)
+						Console.WriteLine($"{tasksCount}/{tasksWithScore.Count}");
+				}
+				await db.SaveChangesAsync();
 			}
 		}
 	}
