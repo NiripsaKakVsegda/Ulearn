@@ -3,7 +3,7 @@ import React from "react";
 import { BlockRenderContext } from "../../BlocksRenderer";
 import { BlocksWrapper, Text } from "src/components/course/Course/Slide/Blocks";
 import { Block } from "src/models/slide";
-import { SlideContext } from "../../Slide";
+import { SlideContext } from "../../Slide.types";
 import { ArrowChevronDown, ArrowChevronUp } from "icons";
 
 import styles from './Spoiler.less';
