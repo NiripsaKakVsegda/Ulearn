@@ -130,7 +130,7 @@ export interface State {
 }
 
 export interface SubmissionContext {
-	isNewSubmission: boolean;
 	isLastCheckedSubmission: boolean;
+	isLastSubmissionWithManualChecking: boolean;
 	isEditable: boolean;
 }

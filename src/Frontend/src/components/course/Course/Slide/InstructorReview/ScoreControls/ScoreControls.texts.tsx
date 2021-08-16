@@ -9,7 +9,7 @@ export default {
 	getCodeReviewToggleText: (exerciseTitle: string): React.ReactText => `Принимать ещё код-ревью у этого студента по практике «${ exerciseTitle }»`,
 	getScoreText: (percent: number, date?: string,): React.ReactText => {
 		if(date) {
-			return `Работа от ${ getDateDDMMYY(date) } оценена на ${ percent }%`;
+			return `Работа от ${ getDateDDMMYY(date) }. Оценена на ${ percent }%`;
 		}
 		return `Работа оценена на ${ percent }%`;
 	},

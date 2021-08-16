@@ -72,15 +72,7 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmission = submissionInfo.submission;
 			diffInfo = submissionInfo.diffInfo;
 
-			const isNewSubmission = currentSubmission.id === studentSubmissions[0].id;
-			const lastCheckedSubmission = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
-			const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmission;
-			const isEditable = (isNewSubmission || isLastCheckedSubmission) && currentSubmission.manualCheckingEnabled;
-			currentSubmissionContext = {
-				isNewSubmission,
-				isLastCheckedSubmission,
-				isEditable,
-			};
+			currentSubmissionContext = this.getSubmissionContext(studentSubmissions, currentSubmission);
 
 			curScore = scoresBySubmissionId[currentSubmission.id];
 			prevScore = diffInfo && scoresBySubmissionId[diffInfo.prevReviewedSubmission.id];
@@ -108,6 +100,26 @@ class InstructorReview extends React.Component<Props, State> {
 			prevScore,
 		};
 	}
+
+	getSubmissionContext = (
+		studentSubmissions: SubmissionInfo[],
+		currentSubmission: SubmissionInfo
+	): SubmissionContext => {
+		const lastCheckedSubmissionId = studentSubmissions
+			.find(s => s.manualCheckingPassed)?.id;
+		const lastManualCheckingSubmissionId = studentSubmissions
+			.find(s => s.manualCheckingEnabled)?.id;
+		const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmissionId;
+		const isLastSubmissionWithManualChecking = currentSubmission.id === lastManualCheckingSubmissionId;
+
+		const isEditable = (isLastSubmissionWithManualChecking || isLastCheckedSubmission);
+
+		return {
+			isLastCheckedSubmission,
+			isLastSubmissionWithManualChecking,
+			isEditable,
+		};
+	};
 
 	componentDidMount(): void {
 		const {
@@ -239,15 +251,7 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		const isNewSubmission = submission.id === studentSubmissions[0].id;
-		const lastCheckedSubmission = studentSubmissions.find(s => s.manualCheckingPassed)?.id;
-		const isLastCheckedSubmission = submission.id === lastCheckedSubmission;
-		const isEditable = (isNewSubmission || isLastCheckedSubmission) && submission.manualCheckingEnabled;
-		const newSubmissionContext = {
-			isNewSubmission,
-			isLastCheckedSubmission,
-			isEditable,
-		};
+		const newSubmissionContext = this.getSubmissionContext(studentSubmissions, submission);
 
 		this.setState({
 			currentSubmission: submission,
@@ -448,7 +452,7 @@ class InstructorReview extends React.Component<Props, State> {
 					</Tabs>
 				</BlocksWrapper>
 				<div className={ styles.separator }/>
-				{ this.renderCurrentTab() }
+				{ this.renderCurrentTab(currentTab) }
 			</>
 		);
 	}
@@ -457,10 +461,8 @@ class InstructorReview extends React.Component<Props, State> {
 		this.setState({ currentTab: value as InstructorReviewTabs });
 	};
 
-	renderCurrentTab(): React.ReactNode {
+	renderCurrentTab(currentTab: InstructorReviewTabs): React.ReactNode {
 		const { formulation, authorSolution, } = this.props;
-		const { currentTab, } = this.state;
-
 
 		switch (currentTab) {
 			case InstructorReviewTabs.Review: {
@@ -493,7 +495,10 @@ class InstructorReview extends React.Component<Props, State> {
 			return null;
 		}
 
-		const { isLastCheckedSubmission, isNewSubmission, isEditable, } = currentSubmissionContext;
+		const {
+			isLastCheckedSubmission,
+			isEditable,
+		} = currentSubmissionContext;
 
 		return (
 			<BlocksWrapper withoutBottomPaddings>
@@ -503,10 +508,10 @@ class InstructorReview extends React.Component<Props, State> {
 					renderSticker={ this.renderHeader }
 					renderContent={ this.renderEditor }
 				/>
-				{ currentSubmission.manualCheckingEnabled && (isNewSubmission || isLastCheckedSubmission || scoresBySubmissionId[currentSubmission.id]) &&
+				{ (isEditable || scoresBySubmissionId[currentSubmission.id] !== undefined) &&
 				<ScoreControls
-					canChangeScore={ isNewSubmission || isLastCheckedSubmission }
-					date={ !isNewSubmission ? currentSubmission.timestamp : undefined }
+					canChangeScore={ isEditable }
+					date={ !isLastCheckedSubmission ? currentSubmission.timestamp : undefined }
 					score={ scoresBySubmissionId[currentSubmission.id] }
 					prevReviewScore={ diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
 					exerciseTitle={ slideContext.title }
@@ -833,10 +838,10 @@ class InstructorReview extends React.Component<Props, State> {
 	});
 
 	renderSubmissionsSelect = (): React.ReactNode => {
-		const { currentSubmission } = this.state;
-		const { studentSubmissions, prohibitFurtherManualChecking } = this.props;
+		const { currentSubmission, currentSubmissionContext, } = this.state;
+		const { studentSubmissions, } = this.props;
 
-		if(!studentSubmissions || !currentSubmission) {
+		if(!studentSubmissions || !currentSubmission || !currentSubmissionContext) {
 			return null;
 		}
 
@@ -846,7 +851,7 @@ class InstructorReview extends React.Component<Props, State> {
 				texts.getSubmissionCaption(
 					submission,
 					index === 0,
-					!prohibitFurtherManualChecking && !submission.manualCheckingPassed)
+					currentSubmissionContext.isLastSubmissionWithManualChecking && !currentSubmissionContext.isLastCheckedSubmission || false)
 			]))
 		];
 
