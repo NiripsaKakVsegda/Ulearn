@@ -779,7 +779,7 @@ namespace Database.Models
 			var slide = course.GetSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
 
 			var commentsText = GetReviewsText(Checking, html: true);
-			var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(new List<ManualExerciseChecking> { Checking }, slide).Score;
+			var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview);
 
 			return $"{InitiatedBy.VisibleName.EscapeHtml()} {(IsRecheck ? "пере" : "")}проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide).EscapeHtml()}»<br/><br/>" +
 					$"<b>Вы получили {score.PluralizeInRussian(RussianPluralizationOptions.Score)}</b><br/><br/>" +
@@ -791,7 +791,7 @@ namespace Database.Models
 			var slide = course.GetSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
 
 			var commentsText = GetReviewsText(Checking, html: false);
-			var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(new List<ManualExerciseChecking> { Checking }, slide).Score;
+			var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview);
 
 			return $"{InitiatedBy.VisibleName} {(IsRecheck ? "пере" : "")}проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide)}»\n" +
 					$"Вы получили {score.PluralizeInRussian(RussianPluralizationOptions.Score)}\n\n" +

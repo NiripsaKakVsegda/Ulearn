@@ -2,7 +2,7 @@ import { SubmissionInfo, } from "./exercise";
 
 export interface SubmissionsResponse {
 	submissions: SubmissionInfo[];
-	submissionsScores: { [submissionId: number]: number; };
+	submissionsPercents: { [submissionId: number]: number; };
 	prohibitFurtherManualChecking: boolean;
 }
 

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Extensions;
 
 namespace Database.Repos
 {
@@ -137,109 +138,52 @@ namespace Database.Repos
 				if (!isRightAnswer)
 					return (0, null);
 			}
-
-			var checkedScoresAndPercents = await GetCheckedScoresAndPercents(courseId, slide, userId, null);
+			var percent = await GetLastReviewPercentForExerciseSlide(courseId, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (checkedScoresAndPercents.Count == 0)
+			if (percent == null)
 				return (automaticScore, null);
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
+			return (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
 		}
 
-		public static (int Score, int? Percent) GetExerciseSubmissionManualCheckingsScoreAndPercent(IList<ManualExerciseChecking> manualCheckings, ExerciseSlide slide)
+		public static int ConvertExerciseManualCheckingPercentToScore(int manualCheckingPercent, int scoreWithCodeReview)
 		{
-			var checkedScoresAndPercents = manualCheckings
-				.Where(c => c.IsChecked)
-				.OrderBy(c => c.Timestamp)
-				.Select(c => (c.Score, c.Percent))
-				.ToList();
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
+			return (int)Math.Ceiling(manualCheckingPercent / 100m * scoreWithCodeReview);
 		}
 
-		private static (int Score, int? Percent) GetScoreAndPercentByScoresAndPercents(
-			ExerciseSlide slide,
-			List<(int? Score, int? Percent)> checkedScoresAndPercents)
+		public async Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, string userId, DateTime? submissionBefore = null)
 		{
-			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (checkedScoresAndPercents.Count == 0)
-				return (automaticScore, null);
-			var scores = checkedScoresAndPercents
-				.Where(p => p.Score != null)
-				.Select(p => p.Score.Value)
-				.ToList();
-			var lastPercent = checkedScoresAndPercents
-				.Select(p => p.Percent)
-				.LastOrDefault(p => p != null) ?? 0;
-			var scoreFormPercent = (int)Math.Ceiling(lastPercent / 100m * slide.Scoring.ScoreWithCodeReview);
-			var scoreFormScore = scores.Count == 0 ? 0 : automaticScore + scores.Max();
-			return scoreFormPercent >= scoreFormScore
-				? (scoreFormPercent, lastPercent)
-				: (scoreFormScore, (int)Math.Ceiling(scoreFormScore * 100m / slide.Scoring.ScoreWithCodeReview));
-		}
-
-		public async Task<int?> GetUserReviewPercentForExerciseSlide(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore = null)
-		{
-			var checkedScoresAndPercents = await GetCheckedScoresAndPercents(courseId, slide, userId, submissionBefore);
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents).Percent;
-		}
-
-		private async Task<List<(int? Score, int? Percent)>> GetCheckedScoresAndPercents(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore)
-		{
-			var query = GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slide.Id, userId)
+			var query = db.ManualExerciseCheckings
+				.Where(c => c.CourseId == courseId && c.UserId == userId && c.IsChecked)
 				.Where(c => c.IsChecked);
 			if (submissionBefore != null)
 				query = query.Where(c => c.Submission.Timestamp < submissionBefore);
-			var checkedScoresAndPercents = (await query
-					.Select(c => new { c.Score, c.Percent, CheckingTimestamp = c.Timestamp, SubmissionTimestamp = c.Submission.Timestamp })
-					.OrderBy(c => c.SubmissionTimestamp)
-					.ThenBy(c => c.CheckingTimestamp)
-					.Select(c => new { c.Score, c.Percent })
-					.ToListAsync())
-				.Select(c => (c.Score, c.Percent))
-				.ToList();
-			return checkedScoresAndPercents;
+			var lastChecking = await query
+				.OrderByDescending(c => c.Timestamp)
+				.FirstOrDefaultAsync();
+			return lastChecking?.Percent;
 		}
 
-		public async Task<Dictionary<int, int?>> GetCheckedPercentsBySubmissions(string courseId, Guid slideId, string userId, int maxScoreForSlide)
+		public async Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId)
 		{
-			var checkings = GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slideId, userId)
-				.Where(c => c.IsChecked);
-
-			var percentBySubmissions = (await checkings
-					.Select(c => new { c.Percent, c.Id, c.Score, })
-					.ToListAsync())
-				.Where(c => c.Score != null || c.Percent != null)
-				.ToDictionary(k => k.Id, v =>
-				{
-					if (v.Percent.HasValue)
-						return v.Percent;
-					
-					return (int)Math.Ceiling(v.Score.Value * 100m / maxScoreForSlide);
-				});
-			return percentBySubmissions;
+			var manualScore = await GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
+			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
+			return automaticScore + manualScore;
 		}
 
-		public async Task<List<(Guid SlideId, int Score, int Percent)>> GetPassedManualExerciseCheckingsScoresAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)
+		public List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)
 		{
-			var checkings = await db.ManualExerciseCheckings
+			var checkings = db.ManualExerciseCheckings
 				.Where(c => c.CourseId == course.Id && c.UserId == userId && c.IsChecked)
-				.ToListAsync();
+				.Select(c => new { c.SlideId, c.Timestamp, c.Percent })
+				.ToList();
 			var slides = course.GetSlides(false, visibleUnits).OfType<ExerciseSlide>().Select(s => s.Id).ToHashSet();
 			return checkings.GroupBy(s => s.SlideId)
 				.Where(s => slides.Contains(s.Key))
 				.Select(g =>
 				{
-					var checkedScoresAndPercents = g.Select(c => (c.Score, c.Percent)).ToList();
-					var slide = course.GetSlideByIdNotSafe(g.Key) as ExerciseSlide;
-					var (score, percent) = GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
-					return (g.Key, score, percent.Value);
+					var lastPercent = g.MaxBy(c => c.Timestamp).Percent.Value;
+					return (g.Key, lastPercent);
 				}).ToList();
-		}
-
-		public async Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId)
-		{
-			var manualScore = await GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).MaxAsync(c => (int?)c.Score) ?? 0;
-			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).MaxAsync(c => (int?)c.Score) ?? 0;
-			return automaticScore + manualScore;
 		}
 
 		#endregion
@@ -356,14 +300,12 @@ namespace Database.Repos
 				if (item.IsChecked)
 				{
 					percent = item.Percent;
-					score = item.Score;
 				}
 				else
 				{
 					item.LockedUntil = null;
 					item.IsChecked = true;
 					item.Percent = percent;
-					item.Score = percent != null ? null : score;
 					changed = true;
 				}
 			}

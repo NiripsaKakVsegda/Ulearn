@@ -78,15 +78,14 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				.GetCourse(courseId)
 				.GetSlideByIdNotSafe(slideId) is not ExerciseSlide slide)
 				return NotFound($"Slide with id {slideId} not found");
-			
-			var submissionsScores = await slideCheckingsRepo.GetCheckedPercentsBySubmissions(courseId, slideId, userId, slide.Scoring.ScoreWithCodeReview);
+
 			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(courseId, slideId, userId);
 			var reviewId2Comments = codeReviewComments
 				?.GroupBy(c => c.ReviewId)
 				.ToDictionary(g => g.Key, g => g.AsEnumerable());
 			var prohibitFurtherManualChecking = submissions.Any(s => s.ManualChecking?.ProhibitFurtherManualCheckings ?? false);
 
-			return SubmissionsResponse.Build(submissions, submissionsScores, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
+			return SubmissionsResponse.Build(submissions, reviewId2Comments, isCourseAdmin, prohibitFurtherManualChecking);
 		}
 
 		[HttpPost("{submissionId}/manual-checking")]

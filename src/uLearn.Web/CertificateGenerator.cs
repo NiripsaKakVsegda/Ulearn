@@ -277,9 +277,9 @@ namespace uLearn.Web
 		private string ReplaceCodeReviewsBuiltinParameters(string content, Certificate certificate, Course course)
 		{
 			var visibleUnits = unitsRepo.GetVisibleUnitIds(course);
-			var slideScoresAndPercents = slideCheckingsRepo.GetPassedManualExerciseCheckingsScoresAndPercents(course, certificate.UserId, visibleUnits);
-			var codeReviewsCount = slideScoresAndPercents.Count;
-			var codeReviewsFullCount = slideScoresAndPercents.Count(s => s.Percent == 100);
+			var slideAndPercents = slideCheckingsRepo.GetPassedManualExerciseCheckingsAndPercents(course, certificate.UserId, visibleUnits);
+			var codeReviewsCount = slideAndPercents.Count;
+			var codeReviewsFullCount = slideAndPercents.Count(s => s.Percent == 100);
 
 			content = SubstituteOneParameter(content, "codereviews.passed", codeReviewsCount.ToString());
 			content = SubstituteOneParameter(content, "codereviews.passed_maxscore", codeReviewsFullCount.ToString());

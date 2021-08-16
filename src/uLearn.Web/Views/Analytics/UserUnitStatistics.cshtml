@@ -1,5 +1,4 @@
-﻿@using Database.DataContexts
-@using uLearn.Web.Extensions
+﻿@using uLearn.Web.Extensions
 @using Ulearn.Core.Courses.Slides.Exercises
 @using Ulearn.Core.Extensions
 @using uLearn.Web.Controllers
@@ -64,7 +63,7 @@
 					<p>
 						Код-ревью
 						@{
-							manualPercent = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(submission.ManualChecking, slide).Percent;
+							manualPercent = submission.ManualChecking?.Percent;
 							var isChecked = manualPercent != null;
 							if (isChecked)
 							{
@@ -72,7 +71,7 @@
 							}
 							else
 							{
-								<span> (это первое ревью)</span>
+								<span> (это первое ревью этой посылки)</span>
 							}
 						}
 					</p>

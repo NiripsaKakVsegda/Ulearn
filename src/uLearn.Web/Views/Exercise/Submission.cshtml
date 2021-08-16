@@ -61,7 +61,7 @@
 			}
 			else if (Model.ReviewState == ExerciseReviewState.Reviewed)
 			{
-				var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(Model.SubmissionSelectedByUser.ManualChecking, Model.Slide).Score;
+				var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Model.SubmissionSelectedByUser.ManualChecking.Percent.Value, Model.Slide.Scoring.ScoreWithCodeReview);
 				var scoreVerb = score.SelectPluralWordInRussian(new RussianPluralizationOptions
 				{
 					One = "получен",

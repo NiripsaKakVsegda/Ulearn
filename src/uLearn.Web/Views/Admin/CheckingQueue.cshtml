@@ -95,7 +95,7 @@
 							var slide = Model.Slides.FirstOrDefault(s => s.Key == checking.SlideId).Value;
 							var score = isQuiz
 								? (checking as ManualQuizChecking).Score
-								: SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(checking as ManualExerciseChecking, slide as ExerciseSlide).Score;
+								: SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(((ManualExerciseChecking)checking).Percent.Value, ((ExerciseSlide)slide).Scoring.ScoreWithCodeReview);
 						}
 						<span class="label label-xs label-default">
 							@score из @checkingModel.ContextMaxScore.PluralizeInRussian(RussianPluralizationOptions.Score) за @(isExercise ? "код-ревью" : "тест")

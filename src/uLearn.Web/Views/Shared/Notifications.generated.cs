@@ -686,7 +686,7 @@ WriteLiteralTo(__razor_helper_writer, "»\r\n\t\t\t</div>\r\n");
 
 			
               
-				var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(notification.Checking, slide).Score.PluralizeInRussian(RussianPluralizationOptions.Score);
+				var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(notification.Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview).PluralizeInRussian(RussianPluralizationOptions.Score);
 			
 WriteLiteralTo(__razor_helper_writer, "\r\n\t\t\t<div");
 
@@ -704,9 +704,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 8468), Tuple.Create("\"", 8517)
-, Tuple.Create(Tuple.Create("", 8476), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 8476), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 8496), Tuple.Create("\"", 8545)
+, Tuple.Create(Tuple.Create("", 8504), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 8504), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -792,9 +792,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 9503), Tuple.Create("\"", 9552)
-, Tuple.Create(Tuple.Create("", 9511), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 9511), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 9531), Tuple.Create("\"", 9580)
+, Tuple.Create(Tuple.Create("", 9539), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 9539), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -857,9 +857,9 @@ WriteLiteralTo(__razor_helper_writer, "»</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 10244), Tuple.Create("\"", 10293)
-, Tuple.Create(Tuple.Create("", 10252), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 10252), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 10272), Tuple.Create("\"", 10321)
+, Tuple.Create(Tuple.Create("", 10280), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 10280), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -945,9 +945,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 11354), Tuple.Create("\"", 11403)
-, Tuple.Create(Tuple.Create("", 11362), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 11362), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 11382), Tuple.Create("\"", 11431)
+, Tuple.Create(Tuple.Create("", 11390), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 11390), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1019,9 +1019,9 @@ WriteLiteralTo(__razor_helper_writer, " код-ревью задания «");
 
 WriteLiteralTo(__razor_helper_writer, "»\r\n\t\t\t</div>\r\n\t\t\t<div");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 12226), Tuple.Create("\"", 12286)
-, Tuple.Create(Tuple.Create("", 12234), Tuple.Create<System.Object, System.Int32>(notification.Comment.Text.TruncateWithEllipsis(200)
-, 12234), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 12254), Tuple.Create("\"", 12314)
+, Tuple.Create(Tuple.Create("", 12262), Tuple.Create<System.Object, System.Int32>(notification.Comment.Text.TruncateWithEllipsis(200)
+, 12262), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__comment-notification__text\"");
@@ -1034,9 +1034,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 12488), Tuple.Create("\"", 12537)
-, Tuple.Create(Tuple.Create("", 12496), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 12496), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 12516), Tuple.Create("\"", 12565)
+, Tuple.Create(Tuple.Create("", 12524), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 12524), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1109,9 +1109,9 @@ WriteLiteralTo(__razor_helper_writer, "»</b>\r\n\t\t\t</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 13306), Tuple.Create("\"", 13355)
-, Tuple.Create(Tuple.Create("", 13314), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 13314), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 13334), Tuple.Create("\"", 13383)
+, Tuple.Create(Tuple.Create("", 13342), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 13342), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1188,9 +1188,9 @@ WriteLiteralTo(__razor_helper_writer, "».\r\n\t\t\t</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 14209), Tuple.Create("\"", 14258)
-, Tuple.Create(Tuple.Create("", 14217), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 14217), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 14237), Tuple.Create("\"", 14286)
+, Tuple.Create(Tuple.Create("", 14245), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 14245), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1257,9 +1257,9 @@ WriteLiteralTo(__razor_helper_writer, "».\r\n\t\t\t</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 15016), Tuple.Create("\"", 15065)
-, Tuple.Create(Tuple.Create("", 15024), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 15024), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 15044), Tuple.Create("\"", 15093)
+, Tuple.Create(Tuple.Create("", 15052), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 15052), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1344,9 +1344,9 @@ WriteLiteralTo(__razor_helper_writer, ".\r\n\t\t\t</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 16029), Tuple.Create("\"", 16078)
-, Tuple.Create(Tuple.Create("", 16037), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 16037), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 16057), Tuple.Create("\"", 16106)
+, Tuple.Create(Tuple.Create("", 16065), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 16065), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1431,9 +1431,9 @@ WriteLiteralTo(__razor_helper_writer, ".\r\n\t\t\t</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 17038), Tuple.Create("\"", 17087)
-, Tuple.Create(Tuple.Create("", 17046), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 17046), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 17066), Tuple.Create("\"", 17115)
+, Tuple.Create(Tuple.Create("", 17074), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 17074), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1513,9 +1513,9 @@ WriteLiteralTo(__razor_helper_writer, " class=\"comments-for-instructors-only__d
 
 WriteLiteralTo(__razor_helper_writer, ">Комментарий для преподавателей:</div>\r\n\t\t\t<div");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 17989), Tuple.Create("\"", 18049)
-, Tuple.Create(Tuple.Create("", 17997), Tuple.Create<System.Object, System.Int32>(notification.Comment.Text.TruncateWithEllipsis(200)
-, 17997), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 18017), Tuple.Create("\"", 18077)
+, Tuple.Create(Tuple.Create("", 18025), Tuple.Create<System.Object, System.Int32>(notification.Comment.Text.TruncateWithEllipsis(200)
+, 18025), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__comment-notification__text\"");
@@ -1528,9 +1528,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 18251), Tuple.Create("\"", 18300)
-, Tuple.Create(Tuple.Create("", 18259), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 18259), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 18279), Tuple.Create("\"", 18328)
+, Tuple.Create(Tuple.Create("", 18287), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 18287), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1601,9 +1601,9 @@ WriteLiteralTo(__razor_helper_writer, "»</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 19031), Tuple.Create("\"", 19080)
-, Tuple.Create(Tuple.Create("", 19039), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 19039), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 19059), Tuple.Create("\"", 19108)
+, Tuple.Create(Tuple.Create("", 19067), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 19067), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1678,9 +1678,9 @@ WriteLiteralTo(__razor_helper_writer, "»</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 19859), Tuple.Create("\"", 19908)
-, Tuple.Create(Tuple.Create("", 19867), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 19867), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 19887), Tuple.Create("\"", 19936)
+, Tuple.Create(Tuple.Create("", 19895), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 19895), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1751,9 +1751,9 @@ WriteLiteralTo(__razor_helper_writer, "»</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 20650), Tuple.Create("\"", 20699)
-, Tuple.Create(Tuple.Create("", 20658), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 20658), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 20678), Tuple.Create("\"", 20727)
+, Tuple.Create(Tuple.Create("", 20686), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 20686), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1820,9 +1820,9 @@ WriteLiteralTo(__razor_helper_writer, "</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 21419), Tuple.Create("\"", 21468)
-, Tuple.Create(Tuple.Create("", 21427), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 21427), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 21447), Tuple.Create("\"", 21496)
+, Tuple.Create(Tuple.Create("", 21455), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 21455), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1893,9 +1893,9 @@ WriteLiteralTo(__razor_helper_writer, "»</div>\r\n\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 22215), Tuple.Create("\"", 22264)
-, Tuple.Create(Tuple.Create("", 22223), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 22223), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 22243), Tuple.Create("\"", 22292)
+, Tuple.Create(Tuple.Create("", 22251), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 22251), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -1983,9 +1983,9 @@ WriteLiteralTo(__razor_helper_writer, "\t\t\t<div");
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 23257), Tuple.Create("\"", 23306)
-, Tuple.Create(Tuple.Create("", 23265), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 23265), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 23285), Tuple.Create("\"", 23334)
+, Tuple.Create(Tuple.Create("", 23293), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 23293), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");
@@ -2049,9 +2049,9 @@ WriteLiteralTo(__razor_helper_writer, "»</b> архивирована. Чтоб
 
 WriteLiteralTo(__razor_helper_writer, " class=\"notifications__notification__footer\"");
 
-WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 24045), Tuple.Create("\"", 24094)
-, Tuple.Create(Tuple.Create("", 24053), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
-, 24053), false)
+WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 24073), Tuple.Create("\"", 24122)
+, Tuple.Create(Tuple.Create("", 24081), Tuple.Create<System.Object, System.Int32>(notification.CreateTime.ToPrettyString()
+, 24081), false)
 );
 
 WriteLiteralTo(__razor_helper_writer, ">");

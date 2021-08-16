@@ -217,7 +217,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				userId,
 				courseId,
 				slideId,
-				response: { submissions, submissionsScores, },
+				response: { submissions, submissionsPercents, },
 			} = action as SubmissionsLoadSuccessAction;
 			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
 			const slideSubmissions = courseSubmissions?.[slideId] || {};
@@ -261,7 +261,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				reviewScoresByUserIdBySubmissionId: {
 					...reviewScoresByUsers,
 					[userId]: {
-						...submissionsScores,
+						...submissionsPercents,
 					},
 				},
 				reviewsBySubmissionId: {
