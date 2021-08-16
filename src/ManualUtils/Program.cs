@@ -127,6 +127,7 @@ namespace ManualUtils
 			// await SetCourseNamesToVersions(serviceProvider, false);
 			// await UnifyVisits(serviceProvider);
 			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
+			// await SetPercentByScore(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -841,6 +842,127 @@ namespace ManualUtils
 
 					await transaction.CommitAsync();
 				}
+			}
+		}
+
+		public record SlideAndBorders(string CourseId, string SlideId, int ScoreWithCodeReview, int PassedTestsScore);
+
+		private static async Task SetPercentByScore(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
+
+				var tasksWithScore = (await db.ManualExerciseCheckings
+					.Where(c => c.IsChecked && c.Score != null && c.Percent == null)
+					.Select(c => new { c.CourseId, c.SlideId, c.UserId })
+					.Distinct()
+					.ToListAsync())
+					.OrderBy(c => c.CourseId)
+					.ThenBy(c => c.SlideId)
+					.ThenBy(c => c.UserId)
+					.ToList();
+				Console.WriteLine($"tasks to process count {tasksWithScore.Count}");
+
+				var updateDbCounter = 0;
+				var updateDbMaxCount = 1000;
+				var tasksCount = 0;
+
+				foreach (var triple in tasksWithScore)
+				{
+					var courseId = triple.CourseId;
+					var slideId = triple.SlideId;
+					var userId = triple.UserId;
+
+					var others = new List<SlideAndBorders>
+					{
+						new SlideAndBorders("BasicProgramming", "617d8f67-491f-4172-8ed4-e7c230c2120f", 25, 5),
+						new SlideAndBorders("BasicProgramming", "3de364ff-38e9-411e-ac97-b4e4d24cdf26", 50, 10),
+						new SlideAndBorders("BasicProgramming", "616826fa-d344-4292-9ab4-ec5c8ea83e1e", 50, 10),
+						new SlideAndBorders("BasicProgramming", "d91838bd-0b73-4da5-81ec-39ff935ced35", 50, 10),
+						new SlideAndBorders("BasicProgramming", "8e0ccef8-59a4-4bf1-8610-8351c487a339", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "10e4d5e2-6f7e-48c8-8d09-db133cdf0271", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "61d2af1e-c7d8-468f-82e0-e69170998423", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "30c04e83-f962-412e-8866-0ab981e5a71c", 100, 20),
+						new SlideAndBorders("BasicProgramming2", "43d5bcce-7071-4111-87fa-b5887053a6da", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "85d068c7-ab40-4c9f-912a-c1405f5da5a4", 50, 10),
+						new SlideAndBorders("izhtestingcasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 4, 0),
+						new SlideAndBorders("JavaTech", "36f0bbb6-bff5-4049-8dc0-7b7c774a5a6f", 10, 0),
+						new SlideAndBorders("JavaTech", "22775cad-22e5-4034-83ba-8f9f9f2e3195", 5, 0),
+						new SlideAndBorders("JavaTech", "ba0de434-d87d-4c3c-9610-005a1e6aa404", 10, 0),
+						new SlideAndBorders("TestingCasting", "1cc77436-e31f-4e25-a52b-6805f04117e5", 3, 0),
+						new SlideAndBorders("TestingCasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 8, 0),
+					};
+
+					var scoreWithCodeReview = 0;
+					var passedTestsScore = 0;
+					var found = false;
+					foreach (var other in others)
+					{
+						if (string.Equals(courseId, other.CourseId, StringComparison.OrdinalIgnoreCase) && slideId == new Guid(other.SlideId))
+						{
+							scoreWithCodeReview = other.ScoreWithCodeReview;
+							passedTestsScore = other.PassedTestsScore;
+							found = true;
+						}
+					}
+					if (!found)
+					{
+						var course = courseStorage.GetCourse(courseId);
+						if (course == null)
+							continue;
+
+						var slide = course.FindSlideByIdNotSafe(slideId) as ExerciseSlide;
+						if (slide == null)
+							continue;
+
+						scoreWithCodeReview = slide.Scoring.ScoreWithCodeReview;
+						passedTestsScore = slide.Scoring.PassedTestsScore;
+					}
+
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked && (c.Score != null || c.Percent != null))
+						.OrderBy(c => c.Submission.Timestamp)
+						.ToListAsync();
+
+					int ScoreToPercent(int s) => Math.Min(100, (int)Math.Ceiling(s == 0 ? 0 : s * 100m / scoreWithCodeReview));
+					var maxScore = 0;
+					var automaticScore = passedTestsScore;
+					foreach (var checking in checkings)
+					{
+						if (checking.Score != null)
+						{
+							maxScore = Math.Max(maxScore, checking.Score.Value);
+							var finalScoreForNowWithAutomatic = automaticScore + maxScore;
+							var percent = ScoreToPercent(finalScoreForNowWithAutomatic);
+							checking.Percent = percent;
+							updateDbCounter++;
+						}
+						else if (checking.Percent != null)
+						{
+							// До этого были проверки со score, потому что иначе для этой задачи и пользователя бы не запрашивали
+							var finalScoreFromScoreWithAutomatic = automaticScore + maxScore;
+							var percentFromScore = ScoreToPercent(finalScoreFromScoreWithAutomatic);
+							if (percentFromScore > checking.Percent)
+							{
+								checking.Percent = percentFromScore;
+								updateDbCounter++;
+							}
+						}
+					}
+
+					if (updateDbCounter > updateDbMaxCount)
+					{
+						await db.SaveChangesAsync();
+						updateDbCounter = 0;
+					}
+
+					tasksCount++;
+					if (tasksCount % 100 == 0)
+						Console.WriteLine($"{tasksCount}/{tasksWithScore.Count}");
+				}
+				await db.SaveChangesAsync();
 			}
 		}
 	}
