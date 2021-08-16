@@ -983,9 +983,9 @@ class InstructorReview extends React.Component<Props, State> {
 		getFavouriteReviews(slideContext.courseId, slideContext.slideId)
 			.then(() => {
 				const wrapperHeight = editor
-					.getWrapperElement()
+					.getScrollerElement()
 					.getBoundingClientRect()
-					.height;
+					.height - 50;
 				const lineHeight = 20;
 				const padding = 16;
 				if(coords) {

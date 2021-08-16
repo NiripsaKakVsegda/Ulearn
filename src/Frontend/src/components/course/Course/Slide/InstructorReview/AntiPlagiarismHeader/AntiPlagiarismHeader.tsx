@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button, } from "ui";
+import { Button, Hint, } from "ui";
 
 import cn from "classnames";
 import { buildQuery } from "src/utils";
@@ -11,7 +11,6 @@ import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
 
 import styles from './AntiPlagiarismHeader.less';
 import texts from './AntiPlagiarismHeader.texts';
-import { Hint } from "@skbkontur/react-ui/index";
 
 
 export interface Props {
