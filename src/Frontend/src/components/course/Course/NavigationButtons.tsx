@@ -168,7 +168,8 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 						</Link>
 				}
 				<span className={ styles.reviewQueueNumberLabel }>
-					{ texts.buildNextReviewText(state.checkings.length - 1) }
+					{ texts.buildNextReviewText(
+						state.checkings.filter(c => c.submissionId !== query.submissionId).length) }
 				</span>
 			</div>
 		);
