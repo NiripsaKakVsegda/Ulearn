@@ -14,9 +14,6 @@ namespace Ulearn.Web.Api.Models.Responses.Submissions
 		public List<SubmissionInfo> Submissions { get; set; }
 
 		[DataMember]
-		public Dictionary<int, int> SubmissionsPercents { get; set; } // Percents
-
-		[DataMember]
 		public bool ProhibitFurtherManualChecking { get; set; }
 
 		public static SubmissionsResponse Build(
@@ -26,13 +23,9 @@ namespace Ulearn.Web.Api.Models.Responses.Submissions
 			bool prohibitFurtherManualChecking = true
 		)
 		{
-			var manualPercentBySubmissions = submissions
-				.Where(s => s.ManualChecking?.Percent != null)
-				.ToDictionary(s => s.Id, s => s.ManualChecking.Percent.Value);
 			return new SubmissionsResponse
 			{
 				Submissions = submissions.Select(s => SubmissionInfo.Build(s, reviewId2Comments, showCheckerLogs)).ToList(),
-				SubmissionsPercents = manualPercentBySubmissions,
 				ProhibitFurtherManualChecking = prohibitFurtherManualChecking,
 			};
 		}
