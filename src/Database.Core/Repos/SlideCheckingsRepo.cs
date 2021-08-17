@@ -209,7 +209,7 @@ namespace Database.Repos
 			return enumerable.ToList();
 		}
 
-		private IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		public IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
 			var query = db.Set<T>()
 				.Include(c => c.User)
