@@ -200,7 +200,7 @@ namespace uLearn.Web.Controllers
 			if (submitButton == "Save")
 			{
 				repoUrl = repoUrl.NullIfEmptyOrWhitespace();
-				pathToCourseXml = pathToCourseXml.NullIfEmptyOrWhitespace();
+				pathToCourseXml = pathToCourseXml.NullIfEmptyOrWhitespace()?.Replace("\"", "/").Trim('/');
 				branch = branch.NullIfEmptyOrWhitespace() ?? "master";
 				var oldRepoSettings = coursesRepo.GetCourseRepoSettings(courseId);
 				var settings = oldRepoSettings != null && oldRepoSettings.RepoUrl == repoUrl ? oldRepoSettings : new CourseGit { CourseId = courseId };
