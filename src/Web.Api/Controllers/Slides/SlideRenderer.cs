@@ -112,7 +112,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(HtmlBlock b, SlideRenderContext context)
 		{
-			return new[] { new HtmlBlockResponse(b, false) };
+			return new[] { new HtmlBlockResponse(b, false, context.BaseUrlApi) };
 		}
 		
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(ImageGalleryBlock b, SlideRenderContext context)

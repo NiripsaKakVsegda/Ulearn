@@ -10,7 +10,9 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 	//[XmlType("html")]
 	public class HtmlBlock : SlideBlock, IXmlSerializable, IConvertibleToEdx
 	{
-		public string Content { get; private set; } = "";
+		public static readonly string BaseUrlApiPlaceholder = "%BaseUrlApiPlaceholder%";
+
+		private string Content { get; set; } = "";
 
 		public HtmlBlock()
 		{
@@ -21,6 +23,11 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			Content = content;
 		}
 
+		public string GetContent(string ulearnBaseUrlApi)
+		{
+			return Content.Replace(BaseUrlApiPlaceholder, ulearnBaseUrlApi);
+		}
+
 		public override string ToString()
 		{
 			return $"Html {Content.Substring(0, 50)}";
@@ -29,7 +36,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 		public Component ToEdxComponent(EdxComponentBuilderContext context)
 		{
 			var urlName = context.Slide.NormalizedGuid + context.ComponentIndex;
-			return new HtmlComponent(urlName, context.DisplayName, urlName, Content);
+			return new HtmlComponent(urlName, context.DisplayName, urlName, GetContent(context.UlearnBaseUrlApi));
 		}
 
 		public XmlSchema GetSchema()
