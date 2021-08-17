@@ -131,6 +131,8 @@ export interface State {
 
 export interface SubmissionContext {
 	isLastCheckedSubmission: boolean;
+	lastCheckedSubmissionId?: number;
 	isLastSubmissionWithManualChecking: boolean;
+	lastSubmissionWithManualCheckingId?: number;
 	isEditable: boolean;
 }

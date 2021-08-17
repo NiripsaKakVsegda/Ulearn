@@ -107,16 +107,18 @@ class InstructorReview extends React.Component<Props, State> {
 	): SubmissionContext => {
 		const lastCheckedSubmissionId = studentSubmissions
 			.find(s => s.manualCheckingPassed)?.id;
-		const lastManualCheckingSubmissionId = studentSubmissions
+		const lastSubmissionWithManualCheckingId = studentSubmissions
 			.find(s => s.manualCheckingEnabled)?.id;
 		const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmissionId;
-		const isLastSubmissionWithManualChecking = currentSubmission.id === lastManualCheckingSubmissionId;
+		const isLastSubmissionWithManualChecking = currentSubmission.id === lastSubmissionWithManualCheckingId;
 
 		const isEditable = (isLastSubmissionWithManualChecking || isLastCheckedSubmission);
 
 		return {
 			isLastCheckedSubmission,
+			lastCheckedSubmissionId,
 			isLastSubmissionWithManualChecking,
+			lastSubmissionWithManualCheckingId,
 			isEditable,
 		};
 	};
@@ -851,7 +853,8 @@ class InstructorReview extends React.Component<Props, State> {
 				texts.getSubmissionCaption(
 					submission,
 					index === 0,
-					currentSubmissionContext.isLastSubmissionWithManualChecking && !currentSubmissionContext.isLastCheckedSubmission || false)
+					currentSubmissionContext.lastSubmissionWithManualCheckingId === submission.id
+					&& currentSubmissionContext.lastCheckedSubmissionId !== submission.id)
 			]))
 		];
 
