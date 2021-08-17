@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -36,6 +37,7 @@ using Ulearn.Core.Courses.Units;
 using Ulearn.Core.CSharp;
 using Ulearn.Core.Extensions;
 using Ulearn.Core.Helpers;
+using Group = Database.Models.Group;
 
 namespace uLearn.Web.Controllers
 {
@@ -191,6 +193,8 @@ namespace uLearn.Web.Controllers
 			await notificationsRepo.AddNotification(courseId, notification, bot.Id);
 		}
 
+		private static readonly Regex httpsGitLinkRegex = new Regex(@"https://(?<host>.+)/(?<login>.+)/(?<repo>.+)\.git", RegexOptions.Compiled);
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[HandleHttpAntiForgeryException]
@@ -200,6 +204,12 @@ namespace uLearn.Web.Controllers
 			if (submitButton == "Save")
 			{
 				repoUrl = repoUrl.NullIfEmptyOrWhitespace();
+				if (repoUrl != null)
+				{
+					var match = httpsGitLinkRegex.Match(repoUrl);
+					if (match.Success)
+						repoUrl = $"git@{match.Groups["host"]}:{match.Groups["login"]}/{match.Groups["repo"]}.git";
+				}
 				pathToCourseXml = pathToCourseXml.NullIfEmptyOrWhitespace()?.Replace("\"", "/").Trim('/');
 				branch = branch.NullIfEmptyOrWhitespace() ?? "master";
 				var oldRepoSettings = coursesRepo.GetCourseRepoSettings(courseId);
