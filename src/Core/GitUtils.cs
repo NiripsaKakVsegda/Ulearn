@@ -9,9 +9,9 @@ namespace Ulearn.Core
 			return RepoUrlToRepoLink(repoUrl) + $"/commit/{hash}";
 		}
 
-		public static string GetSlideEditLink(string repoUrl, string courseXmlPath, string filePathRelativeCourseXml)
+		public static string GetSlideEditLink(string repoUrl, string branch, string courseXmlPath, string filePathRelativeCourseXml)
 		{
-			var unsafeUrl = RepoUrlToRepoLink(repoUrl) + "/edit/master/" + (courseXmlPath + "/" + filePathRelativeCourseXml).Replace('\\', '/');
+			var unsafeUrl = RepoUrlToRepoLink(repoUrl) + "/edit/" + branch + "/" + (courseXmlPath + "/" + filePathRelativeCourseXml).Replace('\\', '/');
 			return Uri.EscapeUriString(unsafeUrl);
 		}
 

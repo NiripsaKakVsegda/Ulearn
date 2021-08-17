@@ -331,7 +331,8 @@ namespace uLearn.Web.Controllers
 				return null;
 			if (publishedCourseVersion.PathToCourseXml == null)
 				return null;
-			return GitUtils.GetSlideEditLink(publishedCourseVersion.RepoUrl, publishedCourseVersion.PathToCourseXml, slideFilePathRelativeToCourse);
+			var branch = coursesRepo.GetCourseRepoSettings(course.Id)?.Branch ?? "master";
+			return GitUtils.GetSlideEditLink(publishedCourseVersion.RepoUrl, branch, publishedCourseVersion.PathToCourseXml, slideFilePathRelativeToCourse);
 		}
 
 		private int GetMaxSlideScoreForUser(Course course, Slide slide, string userId)

@@ -142,10 +142,11 @@ namespace Ulearn.Web.Api.Controllers
 			var pathToCourseXml = publishedCourseVersion.PathToCourseXml;
 			if (repoUrl == null || pathToCourseXml == null)
 				return s => null;
+			var branch = (await coursesRepo.GetCourseRepoSettings(course.Id))?.Branch ?? "master";
 			return slide =>
 			{
 				var pathRelative2CourseXml = slide.SlideFilePathRelativeToCourse;
-				return GitUtils.GetSlideEditLink(repoUrl, pathToCourseXml, pathRelative2CourseXml);
+				return GitUtils.GetSlideEditLink(repoUrl, branch, pathToCourseXml, pathRelative2CourseXml);
 			};
 		}
 
