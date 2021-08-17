@@ -28,7 +28,6 @@ namespace Database.Repos
 		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<int> GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeTimestamp);
-		Task<HashSet<Guid>> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<T> FindManualCheckingById<T>(int id) where T : AbstractManualSlideChecking;
 		Task<bool> IsProhibitedToSendExerciseToManualChecking(string courseId, Guid slideId, string userId);
 		Task LockManualChecking<T>(T checkingItem, string lockedById) where T : AbstractManualSlideChecking;

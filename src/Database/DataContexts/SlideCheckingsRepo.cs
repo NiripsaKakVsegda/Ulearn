@@ -80,7 +80,7 @@ namespace Database.DataContexts
 			{
 				var checkings = GetSlideCheckingsByUser<T>(courseId, slideId, userId, noTracking: false)
 					.AsEnumerable()
-					.Where(c => !c.IsChecked && !c.IsLocked)
+					.Where(c => !c.IsChecked && c.LockedById != null)
 					.ToList();
 				foreach (var checking in checkings)
 				{
@@ -121,7 +121,7 @@ namespace Database.DataContexts
 		}
 
 		#region Slide Score Calculating
-		
+
 		public (int Score, int? Percent) GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId)
 		{
 			var hasAutomaticChecking = slide.Exercise.HasAutomaticChecking();
@@ -132,6 +132,7 @@ namespace Database.DataContexts
 				if (!isRightAnswer)
 					return (0, null);
 			}
+
 			var percent = GetLastReviewPercentForExerciseSlide(courseId, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
 			if (percent == null)
@@ -187,19 +188,20 @@ namespace Database.DataContexts
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
 			query = query.OrderByDescending(c => c.Timestamp);
 
-			const int reserveForStartedReviews = 100;
+			const int reserveForStartedOrDoubleCheckedReviews = 100;
 			if (options.Count > 0)
-				query = query.Take(options.Count + reserveForStartedReviews);
+				query = query.Take(options.Count + reserveForStartedOrDoubleCheckedReviews);
 
 			var enumerable = query.AsEnumerable();
-			// Отфильтровывает неактуальные начатые ревью
+			// Метод RemoveWaitingManualCheckings удалил непосещенные преподавателем старые ManualChecking. Здесь отфильтровываются посещенные преподавателем.
 			enumerable = enumerable
 				.GroupBy(g => new { g.UserId, g.SlideId })
 				.Select(g => g.First())
 				.OrderByDescending(c => c.Timestamp);
+
 			if (options.Count > 0)
 				enumerable = enumerable.Take(options.Count);
-			
+
 			return enumerable;
 		}
 
@@ -217,6 +219,7 @@ namespace Database.DataContexts
 				else
 					query = query.Where(c => options.UserIds.Contains(c.UserId));
 			}
+
 			return query;
 		}
 
@@ -235,8 +238,7 @@ namespace Database.DataContexts
 
 		public HashSet<Guid> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options);
-			return query.Select(c => c.SlideId).Distinct().AsEnumerable().ToHashSet();
+			return GetManualCheckingQueue<T>(options).Select(c => c.SlideId).Distinct().AsEnumerable().ToHashSet();
 		}
 
 		public T FindManualCheckingById<T>(int id) where T : AbstractManualSlideChecking
@@ -267,7 +269,7 @@ namespace Database.DataContexts
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		// Помечает оцененными посещенные но не оцененные старые ревью
+		// Помечает оцененными посещенные но не оцененные старые ревью. Большинство удаляется RemoveWaitingManualCheckings
 		public async Task MarkManualExerciseCheckingAsCheckedBeforeThis(ManualExerciseChecking queueItem)
 		{
 			var itemsForMark = db.Set<ManualExerciseChecking>()
@@ -291,14 +293,15 @@ namespace Database.DataContexts
 					changed = true;
 				}
 			}
-			if(changed)
+
+			if (changed)
 				await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
 		public async Task ProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId)
 		{
 			var checkings = db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId &&  c.SlideId == slideId && c.ProhibitFurtherManualCheckings)
+				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId && c.ProhibitFurtherManualCheckings)
 				.ToList();
 			if (checkings.Count == 0)
 				return;
