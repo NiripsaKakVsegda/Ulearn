@@ -17,7 +17,17 @@ const texts = {
 		}
 	},
 	getStudentInfo: (visibleName: string, groups?: ShortGroupInfo[]): string => {
-		return groups ? `${ visibleName } (${ groups.map(g => g.name).join(', ') })` : visibleName;
+		if(groups && groups.length > 0) {
+			const archivedGroups = groups.filter(g => g.isArchived);
+			const notArchivedGroups = groups.filter(g => !g.isArchived);
+			let groupsAsString = notArchivedGroups.map(g => g.name).join(', ');
+			if(notArchivedGroups.length > 0) {
+				groupsAsString += '; архивные группы: ' + archivedGroups.map(g => g.name).join(', ');
+			}
+			return `${ visibleName } (${ groupsAsString })`;
+		}
+
+		return visibleName;
 	},
 	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore?: number, currentScore?: number): string => {
 		if(currentScore !== undefined) {
