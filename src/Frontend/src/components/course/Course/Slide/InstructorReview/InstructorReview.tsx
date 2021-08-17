@@ -106,9 +106,9 @@ class InstructorReview extends React.Component<Props, State> {
 		currentSubmission: SubmissionInfo
 	): SubmissionContext => {
 		const lastCheckedSubmissionId = studentSubmissions
-			.find(s => s.manualCheckingPassed)?.id;
+			.find(s => s.manualChecking?.percent !== null)?.id;
 		const lastManualCheckingSubmissionId = studentSubmissions
-			.find(s => s.manualCheckingEnabled)?.id;
+			.find(s => s.manualChecking?.percent !== null)?.id;
 		const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmissionId;
 		const isLastSubmissionWithManualChecking = currentSubmission.id === lastManualCheckingSubmissionId;
 
@@ -232,7 +232,9 @@ class InstructorReview extends React.Component<Props, State> {
 					this.updateSubmission(submission, newReviews.reviews, newReviews.outdatedReviews);
 				}
 
-				if(currentSubmission.manualCheckingEnabled !== submission.manualCheckingEnabled) {
+				const currentSubmissionManualCheckingEnabled = currentSubmission.manualChecking != null;
+				const submissionManualCheckingEnabled = submission.manualChecking != null;
+				if(currentSubmissionManualCheckingEnabled !== submissionManualCheckingEnabled) {
 					this.updateSubmission(submission);
 				}
 			}
@@ -519,7 +521,7 @@ class InstructorReview extends React.Component<Props, State> {
 					onToggleChange={ this.prohibitFurtherReview }
 					toggleChecked={ !prohibitFurtherManualChecking }
 				/> }
-				{ !currentSubmission.manualCheckingEnabled && currentSubmission.id === studentSubmissions[0].id && <>
+				{ !currentSubmission.manualChecking != null && currentSubmission.id === studentSubmissions[0].id && <>
 					<p> { texts.submissionAfterDisablingManualChecking } </p>
 					<Button
 						use={ 'primary' }
@@ -766,7 +768,7 @@ class InstructorReview extends React.Component<Props, State> {
 		} = this.state;
 
 		if(currentSubmission && favouriteReviews) {
-			const review = currentSubmission.manualCheckingReviews.find(r => r.id === reviewId);
+			const review = currentSubmission.manualChecking?.reviews.find(r => r.id === reviewId);
 			if(review) {
 				const favouriteReview = favouriteReviews.find(r => r.text === review.comment);
 				if(favouriteReview && favouriteReview.isFavourite) {
@@ -797,9 +799,9 @@ class InstructorReview extends React.Component<Props, State> {
 		if(currentSubmission) {
 			const trimmed = checker.removeWhiteSpaces(text);
 			const oldText = parentReviewId
-				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
+				? currentSubmission.manualChecking?.reviews.find(r => r.id === parentReviewId)?.comments.find(
 				c => c.id === reviewId)?.text || ''
-				: currentSubmission.manualCheckingReviews.find(r => r.id === reviewId)?.comment || '';
+				: currentSubmission.manualChecking?.reviews.find(r => r.id === reviewId)?.comment || '';
 
 			editReviewOrComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
 		}

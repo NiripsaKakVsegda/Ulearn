@@ -164,7 +164,7 @@ export const getDiff = (code: string, previousCode: string): [type: -1 | 0 | 1, 
 };
 
 export const countAllReviewsAndComments = (submission: SubmissionInfo): number =>
-	(submission.manualCheckingReviews.length
+	(submission.manualChecking?.reviews.length || 0)
 		+ (submission.automaticChecking?.reviews?.length || 0)
-		+ submission.manualCheckingReviews.reduce((pV, c) => pV + c.comments.length, 0)
-	);
+		+ (submission.manualChecking?.reviews.reduce((pV, c) => pV + c.comments.length, 0) || 0)
+	;

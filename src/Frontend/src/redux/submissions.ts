@@ -141,7 +141,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					reviewsBySubmissionId: {
 						...newState.reviewsBySubmissionId,
 						[submission.id]: {
-							manualCheckingReviews: submission.manualCheckingReviews,
+							manualCheckingReviews: submission.manualChecking?.reviews || [],
 							automaticCheckingReviews: submission.automaticChecking?.reviews || null,
 						}
 					},
@@ -217,7 +217,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				userId,
 				courseId,
 				slideId,
-				response: { submissions, submissionsPercents, },
+				response: { submissions, },
 			} = action as SubmissionsLoadSuccessAction;
 			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
 			const slideSubmissions = courseSubmissions?.[slideId] || {};
@@ -236,7 +236,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			const reviewsBySubmissionId = submissions.reduce((pv, cv) => {
 				pv[cv.id] = {
 					automaticCheckingReviews: cv.automaticChecking?.reviews || null,
-					manualCheckingReviews: cv.manualCheckingReviews
+					manualCheckingReviews: cv.manualChecking?.reviews || []
 				};
 				return pv;
 			}, {} as {
@@ -247,6 +247,11 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			});
 			const userLoadings = state.submissionsLoadingForUser[userId]
 				?.filter(loading => loading.courseId !== courseId || loading.slideId !== slideId);
+
+			const submissionsPercents = submissions
+				.filter(s => s.manualChecking?.percent != null)
+				.map(s => ({ submissionId: s.id, percent: s.manualChecking!.percent }))
+				.reduce((a, x) => ({ ...a, [x.submissionId]: x.percent }), {});
 
 			return {
 				...state,

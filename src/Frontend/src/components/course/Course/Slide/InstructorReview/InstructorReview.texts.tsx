@@ -33,7 +33,8 @@ const texts = {
 		selectedSubmissionIsLastSuccess: boolean,
 		waitingForManualChecking: boolean
 	): string => {
-		const { timestamp, manualCheckingPassed } = submission;
+		const { timestamp, manualChecking } = submission;
+		const manualCheckingPassed = manualChecking?.percent !== null;
 		const timestampCaption = texts.getSubmissionDate(timestamp);
 		if(manualCheckingPassed) {
 			return timestampCaption + ", прошло код-ревью";

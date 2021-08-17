@@ -314,8 +314,8 @@ class Exercise extends React.Component<Props, State> {
 				return;
 			}
 
-			const reviewsCompare = submission.manualCheckingReviews.map(getDataFromReviewToCompareChanges);
-			const newReviewsCompare = currentSubmission.manualCheckingReviews.map(getDataFromReviewToCompareChanges);
+			const reviewsCompare = (submission.manualChecking?.reviews ?? []).map(getDataFromReviewToCompareChanges);
+			const newReviewsCompare = (currentSubmission.manualChecking?.reviews ?? []).map(getDataFromReviewToCompareChanges);
 
 			if(submission && JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) { // Отличаться должны только в случае изменения комментериев
 				this.setCurrentSubmission(submission,
@@ -546,9 +546,9 @@ class Exercise extends React.Component<Props, State> {
 		if(currentSubmission) {
 			const trimmed = checker.removeWhiteSpaces(text);
 			const oldText = parentReviewId
-				? currentSubmission.manualCheckingReviews.find(r => r.id === parentReviewId)?.comments.find(
+				? currentSubmission.manualChecking?.reviews.find(r => r.id === parentReviewId)?.comments.find(
 				c => c.id === reviewId)?.text || ''
-				: currentSubmission.manualCheckingReviews.find(r => r.id === reviewId)?.comment || '';
+				: currentSubmission.manualChecking?.reviews.find(r => r.id === reviewId)?.comment || '';
 
 			editReviewOrComment(currentSubmission.id, reviewId, parentReviewId, trimmed, oldText);
 		} else {
@@ -780,9 +780,8 @@ class Exercise extends React.Component<Props, State> {
 				});
 		}
 
-		if(submission.manualCheckingReviews.length !== 0) {
-			const reviewsCount = submission?.manualCheckingReviews?.length || 0;
-
+		const reviewsCount = submission?.manualChecking?.reviews?.length || 0;
+		if(reviewsCount !== 0) {
 			checkups.unshift({
 				title: texts.checkups.teacher.title,
 				content:
