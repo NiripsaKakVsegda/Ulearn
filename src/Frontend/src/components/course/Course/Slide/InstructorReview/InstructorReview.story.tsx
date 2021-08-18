@@ -11,14 +11,14 @@ import {
 } from "src/models/exercise";
 import { returnPromiseAfterDelay } from "src/utils/storyMock";
 import { getMockedShortUser, getMockedUser } from "../../../../comments/storiesData";
-import { instructor, renderMd, StoryUpdater, reduxStore } from "src/storiesUtils";
+import { instructor, renderMd, reduxStore } from "src/storiesUtils";
 import {
 	AntiPlagiarismInfo,
 	AntiPlagiarismStatusResponse,
 	FavouriteReview,
 } from "src/models/instructor";
 import { GroupInfo, } from "src/models/groups";
-import { buildUserInfo, UserInfo } from "src/utils/courseRoles";
+import { UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
 import { ApiFromRedux, Props, PropsFromRedux } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
@@ -441,9 +441,12 @@ const mapStateToProps = (
 	{ slideContext: { courseId, slideId, slideInfo, } }: { slideContext: SlideContext; }
 ): PropsFromRedux => {
 	const studentId = slideInfo.query.userId;
-
 	if(!studentId) {
 		throw new Error('User id was not provided');
+	}
+	const submissionIdFromQuery = slideInfo.query.submissionId;
+	if(submissionIdFromQuery == null) {
+		throw new Error("Submission id was not provided in query");
 	}
 
 	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
@@ -486,6 +489,7 @@ const mapStateToProps = (
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
 		scoresBySubmissionId,
+		submissionIdFromQuery,
 	};
 };
 
@@ -733,6 +737,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		},
 		enableManualChecking: (submissionId: number,) => {
 			dispatch(submissionsEnableManualCheckingStartAction(submissionId));
+			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId };
 			return returnPromiseAfterDelay(loadingTimes.enableManualChecking, Promise.resolve())
 				.catch(error => {
 					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
@@ -800,7 +805,7 @@ const args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'> = {
 			isLti: false,
 			isReview: true,
 			isNavigationVisible: false,
-			query: { slideId, submissionId: 1, isLti: false, userId: student.id, done: false, group: null },
+			query: { slideId: null, submissionId: 1, isLti: false, userId: student.id, done: false, group: null },
 		}
 	},
 	authorSolution: <BlocksWrapper>

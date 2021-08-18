@@ -39,6 +39,11 @@ const mapStateToProps = (
 			state.submissions.submissionsById,
 			state.submissions.reviewsBySubmissionId
 		);
+	const submissionIdFromQuery = slideInfo.query.submissionId;
+
+	if(submissionIdFromQuery == null) {
+		throw new Error("Submission id was not provided in query");
+	}
 
 	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
@@ -68,6 +73,7 @@ const mapStateToProps = (
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
 		scoresBySubmissionId,
+		submissionIdFromQuery,
 	};
 };
 

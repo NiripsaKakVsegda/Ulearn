@@ -40,6 +40,7 @@ import {
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
 import { FavouriteReview } from "src/models/instructor";
+import { buildQuery } from "../../../../../utils";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -169,6 +170,7 @@ class InstructorReview extends React.Component<Props, State> {
 			antiPlagiarismStatus,
 			antiPlagiarismStatusLoading,
 			slideContext,
+			submissionIdFromQuery,
 		} = this.props;
 		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
 
@@ -179,16 +181,16 @@ class InstructorReview extends React.Component<Props, State> {
 			});
 		}
 
-		if(slideContext.slideInfo.query.submissionId !== prevProps.slideContext.slideInfo.query.submissionId) {
-			this.loadData();
-			this.setState({
-				currentSubmission: undefined,
-				selectedReviewId: -1,
-				addCommentFormCoords: undefined,
-				addCommentRanges: undefined,
-			});
-			return;
-		}
+		/*		if(!studentSubmissions) {
+					this.loadData();
+					this.setState({
+						currentSubmission: undefined,
+						selectedReviewId: -1,
+						addCommentFormCoords: undefined,
+						addCommentRanges: undefined,
+					});
+					return;
+				}*/
 
 		if(!antiPlagiarismStatus && !antiPlagiarismStatusLoading && studentSubmissions && studentSubmissions.length > 0) {
 			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
@@ -196,8 +198,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 
 		if(!currentSubmission && scoresBySubmissionId && studentSubmissions && studentSubmissions.length > 0) {
-			const index = Math.max(
-				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
+			const index = Math.max(studentSubmissions.findIndex(s => s.id === submissionIdFromQuery), 0);
 			this.loadSubmission(studentSubmissions, index);
 			return;
 		}
@@ -369,7 +370,7 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	static getDerivedStateFromProps(props: Readonly<Props>, state: Readonly<State>): Partial<State> | null {
-		const { favouriteReviews, studentSubmissions, scoresBySubmissionId, } = props;
+		const { favouriteReviews, studentSubmissions, scoresBySubmissionId, submissionIdFromQuery, } = props;
 		const { favouriteReviewsSet, favouriteByUserSet, curScore, prevScore, } = state;
 		const favReviewsByUser = favouriteReviews?.filter(r => r.isFavourite);
 		const favReviews = favouriteReviews?.filter(r => !r.isFavourite);
@@ -385,16 +386,19 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 
 		if(studentSubmissions && scoresBySubmissionId) {
-			const prevReview = getPreviousManualCheckingInfo(studentSubmissions, 0);
-			const newScore = scoresBySubmissionId[studentSubmissions[0].id];
-			const newPrevScore = prevReview && scoresBySubmissionId[prevReview.submission.id];
+			const currentCheckingSubmissionIndex = studentSubmissions.findIndex(s => s.id === submissionIdFromQuery);
+			if(currentCheckingSubmissionIndex > -1) {
+				const prevReview = getPreviousManualCheckingInfo(studentSubmissions, currentCheckingSubmissionIndex);
+				const newScore = scoresBySubmissionId[studentSubmissions[currentCheckingSubmissionIndex].id];
+				const newPrevScore = prevReview && scoresBySubmissionId[prevReview.submission.id];
 
-			if(newScore !== curScore || newPrevScore !== prevScore) {
-				newState = {
-					...newState,
-					curScore: newScore,
-					prevScore: newPrevScore,
-				};
+				if(newScore !== curScore || newPrevScore !== prevScore) {
+					newState = {
+						...newState,
+						curScore: newScore,
+						prevScore: newPrevScore,
+					};
+				}
 			}
 		}
 
@@ -535,13 +539,20 @@ class InstructorReview extends React.Component<Props, State> {
 
 	enableManualChecking = (): void => {
 		const { currentSubmission } = this.state;
-		const { enableManualChecking, } = this.props;
+		const { enableManualChecking, slideContext, } = this.props;
 
 		if(!currentSubmission) {
 			return;
 		}
 
 		enableManualChecking(currentSubmission.id);
+		history.replaceState({},
+			history.state.title,
+			location.pathname + buildQuery({
+				...slideContext.slideInfo.query,
+				submissionId: currentSubmission.id,
+				checkQueueItemId: currentSubmission.id,
+			}));
 	};
 
 	prohibitFurtherReview = (enabled: boolean): void => {
@@ -582,19 +593,18 @@ class InstructorReview extends React.Component<Props, State> {
 			addReview,
 			slideContext,
 			student,
+			submissionIdFromQuery,
 			scoresBySubmissionId,
 		} = this.props;
-		const {
-			currentSubmission,
-		} = this.state;
 
-		if(!currentSubmission || !student || !scoresBySubmissionId) {
+		if(!student || !scoresBySubmissionId) {
 			return;
 		}
 
-		onScoreSubmit(currentSubmission.id, student.id, 0, scoresBySubmissionId[currentSubmission.id]);
+		onScoreSubmit(submissionIdFromQuery, student.id, 0, scoresBySubmissionId[submissionIdFromQuery]);
 		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, false);
-		addReview(currentSubmission.id, this.shameComment, 0, 0, 0, 1).then(r => this.highlightReview(r.id));
+		addReview(submissionIdFromQuery, this.shameComment, 0, 0, 0, 1)
+			.then(r => this.highlightReview(r.id));
 	};
 
 	renderTopControls(commentsEnabled = true): React.ReactElement {
@@ -626,12 +636,13 @@ class InstructorReview extends React.Component<Props, State> {
 			studentSubmissions,
 			scoresBySubmissionId,
 			antiPlagiarismStatus,
+			submissionIdFromQuery,
 			slideContext: { courseId, },
 		} = this.props;
 		const submissionId = studentSubmissions?.[0].id;
 
 		return (<AntiPlagiarismHeader
-			zeroButtonDisabled={ submissionId && !!scoresBySubmissionId?.[submissionId] || false }
+			zeroButtonDisabled={ scoresBySubmissionId?.[submissionIdFromQuery] === 0 || false }
 			courseId={ courseId }
 			submissionId={ submissionId }
 			status={ antiPlagiarismStatus }
@@ -841,20 +852,19 @@ class InstructorReview extends React.Component<Props, State> {
 
 	renderSubmissionsSelect = (): React.ReactNode => {
 		const { currentSubmission, currentSubmissionContext, } = this.state;
-		const { studentSubmissions, } = this.props;
+		const { studentSubmissions, submissionIdFromQuery, } = this.props;
 
 		if(!studentSubmissions || !currentSubmission || !currentSubmissionContext) {
 			return null;
 		}
 
 		const items = [...studentSubmissions.map(
-			(submission, index,) => ([
+			(submission,) => ([
 				submission.id,
 				texts.getSubmissionCaption(
 					submission,
-					index === 0,
-					currentSubmissionContext.lastSubmissionWithManualCheckingId === submission.id
-					&& currentSubmissionContext.lastCheckedSubmissionId !== submission.id)
+					submissionIdFromQuery === submission.id,
+					submissionIdFromQuery === submission.id)
 			]))
 		];
 

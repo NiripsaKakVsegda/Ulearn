@@ -30,6 +30,8 @@ export interface PropsFromRedux {
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
 	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
+
+	submissionIdFromQuery: number;
 }
 
 export interface ApiFromRedux {
