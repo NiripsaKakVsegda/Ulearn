@@ -4,24 +4,74 @@ import { Language } from "src/consts/languages";
 import type { Story } from "@storybook/react";
 import {
 	AutomaticExerciseCheckingProcessStatus,
-	AutomaticExerciseCheckingResult, ReviewCommentResponse,
-	ReviewInfo, SubmissionInfo,
+	AutomaticExerciseCheckingResult,
+	ReviewCommentResponse,
+	ReviewInfo,
+	SubmissionInfo,
 } from "src/models/exercise";
-import { ShortUserInfo } from "src/models/users";
 import { returnPromiseAfterDelay } from "src/utils/storyMock";
-import { getMockedUser } from "../../../../comments/storiesData";
-import { instructor, renderMd, StoryUpdater } from "src/storiesUtils";
+import { getMockedShortUser, getMockedUser } from "../../../../comments/storiesData";
+import { instructor, renderMd, StoryUpdater, reduxStore } from "src/storiesUtils";
 import {
 	AntiPlagiarismInfo,
 	AntiPlagiarismStatusResponse,
 	FavouriteReview,
-	FavouriteReviewResponse
 } from "src/models/instructor";
-import { GroupInfo, GroupsInfoResponse } from "src/models/groups";
-import { UserInfo } from "src/utils/courseRoles";
+import { GroupInfo, } from "src/models/groups";
+import { buildUserInfo, UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { Props } from "./InstructorReview.types";
+import { ApiFromRedux, Props, PropsFromRedux } from "./InstructorReview.types";
+import { SlideType } from "src/models/slide";
+import { SlideContext } from "../Slide.types";
+import { RootState } from "src/redux/reducers";
+import { getDataIfLoaded, ReduxData } from "src/redux";
+import { ShortGroupInfo } from "src/models/comments";
+import { Dispatch } from "redux";
+import { connect } from "react-redux";
+import {
+	reviewsAddCommentFailAction,
+	reviewsAddCommentStartAction,
+	reviewsAddCommentSuccessAction,
+	reviewsAddFailAction,
+	reviewsAddScoreFail,
+	reviewsAddScoreStart,
+	reviewsAddStartAction,
+	reviewsAddSuccessAction, reviewsAssignBotReviewFail, reviewsAssignBotReviewStart, reviewsAssignBotReviewSuccess,
+	reviewsDeleteCommentFail,
+	reviewsDeleteCommentStart,
+	reviewsDeleteCommentSuccess,
+	reviewsDeleteFailAction,
+	reviewsDeleteStartAction,
+	reviewsDeleteSuccessAction,
+	reviewsEditFailAction,
+	reviewsEditStartAction,
+	reviewsEditSuccessAction, submissionsEnableManualCheckingFailAction,
+	submissionsEnableManualCheckingStartAction
+} from "src/actions/submissions";
+import {
+	favouriteReviewsAddFailAction,
+	favouriteReviewsAddStartAction,
+	favouriteReviewsAddSuccessAction,
+	favouriteReviewsDeleteFailAction,
+	favouriteReviewsDeleteStartAction,
+	favouriteReviewsDeleteSuccessAction,
+	favouriteReviewsLoadFailAction,
+	favouriteReviewsLoadStartAction,
+	favouriteReviewsLoadSuccessAction
+} from "src/actions/favouriteReviews";
+import {
+	antiplagiarimsStatusLoadFailAction,
+	antiplagiarimsStatusLoadStartAction, antiplagiarimsStatusLoadSuccessAction,
+	studentLoadFailAction,
+	studentLoadStartAction, studentLoadSuccessAction,
+	studentProhibitFurtherManualCheckingFailAction,
+	studentProhibitFurtherManualCheckingStartAction
+} from "src/actions/instructor";
+import { ShortUserInfo } from "src/models/users";
 import { clone } from "src/utils/jsonExtensions";
+import { FavouriteReviewRedux } from "src/redux/instructor";
+import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
+import { assignBotReview, } from "src/api/submissions";
 
 
 const user: UserInfo = getMockedUser({
@@ -35,14 +85,14 @@ const user: UserInfo = getMockedUser({
 	login: 'Administrator of everything on ulearn.me',
 });
 
-const Template: Story<Props> = (args: Props) => {
-	return (
-		<StoryUpdater args={ args } childrenBuilder={ (args) =>
-			<InstructorReview
-				{ ...args }
-			/> }
-		/>);
-};
+const student: ShortUserInfo = getMockedShortUser({
+	visibleName: 'Студент Студентовичниковогоропараболладвойкавкоде',
+	lastName: 'Студентовичниковогоропараболладвойкавкоде',
+	firstName: 'Студент',
+	id: 'studentId',
+	email: "user@email.com",
+	login: 'superStudnet',
+});
 
 const extra = {
 	suspicionLevel: 0,
@@ -69,30 +119,42 @@ const studentGroups: GroupInfo[] = [{
 	isManualCheckingEnabledForOldSolutions: false,
 	owner: user,
 	studentsCount: 20,
-}];
-
-const favouriteReviews = [
-	{ isFavourite: true, useCount: 5, text: 'комментарий', renderedText: 'комментарий' },
+},
 	{
-		isFavourite: true,
-		useCount: 10,
+		id: 13,
+		apiUrl: 'groupApi',
+		isArchived: true,
+		name: 'АS-202, 235B',
+		accesses: [],
+		areYouStudent: false,
+		canStudentsSeeGroupProgress: false,
+		createTime: null,
+		defaultProhibitFurtherReview: true,
+		inviteHash: '',
+		isInviteLinkEnabled: false,
+		isManualCheckingEnabled: true,
+		isManualCheckingEnabledForOldSolutions: false,
+		owner: user,
+		studentsCount: 20,
+	}];
+
+const favouriteReviews: FavouriteReviewRedux[] = [
+	{ text: 'комментарий', renderedText: 'комментарий', isFavourite: true, },
+	{
 		text: '**bold** __italic__ ```code```',
+		isFavourite: true,
 	},
 	{
-		isFavourite: false,
-		useCount: 100,
 		text: 'Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. ' +
 			'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 			'Выполняйте задания самостоятельно.',
 	},
 	{
-		isFavourite: false,
-		useCount: 122,
 		text: 'Так делать не стоит из-за сложности в O(N^3). Есть более оптимизированные алгоритмы',
 	},
 ].map((c, i) => ({ ...c, renderedText: renderMd(c.text), id: i }));
 
-const submissions = [
+const submissions: SubmissionInfo[] = [
 	{
 		code: `\t\t\t\tif (course == null || tempCourse.LastUpdateTime < tempCourse.LoadingTime)
 \t\t\t\t{
@@ -340,13 +402,16 @@ const submissions = [
 ].map((c, i) => ({
 	...c,
 	id: i,
+	percent: i > 0 && i % 2 === 0 ? i * 10 : undefined,
 	automaticChecking: c.automaticChecking
 		? {
 			...c.automaticChecking,
 			reviews: c.automaticChecking?.reviews.map(addIdToReview) || null,
 		}
 		: null,
-	manualCheckingReviews: c.manualCheckingReviews.map(addIdToReview)
+	manualCheckingReviews: c.manualCheckingReviews.map(addIdToReview),
+	manualCheckingEnabled: i > 0,
+	manualCheckingPassed: i > 0 && i % 2 === 0,
 }));
 
 const loadingTimes = {
@@ -354,14 +419,352 @@ const loadingTimes = {
 	groups: 100,
 	favouriteReviews: 100,
 	addReview: 100,
+	editReview: 100,
+	deleteReview: 100,
 	toggleReviewFavourite: 100,
 	scoreSubmit: 100,
 	getPlagiarismStatus: 100,
 	submissions: 100,
+	prohibitFurtherReview: 100,
+	enableManualChecking: 100,
 };
 
-const args: Props = {
-	slideContext: { slideId: 'slide', courseId: 'basic', title: 'Angry Birds', },
+const mapStateToProps = (
+	state: RootState,
+	{ slideContext: { courseId, slideId, slideInfo, } }: { slideContext: SlideContext; }
+): PropsFromRedux => {
+	const studentId = slideInfo.query.userId;
+
+	if(!studentId) {
+		throw new Error('User id was not provided');
+	}
+
+	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
+
+	let studentGroups: ShortGroupInfo[] | undefined;
+	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
+		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
+	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
+		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
+	}
+	const favouriteReviews = getDataIfLoaded(
+		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
+
+	const antiPlagiarismStatus = state.instructor.antiPlagiarismStatusBySubmissionId[submissions[0].id];
+
+	const prohibitFurtherManualChecking = state.instructor
+		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
+		?.[slideId]
+		?.[studentId] || false;
+
+	return {
+		user: buildUserInfo(state.account, courseId,),
+		favouriteReviews,
+		studentGroups,
+		student,
+		studentSubmissions: submissions,
+		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
+		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
+		prohibitFurtherManualChecking,
+		scoresBySubmissionId: submissions.reduce((pv, cv) => {
+			const cvWithPercent = cv as unknown as { percent: number | undefined; };
+			if(cvWithPercent.percent) {
+				pv[cv.id] = cvWithPercent.percent;
+			}
+			return pv;
+		}, {} as { [id: number]: number }),
+	};
+};
+
+const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
+	return {
+		addReview: (
+			submissionId: number,
+			text: string,
+			startLine: number, startPosition: number,
+			finishLine: number, finishPosition: number
+		) => {
+			const review: ReviewInfo = {
+				id: extra.reviewId++,
+				author: user || null,
+				startLine,
+				startPosition,
+				finishLine,
+				finishPosition,
+				comment: text,
+				renderedComment: renderMd(text),
+				addingTime: new Date().toDateString(),
+				comments: [],
+			};
+			dispatch(reviewsAddStartAction(submissionId, text, startLine, startPosition, finishLine, finishPosition));
+			return returnPromiseAfterDelay(loadingTimes.addReview, review)
+				.then(review => {
+					dispatch(reviewsAddSuccessAction(submissionId, review,));
+					return review;
+				})
+				.catch(error => {
+					dispatch(reviewsAddFailAction(submissionId, error,));
+					return error;
+				});
+		},
+
+		deleteReview: (submissionId, reviewId, isBotReview) => {
+			dispatch(reviewsDeleteStartAction(submissionId, reviewId, isBotReview));
+			return returnPromiseAfterDelay(loadingTimes.deleteReview, Promise.resolve())
+				.then(review => {
+					dispatch(reviewsDeleteSuccessAction(submissionId, reviewId, isBotReview));
+					return review;
+				})
+				.catch(error => {
+					dispatch(reviewsDeleteFailAction(submissionId, reviewId, error, isBotReview));
+					return error;
+				});
+		},
+
+		addReviewComment: (submissionId: number, reviewId: number, text: string) => {
+			dispatch(reviewsAddCommentStartAction(submissionId, reviewId, text));
+			const comment: ReviewCommentResponse = {
+				id: extra.reviewId++,
+				text,
+				renderedText: renderMd(text),
+				publishTime: new Date().toDateString(),
+				author: user,
+			};
+			return returnPromiseAfterDelay(loadingTimes.addReview, comment,)
+				.then(r => {
+					dispatch(reviewsAddCommentSuccessAction(submissionId, reviewId, r));
+					return r;
+				})
+				.catch(err => {
+					dispatch(reviewsAddCommentFailAction(submissionId, reviewId, text, err));
+					return err;
+				});
+		},
+		deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => {
+			dispatch(reviewsDeleteCommentStart(submissionId, reviewId, commentId));
+
+			return returnPromiseAfterDelay(loadingTimes.deleteReview, Promise.resolve())
+				.then(r => {
+					dispatch(reviewsDeleteCommentSuccess(submissionId, reviewId, commentId));
+					return r;
+				})
+				.catch(err => {
+					dispatch(reviewsDeleteCommentFail(submissionId, reviewId, commentId, err));
+					return err;
+				});
+		},
+
+		addFavouriteReview: (courseId: string, slideId: string, text: string) => {
+			dispatch(favouriteReviewsAddStartAction(courseId, slideId, text));
+			const favouriteReview: FavouriteReview = {
+				id: extra.reviewId++,
+				renderedText: renderMd(text),
+				text,
+			};
+			return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite, favouriteReview)
+				.then(favouriteReview => {
+					dispatch(favouriteReviewsAddSuccessAction(courseId, slideId, favouriteReview,));
+					return favouriteReview;
+				})
+				.catch(error => {
+					dispatch(favouriteReviewsAddFailAction(courseId, slideId, error,));
+					return error;
+				});
+		},
+		deleteFavouriteReview: (courseId: string, slideId: string, favouriteReviewId: number) => {
+			dispatch(favouriteReviewsDeleteStartAction(courseId, slideId, favouriteReviewId));
+			return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite)
+				.then(() => {
+					dispatch(favouriteReviewsDeleteSuccessAction(courseId, slideId, favouriteReviewId,));
+				})
+				.catch(error => {
+					dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error,));
+					return error;
+				});
+		},
+		editReviewOrComment: (submissionId: number, reviewId: number, parentReviewId: number | undefined, text: string,
+			oldText: string,
+		) => {
+			dispatch(reviewsEditStartAction(submissionId, reviewId, parentReviewId, text));
+			const store = reduxStore.getState() as RootState;
+			const reviews = store.submissions.reviewsBySubmissionId[submissionId]?.manualCheckingReviews;
+			const reviewOrComment = parentReviewId
+				? reviews?.find(r => r.id === parentReviewId)?.comments.find(
+					c => (c as ReviewCommentResponse).id === reviewId)
+				: reviews?.find(r => r.id === reviewId);
+
+			if(!reviewOrComment) {
+				return Promise.reject();
+			}
+			const review = reviewOrComment as ReviewInfo;
+			if(review.comment) {
+				review.comment = text;
+				review.renderedComment = renderMd(text);
+			}
+			const comment = reviewOrComment as ReviewCommentResponse;
+			if(comment.text) {
+				comment.text = text;
+				comment.renderedText = renderMd(text);
+			}
+
+			return returnPromiseAfterDelay(loadingTimes.editReview,
+				reviewOrComment as ReviewCommentResponse | ReviewInfo)
+				.then(r => {
+					dispatch(reviewsEditSuccessAction(submissionId, reviewId, parentReviewId, r));
+					return r;
+				})
+				.catch(err => {
+					dispatch(reviewsEditFailAction(submissionId, reviewId, parentReviewId, oldText, err));
+					return err;
+				});
+		},
+
+		prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) => {
+			dispatch(studentProhibitFurtherManualCheckingStartAction(courseId, slideId, userId, prohibit,));
+			return returnPromiseAfterDelay(loadingTimes.prohibitFurtherReview, Promise.resolve())
+				.catch(error => {
+					dispatch(
+						studentProhibitFurtherManualCheckingFailAction(courseId, slideId, userId, prohibit, error));
+					return error;
+				});
+		},
+		onScoreSubmit: (submissionId: number, userId: string, percent: number, oldPercent: number | undefined,) => {
+			dispatch(reviewsAddScoreStart(submissionId, userId, percent));
+			return returnPromiseAfterDelay(loadingTimes.scoreSubmit, Promise.resolve())
+				.catch(err => {
+					dispatch(reviewsAddScoreFail(submissionId, userId, oldPercent, err));
+					return err;
+				});
+		},
+
+		getStudentInfo: (studentId: string,) => {
+			dispatch(studentLoadStartAction(studentId,));
+			return returnPromiseAfterDelay(loadingTimes.student, student)
+				.then(user => {
+					if(user) {
+						dispatch(studentLoadSuccessAction(user));
+						return user;
+					} else {
+						throw new Error('User not found, or you don\'t have permission');
+					}
+				})
+				.catch(error => {
+					dispatch(studentLoadFailAction(studentId, error));
+					return error;
+				});
+		},
+		getAntiPlagiarismStatus: (courseId: string, submissionId: number,) => {
+			const rnd = Math.random();
+			let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
+			let suspicionCount = 0;
+
+			if(extra.suspicionLevel === 1) {
+				suspicionCount = Math.ceil(rnd * 10);
+				suspicionLevel = 'faint';
+			}
+			if(extra.suspicionLevel === 2) {
+				suspicionCount = Math.ceil(rnd * 50);
+				suspicionLevel = "strong";
+			}
+			extra.suspicionLevel++;
+			extra.suspicionLevel %= 3;
+			const info: AntiPlagiarismStatusResponse = {
+				suspiciousAuthorsCount: suspicionCount,
+				suspicionLevel,
+				status: 'checked'
+			};
+
+			dispatch(antiplagiarimsStatusLoadStartAction(submissionId,));
+			return returnPromiseAfterDelay(loadingTimes.getPlagiarismStatus, info)
+				.then(json => {
+					dispatch(antiplagiarimsStatusLoadSuccessAction(submissionId, json,));
+					return json;
+				})
+				.catch(error => {
+					dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error,));
+					return error;
+				});
+		},
+		getFavouriteReviews: (courseId: string, slideId: string,) => {
+			dispatch(favouriteReviewsLoadStartAction(courseId, slideId,));
+			const state = reduxStore.getState() as RootState;
+			const fr = getDataIfLoaded(state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId])
+				|| clone(favouriteReviews);
+			return returnPromiseAfterDelay(loadingTimes.favouriteReviews, fr)
+				.then(favouriteReviews => {
+					dispatch(favouriteReviewsLoadSuccessAction(courseId, slideId, {
+						favouriteReviews: favouriteReviews.filter(f => !f.isFavourite),
+						userFavouriteReviews: favouriteReviews.filter(f => f.isFavourite)
+					},));
+					return favouriteReviews;
+				})
+				.catch(error => {
+					dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error,));
+					return error;
+				});
+		},
+		getStudentGroups: (courseId: string, userId: string,) => {
+			dispatch(groupLoadStartAction(userId));
+			return returnPromiseAfterDelay(loadingTimes.groups, { groups: studentGroups })
+				.then(json => {
+					dispatch(groupLoadSuccessAction(userId, json));
+					return json;
+				})
+				.catch(error => {
+					dispatch(groupLoadFailAction(userId, error));
+					return error;
+				});
+		},
+		enableManualChecking: (submissionId: number,) => {
+			dispatch(submissionsEnableManualCheckingStartAction(submissionId));
+			return returnPromiseAfterDelay(loadingTimes.enableManualChecking, Promise.resolve())
+				.catch(error => {
+					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
+					return error;
+				});
+		},
+
+		assignBotReview: (submissionId, review) => {
+			dispatch(reviewsAssignBotReviewStart(submissionId, review.id));
+			return assignBotReview(submissionId, review)
+				.then(([review, deletedResponse]) => {
+					dispatch(reviewsAssignBotReviewSuccess(submissionId, review.id,
+						{ ...review, id: extra.reviewId++, author: user }));
+					return review;
+				})
+				.catch(err => {
+					dispatch(reviewsAssignBotReviewFail(submissionId, review.id, err));
+					return err;
+				});
+		},
+	};
+};
+
+const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview);
+
+const Template: Story<Props> = (args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'>) => {
+	return (
+		<StoryUpdater args={ args } childrenBuilder={ (args) =>
+			<Connected { ...args }/> }
+		/>);
+};
+
+
+const courseId = 'basic';
+const slideId = 'slide';
+const args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'> = {
+	slideContext: {
+		slideId, courseId, title: 'Angry Birds',
+		slideInfo: {
+			slideId,
+			courseId,
+			slideType: SlideType.Exercise,
+			isLti: false,
+			isReview: true,
+			isNavigationVisible: false,
+			query: { slideId, submissionId: 1, isLti: false, userId: student.id, done: false, group: null },
+		}
+	},
 	authorSolution: <BlocksWrapper>
 		<StaticCode
 			language={ Language.cSharp }
@@ -371,237 +774,6 @@ const args: Props = {
 		<BlocksWrapper>
 			<p>Вам надо сделать кое-что, сами гадайте что и как, но сделайте обязательно</p>
 		</BlocksWrapper>,
-	user,
-	studentId: '1',
-	prohibitFurtherManualChecking: true,
-
-	onAddReview(commentText: string) {
-		const comment: FavouriteReview = {
-			id: this.favouriteReviews?.length || 0,
-			renderedText: renderMd(commentText),
-			text: commentText,
-		};
-
-		const existingCommentIndex = this.favouriteReviews?.findIndex(c => c.text === commentText);
-		if(existingCommentIndex && this.favouriteReviews) {
-			if(existingCommentIndex < 0) {
-				return returnPromiseAfterDelay(loadingTimes.addReview, comment, () => {
-					this.favouriteReviews?.push(comment);
-				});
-			} else {
-				const comment = this.favouriteReviews[existingCommentIndex];
-				return returnPromiseAfterDelay(loadingTimes.addReview, comment, () => {
-					comment.useCount++;
-				});
-			}
-		}
-
-		return returnPromiseAfterDelay(loadingTimes.addReview, comment);
-	},
-	addReviewToFavourite(commentText: string) {
-		const comment: FavouriteReview = {
-			id: this.favouriteReviews?.length || 0,
-			renderedText: renderMd(commentText),
-			text: commentText,
-		};
-
-		if(!this.favouriteReviews) {
-			return Promise.resolve(comment);
-		}
-
-		return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite, comment).then(r => {
-				if(this.favouriteReviews) {
-					this.favouriteReviews = [...this.favouriteReviews, comment];
-				}
-				return r;
-			}
-		);
-	},
-	onToggleReviewFavourite(favouriteCommentId: number) {
-		if(!this.favouriteReviews) {
-			return Promise.resolve({} as FavouriteReview);
-		}
-
-		const commentIndex = this.favouriteReviews.findIndex(c => c.id === favouriteCommentId);
-		const comment = {
-			...this.favouriteReviews[commentIndex],
-			isFavourite: !this.favouriteReviews[commentIndex].isFavourite
-		};
-
-		return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite, comment).then(r => {
-				if(this.favouriteReviews) {
-					if(commentIndex > -1) {
-						this.favouriteReviews[commentIndex] = comment;
-					}
-				}
-				return r;
-			}
-		);
-	},
-	prohibitFurtherReview(value: boolean) {
-		this.prohibitFurtherManualChecking = value;
-	},
-	onScoreSubmit(submissionId: number, score: number) {
-		return returnPromiseAfterDelay(loadingTimes.scoreSubmit, score, () => {
-			if(!this.scoresBySubmissionId) {
-				this.scoresBySubmissionId = {};
-			}
-			this.scoresBySubmissionId[submissionId] = score;
-		});
-	},
-	deleteReviewOrComment(submissionId: number, reviewId: number, parentReviewId?: number,) {
-		const submission = this.studentSubmissions?.find(s => s.id === submissionId);
-
-		return returnPromiseAfterDelay(loadingTimes.addReview, { status: 200 }, () => {
-			if(submission) {
-				if(parentReviewId !== undefined) {
-					const review = submission.manualCheckingReviews.find(c => c.id === reviewId);
-					if(review) {
-						review.comments = review.comments.filter(c => c.id !== parentReviewId);
-					} else if(submission.automaticChecking && submission.automaticChecking.reviews) {
-						const review = submission.automaticChecking.reviews.find(c => c.id === reviewId);
-						if(review) {
-							review.comments = review.comments.filter(c => c.id !== parentReviewId);
-						}
-					}
-				} else {
-					submission.manualCheckingReviews = submission.manualCheckingReviews.filter(c => c.id !== reviewId);
-					if(submission.automaticChecking && submission.automaticChecking.reviews) {
-						submission.automaticChecking.reviews = submission.automaticChecking.reviews.filter(
-							c => c.id !== reviewId);
-					}
-				}
-			}
-		});
-	},
-	addReview(
-		submissionId: number,
-		comment: string,
-		startLine: number,
-		startPosition: number,
-		finishLine: number,
-		finishPosition: number
-	) {
-		const submission = this.studentSubmissions?.find(s => s.id === submissionId);
-		const review: ReviewInfo = {
-			id: extra.reviewId++,
-			author: this.user || null,
-			startLine,
-			startPosition,
-			finishLine,
-			finishPosition,
-			comment,
-			renderedComment: renderMd(comment),
-			addingTime: new Date().toDateString(),
-			comments: [],
-		};
-
-		return returnPromiseAfterDelay(loadingTimes.addReview, review, () => {
-			if(submission) {
-				submission.manualCheckingReviews = [...submission.manualCheckingReviews, review];
-			}
-		});
-	},
-	editReviewOrComment(text, submissionId, id, reviewId) {
-		const review = this.studentSubmissions
-			?.find(s => s.id === submissionId)?.manualCheckingReviews
-			.find(r => r.id === id || r.id === reviewId || r.comments.some(c => c.id === id));
-		if(review) {
-			if(reviewId) {
-				const comment = review.comments.find(c => c.id === id);
-				return returnPromiseAfterDelay(loadingTimes.addReview, comment).then((r) => {
-					if(comment) {
-						comment.text = text;
-						comment.renderedText = renderMd(text);
-					}
-					return r;
-				});
-			} else {
-				return returnPromiseAfterDelay(loadingTimes.addReview, review).then((r) => {
-					review.comment = text;
-					review.renderedComment = renderMd(text);
-					return r;
-				});
-			}
-		}
-		return returnPromiseAfterDelay(loadingTimes.addReview, {} as ReviewCommentResponse);
-	},
-	addReviewComment(submissionId: number, reviewId: number, commentText: string) {
-		const submission = this.studentSubmissions?.find(s => s.id === submissionId);
-		const review = submission?.manualCheckingReviews.find(r => r.id === reviewId);
-		const comment: ReviewCommentResponse = {
-			id: extra.reviewId++,
-			text: commentText,
-			renderedText: renderMd(commentText),
-			publishTime: new Date().toDateString(),
-			author: this.user || getMockedUser({}),
-		};
-
-		return returnPromiseAfterDelay(loadingTimes.addReview, comment).then((r) => {
-			if(review && this.user) {
-				review.comments = [...review.comments, comment];
-			}
-
-			return r;
-		});
-	},
-	getAntiPlagiarismStatus(submissionId: number): Promise<AntiPlagiarismStatusResponse | string> {
-		const rnd = Math.random();
-		let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
-		let suspicionCount = 0;
-
-		if(extra.suspicionLevel === 1) {
-			suspicionCount = Math.ceil(rnd * 10);
-			suspicionLevel = 'faint';
-		}
-		if(extra.suspicionLevel === 2) {
-			suspicionCount = Math.ceil(rnd * 50);
-			suspicionLevel = "strong";
-		}
-		extra.suspicionLevel++;
-		extra.suspicionLevel %= 3;
-		const info: AntiPlagiarismStatusResponse = {
-			suspiciousAuthorsCount: suspicionCount,
-			suspicionLevel,
-			status: 'checked'
-		};
-
-		return returnPromiseAfterDelay(loadingTimes.getPlagiarismStatus, info, () => {
-			this.antiplagiarismStatus = info;
-		});
-	},
-	getStudentGroups(courseId: string, userId: string): Promise<GroupsInfoResponse | string> {
-		return returnPromiseAfterDelay(loadingTimes.groups, { groups: studentGroups }, () => {
-			this.studentGroups = studentGroups.map(g => ({ ...g, courseId, }));
-		});
-	},
-	getFavouriteReviews(courseId: string, slideId: string): Promise<FavouriteReviewResponse | string> {
-		const reviews = clone(favouriteReviews);
-		const response: FavouriteReviewResponse = { reviews: reviews };
-		return returnPromiseAfterDelay(loadingTimes.favouriteReviews, response, () => {
-			this.favouriteReviews = reviews;
-		});
-	},
-	getStudentInfo(studentId: string): Promise<ShortUserInfo | string> {
-		const student = {
-			visibleName: 'Студент Студентовичниковогоропараболладвойкавкоде',
-			lastName: 'Студентовичниковогоропараболладвойкавкоде',
-			firstName: 'Студент',
-			id: studentId,
-			avatarUrl: "",
-			email: "user@email.com",
-			login: 'superStudnet',
-		};
-		return returnPromiseAfterDelay(loadingTimes.student, student, () => {
-			this.student = student;
-		});
-	},
-	getStudentSubmissions(studentId: string, courseId: string, slideId: string): Promise<SubmissionInfo[] | string> {
-		return returnPromiseAfterDelay(loadingTimes.submissions, submissions, () => {
-			this.studentSubmissions = submissions;
-			this.scoresBySubmissionId = { 1: 25 };
-		});
-	},
 };
 
 export const Default = Template.bind({});
