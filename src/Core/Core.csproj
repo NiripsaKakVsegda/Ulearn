@@ -17,8 +17,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Build" Version="16.10.0" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.10.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.9.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.11.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
@@ -34,7 +34,7 @@
 		<PackageReference Include="StatsdClient" Version="2.0.68" />
 		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
 		<PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
-		<PackageReference Include="Telegram.Bot" Version="15.7.1" />
+		<PackageReference Include="Telegram.Bot" Version="16.0.2" />
 		<PackageReference Include="Vostok.Applications.Scheduled" Version="0.2.7" />
 		<PackageReference Include="Vostok.Logging.Console" Version="1.0.5" />
 		<PackageReference Include="Vostok.Logging.File" Version="1.0.12" />
