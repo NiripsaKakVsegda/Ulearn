@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<RootNamespace>Ulearn.Core</RootNamespace>
 		<LangVersion>default</LangVersion>
-		<TargetFrameworks>net472;net5.0</TargetFrameworks>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
 		<NoWarn>NU1701;CS0168</NoWarn>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
