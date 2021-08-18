@@ -6,6 +6,7 @@ namespace Ulearn.Core.Courses
 	public static class CourseUrlHelper
 	{
 		// Не учитывает возможность /../
+		// В качестве baseUrlApi можно передавать HtmlBlock.BaseUrlApiPlaceholder, если это ссылка для HtmlBlock
 		public static string GetAbsoluteUrlToFile(string baseUrlApi, string courseId, string unitPathRelativeToCourse, string filePathRelativeToUnit)
 		{
 			return GetUrlFromParts(baseUrlApi, $"courses/{courseId}/files", unitPathRelativeToCourse, filePathRelativeToUnit);

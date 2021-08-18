@@ -1,1 +1,1 @@
-docker build --pull -t hs-sandbox .
+docker build -t hs-sandbox .

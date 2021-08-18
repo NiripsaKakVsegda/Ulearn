@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using Ulearn.Common;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 
@@ -17,7 +18,6 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 		[XmlElement("polygonPath")]
 		public string PolygonPath { get; set; }
 
-		
 		public override void Validate(SlideLoadingContext context)
 		{
 			if (string.IsNullOrEmpty(PolygonPath))
@@ -27,8 +27,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 
 		public override void BuildUp(SlideLoadingContext context)
 		{
-			var statementsPath = Path.Combine(context.UnitDirectory.FullName, PolygonPath, "statements");
-			Blocks = GetBlocksProblem(statementsPath, context.CourseId, Id)
+			Blocks = GetBlocksProblem(context.CourseId, Id, context.CourseDirectory, context.UnitDirectory.GetRelativePath(context.CourseDirectory))
 				.Concat(Blocks.Where(block => !(block is MarkdownBlock)))
 				.ToArray();
 
@@ -47,8 +46,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			base.BuildUp(context);
 		}
 
-		private IEnumerable<SlideBlock> GetBlocksProblem(string statementsPath, string courseId, Guid slideId)
+		private IEnumerable<SlideBlock> GetBlocksProblem(string courseId, Guid slideId, DirectoryInfo courseDirectory, string unitPathRelativeToCourse)
 		{
+			var statementsPath = Path.Combine(courseDirectory.FullName, unitPathRelativeToCourse, PolygonPath, "statements");
 			var markdownBlock = Blocks.FirstOrDefault(block => block is MarkdownBlock);
 			if (markdownBlock != null)
 			{
@@ -58,23 +58,54 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			{
 				var htmlDirectoryPath = Path.Combine(statementsPath, ".html", "russian");
 				var htmlData = File.ReadAllText(Path.Combine(htmlDirectoryPath, "problem.html"));
-				yield return RenderFromHtml(htmlData);
+				yield return RenderFromHtml(htmlData, courseId, courseDirectory, unitPathRelativeToCourse);
 			}
 
 			var pdfLink = PolygonPath + "/statements/.pdf/russian/problem.pdf";
 			yield return new MarkdownBlock($"[Скачать условия задачи в формате PDF]({pdfLink})");
 		}
-		private static SlideBlock RenderFromHtml(string html)
+
+		private static readonly Regex problemBodyRegex
+			= new Regex("(<DIV class=[\"']problem-statement['\"]>.*)</BODY>", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		private static readonly Regex imageRegex
+			= new Regex("<IMG[^>]+src=\"(?<src>[^\"]+)\"", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		private SlideBlock RenderFromHtml(string html, string courseId, DirectoryInfo courseDirectory, string unitPathRelativeToCourse)
 		{
-			var match = new Regex("(<DIV class=[\"']problem-statement['\"]>.*)</BODY>", RegexOptions.Singleline | RegexOptions.IgnoreCase)
-				.Match(html);
+			var match = problemBodyRegex.Match(html);
 			if (!match.Success)
 				throw new Exception();
 			var body = match.Groups[1].Value;
 			var processedBody = body
 				.Replace("$$$$$$", "$$")
 				.Replace("$$$", "$");
+			processedBody = FixImageLinks(processedBody, courseId, courseDirectory, unitPathRelativeToCourse);
+
 			return new HtmlBlock($"<div class=\"math-tex problem\">{processedBody}</div>");
+		}
+
+		private string FixImageLinks(string html, string courseId, DirectoryInfo courseDirectory, string unitPathRelativeToCourse)
+		{
+			var imagesDirectoryRelativeToUnit = Path.Combine(PolygonPath, "statements", ".html", "russian");
+			var imagesDirectory = Path.Combine(courseDirectory.FullName, unitPathRelativeToCourse, imagesDirectoryRelativeToUnit);
+			var matches = imageRegex.Matches(html).Cast<Match>().ToList();
+			var originalToReplacement = new Dictionary<string, string>();
+			foreach (var match in matches)
+			{
+				var fileName = match.Groups["src"].Value;
+				if (fileName.Contains("/") || fileName.Contains("\\"))
+					continue;
+				var imageFile = new FileInfo(Path.Combine(imagesDirectory, fileName));
+				if (imageFile.Exists)
+				{
+					var link = CourseUrlHelper.GetAbsoluteUrlToFile(HtmlBlock.BaseUrlApiPlaceholder, courseId, unitPathRelativeToCourse, Path.Combine(imagesDirectoryRelativeToUnit, fileName));
+					originalToReplacement.Add(fileName, link);
+				}
+			}
+			foreach (var kvp in originalToReplacement)
+				html = html.Replace(kvp.Key, kvp.Value);
+			return html;
 		}
 
 		private static MarkdownBlock GetLinkOnPdf(string courseId, string slideId)
