@@ -36,7 +36,10 @@ import {
 	reviewsAddScoreFail,
 	reviewsAddScoreStart,
 	reviewsAddStartAction,
-	reviewsAddSuccessAction, reviewsAssignBotReviewFail, reviewsAssignBotReviewStart, reviewsAssignBotReviewSuccess,
+	reviewsAddSuccessAction,
+	reviewsAssignBotReviewFail,
+	reviewsAssignBotReviewStart,
+	reviewsAssignBotReviewSuccess,
 	reviewsDeleteCommentFail,
 	reviewsDeleteCommentStart,
 	reviewsDeleteCommentSuccess,
@@ -45,8 +48,10 @@ import {
 	reviewsDeleteSuccessAction,
 	reviewsEditFailAction,
 	reviewsEditStartAction,
-	reviewsEditSuccessAction, submissionsEnableManualCheckingFailAction,
-	submissionsEnableManualCheckingStartAction
+	reviewsEditSuccessAction,
+	submissionsEnableManualCheckingFailAction,
+	submissionsEnableManualCheckingStartAction,
+	submissionsLoadSuccessAction
 } from "src/actions/submissions";
 import {
 	favouriteReviewsAddFailAction,
@@ -72,6 +77,8 @@ import { clone } from "src/utils/jsonExtensions";
 import { FavouriteReviewRedux } from "src/redux/instructor";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
 import { assignBotReview, } from "src/api/submissions";
+import { Button } from "ui";
+import { getSubmissionsWithReviews } from "../../CourseUtils";
 
 
 const user: UserInfo = getMockedUser({
@@ -441,6 +448,17 @@ const mapStateToProps = (
 
 	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
 
+	const studentSubmissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			studentId,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById,
+			state.submissions.reviewsBySubmissionId
+		);
+
+	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
 	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
 		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
@@ -450,7 +468,8 @@ const mapStateToProps = (
 	const favouriteReviews = getDataIfLoaded(
 		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
 
-	const antiPlagiarismStatus = state.instructor.antiPlagiarismStatusBySubmissionId[submissions[0].id];
+	const antiPlagiarismStatus = studentSubmissions &&
+		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
 
 	const prohibitFurtherManualChecking = state.instructor
 		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
@@ -458,22 +477,39 @@ const mapStateToProps = (
 		?.[studentId] || false;
 
 	return {
-		user: buildUserInfo(state.account, courseId,),
+		user,
 		favouriteReviews,
 		studentGroups,
 		student,
-		studentSubmissions: submissions,
+		studentSubmissions,
 		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
-		scoresBySubmissionId: submissions.reduce((pv, cv) => {
-			const cvWithPercent = cv as unknown as { percent: number | undefined; };
-			if(cvWithPercent.percent) {
-				pv[cv.id] = cvWithPercent.percent;
-			}
-			return pv;
-		}, {} as { [id: number]: number }),
+		scoresBySubmissionId,
 	};
+};
+
+const getNextAPStatus = () => {
+	const rnd = Math.random();
+	let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
+	let suspicionCount = 0;
+
+	if(extra.suspicionLevel === 1) {
+		suspicionCount = Math.ceil(rnd * 10);
+		suspicionLevel = 'faint';
+	}
+	if(extra.suspicionLevel === 2) {
+		suspicionCount = Math.ceil(rnd * 50);
+		suspicionLevel = "strong";
+	}
+	extra.suspicionLevel++;
+	extra.suspicionLevel %= 3;
+	const info: AntiPlagiarismStatusResponse = {
+		suspiciousAuthorsCount: suspicionCount,
+		suspicionLevel,
+		status: 'checked'
+	};
+	return info;
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
@@ -654,28 +690,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				});
 		},
 		getAntiPlagiarismStatus: (courseId: string, submissionId: number,) => {
-			const rnd = Math.random();
-			let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
-			let suspicionCount = 0;
-
-			if(extra.suspicionLevel === 1) {
-				suspicionCount = Math.ceil(rnd * 10);
-				suspicionLevel = 'faint';
-			}
-			if(extra.suspicionLevel === 2) {
-				suspicionCount = Math.ceil(rnd * 50);
-				suspicionLevel = "strong";
-			}
-			extra.suspicionLevel++;
-			extra.suspicionLevel %= 3;
-			const info: AntiPlagiarismStatusResponse = {
-				suspiciousAuthorsCount: suspicionCount,
-				suspicionLevel,
-				status: 'checked'
-			};
-
 			dispatch(antiplagiarimsStatusLoadStartAction(submissionId,));
-			return returnPromiseAfterDelay(loadingTimes.getPlagiarismStatus, info)
+			return returnPromiseAfterDelay(loadingTimes.getPlagiarismStatus, getNextAPStatus())
 				.then(json => {
 					dispatch(antiplagiarimsStatusLoadSuccessAction(submissionId, json,));
 					return json;
@@ -744,9 +760,31 @@ const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview)
 
 const Template: Story<Props> = (args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'>) => {
 	return (
-		<StoryUpdater args={ args } childrenBuilder={ (args) =>
-			<Connected { ...args }/> }
-		/>);
+		<>
+			<Button use={ 'primary' } onClick={ () => {
+				reduxStore.dispatch(antiplagiarimsStatusLoadSuccessAction(submissions[0].id, getNextAPStatus(),));
+			}
+			}>
+				Change antiPlagiat status
+			</Button>
+			<Button use={ 'primary' } onClick={ () => {
+				reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
+					submissions,
+					submissionsPercents: submissions.reduce((pv, cv) => {
+						const cvWithPercent = cv as unknown as { percent: number | undefined; };
+						if(cvWithPercent.percent) {
+							pv[cv.id] = cvWithPercent.percent;
+						}
+						return pv;
+					}, {} as { [id: number]: number }),
+					prohibitFurtherManualChecking: true,
+				}));
+			}
+			}>
+				Load submissions
+			</Button>
+			<Connected { ...args }/>
+		</>);
 };
 
 
