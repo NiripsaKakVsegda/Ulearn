@@ -12,6 +12,4 @@ RUN pip install -r /app/requirements.txt
 
 RUN python -m nltk.downloader stopwords
 
-USER jovyan
-
 WORKDIR app
