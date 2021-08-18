@@ -47,7 +47,7 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.9.0">
+    <PackageReference Include="Microsoft.Net.Compilers" Version="3.11.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30">
@@ -82,8 +82,8 @@
     <ProjectReference Include="..\RunCheckerJob\RunCheckerJob.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\packages\Microsoft.Net.Compilers.3.9.0\tools\*.*">
-      <Link>Microsoft.Net.Compilers.3.9.0\%(Filename)%(Extension)</Link>
+    <Content Include="..\packages\Microsoft.Net.Compilers.3.11.0\tools\*.*">
+      <Link>Microsoft.Net.Compilers.3.11.0\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="appsettings.json" />

@@ -268,27 +268,29 @@ namespace uLearn.Web.Controllers
 			if (fileName == null || !fileName.ToLower().EndsWith(".zip"))
 				return RedirectToAction("Packages", new { courseId });
 
-			using var tempFile = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(new Guid()), file.InputStream);
-			Guid versionId;
-			Exception error;
-			using (var inputStream = ZipUtils.GetZipWithFileWithNameInRoot(tempFile.FileInfo.FullName, "course.xml"))
+			using (var tempFile = courseManager.SaveVersionZipToTemporaryDirectory(courseId, new CourseVersionToken(new Guid()), file.InputStream))
 			{
-				(versionId, error) = await UploadCourse(courseId, inputStream, User.Identity.GetUserId()).ConfigureAwait(false);
-			}
-
-			if (error != null)
-			{
-				var errorMessage = error.Message.ToLowerFirstLetter();
-				while (error.InnerException != null)
+				Guid versionId;
+				Exception error;
+				using (var inputStream = ZipUtils.GetZipWithFileWithNameInRoot(tempFile.FileInfo.FullName, "course.xml"))
 				{
-					errorMessage += $"\n\n{error.InnerException.Message}";
-					error = error.InnerException;
+					(versionId, error) = await UploadCourse(courseId, inputStream, User.Identity.GetUserId()).ConfigureAwait(false);
 				}
 
-				return Packages(courseId, errorMessage);
-			}
+				if (error != null)
+				{
+					var errorMessage = error.Message.ToLowerFirstLetter();
+					while (error.InnerException != null)
+					{
+						errorMessage += $"\n\n{error.InnerException.Message}";
+						error = error.InnerException;
+					}
 
-			return RedirectToAction("Diagnostics", new { courseId, versionId });
+					return Packages(courseId, errorMessage);
+				}
+
+				return RedirectToAction("Diagnostics", new { courseId, versionId });
+			}
 		}
 
 		public async Task UploadCoursesWithGit(string repoUrl, string branch)
