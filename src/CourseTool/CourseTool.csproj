@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>uLearn.CourseTool</RootNamespace>
     <AssemblyName>course</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <AssemblyTitle>Course tool</AssemblyTitle>
     <Company>SKB Kontur</Company>

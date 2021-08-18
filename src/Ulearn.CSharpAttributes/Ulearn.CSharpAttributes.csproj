@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Ulearn</RootNamespace>
-		<TargetFrameworks>net472;net5.0</TargetFrameworks>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
 		<LangVersion>default</LangVersion>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
