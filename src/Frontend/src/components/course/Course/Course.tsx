@@ -36,8 +36,6 @@ import runLegacy from "src/legacy/legacyRunner";
 import {
 	adminCheckingQueuePath,
 	constructPathToSlide,
-	flashcards,
-	flashcardsPreview,
 	signalrWS,
 } from 'src/consts/routes';
 import { ShortSlideInfo, SlideType, } from 'src/models/slide';
