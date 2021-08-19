@@ -49,7 +49,7 @@ import {
 	SolutionRunStatus, SubmissionInfo,
 } from "src/models/exercise";
 import { SlideUserProgress } from "src/models/userProgress";
-import { ExerciseBlockProps } from "src/models/slide";
+import { ExerciseBlock, ExerciseBlockProps } from "src/models/slide";
 import { UserInfo } from "src/utils/courseRoles";
 import { ShortUserInfo } from "src/models/users";
 import { SlideContext } from "../../Slide.types";
@@ -91,7 +91,7 @@ export interface FromReduxProps {
 	forceInitialCode: boolean;
 }
 
-export interface Props extends ExerciseBlockProps, FromReduxDispatch, FromReduxProps {
+export interface Props extends ExerciseBlockProps, FromReduxDispatch, FromReduxProps, ExerciseBlock {
 	className?: string;
 	slideContext: SlideContext;
 }

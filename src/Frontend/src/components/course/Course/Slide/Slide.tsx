@@ -6,7 +6,7 @@ import { BlocksWrapper, } from "./Blocks";
 import BlocksRenderer from "./BlocksRenderer";
 import CourseLoader from "src/components/course/Course/CourseLoader";
 
-import { Block, BlockTypes, SlideType, SpoilerBlock, } from "src/models/slide";
+import { Block, BlockTypes, ExerciseBlock, SlideType, SpoilerBlock, } from "src/models/slide";
 import { Props, SlidePropsWithContext } from "./Slide.types";
 import SubmissionsLoader from "./SubmissionsLoader";
 import InstructorReview from "./InstructorReview/InstructorReview.redux";
@@ -221,6 +221,7 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 		formulation={ formulation && formulation.length > 0
 			? BlocksRenderer.renderBlocks(formulation, slideContext)
 			: undefined }
+		initialCode={ (slideBlocks[exerciseSlideBlockIndex] as ExerciseBlock).exerciseInitialCode }
 	/>;
 };
 

@@ -63,16 +63,14 @@ interface VideoBlock extends Block {
 	annotationWithoutBottomPaddings: boolean;
 }
 
-interface ExerciseBlock extends Block {
-	$type: BlockTypes.exercise;
+interface ExerciseBlockProps {
 	slideId: string;
 	courseId: string;
 	forceInitialCode: boolean;
-	maxScore?: number;
-	submissions?: SubmissionInfo[],//we're moving this field to other state in redux reducer
 }
 
-interface ExerciseBlockProps {
+interface ExerciseBlock extends Block {
+	$type: BlockTypes.exercise;
 	languages: Language[];
 	languageInfo: EnumDictionary<Language, LanguageLaunchInfo> | null;
 	defaultLanguage: Language | null;

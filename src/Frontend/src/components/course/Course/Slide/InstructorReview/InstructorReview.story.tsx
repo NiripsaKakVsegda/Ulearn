@@ -20,7 +20,7 @@ import {
 import { GroupInfo, } from "src/models/groups";
 import { UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, Props, PropsFromRedux } from "./InstructorReview.types";
+import { ApiFromRedux, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
 import { SlideContext } from "../Slide.types";
 import { RootState } from "src/redux/reducers";
@@ -763,7 +763,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview);
 
-const Template: Story<Props> = (args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'>) => {
+const Template: Story<PropsFromSlide> = (args: PropsFromSlide) => {
 	return (
 		<>
 			<Button use={ 'primary' } onClick={ () => {
@@ -795,7 +795,7 @@ const Template: Story<Props> = (args: Pick<Props, 'slideContext' | 'authorSoluti
 
 const courseId = 'basic';
 const slideId = 'slide';
-const args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'> = {
+const args: PropsFromSlide = {
 	slideContext: {
 		slideId, courseId, title: 'Angry Birds',
 		slideInfo: {
@@ -808,6 +808,7 @@ const args: Pick<Props, 'slideContext' | 'authorSolution' | 'formulation'> = {
 			query: { slideId: null, submissionId: 1, isLti: false, userId: student.id, done: false, group: null },
 		}
 	},
+	initialCode: 'void Main()\n{\n\tConsole.WriteLine("Coding is awesome");\n}',
 	authorSolution: <BlocksWrapper>
 		<StaticCode
 			language={ Language.cSharp }

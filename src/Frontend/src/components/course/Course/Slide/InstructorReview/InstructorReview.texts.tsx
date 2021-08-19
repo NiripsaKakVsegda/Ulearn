@@ -61,8 +61,9 @@ const texts = {
 		addedColor: string,
 		removedCount: number,
 		removedColor: string,
+		diffForInitialCode?: boolean,
 	): React.ReactElement => <>
-		Diff с предыдущим ревью:
+		{ diffForInitialCode ? 'Diff с начальной версией:' : 'Diff с предыдущим ревью:' }
 		<span className={ addedColor }> { addedCount } { getPluralForm(addedCount, 'строку', 'строки',
 			'строк') } добавили</span>,
 		<span className={ removedColor }> { removedCount } – удалили</span>

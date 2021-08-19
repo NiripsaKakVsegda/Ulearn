@@ -71,11 +71,14 @@ export interface ApiFromRedux {
 	assignBotReview: (submissionId: number, review: ReviewInfo) => Promise<ReviewInfo>;
 }
 
-export interface Props extends PropsFromRedux, ApiFromRedux {
+export interface PropsFromSlide {
 	authorSolution?: React.ReactNode;
 	formulation?: React.ReactNode;
 	slideContext: SlideContext;
+	initialCode: string | undefined;
 }
+
+export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide;
 
 export interface InstructorExtraFields {
 	outdated?: boolean;

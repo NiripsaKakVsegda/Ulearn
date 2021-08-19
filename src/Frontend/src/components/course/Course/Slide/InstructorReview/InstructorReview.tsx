@@ -21,7 +21,7 @@ import {
 	getPreviousManualCheckingInfo,
 	getSelectedReviewIdByCursor,
 	loadLanguageStyles,
-	buildRange,
+	buildRange, areReviewsSame,
 } from "../Blocks/Exercise/ExerciseUtils";
 import { clone } from "src/utils/jsonExtensions";
 import { DiffInfo, getDataFromReviewToCompareChanges, getDiffInfo, getReviewAnchorTop } from "./utils";
@@ -40,7 +40,7 @@ import {
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
 import { FavouriteReview } from "src/models/instructor";
-import { buildQuery } from "../../../../../utils";
+import { buildQuery } from "src/utils";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -76,7 +76,7 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmissionContext = this.getSubmissionContext(studentSubmissions, currentSubmission);
 
 			curScore = scoresBySubmissionId[currentSubmission.id];
-			prevScore = diffInfo && scoresBySubmissionId[diffInfo.prevReviewedSubmission.id];
+			prevScore = diffInfo && diffInfo.prevReviewedSubmission && scoresBySubmissionId[diffInfo.prevReviewedSubmission.id];
 
 			const allReviews = this.getReviewsFromSubmission(currentSubmission, diffInfo, false,);
 			reviews = allReviews.reviews;
@@ -162,6 +162,14 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 	};
 
+	hideAddCommentForm = (): void => {
+		this.setState({
+			addCommentFormCoords: undefined,
+			addCommentFormExtraSpace: undefined,
+			addCommentRanges: undefined,
+		});
+	};
+
 	componentDidUpdate = (prevProps: Readonly<Props>, prevState: Readonly<State>): void => {
 		const {
 			studentSubmissions,
@@ -172,14 +180,7 @@ class InstructorReview extends React.Component<Props, State> {
 			slideContext,
 			submissionIdFromQuery,
 		} = this.props;
-		const { currentSubmission, reviews, diffInfo, showDiff, currentTab, } = this.state;
-
-		if(currentTab !== prevState.currentTab) {
-			this.setState({
-				addCommentFormCoords: undefined,
-				addCommentRanges: undefined,
-			});
-		}
+		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
 
 		/*		if(!studentSubmissions) {
 					this.loadData();
@@ -231,7 +232,7 @@ class InstructorReview extends React.Component<Props, State> {
 				//	const newOutdatedReviewsCompare = newReviews.outdatedReviews.map(r => getDataFromReviewToCompareChanges(r));
 				//  const outdatedReviewsCompare = outdatedReviews.map(r => getDataFromReviewToCompareChanges(r));
 				//  if(JSON.stringify(outdatedReviewsCompare) !== JSON.stringify(newOutdatedReviewsCompare)) {}
-				if(JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) {
+				if(areReviewsSame(reviewsCompare, newReviewsCompare) !== true) {
 					this.updateSubmission(submission, newReviews.reviews, newReviews.outdatedReviews);
 				}
 
@@ -270,22 +271,30 @@ class InstructorReview extends React.Component<Props, State> {
 		const { submission, diffInfo } = this.getSubmissionInfo(studentSubmissions, index);
 		const { reviews, outdatedReviews } = this.getReviewsFromSubmission(submission, diffInfo, showDiff);
 
+		this.hideAddCommentForm();
 		this.setState({
 			diffInfo,
 			selectedReviewId: -1,
-			addCommentFormCoords: undefined,
-		});
-		this.updateSubmission(submission, reviews, outdatedReviews);
+		}, () => this.updateSubmission(submission, reviews, outdatedReviews));
 	};
 
-	getSubmissionInfo = (studentSubmissions: SubmissionInfo[],
+	getSubmissionInfo = (
+		studentSubmissions: SubmissionInfo[],
 		index: number,
 	): { submission: SubmissionInfo; diffInfo: DiffInfo | undefined; } => {
+		const { initialCode, } = this.props;
 		const submission = clone(studentSubmissions[index]);
 		const prevSubmissionInfo = getPreviousManualCheckingInfo(studentSubmissions, index);
 		const diffInfo = prevSubmissionInfo
-			? getDiffInfo(submission, prevSubmissionInfo.submission)
-			: undefined;
+			? {
+				...getDiffInfo(submission.code, prevSubmissionInfo.submission.code),
+				prevReviewedSubmission: prevSubmissionInfo.submission,
+			}
+			: initialCode
+				? {
+					...getDiffInfo(submission.code, initialCode),
+				}
+				: undefined;
 
 		return { submission, diffInfo, };
 	};
@@ -301,7 +310,7 @@ class InstructorReview extends React.Component<Props, State> {
 				startLine: showDiff && diffInfo ? diffInfo.newCodeNewLineIndex[r.startLine] : r.startLine,
 				finishLine: showDiff && diffInfo ? diffInfo.newCodeNewLineIndex[r.finishLine] : r.finishLine,
 			}));
-		const outdatedReviews: ReviewInfo[] = diffInfo
+		const outdatedReviews: ReviewInfo[] = diffInfo && diffInfo.prevReviewedSubmission
 			? getAllReviewsFromSubmission(diffInfo.prevReviewedSubmission,)
 				.map(r => ({
 					...r,
@@ -349,19 +358,14 @@ class InstructorReview extends React.Component<Props, State> {
 				if(!lineWrapper) {
 					return;
 				}
-				//const lineNumberWrapper = document.createElement('div');
-
-				//lineWrapper.prepend(lineNumberWrapper);
 
 				switch (type) {
 					case "added": {
 						lineWrapper.classList.add(styles.addedLinesCodeMirror);
-						//lineNumberWrapper.classList.add(styles.addedLinesGutter);
 						break;
 					}
 					case "removed": {
 						lineWrapper.classList.add(styles.removedLinesCodeMirror);
-						//lineNumberWrapper.classList.add(styles.removedLinesGutter);
 						break;
 					}
 				}
@@ -465,6 +469,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onTabChange = (value: string): void => {
 		this.setState({ currentTab: value as InstructorReviewTabs });
+		this.hideAddCommentForm();
 	};
 
 	renderCurrentTab(currentTab: InstructorReviewTabs): React.ReactNode {
@@ -519,7 +524,9 @@ class InstructorReview extends React.Component<Props, State> {
 					canChangeScore={ isEditable }
 					date={ !isLastCheckedSubmission ? currentSubmission.timestamp : undefined }
 					score={ scoresBySubmissionId[currentSubmission.id] }
-					prevReviewScore={ diffInfo ? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id] : undefined }
+					prevReviewScore={ diffInfo && diffInfo.prevReviewedSubmission
+						? scoresBySubmissionId[diffInfo.prevReviewedSubmission.id]
+						: undefined }
 					exerciseTitle={ slideContext.title }
 					onSubmit={ this.onScoreButtonPressed }
 					onToggleChange={ this.prohibitFurtherReview }
@@ -602,7 +609,7 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 
 		onScoreSubmit(submissionIdFromQuery, student.id, 0, scoresBySubmissionId[submissionIdFromQuery]);
-		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, false);
+		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, true);
 		addReview(submissionIdFromQuery, this.shameComment, 0, 0, 0, 1)
 			.then(r => this.highlightReview(r.id));
 	};
@@ -621,7 +628,8 @@ class InstructorReview extends React.Component<Props, State> {
 						diffInfo.addedLinesCount,
 						styles.diffAddedLinesTextColor,
 						diffInfo.removedLinesCount,
-						styles.diffRemovedLinesTextColor)
+						styles.diffRemovedLinesTextColor,
+						!diffInfo.prevReviewedSubmission)
 					}
 				</Toggle> }
 				{ commentsEnabled &&
@@ -892,10 +900,10 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
+		this.hideAddCommentForm();
 		this.setState({
 			showDiff: value,
 			selectedReviewId: -1,
-			addCommentFormCoords: undefined,
 		}, this.resetMarkers);
 	};
 
@@ -1021,11 +1029,9 @@ class InstructorReview extends React.Component<Props, State> {
 					const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
 					if(addCommentFormHeight) {
 						const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
-						if(extraSpace > 0) {
-							this.setState({
-								addCommentFormExtraSpace: extraSpace,
-							});
-						}
+						this.setState({
+							addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
+						});
 					}
 				});
 			});
@@ -1075,8 +1081,8 @@ class InstructorReview extends React.Component<Props, State> {
 			addCommentRanges,
 		} = this.state;
 
+		this.hideAddCommentForm();
 		this.setState({
-			addCommentFormCoords: undefined,
 			addCommentValue: '',
 		});
 
@@ -1108,10 +1114,7 @@ class InstructorReview extends React.Component<Props, State> {
 			).then(r => this.highlightReview(r.id));
 		}
 
-		const doc = editor.getDoc();
-		doc
-			.getAllMarks()
-			.forEach(m => m.className === styles.selectionToReviewMarker && m.clear());
+		this.clearSelectionMarkers();
 	};
 
 	getStartAndEndFromRange = ({
@@ -1132,14 +1135,17 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	onFormClose = (): void => {
+
+		this.hideAddCommentForm();
+		document.removeEventListener('keydown', this.onEscPressed);
+		this.clearSelectionMarkers();
+	};
+
+	clearSelectionMarkers = (): void => {
 		const {
 			editor,
 		} = this.state;
 
-		this.setState({
-			addCommentFormCoords: undefined,
-		});
-		document.removeEventListener('keydown', this.onEscPressed);
 		editor
 			?.getDoc()
 			.getAllMarks()
@@ -1217,14 +1223,16 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	onCursorActivity = (): void => {
-		const { reviews, outdatedReviews, editor, selectedReviewId, showDiff, } = this.state;
+		const { reviews, outdatedReviews, editor, selectedReviewId, showDiff, currentSubmissionContext, } = this.state;
 
 		if(!editor) {
 			return;
 		}
 		const doc = editor.getDoc();
 		const cursor = doc.getCursor();
-		document.addEventListener('mouseup', this.onMouseUp);
+		if(currentSubmissionContext?.isEditable) {
+			document.addEventListener('mouseup', this.onMouseUp);
+		}
 
 		if(cursor.sticky === undefined) {
 			return;

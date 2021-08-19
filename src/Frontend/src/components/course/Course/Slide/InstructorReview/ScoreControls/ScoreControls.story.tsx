@@ -18,7 +18,7 @@ export const List: Story<PropsWithDecorator[]> = (args) =>
 	</Gapped>;
 
 
-List.args = [
+const args: PropsWithDecorator[] = [
 	{
 		title: 'toggle checked',
 
@@ -65,7 +65,14 @@ List.args = [
 
 		exerciseTitle: 'long practice name with spaces and verylongnamewithoutspaces',
 	},
-].map(c => ({ onSubmit: mockFunc, onToggleChange: mockFunc, ...c, }));
+].map(c => ({
+	onSubmit: mockFunc,
+	onToggleChange: mockFunc, ...c,
+	canChangeScore: true,
+	toggleChecked: !!c.toggleChecked,
+}));
+
+List.args = args;
 
 
 export default {

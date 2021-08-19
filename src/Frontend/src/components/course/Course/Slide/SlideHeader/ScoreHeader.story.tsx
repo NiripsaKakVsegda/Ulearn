@@ -6,10 +6,21 @@ import configureStore from "redux-mock-store";
 import { ScoreHeader, ScoreHeaderPropsFromRedux } from "./ScoreHeader";
 import { RootState } from "src/models/reduxState";
 import { SlideType } from "src/models/slide";
-import {CourseRoleType} from "src/consts/accessType";
+import { CourseRoleType } from "src/consts/accessType";
+import { SlideNavigationInfo, UlearnQueryParams } from "../../CourseUtils";
 
 const courseId = "courseId";
 const slideId = "slideId";
+
+const slideInfo = {
+	slideId,
+	courseId,
+	slideType: SlideType.Exercise,
+	isLti: false,
+	isReview: true,
+	isNavigationVisible: false,
+	query: { slideId: null, submissionId: 1, isLti: false, userId: null, done: false, group: null },
+};
 
 const ListTemplate: Story<{ items: { props: ScoreHeaderPropsFromRedux, header: string }[] }>
 	= ({ items }) => {
@@ -18,7 +29,7 @@ const ListTemplate: Story<{ items: { props: ScoreHeaderPropsFromRedux, header: s
 			<>
 				<p>{ item.header }</p>
 				<Provider store={ GetStore(item.props) }>
-					<ScoreHeader { ...item.props } />
+					<ScoreHeader { ...item.props } slideInfo={ slideInfo }/>
 				</Provider>
 			</>
 		) }
@@ -93,7 +104,7 @@ function GetStore(reduxProps: ScoreHeaderPropsFromRedux) {
 				}
 			}
 		},
-		slides: { submissionsByCourses: { [courseId]: { [slideId]: { 1: { manualCheckingPassed: hasReviewedSubmissions } } } } },
+		submissions: { submissionsById: { 1: { manualCheckingPassed: hasReviewedSubmissions } } },
 		account: {
 			isSystemAdministrator: false,
 			roleByCourse: { [courseId]: showStudentSubmissions ? CourseRoleType.instructor : CourseRoleType.student }

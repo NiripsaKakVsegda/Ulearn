@@ -53,7 +53,6 @@ export interface BlockDiff {
 }
 
 export interface DiffInfo {
-	prevReviewedSubmission: SubmissionInfo;
 	diffByBlocks: BlockDiff[];
 	addedLinesCount: number;
 	removedLinesCount: number;
@@ -61,9 +60,10 @@ export interface DiffInfo {
 	oldCodeNewLineIndex: number[];
 	newCodeNewLineIndex: number[];
 	code: string;
+	prevReviewedSubmission?: SubmissionInfo;
 }
 
-export const getDiffInfo = (submission: SubmissionInfo, prevSubmission: SubmissionInfo)
+export const getDiffInfo = (submissionCode: string, prevSubmissionCode: string)
 	: DiffInfo => {
 	const diffByBlocks = [];
 	const oldCodeNewLineIndex: number[] = [];
@@ -71,7 +71,7 @@ export const getDiffInfo = (submission: SubmissionInfo, prevSubmission: Submissi
 	let addedCount = 0;
 	let removedCount = 0;
 
-	const diff = getDiff(submission.code, prevSubmission.code);
+	const diff = getDiff(submissionCode, prevSubmissionCode);
 	let newCodeLineCounter = 1;
 	let oldCodeLineCounter = 1;
 
@@ -137,7 +137,6 @@ export const getDiffInfo = (submission: SubmissionInfo, prevSubmission: Submissi
 	return {
 		addedLinesCount: addedCount,
 		removedLinesCount: removedCount,
-		prevReviewedSubmission: prevSubmission,
 		deletedLinesSet,
 		diffByBlocks,
 		oldCodeNewLineIndex,
