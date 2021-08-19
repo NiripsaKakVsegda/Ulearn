@@ -100,6 +100,10 @@
   border-right: 1px solid @lightGrey;
 
   :global {
+    .CodeMirror-gutter-wrapper {
+      height: 100%;
+    }
+
     .CodeMirror-linenumber {
       padding: 0 11px;
       min-width: unset;
@@ -125,7 +129,8 @@
 
       :local(.addedLinesCodeMirror) {
         .CodeMirror-gutter-elt {
-          background: #d6ead1;;
+          background: #d6ead1;
+          height: 100%;
         }
 
         pre.CodeMirror-line {
@@ -136,6 +141,7 @@
       :local(.removedLinesCodeMirror) {
         .CodeMirror-gutter-elt {
           background: #f2cbcb;
+          height: 100%;
         }
 
         pre.CodeMirror-line {
