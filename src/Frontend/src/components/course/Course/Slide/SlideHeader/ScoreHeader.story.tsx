@@ -7,7 +7,6 @@ import { ScoreHeader, ScoreHeaderPropsFromRedux } from "./ScoreHeader";
 import { RootState } from "src/models/reduxState";
 import { SlideType } from "src/models/slide";
 import { CourseRoleType } from "src/consts/accessType";
-import { SlideNavigationInfo, UlearnQueryParams } from "../../CourseUtils";
 
 const courseId = "courseId";
 const slideId = "slideId";
