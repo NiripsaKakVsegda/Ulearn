@@ -2,6 +2,8 @@ import React from "react";
 
 import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toggle } from "ui";
 import { UnControlled, } from "react-codemirror2";
+import { Redirect } from "react-router-dom";
+import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
 
 import Review from "../Blocks/Exercise/Review";
 import { BlocksWrapper, } from "../Blocks";
@@ -13,15 +15,18 @@ import StickyWrapper from "./AntiPlagiarismHeader/StickyWrapper";
 import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
-
+import { buildQuery } from "src/utils";
+import { constructLinkWithReturnUrl, login } from "src/consts/routes";
+import { isInstructor } from "src/utils/courseRoles";
 import {
-	getTextMarkersByReviews,
+	areReviewsSame,
+	buildRange,
 	createTextMarker,
 	getAllReviewsFromSubmission,
 	getPreviousManualCheckingInfo,
 	getSelectedReviewIdByCursor,
+	getTextMarkersByReviews,
 	loadLanguageStyles,
-	buildRange, areReviewsSame,
 } from "../Blocks/Exercise/ExerciseUtils";
 import { clone } from "src/utils/jsonExtensions";
 import { DiffInfo, getDataFromReviewToCompareChanges, getDiffInfo, getReviewAnchorTop } from "./utils";
@@ -29,6 +34,7 @@ import { DiffInfo, getDataFromReviewToCompareChanges, getDiffInfo, getReviewAnch
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { Language } from "src/consts/languages";
 import { ReviewInfo, SubmissionInfo } from "src/models/exercise";
+import { FavouriteReview } from "src/models/instructor";
 import CodeMirror, { Editor, EditorConfiguration, MarkerRange, TextMarker, } from "codemirror";
 import {
 	InstructorReviewInfo,
@@ -39,8 +45,6 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
-import { FavouriteReview } from "src/models/instructor";
-import { buildQuery } from "src/utils";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -282,7 +286,6 @@ class InstructorReview extends React.Component<Props, State> {
 		studentSubmissions: SubmissionInfo[],
 		index: number,
 	): { submission: SubmissionInfo; diffInfo: DiffInfo | undefined; } => {
-		const { initialCode, } = this.props;
 		const submission = clone(studentSubmissions[index]);
 		const prevSubmissionInfo = getPreviousManualCheckingInfo(studentSubmissions, index);
 		const diffInfo = prevSubmissionInfo
@@ -290,11 +293,7 @@ class InstructorReview extends React.Component<Props, State> {
 				...getDiffInfo(submission.code, prevSubmissionInfo.submission.code),
 				prevReviewedSubmission: prevSubmissionInfo.submission,
 			}
-			: initialCode
-				? {
-					...getDiffInfo(submission.code, initialCode),
-				}
-				: undefined;
+			: undefined;
 
 		return { submission, diffInfo, };
 	};
@@ -421,6 +420,7 @@ class InstructorReview extends React.Component<Props, State> {
 			authorSolution,
 			formulation,
 			favouriteReviews,
+			user,
 		} = this.props;
 		const {
 			currentTab,
@@ -428,6 +428,14 @@ class InstructorReview extends React.Component<Props, State> {
 			curScore,
 			prevScore,
 		} = this.state;
+
+		if(!user?.isAuthenticated) {
+			return <Redirect to={ constructLinkWithReturnUrl(login) }/>;
+		}
+
+		if(!isInstructor(user)) {
+			throw new UrlError();
+		}
 
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
