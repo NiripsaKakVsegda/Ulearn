@@ -75,7 +75,6 @@ export interface PropsFromSlide {
 	authorSolution?: React.ReactNode;
 	formulation?: React.ReactNode;
 	slideContext: SlideContext;
-	initialCode: string | undefined;
 }
 
 export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide;

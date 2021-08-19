@@ -66,16 +66,7 @@ class Slide extends React.Component<Props> {
 			},
 		};
 
-		let withLoaders = (child: React.ReactNode) => (child);
-
-		if(slideInfo.slideType == SlideType.Exercise) {
-			const previousLoaders = withLoaders.bind({});
-			withLoaders = (child) => {
-				return (<SubmissionsLoader { ...slideProps }>
-					{ previousLoaders(child) }
-				</SubmissionsLoader>);
-			};
-		}
+		const withLoaders = this.buildLoaders(slideProps);
 
 		if(isStudentMode) {
 			return <StudentModeSlide
@@ -85,14 +76,29 @@ class Slide extends React.Component<Props> {
 		}
 
 		if(isReview) {
-			return withLoaders(<ReviewSlide { ...slideProps }/>);
+			return withLoaders(ReviewSlide);
 		}
 
 		if(isLti) {
-			return withLoaders(<LtiExerciseSlide { ...slideProps }/>);
+			return withLoaders(LtiExerciseSlide);
 		}
 
-		return withLoaders(<DefaultSlide { ...slideProps }/>);
+		return withLoaders(DefaultSlide);
+	};
+
+	buildLoaders = (slideProps: SlidePropsWithContext): (Child: React.ComponentType | React.ElementType) => React.ReactNode => {
+		let withLoaders = (Child: React.ComponentType | React.ElementType) => <Child { ...slideProps }/>;
+
+		if(slideProps.slideContext.slideInfo.slideType == SlideType.Exercise) {
+			const previousLoaders = withLoaders.bind({});
+			withLoaders = (child) => {
+				return (<SubmissionsLoader { ...slideProps }>
+					{ previousLoaders(child) }
+				</SubmissionsLoader>);
+			};
+		}
+
+		return withLoaders;
 	};
 }
 
@@ -221,7 +227,6 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 		formulation={ formulation && formulation.length > 0
 			? BlocksRenderer.renderBlocks(formulation, slideContext)
 			: undefined }
-		initialCode={ (slideBlocks[exerciseSlideBlockIndex] as ExerciseBlock).exerciseInitialCode }
 	/>;
 };
 
