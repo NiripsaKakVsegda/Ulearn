@@ -163,6 +163,7 @@ namespace uLearn.Web.Controllers
 				var publishedVersionFile = coursesRepo.GetPublishedVersionFile(courseId);
 				content = publishedVersionFile.File;
 			}
+
 			return File(content, "application/zip", courseId + ".zip");
 		}
 
@@ -210,6 +211,7 @@ namespace uLearn.Web.Controllers
 					if (match.Success)
 						repoUrl = $"git@{match.Groups["host"]}:{match.Groups["login"]}/{match.Groups["repo"]}.git";
 				}
+
 				pathToCourseXml = pathToCourseXml.NullIfEmptyOrWhitespace()?.Replace("\"", "/").Trim('/');
 				branch = branch.NullIfEmptyOrWhitespace() ?? "master";
 				var oldRepoSettings = coursesRepo.GetCourseRepoSettings(courseId);
@@ -646,6 +648,7 @@ namespace uLearn.Web.Controllers
 				ExistsMore = checkings.Count > maxShownQueueSize,
 				ShowFilterForm = string.IsNullOrEmpty(userId),
 				Slides = allCheckingsSlides,
+				QueueSlideId = slideId,
 			});
 		}
 
@@ -688,7 +691,7 @@ namespace uLearn.Web.Controllers
 			return InternalCheckingQueue(courseId, done, groupsIds, userId, slideId, message);
 		}
 
-		private async Task<ActionResult> InternalManualChecking<T>(string courseId, int queueItemId, bool ignoreLock = false, List<string> groupsIds = null, bool recheck = false) where T : AbstractManualSlideChecking
+		private async Task<ActionResult> InternalManualChecking<T>(string courseId, int queueItemId, bool ignoreLock = false, List<string> groupsIds = null, bool recheck = false, string queueSlideId = null) where T : AbstractManualSlideChecking
 		{
 			T checking;
 			var joinedGroupsIds = string.Join(",", groupsIds ?? new List<string>());
@@ -731,6 +734,8 @@ namespace uLearn.Web.Controllers
 				CheckQueueItemId = checking.Id,
 				SubmissionId = checking.Id,
 				Group = joinedGroupsIds,
+				QueueSlideId = queueSlideId,
+				Done = recheck,
 			});
 		}
 
@@ -758,16 +763,16 @@ namespace uLearn.Web.Controllers
 			return await InternalManualChecking<T>(courseId, itemToCheckId, ignoreLock: true, groupsIds: groupsIds).ConfigureAwait(false);
 		}
 
-		public Task<ActionResult> QuizChecking(string courseId, int id, bool recheck = false)
+		public Task<ActionResult> QuizChecking(string courseId, int id, bool recheck = false, string queueSlideId = null)
 		{
 			var groupsIds = Request.GetMultipleValuesFromQueryString("group");
-			return InternalManualChecking<ManualQuizChecking>(courseId, id, ignoreLock: false, groupsIds: groupsIds, recheck: recheck);
+			return InternalManualChecking<ManualQuizChecking>(courseId, id, ignoreLock: false, groupsIds: groupsIds, recheck: recheck, queueSlideId);
 		}
 
-		public Task<ActionResult> ExerciseChecking(string courseId, int id, bool recheck = false)
+		public Task<ActionResult> ExerciseChecking(string courseId, int id, bool recheck = false, string queueSlideId = null)
 		{
 			var groupsIds = Request.GetMultipleValuesFromQueryString("group");
-			return InternalManualChecking<ManualExerciseChecking>(courseId, id, ignoreLock: false, groupsIds: groupsIds, recheck: recheck);
+			return InternalManualChecking<ManualExerciseChecking>(courseId, id, ignoreLock: false, groupsIds: groupsIds, recheck: recheck, queueSlideId);
 		}
 
 		public Task<ActionResult> CheckNextQuizForSlide(string courseId, Guid slideId, int previous)
@@ -837,7 +842,8 @@ namespace uLearn.Web.Controllers
 			var userRolesByEmail = User.IsSystemAdministrator() ? usersRepo.FilterUsersByEmail(queryModel) : null;
 			var userRoles = usersRepo.FilterUsers(queryModel);
 			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
-				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);;
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
+			;
 			var courses = courseStorage.GetCourses()
 				.ToDictionary(c => c.Id, c => (c, allTempCourses.GetValueOrDefault(c.Id)), StringComparer.OrdinalIgnoreCase);
 			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList(),
@@ -894,7 +900,7 @@ namespace uLearn.Web.Controllers
 						courseRole => courseRole.ToString(),
 						courseRole =>
 						{
-	return (ICoursesRolesListModel)new SingleCourseRolesModel
+							return (ICoursesRolesListModel)new SingleCourseRolesModel
 							{
 								HasAccess = roles.Contains(courseRole),
 								ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
@@ -965,7 +971,6 @@ namespace uLearn.Web.Controllers
 					IsTempCourse = course.IsTempCourse()
 				});
 			}
-
 		}
 
 		[ULearnAuthorize(MinAccessLevel = CourseRole.CourseAdmin)]
@@ -1645,6 +1650,7 @@ namespace uLearn.Web.Controllers
 	{
 		public string Title { get; set; }
 		public string Id { get; set; }
+
 		[CanBeNull]
 		public TempCourse TempCourse { get; set; }
 	}
@@ -1676,6 +1682,7 @@ namespace uLearn.Web.Controllers
 	public class ManualCheckingQueueViewModel
 	{
 		public string CourseId { get; set; }
+		public Guid? QueueSlideId { get; set; }
 		public List<ManualCheckingQueueItemViewModel> Checkings { get; set; }
 		public string Message { get; set; }
 		public List<Group> Groups { get; set; }
