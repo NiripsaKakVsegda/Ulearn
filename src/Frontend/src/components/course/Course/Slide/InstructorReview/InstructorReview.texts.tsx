@@ -21,7 +21,7 @@ const texts = {
 			const archivedGroups = groups.filter(g => g.isArchived);
 			const notArchivedGroups = groups.filter(g => !g.isArchived);
 			let groupsAsString = notArchivedGroups.map(g => g.name).join(', ');
-			if(notArchivedGroups.length > 0) {
+			if(archivedGroups.length > 0) {
 				groupsAsString += '; архивные группы: ' + archivedGroups.map(g => g.name).join(', ');
 			}
 			return `${ visibleName } (${ groupsAsString })`;
