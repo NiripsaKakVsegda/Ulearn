@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toggle } from "ui";
+import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle } from "ui";
 import { UnControlled, } from "react-codemirror2";
 import { Redirect } from "react-router-dom";
 import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
@@ -615,8 +615,11 @@ class InstructorReview extends React.Component<Props, State> {
 			submissionIdFromQuery,
 			scoresBySubmissionId,
 		} = this.props;
+		const {
+			currentSubmission,
+		} = this.state;
 
-		if(!student || !scoresBySubmissionId) {
+		if(!student || !scoresBySubmissionId || !currentSubmission) {
 			return;
 		}
 
@@ -624,6 +627,36 @@ class InstructorReview extends React.Component<Props, State> {
 		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, true);
 		addReview(submissionIdFromQuery, this.shameComment, 0, 0, 0, 1)
 			.then(r => this.highlightReview(r.id));
+		if(currentSubmission.id !== submissionIdFromQuery) {
+			Toast.push('Оценка и комментарий были оставлены к решению ожидающему ревью', {
+				label: 'Перейти',
+				handler: this.handleZeroButtonToastClick
+			});
+		}
+	};
+
+	handleZeroButtonToastClick = (): void => {
+		const { studentSubmissions, submissionIdFromQuery, } = this.props;
+
+		if(!studentSubmissions) {
+			return;
+		}
+
+		const index = studentSubmissions.findIndex(s => s.id === submissionIdFromQuery);
+
+		if(!studentSubmissions || index === -1) {
+			Toast.push('Произошла ошибка');
+			if(!studentSubmissions) {
+				console.error(new Error('Student submissions were undefined'));
+			} else {
+				console.error(new Error(
+					`Student submissions does not contain id ${ submissionIdFromQuery }, submissions ids=${ studentSubmissions.map(
+						s => s.id).join(', ') }`));
+			}
+			return;
+		}
+
+		this.loadSubmission(studentSubmissions, index);
 	};
 
 	renderTopControls(commentsEnabled = true): React.ReactElement {
