@@ -13,8 +13,10 @@ import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
 import { SubmissionInfo } from "src/models/exercise";
 import { SlideContext } from "../Slide.types";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { MatchParams } from "src/models/router";
 
-interface Props {
+interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;
 }
 
@@ -127,4 +129,4 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 };
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview);
-export default Connected;
+export default withRouter(Connected);

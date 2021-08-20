@@ -16,6 +16,8 @@ import { DiffInfo } from "./utils";
 import CodeMirror, { Editor } from "codemirror";
 import { FavouriteReviewRedux, } from "src/redux/instructor";
 import { SlideContext } from "../Slide.types";
+import { RouteComponentProps } from "react-router-dom";
+import { MatchParams } from "src/models/router";
 
 export interface PropsFromRedux {
 	user?: UserInfo;
@@ -77,7 +79,7 @@ export interface PropsFromSlide {
 	slideContext: SlideContext;
 }
 
-export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide;
+export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide & RouteComponentProps<MatchParams>;
 
 export interface InstructorExtraFields {
 	outdated?: boolean;
