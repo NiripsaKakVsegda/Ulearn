@@ -397,7 +397,12 @@ class Course extends Component<CourseProps, State> {
 			<main className={ wrapperClassName }>
 				{ isReview &&
 				<label className={ styles.reviewReturnToQueueLink }>
-					<Link to={ adminCheckingQueuePath + buildQuery({ courseId, }) }>
+					<Link to={ adminCheckingQueuePath + buildQuery({
+						courseId,
+						slideId: slideInfo.query.queueSlideId || undefined,
+						group: slideInfo.query.group || undefined,
+						done: slideInfo.query.done,
+					}) }>
 						← Код-ревью и проверка тестов
 					</Link>
 				</label> }

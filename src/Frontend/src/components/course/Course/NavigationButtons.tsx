@@ -85,37 +85,53 @@ export default NavigationButtons;
 interface ReviewNavigationState extends Partial<ReviewQueueResponse> {
 	courseId: string;
 	slideId: string;
+	submissionId: number;
+	userId: string;
 	isLoading: boolean;
 }
 
 function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 	const [state, setState] = useState<ReviewNavigationState | undefined>();
-	const { query, slideId, courseId, navigationInfo, } = slideInfo;
+	const { query, courseId, navigationInfo, slideId, } = slideInfo;
 
-	const groupsIds: string[] | "all" | "not-in-group" = Array.isArray(query.group)
-		? query.group
-		: query.group == null
-			? 'all'
-			: 'not-in-group';
+	if(!slideId) {
+		throw new Error("Slide id was not provided");
+	}
 
-	if(!query.submissionId || !slideId) {
+	if(!query.submissionId) {
 		throw new Error("Submission id was not provided");
 	}
 
-	if(navigationInfo && (!state || slideId !== state.slideId)) {
+	if(!query.userId) {
+		throw new Error("User id was not provided");
+	}
+
+	//if any queue params changed -> reload. slide id, user id, submission id
+	if(navigationInfo && (!state || slideId !== state.slideId || state.userId !== query.userId || state.submissionId !== query.submissionId)) {
 		setState({
 			courseId,
 			slideId,
+			userId: query.userId,
+			submissionId: query.submissionId,
 			isLoading: true,
 		});
 
-		api.instructor.getReviewQueue(courseId, groupsIds, slideId, undefined, query.done)
-			.then(c => setState({
-				courseId,
-				slideId,
-				isLoading: false,
-				checkings: c.checkings
-			}));
+		const userId = query.userId;
+		const submissionId = query.submissionId;
+
+		api.instructor.getReviewQueue(courseId, query.group || undefined, query.queueSlideId || undefined, undefined,
+			query.done)
+			.then(c => {
+
+				setState({
+					userId,
+					submissionId,
+					courseId,
+					slideId,
+					isLoading: false,
+					checkings: c.checkings,
+				});
+			});
 	}
 
 	if(state && state.checkings) {
@@ -152,17 +168,26 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 					check && check.submissionId !== state.checkings[currentCheckIndex]?.submissionId
 						?
 						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
-							  to={ constructPathToSlide(courseId, slideId)
+							  to={ constructPathToSlide(courseId, check.slideId)
 							  + buildQuery({
 								  checkQueueItemId: check.submissionId,
 								  submissionId: check.submissionId,
 								  userId: check.userId,
+
+								  queueSlideId: query.queueSlideId || undefined,
+								  group: query.group || undefined,
+								  done: query.done,
 							  }) }>
 							{ texts.nextReviewLinkText }
 						</Link>
 						:
 						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
-							  to={ adminCheckingQueuePath + buildQuery({ courseId, }) }
+							  to={ adminCheckingQueuePath + buildQuery({
+								  courseId,
+								  slideId: query.queueSlideId || undefined,
+								  group: query.group || undefined,
+								  done: query.done,
+							  }) }
 						>
 							{ texts.returnToCheckingQueuePage }
 						</Link>

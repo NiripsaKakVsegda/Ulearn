@@ -186,16 +186,17 @@ class InstructorReview extends React.Component<Props, State> {
 		} = this.props;
 		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
 
-		/*		if(!studentSubmissions) {
-					this.loadData();
-					this.setState({
-						currentSubmission: undefined,
-						selectedReviewId: -1,
-						addCommentFormCoords: undefined,
-						addCommentRanges: undefined,
-					});
-					return;
-				}*/
+		if(prevProps.slideContext.slideInfo.query.userId !== slideContext.slideInfo.query.userId
+			|| prevProps.slideContext.slideInfo.query.submissionId !== slideContext.slideInfo.query.submissionId) {
+			this.loadData();
+			this.setState({
+				currentSubmission: undefined,
+				selectedReviewId: -1,
+				addCommentFormCoords: undefined,
+				addCommentRanges: undefined,
+			});
+			return;
+		}
 
 		if(!antiPlagiarismStatus && !antiPlagiarismStatusLoading && studentSubmissions && studentSubmissions.length > 0) {
 			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
@@ -554,20 +555,23 @@ class InstructorReview extends React.Component<Props, State> {
 
 	enableManualChecking = (): void => {
 		const { currentSubmission } = this.state;
-		const { enableManualChecking, slideContext, } = this.props;
+		const { enableManualChecking, slideContext: { slideInfo: { query, } }, student, history, } = this.props;
 
-		if(!currentSubmission) {
+		if(!currentSubmission || !student) {
 			return;
 		}
 
-		enableManualChecking(currentSubmission.id);
-		history.replaceState({},
-			history.state.title,
+		history.replace(
 			location.pathname + buildQuery({
-				...slideContext.slideInfo.query,
 				submissionId: currentSubmission.id,
 				checkQueueItemId: currentSubmission.id,
+				userId: student.id,
+
+				queueSlideId: query.queueSlideId || undefined,
+				group: query.group || undefined,
+				done: query.done,
 			}));
+		enableManualChecking(currentSubmission.id);
 	};
 
 	prohibitFurtherReview = (enabled: boolean): void => {
