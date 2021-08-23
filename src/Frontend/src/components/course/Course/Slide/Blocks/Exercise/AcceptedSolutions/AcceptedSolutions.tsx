@@ -98,11 +98,15 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 		}
 		const _solutions: _AcceptedSolution[]
 			= solutions.map(
-			s => ({
-				...s,
-				code: s.code.trim(),
-				promoted: promotedSolutions.some(ss => ss.submissionId === s.submissionId)
-			}));
+			s => {
+				s.code = s.code.replace(/^\s+\n/, ''); //remove all empty lines till 1 with any non whitespace char in the beginning
+				s.code = s.code.replace(/\s+$/, ''); //remove all whitespace char after last non whitespace char at the end
+				return {
+					...s,
+					code: s.code,
+					promoted: promotedSolutions.some(ss => ss.submissionId === s.submissionId)
+				};
+			});
 		const solutionsDict = Object.assign({}, ..._solutions.map((x) => ({ [x.submissionId]: x })));
 		const stateUpdates: State = {
 			...this.state,
