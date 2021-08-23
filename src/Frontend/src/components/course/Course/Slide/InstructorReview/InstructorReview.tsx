@@ -111,7 +111,7 @@ class InstructorReview extends React.Component<Props, State> {
 		currentSubmission: SubmissionInfo
 	): SubmissionContext => {
 		const lastCheckedSubmissionId = studentSubmissions
-			.find(s => s.manualChecking?.percent !== null)?.id;
+			.find(s => (s.manualChecking?.percent || null) !== null)?.id;
 		const lastManualCheckingSubmissionId = studentSubmissions
 			.find(s => s.manualChecking !== null)?.id;
 		const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmissionId;
