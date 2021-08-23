@@ -25,11 +25,12 @@ import { AccountState } from "src/redux/account";
 import { CourseState } from "src/redux/course";
 import { RootState } from "src/models/reduxState";
 import { DeviceType } from "src/consts/deviceType";
+import { MatchParams } from "../../models/router";
 
 import styles from './Header.less';
 
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps<MatchParams> {
 	account: AccountState;
 	courses: CourseState;
 	initializing: boolean;
@@ -133,9 +134,6 @@ class Header extends Component<Props, State> {
 						{ !initializing && this.renderUserRoleMenu() }
 						{ isInstructor({ isSystemAdministrator, courseRole })
 						&& <StudentMode
-							location={ location }
-							history={ history }
-							match={ match }
 							deviceType={ deviceType }
 							containerClass={ cn(styles.headerElement, styles.button) }
 						/> }

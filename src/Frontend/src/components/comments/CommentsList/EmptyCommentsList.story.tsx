@@ -3,7 +3,8 @@ import CommentsList, { Props } from "./CommentsList";
 import { CommentPolicy } from "src/models/comments";
 import { Story } from "@storybook/react";
 import { SlideType } from "src/models/slide";
-import { fakeCommentsApi, instructor, student, unAuthUser } from "../storiesData";
+import { fakeCommentsApi } from "../storiesData";
+import { student, unAuthUser } from "src/storiesUtils";
 
 
 const commentPolicy: CommentPolicy = {

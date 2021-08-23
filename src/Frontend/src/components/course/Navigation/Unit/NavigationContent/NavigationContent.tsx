@@ -2,9 +2,7 @@ import React from "react";
 
 import NavigationItem from '../NavigationItem';
 
-import getPluralForm from 'src/utils/getPluralForm';
-
-import { MenuItem, QuizMenuItem, } from '../../types';
+import { MenuItem, } from '../../types';
 import { SlideType } from 'src/models/slide';
 
 import styles from './NavigationContent.less';

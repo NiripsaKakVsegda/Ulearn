@@ -130,11 +130,7 @@ class InternalUlearnApp extends Component<Props, State> {
 			<BrowserRouter>
 				<ThemeContext.Provider value={ theme }>
 					<ErrorBoundary>
-						{ isHeaderVisible &&
-						<React.Fragment>
-							<Header initializing={ initializing }/>
-						</React.Fragment>
-						}
+						{ isHeaderVisible && <Header initializing={ initializing }/> }
 						<NotFoundErrorBoundary>
 							{ !initializing && // Avoiding bug: don't show page while initializing.
 							// Otherwise we make two GET requests sequentially.
@@ -176,7 +172,7 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
 	return {
-		getCurrentUser: () => api.account.getCurrentUser()(dispatch),
+		getCurrentUser: () => api.account.redux.getCurrentUser()(dispatch),
 		getCourses: () => api.courses.getCourses()(dispatch),
 		getNotificationsCount: () => api.notifications.getNotificationsCount()(dispatch),
 		setDeviceType: (deviceType: DeviceType) => dispatch(deviceChangeAction(deviceType)),

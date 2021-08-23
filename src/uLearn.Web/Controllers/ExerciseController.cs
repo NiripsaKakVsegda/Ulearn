@@ -488,9 +488,8 @@ namespace uLearn.Web.Controllers
 		public ActionResult ExerciseScoreForm(BlockRenderContext context)
 		{
 			var checking = (ManualExerciseChecking)context.ManualChecking;
-			var prevReviewPercent = slideCheckingsRepo.GetUserReviewPercentForExerciseSlide(
+			var prevReviewPercent = slideCheckingsRepo.GetLastReviewPercentForExerciseSlide(
 				context.Course.Id,
-				context.Slide as ExerciseSlide,
 				checking.UserId,
 				checking.Submission.Timestamp);
 			var model = new ExerciseScoreFormModel (

@@ -3,7 +3,6 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
@@ -69,16 +68,6 @@ module.exports = merge([base, {
 		strictExportPresence: true,
 		rules: [
 			{
-				test: /\.(js|jsx|mjs)$/,
-				include: paths.appSrc,
-				loader: 'eslint-loader',
-				enforce: 'pre',
-				options: {
-					formatter: eslintFormatter,
-					eslintPath: 'eslint',
-				},
-			},
-			{
 				oneOf: [
 					{
 						test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
@@ -105,7 +94,6 @@ module.exports = merge([base, {
 								loader: MiniCssExtractPlugin.loader,
 								options: miniCssExtractPluginOptions,
 							},
-							'@teamsupercell/typings-for-css-modules-loader',
 							{
 								loader: "css-loader",
 								options: {
@@ -143,7 +131,6 @@ module.exports = merge([base, {
 						test: /\.css$/,
 						use: [
 							'style-loader',
-							'@teamsupercell/typings-for-css-modules-loader',
 							{
 								loader: 'css-loader',
 								options: {

@@ -12,7 +12,7 @@ import "codemirror/lib/codemirror.css";
 import { loadLanguageStyles } from "./ExerciseUtils";
 
 import styles from './Exercise.less';
-import texts from "src/components/course/Course/Slide/Blocks/Exercise/Exercise.texts";
+import texts from "../Exercise/Exercise.texts";
 
 
 export interface Props {
@@ -35,7 +35,6 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 		codeMirrorOptions,
 		disableStyles,
 	} = props;
-
 
 	const lines = code.split('\n');
 	const [collapseEditor, showAllCode] = useState(hide && lines.length > 20);
@@ -91,8 +90,8 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 	}
 
 	function copyCodeButtonClicked() {
-		navigator.clipboard.writeText(code);
-		Toast.push(texts.controls.copyCode.onCopy);
+		navigator.clipboard.writeText(code)
+			.then(() => Toast.push(texts.controls.copyCode.onCopy));
 	}
 }
 

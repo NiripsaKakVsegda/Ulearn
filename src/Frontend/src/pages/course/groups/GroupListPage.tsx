@@ -187,7 +187,7 @@ class GroupListPage extends Component<Props, State> {
 		}
 	};
 
-	addGroup = async (groupId: string) => {
+	addGroup = async (groupId: number) => {
 		const { history, } = this.props;
 
 		const groups = this.filteredGroups;

@@ -2,24 +2,22 @@ import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 
-import { Course, CourseProps } from 'src/components/course/Course/Course';
+import { Course, } from 'src/components/course/Course/Course';
 
 import { loadCourse, loadCourseErrors, changeCurrentCourseAction } from "src/actions/course";
 import { loadUserProgress, userProgressUpdate } from "src/actions/userProgress";
 import { loadFlashcards } from "src/actions/flashcards";
 
-import getSlideInfo from "src/utils/getSlideInfo";
-
 import { RootState } from "src/redux/reducers";
 import { MatchParams } from "src/models/router";
-import { CourseInfo, PageInfo, UnitInfo } from "src/models/course";
+import { CourseInfo, UnitInfo } from "src/models/course";
 import { FlashcardsStatistics } from "src/components/course/Navigation/types";
+import getSlideInfo from "src/components/course/Course/CourseUtils";
 
-const mapStateToProps = (state: RootState, { match, location, }: RouteComponentProps<MatchParams>) => {
-	const slideInfo = getSlideInfo(location);
-	const courseId = match.params.courseId.toLowerCase();
-
+const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParams>) => {
+	const courseId = route.match.params.courseId.toLowerCase();
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
+	const slideInfo = getSlideInfo(route, courseInfo);
 	const flashcardsByUnit = state.courses.flashcardsInfoByCourseByUnits[courseId];
 	const flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics } | undefined = flashcardsByUnit ? {} : undefined;
 	if(flashcardsStatisticsByUnits) {
@@ -35,19 +33,12 @@ const mapStateToProps = (state: RootState, { match, location, }: RouteComponentP
 	for (const courseId of Object.keys(state.courses.fullCoursesInfo)) {
 		loadedCourseIds[courseId] = true;
 	}
-	const isNavigationVisible = slideInfo && !slideInfo.isLti && !slideInfo.isReview && (courseInfo == null || courseInfo.tempCourseError == null);
-	const pageInfo : PageInfo = {
-		isNavigationVisible: isNavigationVisible || false,
-		isReview: slideInfo?.isReview || false,
-		isLti: slideInfo?.isLti || false,
-	};
 
 	return {
 		courseId,
-		slideId: slideInfo?.slideId,
+		slideInfo,
 		courseInfo,
 		loadedCourseIds,
-		pageInfo: pageInfo,
 		units: mapCourseInfoToUnits(courseInfo),
 		user: state.account,
 		progress: state.userProgress.progress[courseId],

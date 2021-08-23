@@ -8,6 +8,7 @@ export function getUserProgressInCourse(courseId: string): Promise<UsersProgress
 export function updateUserProgressInCourse(courseId: string, slideId: string): Promise<UsersProgressResponse> {
 	return api.put(`user-progress/${ courseId }/${ slideId }/visit`);
 }
+
 export function skipExercise(courseId: string, slideId: string): Promise<Response> {
 	return api.put(`user-progress/${ courseId }/${ slideId }/exercise/skip`);
 }

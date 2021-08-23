@@ -51,6 +51,9 @@ namespace Database
 			modelBuilder.HasCollation("case_insensitive", locale: "und@colStrength=secondary", provider: "icu", deterministic: false);
 			modelBuilder.UseDefaultColumnCollation("case_insensitive");
 
+			modelBuilder.Entity<FavouriteReview>()
+				.Property(u => u.Text)
+				.UseCollation("default");
 			// По Names будет осуществляться поиск по регулярном выражению. Такой поиск работает только с deterministic collation
 			modelBuilder.Entity<ApplicationUser>()
 				.Property(u => u.Names)
@@ -382,6 +385,12 @@ namespace Database
 
 			AddIndex<UserFlashcardsVisit>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId, c.FlashcardId }, false);
 			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
+
+			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
+			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Text }, true);
+
+			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
+			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
 		}
 
 		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class
@@ -508,5 +517,7 @@ namespace Database
 
 		public DbSet<ExerciseAttemptedUsersCount> ExerciseAttemptedUsersCounts { get; set; }
 		public DbSet<ExerciseUsersWithRightAnswerCount> ExerciseUsersWithRightAnswerCounts { get; set; }
+		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
+		public DbSet<FavouriteReviewByUser> FavouriteReviewsByUsers { get; set; }
 	}
 }

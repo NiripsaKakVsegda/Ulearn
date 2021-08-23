@@ -3,6 +3,7 @@ import React from "react";
 import { SlideType } from "src/models/slide";
 import { isCourseAdmin, UserRoles } from "src/utils/courseRoles";
 import { constructPathToFlashcardsPreview } from "src/consts/routes";
+import { SlideInfo } from "../../CourseUtils";
 
 import { Link } from "react-router-dom";
 import { EyeClosed, } from "icons";
@@ -13,24 +14,26 @@ import texts from './SlideHeader.texts';
 import styles from "../SlideHeader/SlideHeader.less";
 
 interface SlideHeaderProps {
-	courseId: string,
-	slideId: string,
-	isHiddenSlide: boolean,
-	userRoles: UserRoles,
-	slideType?: SlideType | null,
-	openUnitId?: string | null,
+	slideInfo: SlideInfo;
+	openUnitId?: string | null;
+
+	userRoles: UserRoles;
 }
 
 const SlideHeader: React.FC<SlideHeaderProps> = (props) => {
-	const { courseId, slideId, isHiddenSlide, slideType, userRoles, openUnitId, } = props;
-	if(isHiddenSlide) {
+	const { slideInfo, userRoles, openUnitId, } = props;
+	const { courseId, slideType, navigationInfo, } = slideInfo;
+
+	if(navigationInfo?.current.hide) {
 		return <HiddenSlideHeader/>;
 	}
+
 	if(slideType === SlideType.Exercise || slideType === SlideType.Quiz) {
-		return <ScoreHeader courseId={ courseId } slideId={ slideId }/>;
+		return <ScoreHeader slideInfo={ slideInfo }/>;
 	}
 
-	if((slideType === SlideType.Flashcards || slideType === SlideType.CourseFlashcards) && isCourseAdmin(userRoles)) {
+	if((slideType === SlideType.Flashcards || slideType === SlideType.CourseFlashcards) && isCourseAdmin(
+		userRoles)) {
 		return <FlashcardsSlideHeader
 			pathToFlashcardsSlide={ constructPathToFlashcardsPreview(courseId, openUnitId) }/>;
 	}

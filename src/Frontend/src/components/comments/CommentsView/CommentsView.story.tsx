@@ -4,21 +4,23 @@ import { Comment, CommentPolicy } from "src/models/comments";
 import { SlideType } from "src/models/slide";
 import { DeviceType } from "src/consts/deviceType";
 import {
-	accessesToSeeProfiles,
-	courseAccessesToEditComments,
-	courseAccessesToViewSubmissions,
-	courseAdmin,
 	fakeFullCommentsApi,
-	getMockedComment,
-	instructor,
-	student,
-	sysAdmin,
-	unAuthUser
+	getMockedComment
 } from "../storiesData";
 import type { Story } from "@storybook/react";
 import { CourseRoleType } from "src/consts/accessType";
 import { isInstructor, UserInfo } from "src/utils/courseRoles";
 import { FullCommentsApi } from "../utils";
+import {
+	accessesToSeeProfiles,
+	courseAccessesToEditComments,
+	courseAccessesToViewSubmissions,
+	courseAdmin,
+	instructor,
+	student,
+	sysAdmin,
+	unAuthUser
+} from "src/storiesUtils";
 
 const comments: Comment[] = [
 	{

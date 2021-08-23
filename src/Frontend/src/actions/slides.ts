@@ -1,20 +1,29 @@
 import { getSlideBlocks } from "src/api/slides";
 import {
+	SlideAction,
+
+	SLIDES_SLIDE_READY,
+
 	SLIDE_LOAD_START,
 	SLIDE_LOAD_SUCCESS,
 	SLIDE_LOAD_FAIL,
-	SLIDES_SLIDE_READY,
-	SlideAction,
 } from "src/actions/slides.types";
-import { Block, BlockTypes } from "src/models/slide";
+import { Block, } from "src/models/slide";
 import { Dispatch } from "redux";
 
-export const loadSlideStartAction = (): SlideAction => ({
+export const loadSlideStartAction = (
+	courseId: string,
+	slideId: string,
+): SlideAction => ({
 	type: SLIDE_LOAD_START,
+	courseId,
+	slideId,
 });
 
-export const loadSlideSuccessAction = (courseId: string, slideId: string,
-	slideBlocks: Block<BlockTypes>[]
+export const loadSlideSuccessAction = (
+	courseId: string,
+	slideId: string,
+	slideBlocks: Block[]
 ): SlideAction => ({
 	type: SLIDE_LOAD_SUCCESS,
 	courseId,
@@ -36,7 +45,7 @@ export const loadSlide = (courseId: string, slideId: string): (dispatch: Dispatc
 	courseId = courseId.toLowerCase();
 
 	return (dispatch: Dispatch) => {
-		dispatch(loadSlideStartAction());
+		dispatch(loadSlideStartAction(courseId, slideId,));
 
 		getSlideBlocks(courseId, slideId)
 			.then(slideBlocks => {

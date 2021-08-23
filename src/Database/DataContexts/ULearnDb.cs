@@ -85,6 +85,12 @@ namespace Database.DataContexts
 				.WithRequired(c => c.Submission)
 				.WillCascadeOnDelete(false);
 
+			modelBuilder.Entity<FavouriteReviewByUser>()
+				.HasRequired(s => s.FavouriteReview)
+				.WithMany(c => c.FavouriteReviewsByUser)
+				.HasForeignKey(p => p.FavouriteReviewId)
+				.WillCascadeOnDelete(true);
+
 			modelBuilder.Entity<UserRole>().HasRequired(r => r.User).WithMany().HasForeignKey(r => r.UserId).WillCascadeOnDelete();
 
 			CancelCascaseDeleting<ExerciseCodeReview, ApplicationUser, string>(modelBuilder, c => c.Author, c => c.AuthorId);
@@ -93,7 +99,7 @@ namespace Database.DataContexts
 			CancelCascaseDeleting<ManualExerciseChecking, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
 
 			CancelCascaseDeleting<ExerciseCodeReviewComment, ApplicationUser, string>(modelBuilder, c => c.Author, c => c.AuthorId);
-//			CancelCascaseDeleting<ExerciseCodeReviewComment, ExerciseCodeReview, int>(modelBuilder, c => c.Review, c => c.ReviewId);
+			//			CancelCascaseDeleting<ExerciseCodeReviewComment, ExerciseCodeReview, int>(modelBuilder, c => c.Review, c => c.ReviewId);
 
 			CancelCascaseDeleting<Certificate, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
 			CancelCascaseDeleting<Certificate, ApplicationUser, string>(modelBuilder, c => c.Instructor, c => c.InstructorId);
@@ -241,5 +247,8 @@ namespace Database.DataContexts
 		public DbSet<WorkQueueItem> WorkQueueItems { get; set; }
 
 		public DbSet<AcceptedSolutionsPromote> AcceptedSolutionsPromotes { get; set; }
+
+		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
+		public DbSet<FavouriteReviewByUser> FavouriteReviewByUsers { get; set; }
 	}
 }

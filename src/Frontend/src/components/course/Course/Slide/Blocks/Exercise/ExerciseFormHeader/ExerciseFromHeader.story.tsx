@@ -21,10 +21,12 @@ const submissionInfo: SubmissionInfo = {
 		result: AutomaticExerciseCheckingResult.RightAnswer,
 		output: null,
 		reviews: null,
-		checkerLogs:null,
+		checkerLogs: null,
 	},
-	manualCheckingPassed: false,
-	manualCheckingReviews: [],
+	manualChecking: {
+		reviews: [],
+		percent: null,
+	},
 	language: Language.cSharp
 };
 

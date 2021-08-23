@@ -31,7 +31,7 @@ const mapStateToProps = (state: RootState, { courseId, slideId }: { courseId: st
 	} as Comment);
 
 	const filterDeletedAndSort = (commentsIds: number[],) => {
-		const comments = [];
+		const comments:Comment[] = [];
 		let repliesCount = 0;
 
 		for (const commentId of commentsIds) {

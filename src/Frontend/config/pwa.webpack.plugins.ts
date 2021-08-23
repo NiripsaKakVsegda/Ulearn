@@ -41,6 +41,7 @@ module.exports = [
 	// Generate a service worker script that will precache, and keep up to date,
 	// the HTML & assets that are part of the Webpack build.
 	new GenerateSW({
+		mode: 'production',
 		swDest: 'sw',
 		exclude: [/\.map$/, /asset-manifest\.json$/, /\.(?:png|jpg|jpeg|svg)/],
 		navigateFallbackAllowlist: [/^(?!\/__).*/],

@@ -95,7 +95,7 @@
 							var slide = Model.Slides.FirstOrDefault(s => s.Key == checking.SlideId).Value;
 							var score = isQuiz
 								? (checking as ManualQuizChecking).Score
-								: SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(checking as ManualExerciseChecking, slide as ExerciseSlide).Score;
+								: SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(((ManualExerciseChecking)checking).Percent.Value, ((ExerciseSlide)slide).Scoring.ScoreWithCodeReview);
 						}
 						<span class="label label-xs label-default">
 							@score из @checkingModel.ContextMaxScore.PluralizeInRussian(RussianPluralizationOptions.Score) за @(isExercise ? "код-ревью" : "тест")
@@ -110,7 +110,10 @@
 								var startPosition = solution.FindPositionByLineAndCharacter(review.StartLine, review.StartPosition);
 								var finishPosition = solution.FindPositionByLineAndCharacter(review.FinishLine, review.FinishPosition);
 								var length = finishPosition - startPosition;
-								if (solution.Length == 0 || length < 0) {continue;}
+								if (solution.Length == 0 || length < 0)
+								{
+									continue;
+								}
 								<div>
 									<span class="commented-code">@solution.Substring(startPosition, finishPosition - startPosition).TruncateWithEllipsis(30)</span>
 									@Html.Raw(WebUtility.HtmlEncode(review.Comment).RenderSimpleMarkdown())
@@ -119,7 +122,7 @@
 						}
 					</p>
 					<p>
-						@Html.ActionLink("Посмотреть", checkingActionName, new { Model.CourseId, checking.Id, Group = Model.SelectedGroupsIdsJoined, recheck = true }, new { @class = "btn btn-sm btn-info" })
+						@Html.ActionLink("Посмотреть", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, recheck = true, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-info" })
 					</p>
 				}
 				else if (checking.IsLocked)
@@ -134,16 +137,16 @@
 					</p>
 					if (checking.IsLockedBy(User.Identity))
 					{
-						@Html.ActionLink("Вернуться к проверке →", checkingActionName, new { Model.CourseId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-primary" })
+						@Html.ActionLink("Вернуться к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-primary" })
 					}
 					else
 					{
-						@Html.ActionLink("Все равно проверить →", checkingActionName, new { Model.CourseId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-primary" })
+						@Html.ActionLink("Все равно проверить →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-primary" })
 					}
 				}
 				else
 				{
-					@Html.ActionLink("Перейти к проверке →", checkingActionName, new { Model.CourseId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-success" })
+					@Html.ActionLink("Перейти к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-success" })
 				}
 			</div>
 		</div>

@@ -20,7 +20,7 @@ interface Props {
 	course: CourseInfo;
 
 	onTabChange: (tab: string) => void;
-	addGroup: (groupId: string) => void;
+	addGroup: (groupId: number) => void;
 }
 
 function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.ReactElement {

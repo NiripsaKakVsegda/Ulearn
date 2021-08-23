@@ -12,14 +12,14 @@ import texts from "../Exercise.texts";
 
 
 interface State {
-	showAcceptedSolutions: boolean,
+	showAcceptedSolutions: boolean;
 }
 
 export interface Props extends IControlWithText {
-	isShowAcceptedSolutionsAvailable: boolean,
-	tooltipTrigger?: TooltipTrigger,
+	isShowAcceptedSolutionsAvailable: boolean;
+	tooltipTrigger?: TooltipTrigger;
 
-	onVisitAcceptedSolutions: () => void,
+	onVisitAcceptedSolutions: () => void;
 }
 
 export default class AcceptedSolutionsButton

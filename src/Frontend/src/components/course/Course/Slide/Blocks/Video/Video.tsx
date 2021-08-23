@@ -1,4 +1,5 @@
 import React from 'react';
+import queryString from "query-string";
 
 import YouTube, { Options } from 'react-youtube';
 import { Link, } from "ui";
@@ -9,34 +10,35 @@ import classNames from 'classnames';
 import { Cookies, withCookies } from 'react-cookie';
 
 import styles from './Video.less';
+import { BlockRenderContext } from "../../BlocksRenderer";
 
 const videoCookieName = 'youtube-video-rate';
 
 interface AnnotationFragment {
-	text: string,
-	offset: string,
+	text: string;
+	offset: string;
 }
 
 interface Annotation {
-	text: string,
-	fragments: AnnotationFragment[],
+	text: string;
+	fragments: AnnotationFragment[];
 }
 
 interface Props {
-	autoplay: boolean,
-	annotation: Annotation,
-	openAnnotation: boolean,
-	googleDocLink: string,
-	annotationWithoutBottomPaddings: boolean,
-	videoId: string,
-	className: string,
-	containerClassName: string,
-	hide: boolean,
-	cookies: Cookies,
+	annotation: Annotation;
+	googleDocLink: string;
+	videoId: string;
+	className: string;
+	containerClassName: string;
+	hide: boolean;
+	cookies: Cookies;
+	renderContext: BlockRenderContext;
 }
 
 interface State {
-	showedAnnotation: boolean,
+	showedAnnotation: boolean;
+	autoplay: boolean;
+	removeBottomPaddings: boolean;
 }
 
 class Video extends React.Component<Props, State> {
@@ -45,19 +47,22 @@ class Video extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 
-		const { openAnnotation, } = this.props;
+		const { renderContext, } = props;
+		const { autoplay } = queryString.parse(window.location.search);
 
 		this.state = {
-			showedAnnotation: openAnnotation,
+			autoplay: renderContext.previous === undefined ? !!autoplay : false,
+			showedAnnotation: renderContext.previous === undefined && renderContext.next === undefined,
+			removeBottomPaddings: !renderContext.hide &&
+				(renderContext.next !== undefined
+						? renderContext.next.type !== renderContext.type
+						: true
+				)
 		};
 	}
 
-	componentDidUpdate(prevProps: Props) {
-		const { cookies, openAnnotation, } = this.props;
-
-		if(prevProps.openAnnotation !== openAnnotation) {
-			this.setState({ showedAnnotation: openAnnotation });
-		}
+	componentDidUpdate() {
+		const { cookies, } = this.props;
 
 		if(this.ytPlayer) {
 			const newVideoRate = parseFloat(cookies.get(videoCookieName) || '1');
@@ -71,10 +76,12 @@ class Video extends React.Component<Props, State> {
 			videoId,
 			className,
 			containerClassName,
-			autoplay,
 			googleDocLink,
 			hide,
 		} = this.props;
+		const {
+			autoplay,
+		} = this.state;
 
 		const containerClassNames = classNames(styles.videoContainer, { [containerClassName]: containerClassName });
 		const frameClassNames = classNames(styles.frame, { [className]: className });
@@ -130,13 +137,13 @@ class Video extends React.Component<Props, State> {
 	};
 
 	renderAnnotation = () => {
-		const { showedAnnotation } = this.state;
-		const { annotation, googleDocLink, hide, annotationWithoutBottomPaddings, } = this.props;
+		const { showedAnnotation, removeBottomPaddings, } = this.state;
+		const { annotation, googleDocLink, hide, } = this.props;
 
 		return (
 			<BlocksWrapper
 				withoutEyeHint
-				withoutBottomPaddings={ annotationWithoutBottomPaddings }
+				withoutBottomPaddings={ removeBottomPaddings }
 				hide={ hide }
 				isBlock
 				className={ styles.withoutBottomMargins }>

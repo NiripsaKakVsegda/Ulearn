@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Parameters.Users;
 using Ulearn.Web.Api.Models.Responses.Users;
 
@@ -133,6 +134,26 @@ namespace Ulearn.Web.Api.Controllers.Users
 					Count = users.Count,
 				}
 			};
+		}
+
+		[HttpGet("{userId}")]
+		public async Task<ActionResult<ShortUserInfo>> FindUserById([FromRoute] string userId)
+		{
+			var currentUser = await usersRepo.FindUserById(UserId);
+
+			if (UserId == userId)
+				return BuildShortUserInfo(currentUser, true, true);
+
+			var user = await usersRepo.FindUserById(userId);
+			
+			if(user == null)
+				return StatusCode((int)HttpStatusCode.NotFound, $"No user with id {userId} found");
+			
+			var isSystemAdministrator = usersRepo.IsSystemAdministrator(currentUser);
+
+			return isSystemAdministrator 
+				? BuildShortUserInfo(user, true, true) 
+				: BuildShortUserInfo(user, true);
 		}
 	}
 }

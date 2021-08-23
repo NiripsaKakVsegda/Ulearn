@@ -40,6 +40,7 @@ namespace ManualUtils
 		public static async Task Main(string[] args)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+			Console.OutputEncoding = Encoding.UTF8;
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			LoggerSetup.Setup(configuration.HostLog, configuration.GraphiteServiceName);
 			try
@@ -126,6 +127,7 @@ namespace ManualUtils
 			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
 			// await SetCourseNamesToVersions(serviceProvider, false);
 			// await UnifyVisits(serviceProvider);
+			// await BuildFavouriteReviewsFromReviews(serviceProvider);
 			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
 			// await SetPercentByScore(serviceProvider);
 		}
@@ -455,8 +457,8 @@ namespace ManualUtils
 				{
 					Console.WriteLine($"Start process {file.Name}");
 					using (var stream = ZipUtils.GetZipWithFileWithNameInRoot(file.FullName, "course.xml"))
-						using (var fileStream = File.Create(Path.Combine(newDirectory.FullName, file.Name)))
-							stream.CopyTo(fileStream);
+					using (var fileStream = File.Create(Path.Combine(newDirectory.FullName, file.Name)))
+						stream.CopyTo(fileStream);
 				}
 				catch (Exception ex)
 				{
@@ -484,6 +486,7 @@ namespace ManualUtils
 					Console.WriteLine($"{fileInDb.CourseId}.zip does not exist");
 					return;
 				}
+
 				var content = await zip.ReadAllContentAsync();
 				if (fileInDb.File.Length != content.Length)
 				{
@@ -532,6 +535,7 @@ namespace ManualUtils
 				if (i % 1000 == 0)
 					db.SaveChanges();
 			}
+
 			db.SaveChanges();
 
 			var promotes = await db.AcceptedSolutionsPromotes.Include(s => s.Submission).ToListAsync();
@@ -540,12 +544,13 @@ namespace ManualUtils
 				promote.CourseId = promote.Submission.CourseId;
 				promote.SlideId = promote.Submission.SlideId;
 			}
+
 			db.SaveChanges();
 		}
 
 		private static async Task SetNewFieldsInReview(UlearnDb db, IServiceProvider serviceProvider)
 		{
-			var reviewsIds = await db.ExerciseCodeReviews.Where(r=> r.CourseId == "").Select(r => r.Id).ToListAsync();
+			var reviewsIds = await db.ExerciseCodeReviews.Where(r => r.CourseId == "").Select(r => r.Id).ToListAsync();
 			Console.WriteLine("Count " + reviewsIds.Count);
 			var i = 0;
 			foreach (var group in reviewsIds.GroupBy(r => r / 2000))
@@ -569,6 +574,7 @@ namespace ManualUtils
 
 					scopedDb.SaveChanges();
 				}
+
 				Console.WriteLine($"{i} / {reviewsIds.Count}");
 			}
 		}
@@ -614,6 +620,7 @@ namespace ManualUtils
 				result = new byte[stream.Length];
 				await stream.ReadAsync(result, 0, (int)stream.Length);
 			}
+
 			return result;
 		}
 
@@ -631,6 +638,7 @@ namespace ManualUtils
 					var cv = await db.CourseVersions.FindAsync(wf);
 					db.CourseVersions.Remove(cv);
 				}
+
 				await db.SaveChangesAsync();
 			}
 		}
@@ -748,7 +756,6 @@ namespace ManualUtils
 
 		private static async Task SetCourseNamesToVersions(IServiceProvider serviceProvider, bool removeVersionIfCourseError)
 		{
-			Console.OutputEncoding = Encoding.UTF8;
 			using (var scope = serviceProvider.CreateScope())
 			{
 				var db = scope.ServiceProvider.GetService<UlearnDb>();
@@ -768,6 +775,7 @@ namespace ManualUtils
 							Console.WriteLine($"Error on {courseVersion.CourseId} {courseVersion.Id}");
 							continue;
 						}
+
 						courseVersion.CourseName = course.Title;
 						await db.SaveChangesAsync();
 						Console.WriteLine($"{courseVersion.CourseId} {courseVersion.Id} {courseVersion.CourseName}");
@@ -785,7 +793,7 @@ namespace ManualUtils
 				var visitsCount = db.Visits.Count();
 				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
 				var dubles = await db.Visits
-					.GroupBy(v => new { v.CourseId, v.SlideId, v.UserId})
+					.GroupBy(v => new { v.CourseId, v.SlideId, v.UserId })
 					.Select(g => new { g.Key.CourseId, g.Key.SlideId, g.Key.UserId, Count = g.Count() })
 					.Where(t => t.Count > 1)
 					.ToListAsync();
@@ -806,7 +814,92 @@ namespace ManualUtils
 						Console.WriteLine($"{i} / {dubles.Count}");
 					}
 				}
+
 				await db.SaveChangesAsync();
+			}
+		}
+
+		private static async Task BuildFavouriteReviewsFromReviews(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
+				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
+				var courses = courseStorage.GetCourses().ToList();
+
+				var updateDbCounter = 0;
+				var updateDbMaxCount = 1000;
+				var courseCounter = 0;
+
+				foreach (var course in courses)
+				{
+					using (var transaction = db.Database.BeginTransaction())
+					{
+						courseCounter++;
+						Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
+						var slides = course.GetSlidesNotSafe();
+						var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
+						var slideCounter = 0;
+						foreach (var slide in slides)
+						{
+							slideCounter++;
+							Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
+							var slideTopReviews = db.ExerciseCodeReviews
+								.Include(r => r.Author)
+								.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && !r.HiddenFromTopComments && !r.IsDeleted)
+								.ToList()
+								.GroupBy(r => r.Author.Id)
+								.ToDictionary(r => r.Key, r => r);
+
+							var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
+							foreach (var instructorId in instructorIds)
+							{
+								if (!slideTopReviews.ContainsKey(instructorId))
+									continue;
+
+								var userTopReviews = slideTopReviews[instructorId]
+									.GroupBy(r => r.Comment)
+									.OrderByDescending(g => g.Count())
+									.ThenByDescending(g => g.Max(r => r.AddingTime))
+									.Take(5)
+									.Select(g => g.Key)
+									.ToList();
+
+								foreach (var review in userTopReviews)
+								{
+									if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
+									{
+										favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
+										textToFavoriteReview[review] = favouriteReview;
+										db.FavouriteReviews.Add(favouriteReview);
+										updateDbCounter++;
+									}
+
+									var favouriteReviewByUser = new FavouriteReviewByUser
+									{
+										CourseId = course.Id,
+										SlideId = slide.Id,
+										UserId = instructorId,
+										Timestamp = DateTime.Now,
+										FavouriteReview = favouriteReview,
+									};
+									db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+									updateDbCounter++;
+
+									if (updateDbCounter >= updateDbMaxCount)
+									{
+										await db.SaveChangesAsync();
+										updateDbCounter = 0;
+									}
+								}
+							}
+						}
+
+						await db.SaveChangesAsync();
+						transaction.Commit();
+					}
+				}
 			}
 		}
 

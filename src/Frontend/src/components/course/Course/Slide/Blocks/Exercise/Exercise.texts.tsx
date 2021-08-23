@@ -10,10 +10,13 @@ import { LanguageLaunchInfo } from "src/models/slide";
 const texts = {
 	submissions: {
 		newTry: 'Новая версия',
-		getSubmissionCaption: (submission: SubmissionInfo, selectedSubmissionIsLastSuccess: boolean,
+		getSubmissionCaption: (
+			submission: SubmissionInfo,
+			selectedSubmissionIsLastSuccess: boolean,
 			waitingForManualChecking: boolean
 		): string => {
-			const { timestamp, manualCheckingPassed } = submission;
+			const { timestamp, manualChecking } = submission;
+			const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 			const timestampCaption = texts.getSubmissionDate(timestamp);
 			if(manualCheckingPassed) {
 				return timestampCaption + ", прошло код-ревью";
@@ -37,6 +40,8 @@ const texts = {
 			runCommand: ""
 		};
 	},
+
+	editCommentError: 'При редактировании комментария к ревью произощла ошибка',
 
 	getLanguageLaunchMarkup: (languageLaunchInfo: LanguageLaunchInfo): React.ReactNode => {
 		function renderLine(name: string, value: string) {
@@ -124,7 +129,7 @@ const texts = {
 
 		statistics: {
 			buildShortText: (usersWithRightAnswerCount: number): React.ReactNode =>
-				<React.Fragment>Решило: { usersWithRightAnswerCount }</React.Fragment>,
+				<span>Решило: { usersWithRightAnswerCount }</span>,
 			buildStatistics: (attemptedUsersCount: number, usersWithRightAnswerCount: number,
 				lastSuccessAttemptDate?: string
 			): React.ReactNode =>
@@ -132,7 +137,7 @@ const texts = {
 					? <React.Fragment>
 						За всё время:<br/>
 						{ attemptedUsersCount } { getPluralForm(attemptedUsersCount, 'студент пробовал',
-					'студента пробовали', 'студентов пробовали') } решить
+						'студента пробовали', 'студентов пробовали') } решить
 						задачу.<br/>
 						{ getPluralForm(attemptedUsersCount, 'Решил', 'Решили', 'Решили') } { usersWithRightAnswerCount }
 						<br/>

@@ -150,12 +150,12 @@ namespace Database.Models
 		// Здесь ревью преподавателя. Ревью бота лежат в UserExerciseSubmission
 		public virtual IList<ExerciseCodeReview> Reviews { get; set; }
 
-		// Хранит старые данные, теперь используется Percent
+		[Obsolete("Хранит старые данные, теперь используется Percent")]
 		public int? Score { get; set; }
 
 		// Процент, поставленный преподавателем за ревью. Если поставить меньше баллов бота, то баллы бота уменьшется.
-		// Если процент не указан, используется Score. Это старый сценарий. Баллы Score суммируются с баллами бота.
-		public int? Percent { get; set; }
+		// Obsolete: Если процент не указан, используется Score. Это старый сценарий. Баллы Score суммируются с баллами бота.
+		public int? Percent { get; set; } // Теперь не null, если IsChecked
 
 		[NotMapped]
 		public List<ExerciseCodeReview> NotDeletedReviews => Reviews.Where(r => !r.IsDeleted).ToList();

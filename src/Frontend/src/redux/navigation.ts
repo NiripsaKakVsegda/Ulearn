@@ -4,7 +4,7 @@ import {
 } from 'src/actions/navigation.types';
 
 interface NavigationState {
-	opened: boolean,
+	opened: boolean;
 }
 
 const initialState: NavigationState = {

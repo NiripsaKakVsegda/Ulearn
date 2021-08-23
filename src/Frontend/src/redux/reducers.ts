@@ -1,4 +1,5 @@
 import { AnyAction, combineReducers, Reducer, } from "redux";
+import { ACCOUNT__USER_INFO_UPDATED } from "src/actions/account.types";
 import courseReducer from "./course";
 import userProgressReducer from "./userProgress";
 import navigationReducer from "./navigation";
@@ -8,7 +9,9 @@ import notificationsReducer from "./notifications";
 import instructorReducer from "./instructor";
 import deviceReducer from "./device";
 import commentsReducer from "./comments";
-import { ACCOUNT__USER_INFO_UPDATED } from "src/actions/account.types";
+import groupsReducer from "./groups";
+import submissionsReducer from "./submissions";
+import favouriteReviewsReducer from "./favouriteReviews";
 
 const rootReducer = combineReducers({
 	account: accountReducer,
@@ -20,6 +23,9 @@ const rootReducer = combineReducers({
 	instructor: instructorReducer,
 	device: deviceReducer,
 	comments: commentsReducer,
+	groups: groupsReducer,
+	submissions: submissionsReducer,
+	favouriteReviews: favouriteReviewsReducer,
 });
 
 type RootState = ReturnType<typeof rootReducer>

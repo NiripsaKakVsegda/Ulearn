@@ -1,5 +1,4 @@
-// @ts-check
-
+// @ts-nocheck
 /**
  * formatWebpackMessages helper from Create-react-app expects errors and warnings to be
  * arrays of strings as they are in Webpack 4.

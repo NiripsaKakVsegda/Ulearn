@@ -14,6 +14,8 @@ import { Loader, Modal } from "@skbkontur/react-ui";
 
 import './visualizer.css';
 import { Controls } from "./Controls";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import JSONView from './react-json-view/src/js/index';
 import { VisualizerStatus } from "./VusualizerStatus";
 

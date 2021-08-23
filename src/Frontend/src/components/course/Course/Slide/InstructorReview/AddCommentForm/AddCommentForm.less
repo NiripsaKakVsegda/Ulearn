@@ -1,0 +1,187 @@
+@import "src/variables";
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  flex: 0 0 auto;
+
+  height: 294px;
+  max-width: 729px;
+  position: absolute;
+  z-index: 5;
+
+  overflow: hidden;
+
+  background: @white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.section {
+  padding: 16px 24px 32px;
+}
+
+.addCommentSection {
+  .section;
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+
+.favouriteSection {
+  min-width: 424px;
+  padding: 16px 10px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+//comments are inside scroll wrapper, also it is ul, so to be enable to show icons on the left we enlarging
+//comments scroll wrapper on 16 and comments wrapper on same value, so we can render additional 16px without visual moving
+.commentsScrollWrapper {
+  margin-left: -16px;
+}
+
+.commentsWrapper {
+  padding-right: 16px;
+  padding-left: 16px;
+}
+
+.header {
+  font-family: @defaultFonts;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: 0;
+  text-align: left;
+
+  margin-bottom: 8px;
+}
+
+.commentsHeader {
+  .header;
+  margin-bottom: 16px;
+}
+
+.divider {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+  border: 1px solid @whiteSmoke;
+}
+
+.addCommentTextArea {
+  margin-bottom: 10px; //18px is actual margin to next component, 8px is added by footer
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.addCommentTextArea textarea {
+  min-width: 230px;
+}
+
+.controlsWrapper {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.closeFormButton {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  color: @disabledColor
+}
+
+.closeFormButton:hover {
+  cursor: pointer;
+}
+
+.editFavouritesComments {
+  margin-left: 8px;
+}
+
+.commentsList {
+  list-style: none;
+  padding: 0;
+
+  font-family: @defaultFonts;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  color: @linkColor;
+  margin-bottom: 16px;
+}
+
+.commentsList:last-child {
+  margin-bottom: 0;
+}
+
+.commentsList li {
+  position: relative;
+  margin-bottom: 8px;
+  font-family: @defaultFonts;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.commentsList li:last-child {
+  margin-bottom: 0;
+}
+
+.commentsList li:hover .notSelectedFavouriteIcon {
+  opacity: initial;
+}
+
+.commentsList li span:hover {
+  cursor: pointer;
+}
+
+.commentText {
+  word-break: break-word;
+}
+
+.preview {
+  color: initial;
+}
+
+.previewHeader {
+  color: @disabledColor;
+}
+
+.commentTextElapsed {
+  .commentText;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.noFavouriteCommentsText {
+  color: @disabledColor;
+  margin-bottom: 16px;
+}
+
+.favouriteIcon {
+  position: absolute;
+  left: -18px;
+  padding-right: 2px; //adding invisible area to enlarge onHover area
+  color: @accentColor;
+}
+
+.notSelectedFavouriteIcon {
+  .favouriteIcon;
+  opacity: 0;
+  color: @disabledColor;
+}
+
+.notSelectedFavouriteIcon:hover {
+  opacity: initial;
+}

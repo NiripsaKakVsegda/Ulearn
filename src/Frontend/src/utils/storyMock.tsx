@@ -1,6 +1,13 @@
-export function returnPromiseAfterDelay<T>(ms: number, result?: T): Promise<T> {
-	if(result) {
-		return new Promise(resolve => setTimeout(resolve, ms)).then(() => (result));
+export function returnPromiseAfterDelay<T>(ms: number,
+	result?: T,
+	callback?: () => void,
+): Promise<T> {
+	if(result !== undefined) {
+		return new Promise(resolve => setTimeout(resolve, ms))
+			.then(() => {
+				callback?.();
+				return (result);
+			});
 	}
 	return new Promise(resolve => setTimeout(resolve, ms));
 }

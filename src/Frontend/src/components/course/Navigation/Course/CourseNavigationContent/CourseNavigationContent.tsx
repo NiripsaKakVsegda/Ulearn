@@ -7,7 +7,7 @@ import { CourseMenuItem, } from '../../types';
 import styles from './CourseNavigationContent.less';
 
 
-interface Props {
+export interface Props {
 	items: CourseMenuItem[];
 	getRefToActive: React.RefObject<HTMLLIElement>;
 }

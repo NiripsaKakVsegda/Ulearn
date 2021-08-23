@@ -353,8 +353,8 @@ class DownloadedHtmlContent extends Component {
 	static mapDispatchToProps(dispatch) {
 		return {
 			enterToCourse: (courseId) => dispatch(changeCurrentCourseAction(courseId)),
-			updateUserInformation: () => dispatch(api.account.getCurrentUser()),
-			updateCourses: () => dispatch(api.courses.getCourses()),
+			updateUserInformation: () => api.account.redux.getCurrentUser()(dispatch),
+			updateCourses: () => api.courses.getCourses()(dispatch),
 		}
 	}
 

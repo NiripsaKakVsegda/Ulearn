@@ -49,7 +49,7 @@ class CommentSendForm extends Component<Props, State> {
 	}
 
 	render(): React.ReactElement {
-		const { author, isShowFocus, className } = this.props;
+		const { author, isShowFocus: { inSendForm, inEditForm, inReplyForm, }, className } = this.props;
 		const { error, text } = this.state;
 
 		const classes = classNames(className, styles.formContainer);
@@ -60,7 +60,7 @@ class CommentSendForm extends Component<Props, State> {
 					<Avatar className={ styles.avatar } user={ author as ShortUserInfo } size="big"/>) }
 				<form className={ styles.form } onSubmit={ this.handleSubmit }>
 					<MarkdownEditor
-						isShowFocus={ isShowFocus }
+						isShowFocus={ !!inSendForm || !!inEditForm || !!inReplyForm }
 						hasError={ error !== null }
 						text={ text }
 						handleChange={ this.handleChange }

@@ -8,7 +8,7 @@ import { UnitInfo } from "src/models/course";
 import styles from './NextUnit.less';
 
 
-interface Props {
+export interface Props {
 	unit: UnitInfo;
 	onClick: () => void;
 }

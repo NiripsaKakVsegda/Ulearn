@@ -37,13 +37,13 @@ interface UnitInfo {
 }
 
 interface InfoByUnit {
-	unitId: string,
-	unitTitle: string,
-	unlocked: boolean,
-	flashcardsIds: string[],
-	unratedFlashcardsCount: number,
-	cardsCount: number,
-	flashcardsSlideSlug: string,
+	unitId: string;
+	unitTitle: string;
+	unlocked: boolean;
+	flashcardsIds: string[];
+	unratedFlashcardsCount: number;
+	cardsCount: number;
+	flashcardsSlideSlug: string;
 }
 
 interface AbstractScoringGroupInfo {
@@ -60,29 +60,24 @@ interface UnitScoringGroupInfo extends AbstractScoringGroupInfo {
 }
 
 export interface TempCourseErrorsResponse extends Response {
-	tempCourseError: string | null,
+	tempCourseError: string | null;
 }
 
 export interface CoursesListResponse extends Response {
-	courses: ShortCourseInfo[],
+	courses: ShortCourseInfo[];
 }
 
 export interface ShortCourseInfo {
-	id: string,
-	title: string,
-	apiUrl: string,
-	isTempCourse: boolean,
+	id: string;
+	title: string;
+	apiUrl: string;
+	isTempCourse: boolean;
 }
 
 interface UnitsInfo {
 	[p: string]: UnitInfo;
 }
 
-interface PageInfo {
-	isLti: boolean;
-	isReview: boolean;
-	isNavigationVisible: boolean;
-}
 
 export {
 	CourseInfo,
@@ -92,5 +87,4 @@ export {
 	InfoByUnit,
 	ScoringGroup,
 	UnitsInfo,
-	PageInfo,
 };

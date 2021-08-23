@@ -2,6 +2,7 @@ import React from "react";
 import GroupInfo from "./GroupInfo";
 
 import "./groupInfo.less";
+import { getMockedUser } from "../../../comments/storiesData";
 
 export default {
 	title: "Group/GroupInfo",
@@ -15,18 +16,17 @@ Default.storyName = "default";
 
 function getGroup() {
 	return {
-		id: '17',
+		id: 17,
 		name: "asdfasdfasdfasdf",
 		isArchived: false,
-		owner: {
+		owner: getMockedUser({
 			id: "4052ea63-34dd-4398-b8bb-ac4e6a85d1d0",
 			visibleName: "paradeeva",
 			firstName: 'para',
 			lastName: 'deeva',
-			gender: null,
 			login: undefined,
 			email: undefined,
-		},
+		}),
 		inviteHash: "b7638c37-62c6-49a9-898c-38788169987c",
 		isInviteLinkEnabled: true,
 		isManualCheckingEnabled: false,

@@ -1,10 +1,11 @@
 import React from "react";
 import CommentsList, { Props } from "./CommentsList";
-import { getMockedComment, student, } from "../storiesData";
+import { getMockedComment, } from "../storiesData";
 import { CommentsApi, } from "../utils";
 import { CommentPolicy } from "src/models/comments";
 import type { Story } from "@storybook/react";
 import { SlideType } from "src/models/slide";
+import { student } from "src/storiesUtils";
 
 const commentPolicy: CommentPolicy = {
 	areCommentsEnabled: true,

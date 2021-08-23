@@ -10,6 +10,7 @@ module.exports = {
 	stories: ['../src/**/**.story.@(js|jsx|tsx)'],
 	addons: [
 		'@storybook/addon-essentials',
+		'creevey',
 	],
 	webpackFinal: async (config) => {
 		config = merge([base, config]);

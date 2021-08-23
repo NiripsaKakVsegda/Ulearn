@@ -12,6 +12,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Api.Models.Responses;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
@@ -194,6 +195,21 @@ namespace Ulearn.Web.Api.Controllers
 			var visit = await visitsRepo.AddVisit(course.Id, slideId, UserId, GetRealClientIp());
 			await ResendLtiScore(course.Id, slide, visit);
 			return await UserProgress(course.Id, new UserProgressParameters());
+		}
+
+		[HttpPut("{courseId}/{slideId}/prohibit-further-manual-checking")]
+		[Authorize(Policy = "Instructors")]
+		public async Task<ActionResult> ProhibitFurtherManualChecking([FromRoute] string courseId, [FromRoute] Guid slideId, [FromQuery] string userId, [FromQuery] bool prohibit)
+		{
+			if (!await groupAccessesRepo.HasInstructorViewAccessToStudentGroup(User.GetUserId(), userId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "This student should be member of one of accessible for you groups");
+
+			if (prohibit)
+				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
+			else
+				await slideCheckingsRepo.EnableFurtherManualCheckings(courseId, userId, slideId);
+
+			return Ok($"{(prohibit ? "Prohibited" : "Enabled")} further exercise manual checking  for {courseId}/{slideId}");
 		}
 
 		/// <summary>

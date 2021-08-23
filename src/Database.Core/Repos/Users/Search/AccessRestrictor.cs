@@ -32,7 +32,7 @@ namespace Database.Repos.Users.Search
 
 			if (hasInstructorAccessToGroupMembers)
 			{
-				var groupsMembers = await groupAccessesRepo.GetMembersOfAllGroupsAvailableForUserAsync(currentUser.Id).ConfigureAwait(false);
+				var groupsMembers = await groupAccessesRepo.GetMembersOfAllGroupsVisibleForUserAsync(currentUser.Id).ConfigureAwait(false);
 				userIds.UnionWith(groupsMembers.Select(m => m.UserId));
 			}
 
@@ -41,7 +41,7 @@ namespace Database.Repos.Users.Search
 				var courseInstructors =
 					courseId != null
 						? await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, courseId, true)
-						: (await groupAccessesRepo.GetInstructorsOfAllGroupsAvailableForUserAsync(currentUser.Id).ConfigureAwait(false)).Select(u => u.Id);
+						: (await groupAccessesRepo.GetInstructorsOfAllGroupsVisibleForUserAsync(currentUser.Id).ConfigureAwait(false)).Select(u => u.Id);
 				userIds.UnionWith(courseInstructors);
 			}
 

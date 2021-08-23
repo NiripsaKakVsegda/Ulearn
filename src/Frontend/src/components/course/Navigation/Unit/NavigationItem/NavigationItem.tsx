@@ -11,7 +11,7 @@ import { MenuItem, SlideProgressStatus } from "../../types";
 import styles from './NavigationItem.less';
 
 
-interface Props extends MenuItem<SlideType> {
+export interface Props extends MenuItem<SlideType> {
 	metro: {
 		isFirstItem: boolean;
 		isLastItem: boolean;

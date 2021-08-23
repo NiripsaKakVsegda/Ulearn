@@ -1,47 +1,55 @@
 import React from "react";
 
+import { BlockRenderContext } from "../../BlocksRenderer";
 import { BlocksWrapper, Text } from "src/components/course/Course/Slide/Blocks";
+import { Block } from "src/models/slide";
+import { SlideContext } from "../../Slide.types";
 import { ArrowChevronDown, ArrowChevronUp } from "icons";
 
 import styles from './Spoiler.less';
 
 
-interface Props {
-	text: string,
-	renderedBlocks: React.ReactNode[],
-	blocksId: string,
-	isPreviousBlockHidden: boolean,
-	hide: boolean,
+export interface Props {
+	text: string;
+	renderContext: BlockRenderContext;
+	slideContext: SlideContext;
+	blocks: Block[];
 }
 
 interface State {
-	contentVisible: boolean,
+	contentVisible: boolean;
+	renderedBlocks: React.ReactNode[];
 }
 
 class Spoiler extends React.Component<Props, State> {
-	static defaultProps: Partial<Props> = {
-		hide: false,
-		isPreviousBlockHidden: false,
-	};
-
 	constructor(props: Props) {
 		super(props);
-
-		this.state = {
-			contentVisible: false,
-		};
+		this.state = this.prepareContent(props);
 	}
 
-	componentDidUpdate(prevProps: Props): void {
-		if(this.props.blocksId !== prevProps.blocksId) {
-			this.setState({
-				contentVisible: false,
-			});
+	componentDidUpdate(prevProps: Readonly<Props>,): void {
+		if(prevProps.slideContext.slideId !== this.props.slideContext.slideId || prevProps.slideContext.courseId !== this.props.slideContext.courseId) {
+			this.setState(this.prepareContent(this.props));
 		}
 	}
 
+	prepareContent = (props: Props): State => {
+		const { renderContext: { hide, renderer, }, blocks, } = props;
+		let renderedBlocks: React.ReactNode[];
+
+		if(hide) {
+			renderedBlocks = renderer?.renderBlocks(blocks.map(b => ({ ...b, hide: true }))) || [];
+		} else {
+			renderedBlocks = renderer?.renderBlocks(blocks) || [];
+		}
+		return {
+			renderedBlocks,
+			contentVisible: false,
+		};
+	};
+
 	toggleContent = (): void => {
-		const { contentVisible } = this.state;
+		const { contentVisible, } = this.state;
 		if(contentVisible) {
 			this.hideContent();
 		} else {
@@ -62,17 +70,17 @@ class Spoiler extends React.Component<Props, State> {
 	};
 
 	render = (): React.ReactNode => {
-		const { text, renderedBlocks, hide, isPreviousBlockHidden, } = this.props;
-		const { contentVisible, } = this.state;
+		const { text, renderContext, } = this.props;
+		const { contentVisible, renderedBlocks, } = this.state;
 		const titleClassName = contentVisible ? styles.opened : undefined;
 
 		return (
 			<>
 				<BlocksWrapper
-					withoutEyeHint={ hide && isPreviousBlockHidden }
-					withoutTopPaddings={ hide === isPreviousBlockHidden }
-					isBlock={ isPreviousBlockHidden !== undefined }
-					hide={ hide }
+					withoutEyeHint={ renderContext.hide && renderContext.previous?.hide }
+					withoutTopPaddings={ renderContext.hide === renderContext.previous?.hide }
+					isBlock={ renderContext.previous !== undefined }
+					hide={ renderContext.hide }
 					className={ titleClassName }
 				>
 					<Text disableAnchorsScrollHandlers disableTranslatingTex>
@@ -92,7 +100,9 @@ class Spoiler extends React.Component<Props, State> {
 	};
 
 	getBlocksWithStyles = (blocks: React.ReactNode[]): React.ReactNode => {
-		const { isPreviousBlockHidden, hide, } = this.props;
+		const { renderContext, } = this.props;
+		const isPreviousBlockHidden = renderContext.previous?.hide;
+		const hide = renderContext.hide;
 		let prevBlockHidden = isPreviousBlockHidden;
 
 		return blocks.map((block) => {

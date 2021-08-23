@@ -10,7 +10,7 @@ import { getQueryStringParameter } from "src/utils";
 import { AccountState } from "src/redux/account";
 
 interface Props {
-	account: AccountState,
+	account: AccountState;
 }
 
 

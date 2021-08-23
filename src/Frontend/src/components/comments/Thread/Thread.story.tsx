@@ -1,9 +1,10 @@
 import React from "react";
 import Thread, { Props } from "./Thread";
 import { Comment as CommentType, CommentPolicy } from "src/models/comments";
-import { getMockedComment, sysAdmin } from "../storiesData";
+import { getMockedComment } from "../storiesData";
 import { SlideType } from "src/models/slide";
 import type { Story } from "@storybook/react";
+import { sysAdmin } from "src/storiesUtils";
 
 const actions = {
 	handleLikeClick: () => console.log("likeComment"),

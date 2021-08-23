@@ -7,10 +7,13 @@ import * as courses from "./courses";
 import * as notifications from "./notifications";
 import * as groups from "./groups";
 import * as users from "./users";
+import * as userProgress from "./userProgress";
 import * as comments from "./comments";
 import * as cards from "./flashcards";
-import * as exercise from "./exercise";
+import * as submissions from "./submissions";
 import * as slides from "./slides";
+import * as instructor from "./instructor";
+import * as favouriteReviews from "./favouriteReviews";
 import * as signalR from "@microsoft/signalr";
 
 const API_JWT_TOKEN_UPDATED = "API_JWT_TOKEN_UPDATED";
@@ -99,7 +102,6 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 					if(r === API_JWT_TOKEN_UPDATED) {
 						return request<T>(url, options, true);
 					}
-
 				} else {
 					return response;
 				}
@@ -110,6 +112,10 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 			}
 
 			throw new RequestError(response.status);
+		})
+		.catch(err => {
+			(err as RequestError).showToast();
+			throw  err;
 		})
 		.then(value => {
 			const response = value as Response;
@@ -216,10 +222,13 @@ const api = {
 	notifications,
 	groups,
 	users,
+	userProgress,
 	comments,
 	cards,
-	exercise,
+	submissions,
 	slides,
+	instructor,
+	favouriteReviews,
 };
 
 export default api;

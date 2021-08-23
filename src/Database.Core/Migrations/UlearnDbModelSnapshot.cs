@@ -18,7 +18,7 @@ namespace Database.Migrations
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "und@colStrength=secondary,und@colStrength=secondary,icu,False")
                 .HasAnnotation("Npgsql:DefaultColumnCollation", "case_insensitive")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.3")
+                .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Database.Models.AcceptedSolutionsPromote", b =>
@@ -918,6 +918,73 @@ namespace Database.Migrations
                         .HasColumnType("integer");
 
                     b.ToView("ExerciseUsersWithRightAnswerCounts");
+                });
+
+            modelBuilder.Entity("Database.Models.FavouriteReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("SlideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .UseCollation("default");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId", "SlideId");
+
+                    b.HasIndex("CourseId", "SlideId", "Text")
+                        .IsUnique();
+
+                    b.ToTable("FavouriteReviews");
+                });
+
+            modelBuilder.Entity("Database.Models.FavouriteReviewByUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("FavouriteReviewId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SlideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FavouriteReviewId");
+
+                    b.HasIndex("CourseId", "SlideId", "Timestamp");
+
+                    b.HasIndex("CourseId", "SlideId", "UserId");
+
+                    b.ToTable("FavouriteReviewsByUsers");
                 });
 
             modelBuilder.Entity("Database.Models.FeedViewTimestamp", b =>
@@ -3069,6 +3136,17 @@ namespace Database.Migrations
                     b.Navigation("Submission");
                 });
 
+            modelBuilder.Entity("Database.Models.FavouriteReviewByUser", b =>
+                {
+                    b.HasOne("Database.Models.FavouriteReview", "FavouriteReview")
+                        .WithMany("FavouriteReviewsByUser")
+                        .HasForeignKey("FavouriteReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FavouriteReview");
+                });
+
             modelBuilder.Entity("Database.Models.FeedViewTimestamp", b =>
                 {
                     b.HasOne("Database.Models.NotificationTransport", "Transport")
@@ -3799,6 +3877,11 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Models.ExerciseCodeReview", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("Database.Models.FavouriteReview", b =>
+                {
+                    b.Navigation("FavouriteReviewsByUser");
                 });
 
             modelBuilder.Entity("Database.Models.Group", b =>

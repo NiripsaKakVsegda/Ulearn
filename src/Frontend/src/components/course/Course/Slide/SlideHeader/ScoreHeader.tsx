@@ -6,7 +6,6 @@ import DownloadedHtmlContent from 'src/components/common/DownloadedHtmlContent.j
 import { Link, Modal, } from "ui";
 
 import { isInstructor } from "src/utils/courseRoles";
-import { getSlideInfoById } from "../../CourseUtils";
 
 import { SlideType } from "src/models/slide";
 import { constructPathToStudentSubmissions } from "src/consts/routes";
@@ -14,6 +13,8 @@ import { RootState } from "src/models/reduxState";
 
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
+import { SubmissionInfo } from "../../../../../models/exercise";
+import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
 import { Loader } from "@skbkontur/react-ui";
 
 interface State {
@@ -112,21 +113,29 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 };
 
 interface ScoreHeaderProps {
-	courseId: string;
-	slideId: string;
+	slideInfo: SlideInfo;
 }
 
 const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
-	const { userProgress, courses, slides, account, } = state;
-	const { submissionsByCourses, } = slides;
-	const { courseId, slideId } = ownProps;
+	const { userProgress, account, } = state;
+	const { slideInfo, } = ownProps;
+	const { slideId, courseId, slideType, } = slideInfo;
+
+	if(!slideId) {
+		throw new Error('No slide id provided');
+	}
 
 	const slideProgress = userProgress.progress[courseId]?.[slideId];
-	const courseInfo = courses.fullCoursesInfo[courseId];
-	const slideInfo = getSlideInfoById(slideId, courseInfo)?.current;
-	const submissions = submissionsByCourses[courseId]?.[slideId];
+	const submissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			state.account.id,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+		);
 	const hasReviewedSubmissions = submissions
-		? Object.values(submissionsByCourses[courseId][slideId]).some(s => s.manualCheckingPassed)
+		? submissions.some(s => s.manualChecking?.percent !== null)
 		: false;
 	const instructor = isInstructor(
 		{ isSystemAdministrator: account.isSystemAdministrator, courseRole: account.roleByCourse[courseId] });
@@ -138,9 +147,9 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		isSkipped: slideProgress?.isSkipped ?? false,
 		waitingForManualChecking: slideProgress?.waitingForManualChecking ?? false,
 		prohibitFurtherManualChecking: slideProgress?.prohibitFurtherManualChecking ?? false,
-		maxScore: slideInfo?.maxScore || 0,
+		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		hasReviewedSubmissions: hasReviewedSubmissions,
-		showStudentSubmissions: slideInfo?.type === SlideType.Exercise && instructor,
+		showStudentSubmissions: slideType === SlideType.Exercise && instructor,
 	};
 };
 const connector = connect(mapState);

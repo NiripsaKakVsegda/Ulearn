@@ -1,5 +1,5 @@
 import React, { createRef, RefObject, useEffect, useRef } from "react";
-
+import { useHistory } from 'react-router-dom';
 import classNames from "classnames";
 import translateCode from "src/codeTranslator/translateCode";
 import scrollToView from "src/utils/scrollToView";
@@ -9,6 +9,7 @@ import styles from "./Text.less";
 interface Props {
 	className?: string;
 	content?: string;
+	lines?: string[];
 	disableAnchorsScrollHandlers?: boolean;
 	disableTranslatingTex?: boolean;
 	children?: React.ReactElement;
@@ -17,15 +18,16 @@ interface Props {
 function Text(props: Props): React.ReactElement {
 	const textContainer: RefObject<HTMLDivElement> = createRef();
 	const prevProps = usePreviousProps(props);
+	const history = useHistory();
 
 	useEffect(() => {
-		const { disableTranslatingTex = true, disableAnchorsScrollHandlers = true, content, children, } = props;
+		const { disableTranslatingTex, disableAnchorsScrollHandlers, content, children, } = props;
 		if(!prevProps || prevProps.content !== content || prevProps.children?.key !== children?.key) {
-			if(disableTranslatingTex) {
+			if(!disableTranslatingTex) {
 				translateTex();
 			}
 
-			if(disableAnchorsScrollHandlers) {
+			if(!disableAnchorsScrollHandlers) {
 				addScrollHandlersToAnchors();
 			}
 		}
@@ -55,6 +57,17 @@ function Text(props: Props): React.ReactElement {
 				e.stopPropagation();
 				e.preventDefault();
 				scrollToHashAnchor(hash);
+			});
+		}
+
+		const sameOriginLinks = anchors.filter(
+			a => a.origin === window.location.origin && a.pathname !== window.location.pathname
+		);
+		for (const anchor of sameOriginLinks) {
+			anchor.addEventListener('click', (e) => {
+				e.stopPropagation();
+				e.preventDefault();
+				history.push(anchor.href);
 			});
 		}
 	}
@@ -87,7 +100,7 @@ function Text(props: Props): React.ReactElement {
 		return ref.current;
 	}
 
-	const { content, className, children, } = props;
+	const { content, className, children, lines, } = props;
 	if(content) {
 		return (
 			<div
@@ -97,6 +110,16 @@ function Text(props: Props): React.ReactElement {
 			/>
 		);
 	}
+
+	if(lines) {
+		return (
+			<div
+				ref={ textContainer }
+				className={ classNames(styles.text, className) }>
+				{ getContentFromTexLines(lines) }
+			</div>
+		);
+	}
 	return (
 		<div
 			ref={ textContainer }
@@ -104,6 +127,10 @@ function Text(props: Props): React.ReactElement {
 			{ children }
 		</div>
 	);
+
+	function getContentFromTexLines(lines: string[]): React.ReactNode {
+		return lines.map((line, index) => (<p key={ index } className={ "tex" }>{ line }</p>));
+	}
 }
 
 

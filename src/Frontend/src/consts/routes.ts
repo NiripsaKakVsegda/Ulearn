@@ -1,17 +1,25 @@
 import { buildQuery } from "src/utils";
+import { SlideInfo } from "../components/course/Course/CourseUtils";
 
 export const coursePath = "course";
+export const adminCheckingQueuePath = "/admin/checkingQueue";
 export const coursesPath = "/course/courses";
 export const flashcards = "flashcards";
 export const flashcardsPreview = "preview";
 export const commentsPath = "comments";
 export const exerciseStudentSubmissions = 'exercise/studentSubmissions';
+export const submissions = 'submissions';
+export const antiplagiarism = 'antiplagiarism';
+export const antiPlagiarismDetailsRoute = '/AntiPlagiarism/Details';
+export const favouriteReviews = 'favourite-reviews';
+export const reviews = 'reviews';
 export const commentPoliciesPath = "comment-policies";
 export const analytics = "/analytics";
 export const courseStatistics = analytics + '/courseStatistics';
+export const users = 'users';
 export const userSolutions = analytics + '/userSolutions';
 export const slides = "slides";
-export const ltiSlide = "ltislide";
+export const ltiSlide = "ltiSlide";
 export const resetStudentsLimits = "/students/reset-limits";
 export const acceptedSolutions = "accepted-solutions";
 export const signalrWS = 'ws';
@@ -30,6 +38,18 @@ export const groups = 'groups';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return `/${ coursePath }/${ courseId }/${ slideId }`;
+}
+
+export function getPreviousSlideUrl(courseId: string, slideInfo: SlideInfo): string | null {
+	const { navigationInfo, } = slideInfo;
+
+	return navigationInfo?.previous
+		? constructPathToSlide(courseId, navigationInfo.previous.slug)
+		: null;
+}
+
+export function constructPathWithAutoplay(baseHref: string): string {
+	return baseHref + buildQuery({ autoplay: true });
 }
 
 export function constructPathToComment(commentId: number, isLike?: boolean): string {
@@ -65,6 +85,6 @@ export function constructPathToAccount(userId: string): string {
 	return accountProfile + buildQuery({ userId });
 }
 
-export function constructPathToGroup(courseId: string, groupId: string): string {
+export function constructPathToGroup(courseId: string, groupId: number): string {
 	return `/${ courseId }/${ groups }/${ groupId }`;
 }

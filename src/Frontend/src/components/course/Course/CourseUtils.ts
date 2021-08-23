@@ -9,12 +9,32 @@ import {
 } from "../Navigation/types";
 import { ScoringGroupsIds } from "src/consts/scoringGroup";
 import { ShortSlideInfo, SlideType } from "src/models/slide";
-import { flashcards, flashcardsPreview } from "src/consts/routes";
+import { RouteComponentProps } from "react-router-dom";
+import { MatchParams } from "src/models/router";
+import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
+import { SubmissionInfo } from "src/models/exercise";
+import { getDataIfLoaded } from "src/redux";
 
-export interface CourseSlideInfo {
+
+export interface SlideInfo {
+	//main
+	slideId?: string;
+	courseId: string;
 	slideType: SlideType;
+
+	//additional
+	isReview: boolean;
+	isLti: boolean;
+	isNavigationVisible: boolean;
+	query: UlearnQueryParams;
+
+	//navigation
+	navigationInfo?: SlideNavigationInfo;
+}
+
+export interface SlideNavigationInfo {
 	previous?: ShortSlideInfo;
-	current?: ShortSlideInfo & { firstInModule?: boolean; lastInModule?: boolean; };
+	current: ShortSlideInfo & { firstInModule?: boolean; lastInModule?: boolean; };
 	next?: ShortSlideInfo;
 }
 
@@ -25,7 +45,7 @@ export function getCourseStatistics(
 	flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics },
 ): CourseStatistics {
 	const courseStatistics: CourseStatistics = {
-		courseProgress: { current: 0, max: 0, inProgress:0, },
+		courseProgress: { current: 0, max: 0, inProgress: 0, },
 		byUnits: {},
 		flashcardsStatistics: { count: 0, unratedCount: 0 },
 		flashcardsStatisticsByUnits,
@@ -169,51 +189,116 @@ export function findUnitIdBySlideId(slideId ?: string, courseInfo ?: CourseInfo)
 	return null;
 }
 
-export function getSlideInfoById(
-	slideId ?: string,
-	courseInfo ?: CourseInfo
-): CourseSlideInfo | null {
-	if(!courseInfo || !courseInfo.units) {
-		return null;
-	}
+export const guidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+export const slideActionsRegex = {
+	ltiSlide: /ltislide/i,
+	flashcardsPreview: /flashcards\/preview/i,
+	flashcards: /flashcards/i,
+};
 
-	const units = courseInfo.units;
-	let prevSlide, nextSlide;
+export default function getSlideInfo(
+	route: RouteComponentProps<MatchParams>,
+	courseInfo?: CourseInfo,
+): SlideInfo {
+	const { location, match } = route;
+	const { search, pathname, } = location;
+	const { params, } = match;
+	const { slideSlugOrAction, courseId, } = params;
 
-	for (let i = 0; i < units.length; i++) {
-		const { slides } = units[i];
-		for (let j = 0; j < slides.length; j++) {
-			const slide = slides[j] as ShortSlideInfo & { firstInModule: boolean, lastInModule: boolean };
+	const queryParams = parseKnownQueryParams(search);
 
-			if(slide.id === slideId) {
-				if(j > 0) {
-					prevSlide = slides[j - 1];
-				} else if(i > 0) {
-					const prevSlides = units[i - 1].slides;
-					slide.firstInModule = true;
-					prevSlide = prevSlides[prevSlides.length - 1];
+	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
+	const isLti = queryParams.isLti || !!slideSlugOrAction?.match(slideActionsRegex.ltiSlide);
+	const isReview = !!queryParams.submissionId && !!queryParams.userId;
+
+	const isNavigationVisible = !isLti && !isReview && (courseInfo == null || courseInfo.tempCourseError == null);
+
+	const slideType = pathname?.match(slideActionsRegex.flashcardsPreview)
+		? SlideType.PreviewFlashcards
+		: slideSlugOrAction?.match(slideActionsRegex.flashcards)
+			? SlideType.CourseFlashcards
+			: SlideType.NotFound;
+	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo);
+
+	return {
+		slideType: navigationInfo?.current.type || slideType,
+		slideId,
+		courseId: courseId.toLowerCase(),
+		isReview,
+		isLti,
+		isNavigationVisible,
+		query: queryParams,
+		navigationInfo,
+	};
+}
+
+export function getSlideNavigationInfoBySlideId(
+	slideId?: string,
+	courseInfo?: CourseInfo,
+): SlideNavigationInfo | undefined {
+	if(courseInfo && courseInfo.units) {
+		const units = courseInfo.units;
+		let prevSlide, nextSlide;
+
+		for (let i = 0; i < units.length; i++) {
+			const { slides } = units[i];
+			for (let j = 0; j < slides.length; j++) {
+				const slide = slides[j] as ShortSlideInfo & { firstInModule: boolean, lastInModule: boolean };
+
+				if(slide.id === slideId) {
+					if(j > 0) {
+						prevSlide = slides[j - 1];
+					} else if(i > 0) {
+						const prevSlides = units[i - 1].slides;
+						slide.firstInModule = true;
+						prevSlide = prevSlides[prevSlides.length - 1];
+					}
+
+					if(j < slides.length - 1) {
+						nextSlide = slides[j + 1];
+					} else if(i < units.length - 1) {
+						const nextSlides = units[i + 1].slides;
+						slide.lastInModule = true;
+						nextSlide = nextSlides[0];
+					}
+
+					return { previous: prevSlide, current: slide, next: nextSlide };
 				}
-
-				if(j < slides.length - 1) {
-					nextSlide = slides[j + 1];
-				} else if(i < units.length - 1) {
-					const nextSlides = units[i + 1].slides;
-					slide.lastInModule = true;
-					nextSlide = nextSlides[0];
-				}
-
-				return { slideType: slide.type, previous: prevSlide, current: slide, next: nextSlide };
 			}
 		}
 	}
 
-	const slideType = slideId === flashcardsPreview
-		? SlideType.PreviewFlashcards
-		: slideId === flashcards
-			? SlideType.CourseFlashcards
-			: SlideType.NotFound;
+	return undefined;
+}
 
-	return { slideType };
+export interface UlearnQueryParams {
+	slideId: string | null;
+	queueSlideId: string | null;
+	isLti: boolean;
+	submissionId: number | null;
+	userId: string | null;
+	group: string | null;
+	done: boolean;
+}
+
+export function parseKnownQueryParams(query: string): UlearnQueryParams {
+	const queryInLowerCase = new URLSearchParams(query.toLowerCase());
+	const submissionId = queryInLowerCase.get('submissionid');
+
+	return {
+		//slide id for lti slide
+		slideId: queryInLowerCase.get('slideid'),
+		isLti: !!queryInLowerCase.get('islti'),
+		//review parameter
+		submissionId: submissionId ? parseInt(submissionId) : null,
+		//review parameter
+		userId: queryInLowerCase.get('userid'),
+
+		//review checking queue parameters below
+		group: queryInLowerCase.get('group'),
+		queueSlideId: queryInLowerCase.get('queueslideid'),
+		done: queryInLowerCase.get('done') === 'true',
+	};
 }
 
 export function findNextUnit(activeUnit: UnitInfo, courseInfo: CourseInfo): UnitInfo | null {
@@ -228,3 +313,51 @@ export function findNextUnit(activeUnit: UnitInfo, courseInfo: CourseInfo): Unit
 
 	return units[indexOfActiveUnit + 1];
 }
+
+export const getSubmissionsWithReviews = (
+	courseId: string,
+	slideId: string | undefined,
+	userId: string | undefined | null,
+	submissionsIdsByCourseIdBySlideIdByUserId: {
+		[courseId: string]: {
+			[slideId: string]: {
+				[studentId: string]: number[];
+			} | undefined;
+		} | undefined;
+	},
+	submissionsById: {
+		[submissionId: string]: SubmissionInfoRedux | undefined;
+	},
+	reviewsBySubmissionId: {
+		[submissionId: string]: {
+			automaticCheckingReviews: ReviewInfoRedux[] | null;
+			manualCheckingReviews: ReviewInfoRedux[];
+		} | undefined;
+	}
+): SubmissionInfo[] | undefined => {
+	if(!userId || !slideId) {
+		return undefined;
+	}
+	const studentSubmissionsIds = getDataIfLoaded(
+		submissionsIdsByCourseIdBySlideIdByUserId[courseId]
+			?.[slideId]
+			?.[userId]);
+
+	return studentSubmissionsIds
+		?.map(id => submissionsById[id]!)
+		.map(r => {
+			const reviews = reviewsBySubmissionId[r.id];
+
+			return ({
+				...r,
+				manualChecking: {
+					...r.manualChecking,
+					reviews: reviews?.manualCheckingReviews || [],
+				},
+				automaticChecking: {
+					...r.automaticChecking,
+					reviews: reviews?.automaticCheckingReviews || null,
+				},
+			} as SubmissionInfo);
+		});
+};

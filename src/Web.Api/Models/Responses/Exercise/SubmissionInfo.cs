@@ -26,17 +26,16 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 
 		[CanBeNull]
 		[DataMember]
-		public ExerciseAutomaticCheckingResponse AutomaticChecking; // null если задача не имеет автоматических тестов, это не отменяет возможности ревью.
+		public ExerciseAutomaticCheckingResponse AutomaticChecking; // null если задача не имеет автоматических тестов, это не отменяет возможности ручной проверки.
 
+		[CanBeNull]
 		[DataMember]
-		public bool ManualCheckingPassed;
+		public ExerciseManualCheckingResponse ManualChecking; // null, если у submission нет ManualExerciseChecking
 
-		[NotNull]
-		[DataMember]
-		public List<ReviewInfo> ManualCheckingReviews;
-
-		public static SubmissionInfo Build(UserExerciseSubmission submission,
-			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments, bool showCheckerLogs)
+		public static SubmissionInfo Build(
+			UserExerciseSubmission submission,
+			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments,
+			bool showCheckerLogs)
 		{
 			var botReviews = submission.NotDeletedReviews
 				.Select(r => ToReviewInfo(r, true, reviewId2Comments))
@@ -46,6 +45,7 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 				.ToList();
 			var automaticChecking = submission.AutomaticChecking == null
 				? null : ExerciseAutomaticCheckingResponse.Build(submission.AutomaticChecking, botReviews, showCheckerLogs);
+			var manualChecking = submission.ManualChecking == null ? null : ExerciseManualCheckingResponse.Build(submission.ManualChecking, manualCheckingReviews);
 			return new SubmissionInfo
 			{
 				Id = submission.Id,
@@ -53,11 +53,10 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 				Language = submission.Language,
 				Timestamp = submission.Timestamp,
 				AutomaticChecking = automaticChecking,
-				ManualCheckingPassed = submission.ManualChecking?.IsChecked ?? false,
-				ManualCheckingReviews =  manualCheckingReviews.Where(r => r.Author != null).ToList()
+				ManualChecking = manualChecking
 			};
 		}
-		
+
 		private static ReviewInfo ToReviewInfo(ExerciseCodeReview r, bool isUlearnBot,
 			[CanBeNull] Dictionary<int, IEnumerable<ExerciseCodeReviewComment>> reviewId2Comments)
 		{

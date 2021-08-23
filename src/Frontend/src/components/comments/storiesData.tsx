@@ -1,5 +1,5 @@
 import { UserInfo } from "src/utils/courseRoles";
-import { CourseAccessType, CourseRoleType, SystemAccessType, } from "src/consts/accessType";
+import { CourseRoleType, } from "src/consts/accessType";
 import { Comment, CommentPolicy, } from "src/models/comments";
 import { CommentsApi, FullCommentsApi } from "./utils";
 import { ShortUserInfo } from "src/models/users";
@@ -30,13 +30,13 @@ export const getMockedShortUser = (user: Partial<ShortUserInfo>): ShortUserInfo 
 
 export const getMockedUser = (user: Partial<UserInfo>): UserInfo => {
 	return {
-		id: user.id,
+		id: user.id || '1',
 		email: user.email,
 		login: user.login,
-		lastName: user.lastName,
-		visibleName: user.visibleName,
-		firstName: user.firstName,
-		avatarUrl: user.avatarUrl,
+		lastName: user.lastName || 'Иванов',
+		visibleName: user.visibleName || 'Иван Иванов',
+		firstName: user.firstName || 'Иван',
+		avatarUrl: user.avatarUrl || null,
 		gender: user.gender,
 		isSystemAdministrator: user.isSystemAdministrator || false,
 		courseRole: user.courseRole || CourseRoleType.student,
@@ -82,47 +82,3 @@ export const fakeCommentsApi: CommentsApi = {
 	likeComment: () => Promise.resolve(getMockedComment({})),
 	dislikeComment: () => Promise.resolve(getMockedComment({})),
 };
-
-export const student: UserInfo = getMockedUser({
-	isAuthenticated: true,
-	id: "1",
-	isSystemAdministrator: false,
-	courseRole: CourseRoleType.student,
-	visibleName: "Иван Иванов",
-	lastName: 'Иванов',
-	firstName: 'Иван',
-	email: 'student mail',
-	login: 'student@urfu.ru',
-});
-
-export const unAuthUser: UserInfo = getMockedUser({
-	isAuthenticated: false,
-});
-
-export const instructor: UserInfo = getMockedUser({
-	...student,
-	courseRole: CourseRoleType.instructor,
-});
-
-export const courseAdmin: UserInfo = getMockedUser({
-	...student,
-	courseRole: CourseRoleType.courseAdmin,
-});
-
-export const sysAdmin: UserInfo = getMockedUser({
-	isAuthenticated: true,
-	id: "1",
-	isSystemAdministrator: true,
-	courseRole: CourseRoleType.student,
-	visibleName: "Иван Иванов",
-	lastName: 'Иванов',
-	firstName: 'Иван',
-	email: 'admin@ulearn.me',
-	login: 'admin',
-});
-
-export const avatarUrl = 'https://staff.skbkontur.ru/content/images/default-user-woman.png';
-
-export const accessesToSeeProfiles: SystemAccessType[] = [SystemAccessType.viewAllProfiles];
-export const courseAccessesToEditComments: CourseAccessType[] = [CourseAccessType.editPinAndRemoveComments];
-export const courseAccessesToViewSubmissions: CourseAccessType[] = [CourseAccessType.viewAllStudentsSubmissions];
