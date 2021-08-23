@@ -29,7 +29,7 @@ namespace Database.Repos
 		{
 			return await db.FavouriteReviews
 				.Include(fr => fr.FavouriteReviewsByUser)
-				.Where(fr => fr.CourseId == courseId && fr.SlideId == slideId && fr.FavouriteReviewsByUser.All(fbu => fbu.UserId != userIdToExcept))
+				.Where(fr => fr.CourseId == courseId && fr.SlideId == slideId && !fr.FavouriteReviewsByUser.Any(fbu => fbu.UserId == userIdToExcept))
 				.Select(fr => new
 				{
 					FavouriteReview = fr,
