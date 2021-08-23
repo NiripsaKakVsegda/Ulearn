@@ -79,6 +79,7 @@ import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } fro
 import { assignBotReview, } from "src/api/submissions";
 import { Button } from "ui";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
+import { withRouter } from "react-router-dom";
 
 
 const user: UserInfo = getMockedUser({
@@ -409,16 +410,18 @@ const submissions: SubmissionInfo[] = [
 ].map((c, i) => ({
 	...c,
 	id: i,
-	percent: i > 0 && i % 2 === 0 ? i * 10 : undefined,
 	automaticChecking: c.automaticChecking
 		? {
 			...c.automaticChecking,
 			reviews: c.automaticChecking?.reviews.map(addIdToReview) || null,
 		}
 		: null,
-	manualCheckingReviews: c.manualCheckingReviews.map(addIdToReview),
-	manualCheckingEnabled: i > 0,
-	manualCheckingPassed: i > 0 && i % 2 === 0,
+	manualChecking: i > 0
+		? {
+			reviews: c.manualCheckingReviews.map(addIdToReview),
+			percent: i > 0 && i % 2 === 0 ? i * 10 : null,
+		}
+		: null,
 }));
 
 const loadingTimes = {
@@ -461,7 +464,6 @@ const mapStateToProps = (
 			state.submissions.reviewsBySubmissionId
 		);
 
-	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
 	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
 		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
@@ -488,7 +490,6 @@ const mapStateToProps = (
 		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
-		scoresBySubmissionId,
 		submissionIdFromQuery,
 	};
 };
@@ -668,11 +669,11 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return error;
 				});
 		},
-		onScoreSubmit: (submissionId: number, userId: string, percent: number, oldPercent: number | undefined,) => {
-			dispatch(reviewsAddScoreStart(submissionId, userId, percent));
+		onScoreSubmit: (submissionId: number, percent: number, oldPercent: number | null,) => {
+			dispatch(reviewsAddScoreStart(submissionId, percent));
 			return returnPromiseAfterDelay(loadingTimes.scoreSubmit, Promise.resolve())
 				.catch(err => {
-					dispatch(reviewsAddScoreFail(submissionId, userId, oldPercent, err));
+					dispatch(reviewsAddScoreFail(submissionId, oldPercent, err));
 					return err;
 				});
 		},
@@ -761,7 +762,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	};
 };
 
-const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview);
+const Connected = connect(mapStateToProps, mapDispatchToProps)(withRouter(InstructorReview));
 
 const Template: Story<PropsFromSlide> = (args: PropsFromSlide) => {
 	return (
@@ -775,13 +776,6 @@ const Template: Story<PropsFromSlide> = (args: PropsFromSlide) => {
 			<Button use={ 'primary' } onClick={ () => {
 				reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
 					submissions,
-					submissionsPercents: submissions.reduce((pv, cv) => {
-						const cvWithPercent = cv as unknown as { percent: number | undefined; };
-						if(cvWithPercent.percent) {
-							pv[cv.id] = cvWithPercent.percent;
-						}
-						return pv;
-					}, {} as { [id: number]: number }),
 					prohibitFurtherManualChecking: true,
 				}));
 			}
@@ -805,10 +799,17 @@ const args: PropsFromSlide = {
 			isLti: false,
 			isReview: true,
 			isNavigationVisible: false,
-			query: { slideId: null, submissionId: 1, isLti: false, userId: student.id, done: false, group: null },
+			query: {
+				slideId: null,
+				queueSlideId: null,
+				submissionId: 1,
+				isLti: false,
+				userId: student.id,
+				done: false,
+				group: null
+			},
 		}
 	},
-	initialCode: 'void Main()\n{\n\tConsole.WriteLine("Coding is awesome");\n}',
 	authorSolution: <BlocksWrapper>
 		<StaticCode
 			language={ Language.cSharp }

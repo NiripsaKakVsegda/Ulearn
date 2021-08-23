@@ -33,9 +33,7 @@ export interface SubmissionInfo {
 	language: Language;
 	timestamp: string;
 	automaticChecking: ExerciseAutomaticCheckingResponse | null; // null если задача не имеет автоматических тестов, это не отменяет возможности ревью.
-	manualCheckingPassed: boolean;
-	manualCheckingEnabled: boolean;
-	manualCheckingReviews: ReviewInfo[];
+	manualChecking: ExerciseManualCheckingResponse | null;  // null, если у submission нет ManualExerciseChecking
 }
 
 export interface ExerciseAutomaticCheckingResponse {
@@ -44,6 +42,11 @@ export interface ExerciseAutomaticCheckingResponse {
 	output: string | null;
 	checkerLogs: string | null;
 	reviews: ReviewInfo[] | null;
+}
+
+export interface ExerciseManualCheckingResponse {
+	percent: number | null; // int. null только когда ревью не оценено
+	reviews: ReviewInfo[];
 }
 
 export enum AutomaticExerciseCheckingProcessStatus {

@@ -112,7 +112,7 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
 		);
 	const hasReviewedSubmissions = submissions
-		? submissions.some(s => s.manualCheckingPassed)
+		? submissions.some(s => s.manualChecking?.percent !== null)
 		: false;
 	const instructor = isInstructor(
 		{ isSystemAdministrator: account.isSystemAdministrator, courseRole: account.roleByCourse[courseId] });

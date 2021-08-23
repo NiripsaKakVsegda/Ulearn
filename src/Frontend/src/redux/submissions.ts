@@ -94,12 +94,6 @@ export interface SubmissionsState {
 			manualCheckingReviews: ReviewInfoRedux[];
 		} | undefined;
 	};
-
-	reviewScoresByUserIdBySubmissionId: {
-		[userId: string]: {
-			[submissionId: string]: number | undefined;
-		} | undefined;
-	};
 }
 
 const initialSubmissionsState: SubmissionsState = {
@@ -108,7 +102,6 @@ const initialSubmissionsState: SubmissionsState = {
 	submissionsLoadingForUser: {},
 	submissionsById: {},
 	reviewsBySubmissionId: {},
-	reviewScoresByUserIdBySubmissionId: {},
 	submissionError: null,
 };
 
@@ -134,14 +127,14 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 						...newState.submissionsById,
 						[submission.id]: {
 							...submission,
-							manualCheckingReviews: undefined,
+							manualChecking: { ...submission.manualChecking, reviews: [] },
 							automaticChecking: { ...submission.automaticChecking, reviews: null, }
 						},
 					},
 					reviewsBySubmissionId: {
 						...newState.reviewsBySubmissionId,
 						[submission.id]: {
-							manualCheckingReviews: submission.manualCheckingReviews,
+							manualCheckingReviews: submission.manualChecking?.reviews || [],
 							automaticCheckingReviews: submission.automaticChecking?.reviews || null,
 						}
 					},
@@ -165,38 +158,35 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 		}
 
 		case REVIEWS_ADD_SCORE_START: {
-			const { submissionId, score, userId, } = action as ReviewsAddScoreStartAction;
+			const { submissionId, score, } = action as ReviewsAddScoreStartAction;
+
+			const submission = { ...state.submissionsById[submissionId] };
 
 			return {
 				...state,
 				submissionsById: {
 					...state.submissionsById,
 					[submissionId]: {
-						...state.submissionsById[submissionId],
-						manualCheckingPassed: true,
+						...submission,
+						manualChecking: { ...submission.manualChecking, percent: score, }
 					}
 				},
-				reviewScoresByUserIdBySubmissionId: {
-					...state.reviewScoresByUserIdBySubmissionId,
-					[userId]: {
-						...state.reviewScoresByUserIdBySubmissionId[userId],
-						[submissionId]: score,
-					},
-				}
 			};
 		}
 		case REVIEWS_ADD_SCORE_FAIL: {
-			const { submissionId, oldScore, userId, error, } = action as ReviewsAddScoreFailAction;
+			const { submissionId, oldScore, error, } = action as ReviewsAddScoreFailAction;
+
+			const submission = { ...state.submissionsById[submissionId] };
 
 			return {
 				...state,
-				reviewScoresByUserIdBySubmissionId: {
-					...state.reviewScoresByUserIdBySubmissionId,
-					[userId]: {
-						...state.reviewScoresByUserIdBySubmissionId[userId],
-						[submissionId]: oldScore,
-					},
-				}
+				submissionsById: {
+					...state.submissionsById,
+					[submissionId]: {
+						...submission,
+						manualChecking: { ...submission.manualChecking, percent: oldScore, }
+					}
+				},
 			};
 		}
 
@@ -217,17 +207,15 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				userId,
 				courseId,
 				slideId,
-				response: { submissions, submissionsPercents, },
+				response: { submissions, },
 			} = action as SubmissionsLoadSuccessAction;
 			const courseSubmissions = state.submissionsIdsByCourseIdBySlideIdByUserId[courseId] || {};
 			const slideSubmissions = courseSubmissions?.[slideId] || {};
 
-			const reviewScoresByUsers = state.reviewScoresByUserIdBySubmissionId;
-
 			const submissionsByIds = submissions.reduce((pv, cv) => {
 				pv[cv.id] = {
 					...cv,
-					manualCheckingReviews: undefined,
+					manualChecking: cv.manualChecking ? { ...cv.manualChecking, reviews: [] } : null,
 					automaticChecking: cv.automaticChecking ? { ...cv.automaticChecking, reviews: null, } : null,
 				} as SubmissionInfoRedux;
 				return pv;
@@ -236,7 +224,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			const reviewsBySubmissionId = submissions.reduce((pv, cv) => {
 				pv[cv.id] = {
 					automaticCheckingReviews: cv.automaticChecking?.reviews || null,
-					manualCheckingReviews: cv.manualCheckingReviews
+					manualCheckingReviews: cv.manualChecking?.reviews || []
 				};
 				return pv;
 			}, {} as {
@@ -257,12 +245,6 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				submissionsById: {
 					...state.submissionsById,
 					...submissionsByIds,
-				},
-				reviewScoresByUserIdBySubmissionId: {
-					...reviewScoresByUsers,
-					[userId]: {
-						...submissionsPercents,
-					},
 				},
 				reviewsBySubmissionId: {
 					...state.reviewsBySubmissionId,
@@ -299,7 +281,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					...state.submissionsById,
 					[submissionId]: {
 						...state.submissionsById[submissionId],
-						manualCheckingEnabled: true,
+						manualChecking: { percent: null, reviews: [], },
 					}
 				}
 			};
@@ -313,7 +295,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 					...state.submissionsById,
 					[submissionId]: {
 						...state.submissionsById[submissionId],
-						manualCheckingEnabled: false,
+						manualChecking: null,
 					}
 				}
 			};

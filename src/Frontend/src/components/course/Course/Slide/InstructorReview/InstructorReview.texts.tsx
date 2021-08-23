@@ -22,7 +22,7 @@ const texts = {
 			const notArchivedGroups = groups.filter(g => !g.isArchived);
 			let groupsAsString = notArchivedGroups.map(g => g.name).join(', ');
 			if(archivedGroups.length > 0) {
-				if(notArchivedGroups.length > 0){
+				if(notArchivedGroups.length > 0) {
 					groupsAsString += '; ';
 				}
 				groupsAsString += 'архивные группы: ' + archivedGroups.map(g => g.name).join(', ');
@@ -32,11 +32,13 @@ const texts = {
 
 		return visibleName;
 	},
-	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore?: number, currentScore?: number): string => {
-		if(currentScore !== undefined) {
+	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore: number | null,
+		currentScore: number | null
+	): string => {
+		if(currentScore !== null) {
 			return `${ currentScore }% за ревью`;
 		}
-		if(prevReviewScore === undefined) {
+		if(prevReviewScore === null) {
 			return 'первое ревью';
 		}
 		return `${ prevReviewScore }% за предыдущее ревью`;
@@ -46,7 +48,8 @@ const texts = {
 		selectedSubmissionIsLastSuccess: boolean,
 		waitingForManualChecking: boolean
 	): string => {
-		const { timestamp, manualCheckingPassed } = submission;
+		const { timestamp, manualChecking } = submission;
+		const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 		const timestampCaption = texts.getSubmissionDate(timestamp);
 		if(manualCheckingPassed) {
 			return timestampCaption + ", прошло код-ревью";

@@ -18,7 +18,7 @@ const slideInfo = {
 	isLti: false,
 	isReview: true,
 	isNavigationVisible: false,
-	query: { slideId: null, submissionId: 1, isLti: false, userId: null, done: false, group: null },
+	query: { queueSlideId: null, slideId: null, submissionId: 1, isLti: false, userId: null, done: false, group: null },
 };
 
 const ListTemplate: Story<{ items: { props: ScoreHeaderPropsFromRedux, header: string }[] }>
@@ -103,7 +103,7 @@ function GetStore(reduxProps: ScoreHeaderPropsFromRedux) {
 				}
 			}
 		},
-		submissions: { submissionsById: { 1: { manualCheckingPassed: hasReviewedSubmissions } } },
+		submissions: { submissionsById: { 1: { manualChecking: { percent: hasReviewedSubmissions ? 100 : null, } } } },
 		account: {
 			isSystemAdministrator: false,
 			roleByCourse: { [courseId]: showStudentSubmissions ? CourseRoleType.instructor : CourseRoleType.student }

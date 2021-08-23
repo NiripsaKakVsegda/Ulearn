@@ -98,7 +98,7 @@ function getAllReviewsFromSubmission(submission: SubmissionInfo): ReviewInfo[] {
 		return [];
 	}
 
-	const manual = submission.manualCheckingReviews || [];
+	const manual = submission.manualChecking?.reviews || [];
 	const auto = submission.automaticChecking && submission.automaticChecking.reviews ? submission.automaticChecking.reviews : [];
 	return manual.concat(auto);
 }
@@ -374,7 +374,8 @@ export function getPreviousManualCheckingInfo(
 ): PreviousManualCheckingInfo | undefined {
 	for (let i = lastReviewIndex + 1; i < orderedSubmissionsByTheTime.length; i++) {
 		const submission = orderedSubmissionsByTheTime[i];
-		if(orderedSubmissionsByTheTime[i].manualCheckingPassed) {
+		const manualCheckingPassed = orderedSubmissionsByTheTime[i].manualChecking?.percent !== null;
+		if(manualCheckingPassed) {
 			return { submission, index: i };
 		}
 	}

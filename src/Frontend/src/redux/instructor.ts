@@ -25,14 +25,9 @@ import {
 	StudentProhibitFurtherManualCheckingStartAction,
 	StudentProhibitFurtherManualCheckingFailAction,
 } from 'src/actions/instructor.types';
-import { SubmissionInfo } from "src/models/exercise";
 import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, FavouriteReview } from "src/models/instructor";
 import { ReduxData } from "./index";
-
-export interface SubmissionInfoRedux extends SubmissionInfo {
-	score?: number;
-}
 
 export interface InstructorState {
 	isStudentMode: boolean;

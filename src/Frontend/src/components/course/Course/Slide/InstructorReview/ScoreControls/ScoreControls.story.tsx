@@ -66,6 +66,8 @@ const args: PropsWithDecorator[] = [
 		exerciseTitle: 'long practice name with spaces and verylongnamewithoutspaces',
 	},
 ].map(c => ({
+	score: null,
+	prevReviewScore: c.prevReviewScore || null,
 	onSubmit: mockFunc,
 	onToggleChange: mockFunc, ...c,
 	canChangeScore: true,

@@ -300,23 +300,19 @@ export const reviewsDeleteCommentFail = (
 
 export const reviewsAddScoreStart = (
 	submissionId: number,
-	userId: string,
 	score: number,
 ): ReviewsAddScoreStartAction => ({
 	type: REVIEWS_ADD_SCORE_START,
 	submissionId,
-	userId,
 	score
 });
 export const reviewsAddScoreFail = (
 	submissionId: number,
-	userId: string,
-	oldScore: number | undefined,
+	oldScore: number | null,
 	error: string,
 ): ReviewsAddScoreFailAction => ({
 	type: REVIEWS_ADD_SCORE_FAIL,
 	submissionId,
-	userId,
 	oldScore,
 	error,
 });
