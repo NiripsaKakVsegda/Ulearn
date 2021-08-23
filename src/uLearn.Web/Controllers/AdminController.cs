@@ -882,7 +882,7 @@ namespace uLearn.Web.Controllers
 				if (!rolesForUsers.TryGetValue(userRolesInfo.UserId, out List<CourseRole> roles))
 					roles = new List<CourseRole>();
 
-				string visibleCourseName(string s)
+				string getVisibleCourseName(string s)
 				{
 					var (course, tempCourse) = courses.GetOrDefault(s);
 					string visibleCourseName = null;
@@ -906,7 +906,7 @@ namespace uLearn.Web.Controllers
 								ToggleUrl = Url.Action("ToggleRole", "Account", new { courseId, userId = user.UserId, role = courseRole }),
 								UserName = user.UserVisibleName,
 								Role = courseRole,
-								VisibleCourseName = visibleCourseName(courseId)
+								VisibleCourseName = getVisibleCourseName(courseId)
 							};
 						});
 
@@ -922,7 +922,7 @@ namespace uLearn.Web.Controllers
 							ToggleUrl = Url.Action("ToggleCourseAccess", "Admin", new { courseId = courseId, userId = user.UserId, accessType = a }),
 							UserName = user.UserVisibleName,
 							AccessType = a,
-							VisibleCourseName = visibleCourseName(courseId)
+							VisibleCourseName = getVisibleCourseName(courseId)
 						}
 					);
 
