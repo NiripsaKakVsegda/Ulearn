@@ -849,7 +849,7 @@ class InstructorReview extends React.Component<Props, State> {
 		text = text ?? addCommentValue;
 		const trimmed = checker.removeWhiteSpaces(text);
 
-		return trimmed.length > 0 && !favouriteByUserSet?.has(trimmed) && !favouriteReviewsSet?.has(trimmed);
+		return trimmed.length > 0 && !favouriteByUserSet?.has(trimmed);
 	};
 
 	editReviewOrComment = (text: string, reviewId: number, parentReviewId?: number,): void => {
