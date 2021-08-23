@@ -9,7 +9,7 @@ import {
 	LikedAcceptedSolutionsResponse
 } from "src/models/acceptedSolutions";
 import { Language } from "src/consts/languages";
-import { returnPromiseAfterDelay } from "src/utils/storyMock";
+import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
 import { getMockedShortUser } from "../../../../../../comments/storiesData";
 
 const Template: Story<AcceptedSolutionsProps> = (args: AcceptedSolutionsProps) =>
@@ -72,8 +72,7 @@ instructor.args = {
 	slideId: "",
 	isInstructor: true,
 	user: getMockedShortUser({}),
-	onClose: () => {
-	},
+	onClose: mockFunc,
 	acceptedSolutionsApi: getAcceptedSolutionsApi([as], [longLinesSolution], [as2], [as2]),
 };
 
@@ -83,8 +82,7 @@ studentWithPromoted.args = {
 	slideId: "",
 	isInstructor: false,
 	user: getMockedShortUser({}),
-	onClose: () => {
-	},
+	onClose: mockFunc,
 	acceptedSolutionsApi: getAcceptedSolutionsApi([as2], [longLinesSolution], [as], null),
 };
 
@@ -94,8 +92,7 @@ student.args = {
 	slideId: "",
 	isInstructor: false,
 	user: getMockedShortUser({}),
-	onClose: () => {
-	},
+	onClose: mockFunc,
 	acceptedSolutionsApi: getAcceptedSolutionsApi([], [longLinesSolution], [as], null),
 };
 

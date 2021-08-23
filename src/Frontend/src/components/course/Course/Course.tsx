@@ -29,6 +29,7 @@ import {
 	findUnitIdBySlideId,
 	getCourseStatistics,
 } from "./CourseUtils";
+import { buildQuery } from "src/utils";
 import { UserInfo, UserRoles } from "src/utils/courseRoles";
 import documentReadyFunctions from "src/legacy/legacy";
 import runLegacy from "src/legacy/legacyRunner";
@@ -55,7 +56,6 @@ import {
 } from "../Navigation/types";
 
 import styles from "./Course.less";
-import { buildQuery } from "../../../utils";
 
 interface State {
 	Page: React.ComponentType | React.ElementType;
