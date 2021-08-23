@@ -316,14 +316,14 @@ const getUserSubmissionsRedux = (userId: string, courseId: string, slideId: stri
 	};
 };
 
-export function submitReviewScoreRedux(submissionId: number, userId: string, percent: number,
-	oldScore: number | undefined,
+export function submitReviewScoreRedux(submissionId: number, percent: number,
+	oldScore: number | null,
 ) {
 	return (dispatch: Dispatch): Promise<Response | string> => {
-		dispatch(reviewsAddScoreStart(submissionId, userId, percent));
+		dispatch(reviewsAddScoreStart(submissionId, percent));
 		return api.submissions.submitReviewScore(submissionId, percent)
 			.catch(err => {
-				dispatch(reviewsAddScoreFail(submissionId, userId, oldScore, err));
+				dispatch(reviewsAddScoreFail(submissionId, oldScore, err));
 				return err;
 			});
 	};

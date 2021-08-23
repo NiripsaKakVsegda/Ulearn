@@ -217,15 +217,13 @@ export interface ReviewsDeleteFailAction extends FailAction {
 export interface ReviewsAddScoreStartAction {
 	type: typeof REVIEWS_ADD_SCORE_START;
 	submissionId: number;
-	userId: string;
 	score: number;
 }
 
 export interface ReviewsAddScoreFailAction extends FailAction {
 	type: typeof REVIEWS_ADD_SCORE_FAIL;
 	submissionId: number;
-	userId: string;
-	oldScore: number | undefined;
+	oldScore: number | null;
 }
 
 export interface ReviewsAssignBotStartAction {

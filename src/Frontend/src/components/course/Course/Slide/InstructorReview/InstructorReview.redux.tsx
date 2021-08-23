@@ -47,7 +47,6 @@ const mapStateToProps = (
 		throw new Error("Submission id was not provided in query");
 	}
 
-	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
 	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
 		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
@@ -74,7 +73,6 @@ const mapStateToProps = (
 		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
-		scoresBySubmissionId,
 		submissionIdFromQuery,
 	};
 };
@@ -109,8 +107,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 		prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) =>
 			api.instructor.redux.prohibitFurtherManualChecking(courseId, slideId, userId, prohibit)(dispatch),
-		onScoreSubmit: (submissionId: number, userId: string, score: number, oldScore: number | undefined,) =>
-			api.submissions.redux.submitReviewScore(submissionId, userId, score, oldScore)(dispatch),
+		onScoreSubmit: (submissionId: number, score: number, oldScore: number | null,) =>
+			api.submissions.redux.submitReviewScore(submissionId, score, oldScore)(dispatch),
 
 		getStudentInfo: (studentId: string,) =>
 			api.instructor.redux.getStudentInfo(studentId)(dispatch),

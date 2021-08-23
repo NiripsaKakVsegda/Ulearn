@@ -11,8 +11,8 @@ export interface Props {
 	scores?: string[];
 	exerciseTitle: string;
 
-	prevReviewScore?: number | 0 | 25 | 50 | 75 | 100;
-	score?: number | 0 | 25 | 50 | 75 | 100;
+	prevReviewScore: number | 0 | 25 | 50 | 75 | 100 | null;
+	score: number | 0 | 25 | 50 | 75 | 100 | null;
 	date?: string;
 
 	toggleChecked: boolean;
@@ -23,7 +23,7 @@ export interface Props {
 }
 
 interface State {
-	curScore?: number;
+	curScore: number | null;
 	scoreSaved: boolean;
 	toggleChecked: boolean;
 }
@@ -38,7 +38,7 @@ class ScoreControls extends React.Component<Props, State> {
 
 		this.state = {
 			curScore: score,
-			scoreSaved: score !== undefined,
+			scoreSaved: score !== null,
 			toggleChecked: toggleChecked,
 		};
 	}
@@ -50,7 +50,7 @@ class ScoreControls extends React.Component<Props, State> {
 			this.setState({
 				toggleChecked,
 				curScore: score,
-				scoreSaved: score !== undefined || !canChangeScore,
+				scoreSaved: score !== null || !canChangeScore,
 			});
 		}
 
@@ -77,7 +77,7 @@ class ScoreControls extends React.Component<Props, State> {
 
 		return (
 			<Gapped gap={ 24 } vertical>
-				{ scoreSaved && curScore !== undefined
+				{ scoreSaved && curScore !== null
 					? this.renderControlsAfterSubmit(curScore, date, canChangeScore,)
 					: this.renderControls(scores, curScore, prevReviewScore)
 				}
@@ -103,13 +103,13 @@ class ScoreControls extends React.Component<Props, State> {
 		);
 	};
 
-	renderControls = (scores: string[], score?: number, prevReviewScore?: number | null,): React.ReactElement => {
+	renderControls = (scores: string[], score: number | null, prevReviewScore: number | null,): React.ReactElement => {
 		return (
 			<Gapped gap={ 24 } vertical={ false } className={ styles.controlsWrapper }>
 				{ this.renderSwitcherWithLastReviewMarker(scores, score, prevReviewScore,) }
 				<Button
 					size={ 'medium' }
-					disabled={ score === undefined }
+					disabled={ score === null }
 					use={ 'primary' }
 					onClick={ this.onSubmitClick }
 				>
@@ -119,10 +119,10 @@ class ScoreControls extends React.Component<Props, State> {
 		);
 	};
 
-	renderSwitcherWithLastReviewMarker = (scores: string[], score?: number,
-		prevReviewScore?: number | null,
+	renderSwitcherWithLastReviewMarker = (scores: string[], score: number | null,
+		prevReviewScore: number | null,
 	): React.ReactElement => {
-		if(prevReviewScore === undefined || prevReviewScore === null) {
+		if(prevReviewScore === null) {
 			return (
 				<Switcher
 					className={ styles.scoresLabel }
@@ -159,7 +159,7 @@ class ScoreControls extends React.Component<Props, State> {
 			prevReviewScore,
 		} = this.props;
 
-		if(prevReviewScore === undefined || prevReviewScore === null || !element?.children[0] || element.children.length > 1) { //[1]
+		if(prevReviewScore === null || !element?.children[0] || element.children.length > 1) { //[1]
 			return;
 		}
 
@@ -219,7 +219,7 @@ class ScoreControls extends React.Component<Props, State> {
 		const {
 			onSubmit,
 		} = this.props;
-		if(curScore !== undefined) {
+		if(curScore !== null) {
 			onSubmit(curScore);
 		}
 		this.setState({

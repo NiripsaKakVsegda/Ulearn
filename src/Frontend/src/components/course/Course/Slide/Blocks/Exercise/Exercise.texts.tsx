@@ -16,7 +16,7 @@ const texts = {
 			waitingForManualChecking: boolean
 		): string => {
 			const { timestamp, manualChecking } = submission;
-			const manualCheckingPassed = manualChecking?.percent !== null;
+			const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 			const timestampCaption = texts.getSubmissionDate(timestamp);
 			if(manualCheckingPassed) {
 				return timestampCaption + ", прошло код-ревью";
@@ -137,7 +137,7 @@ const texts = {
 					? <React.Fragment>
 						За всё время:<br/>
 						{ attemptedUsersCount } { getPluralForm(attemptedUsersCount, 'студент пробовал',
-					'студента пробовали', 'студентов пробовали') } решить
+						'студента пробовали', 'студентов пробовали') } решить
 						задачу.<br/>
 						{ getPluralForm(attemptedUsersCount, 'Решил', 'Решили', 'Решили') } { usersWithRightAnswerCount }
 						<br/>

@@ -27,7 +27,6 @@ export interface PropsFromRedux {
 	student?: ShortUserInfo;
 	studentGroups?: ShortGroupInfo[];
 	studentSubmissions?: SubmissionInfo[];
-	scoresBySubmissionId?: { [submissionId: number]: number | undefined; };
 
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
 	antiPlagiarismStatusLoading: boolean;
@@ -44,9 +43,7 @@ export interface ApiFromRedux {
 	getFavouriteReviews: (courseId: string, slideId: string,) => Promise<FavouriteReviewResponse | string>;
 	getStudentGroups: (courseId: string, studentId: string,) => Promise<GroupsInfoResponse | string>;
 
-	onScoreSubmit: (submissionId: number, userId: string, score: number,
-		oldScore: number | undefined,
-	) => Promise<Response | string>;
+	onScoreSubmit: (submissionId: number, score: number, oldScore: number | null,) => Promise<Response | string>;
 	prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) => Promise<Response>;
 
 	addFavouriteReview: (courseId: string, slideId: string, text: string) => Promise<FavouriteReview>;
@@ -119,8 +116,8 @@ export interface State {
 	outdatedReviews: ReviewInfo[];
 	markers: TextMarkersByReviewId;
 
-	curScore?: number;
-	prevScore?: number;
+	curScore: number | null;
+	prevScore: number | null;
 
 	editor: null | Editor;
 
@@ -139,6 +136,6 @@ export interface SubmissionContext {
 	isLastCheckedSubmission: boolean;
 	lastCheckedSubmissionId?: number;
 	isLastSubmissionWithManualChecking: boolean;
-	lastSubmissionWithManualCheckingId?: number;
+	lastManualCheckingSubmissionId?: number;
 	isEditable: boolean;
 }

@@ -13,6 +13,6 @@ interface ReviewInfoRedux extends Omit<ReviewInfo, 'comments'> {
 }
 
 type ExerciseAutomaticCheckingResponseRedux = Omit<ExerciseAutomaticCheckingResponse, 'reviews'>;
-type SubmissionInfoRedux = Omit<SubmissionInfo, 'automaticChecking.reviews' | 'manualCheckingReviews'>;
+type SubmissionInfoRedux = Omit<SubmissionInfo, 'automaticChecking.reviews' | 'manualChecking.reviews'>;
 
 export { SubmissionInfoRedux, ReviewInfoRedux, RootState, };

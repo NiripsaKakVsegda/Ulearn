@@ -350,7 +350,10 @@ export const getSubmissionsWithReviews = (
 
 			return ({
 				...r,
-				manualCheckingReviews: reviews?.manualCheckingReviews || [],
+				manualChecking: {
+					...r.manualChecking,
+					reviews: reviews?.manualCheckingReviews || [],
+				},
 				automaticChecking: {
 					...r.automaticChecking,
 					reviews: reviews?.automaticCheckingReviews || null,

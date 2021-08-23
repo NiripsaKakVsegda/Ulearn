@@ -29,6 +29,7 @@ namespace Ulearn.Web.Api.Models.Responses.Exercise
 		public ExerciseAutomaticCheckingResponse AutomaticChecking; // null если задача не имеет автоматических тестов, это не отменяет возможности ручной проверки.
 
 		[CanBeNull]
+		[DataMember]
 		public ExerciseManualCheckingResponse ManualChecking; // null, если у submission нет ManualExerciseChecking
 
 		public static SubmissionInfo Build(
