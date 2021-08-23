@@ -81,7 +81,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 					var markdownRenderContext = new MarkdownRenderContext(ulearnBaseUrlApi, ulearnBaseUrlWeb, courseId, slide.Unit.UnitDirectoryRelativeToCourse);
 					var (html, staticFiles) = GetMarkdownWithReplacedLinksToStudentZips(mb.Markdown, courseId, slide, ulearnBaseUrlApi)
 						.RenderMarkdownForEdx(markdownRenderContext, courseDirectory, "/static");
-					var parsedBlocks = ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(html, subBlock.Hide);
+					var parsedBlocks = ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(html, ulearnBaseUrlApi, subBlock.Hide);
 					htmlAndCodeBlocks.AddRange(parsedBlocks);
 					allStaticFiles.AddRange(staticFiles);
 				}
@@ -175,7 +175,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			writer.WriteString(markdown);
 		}
 
-		private static List<SlideBlock> ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(string renderedMarkdown, bool hide)
+		private static List<SlideBlock> ParseMarkdownForEdxToHtmlBlocksAndCodeBlocks(string renderedMarkdown, string ulearnBaseUrlApi, bool hide)
 		{
 			var parser = new HtmlParser();
 			var document = parser.ParseDocument(renderedMarkdown);
@@ -196,7 +196,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 					var htmlContent = element.OuterHtml;
 					if (blocks.Count > 0 && blocks.Last() is HtmlBlock last)
 					{
-						htmlContent = last.Content + "\n" + htmlContent;
+						htmlContent = last.GetContent(ulearnBaseUrlApi) + "\n" + htmlContent;
 						blocks[blocks.Count - 1] = new HtmlBlock(htmlContent) { Hide = hide };
 					}
 					else

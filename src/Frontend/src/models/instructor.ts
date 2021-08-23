@@ -35,6 +35,7 @@ export interface ReviewQueueResponse {
 export interface ReviewQueueItem {
 	isLocked: boolean;
 	submissionId: number;
+	slideId: string;
 	userId: string;
 	type: QueueItemType;
 }

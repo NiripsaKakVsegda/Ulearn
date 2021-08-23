@@ -42,9 +42,22 @@ List.args = ([
 		title: 'checking -> strong suspicions with 15',
 		status: { suspicionCount: 15, suspicionLevel: 'strong', status: 'checked' },
 	},
-] as { title: string; status?: AntiPlagiarismStatusResponse; }[]).map(a => ({
+	{
+		title: 'checking -> suspicions with 8, button disabled',
+		status: { suspicionCount: 5, suspicionLevel: 'faint', status: 'checked' },
+		zeroButtonDisabled: true,
+	},
+	{
+		title: 'checking -> strong suspicions with 12, button disabled',
+		status: { suspicionCount: 15, suspicionLevel: 'strong', status: 'checked' },
+		zeroButtonDisabled: true,
+	},
+] as { title: string; status?: AntiPlagiarismStatusResponse; zeroButtonDisabled?: boolean; }[]).map(a => ({
 	...a,
 	fixed: false,
+	submissionId: 1,
+	courseId: 'basic',
+	zeroButtonDisabled: a.zeroButtonDisabled || false,
 	onZeroScoreButtonPressed: mockFunc,
 }));
 

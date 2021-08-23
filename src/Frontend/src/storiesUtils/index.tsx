@@ -2,7 +2,7 @@ import React from "react";
 import { CourseAccessType, CourseRoleType, SystemAccessType } from "../consts/accessType";
 import { UserInfo } from "../utils/courseRoles";
 import { getMockedUser } from "../components/comments/storiesData";
-import { clone } from "../utils/jsonExtensions";
+import configureStore from "../configureStore";
 
 export const mock = (): unknown => ({});
 
@@ -16,6 +16,8 @@ interface State<T> {
 	version: number;
 	args: T;
 }
+
+export const reduxStore = configureStore();
 
 export function renderMd(text: string): string {
 	const regexBold = /\*\*(\S(.*?\S)?)\*\*/gm;

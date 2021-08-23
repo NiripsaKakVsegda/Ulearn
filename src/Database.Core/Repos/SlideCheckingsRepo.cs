@@ -89,7 +89,7 @@ namespace Database.Repos
 			{
 				var checkings = (await GetSlideCheckingsByUser<T>(courseId, slideId, userId)
 						.ToListAsync())
-					.Where(c => !c.IsChecked && !c.IsLocked)
+					.Where(c => !c.IsChecked && c.LockedById != null)
 					.ToList();
 				foreach (var checking in checkings)
 				{
@@ -138,6 +138,7 @@ namespace Database.Repos
 				if (!isRightAnswer)
 					return (0, null);
 			}
+
 			var percent = await GetLastReviewPercentForExerciseSlide(courseId, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
 			if (percent == null)
@@ -193,23 +194,24 @@ namespace Database.Repos
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
 			query = query.OrderByDescending(c => c.Timestamp);
 
-			const int reserveForStartedReviews = 100;
+			const int reserveForStartedOrDoubleCheckedReviews = 100;
 			if (options.Count > 0)
-				query = query.Take(options.Count + reserveForStartedReviews);
+				query = query.Take(options.Count + reserveForStartedOrDoubleCheckedReviews);
 
 			IEnumerable<T> enumerable = await query.ToListAsync();
-			// Отфильтровывает неактуальные начатые ревью
+			// Метод RemoveWaitingManualCheckings удалил непосещенные преподавателем старые ManualChecking. Здесь отфильтровываются посещенные преподавателем.
 			enumerable = enumerable
 				.GroupBy(g => new { g.UserId, g.SlideId })
 				.Select(g => g.First())
 				.OrderByDescending(c => c.Timestamp);
+
 			if (options.Count > 0)
 				enumerable = enumerable.Take(options.Count);
 
 			return enumerable.ToList();
 		}
 
-		private IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		public IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
 			var query = db.Set<T>()
 				.Include(c => c.User)
@@ -240,13 +242,6 @@ namespace Database.Repos
 			if (beforeTimestamp != null)
 				queue = queue.Where(s => s.Timestamp < beforeTimestamp);
 			return await queue.CountAsync();
-		}
-
-		public async Task<HashSet<Guid>> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options)
-			where T : AbstractManualSlideChecking
-		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options);
-			return (await query.Select(c => c.SlideId).Distinct().ToListAsync()).ToHashSet();
 		}
 
 		public async Task<T> FindManualCheckingById<T>(int id) where T : AbstractManualSlideChecking
@@ -283,7 +278,7 @@ namespace Database.Repos
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		// Помечает оцененными посещенные но не оцененные старые ревью
+		// Помечает оцененными посещенные но не оцененные старые ревью. Большинство удаляется RemoveWaitingManualCheckings
 		public async Task MarkManualExerciseCheckingAsCheckedBeforeThis(ManualExerciseChecking queueItem)
 		{
 			var itemsForMark = (await db.Set<ManualExerciseChecking>()
@@ -293,7 +288,6 @@ namespace Database.Repos
 				.OrderBy(c => c.Submission.Timestamp)
 				.ThenBy(c => c.Timestamp);
 			int? percent = 0;
-			int? score = 0;
 			var changed = false;
 			foreach (var item in itemsForMark)
 			{

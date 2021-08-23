@@ -17,7 +17,20 @@ const texts = {
 		}
 	},
 	getStudentInfo: (visibleName: string, groups?: ShortGroupInfo[]): string => {
-		return groups ? `${ visibleName } (${ groups.map(g => g.name).join(', ') })` : visibleName;
+		if(groups && groups.length > 0) {
+			const archivedGroups = groups.filter(g => g.isArchived);
+			const notArchivedGroups = groups.filter(g => !g.isArchived);
+			let groupsAsString = notArchivedGroups.map(g => g.name).join(', ');
+			if(archivedGroups.length > 0) {
+				if(notArchivedGroups.length > 0){
+					groupsAsString += '; ';
+				}
+				groupsAsString += 'архивные группы: ' + archivedGroups.map(g => g.name).join(', ');
+			}
+			return `${ visibleName } (${ groupsAsString })`;
+		}
+
+		return visibleName;
 	},
 	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore?: number, currentScore?: number): string => {
 		if(currentScore !== undefined) {
@@ -52,8 +65,9 @@ const texts = {
 		addedColor: string,
 		removedCount: number,
 		removedColor: string,
+		diffForInitialCode?: boolean,
 	): React.ReactElement => <>
-		Diff с предыдущим ревью:
+		{ diffForInitialCode ? 'Diff с начальной версией:' : 'Diff с предыдущим ревью:' }
 		<span className={ addedColor }> { addedCount } { getPluralForm(addedCount, 'строку', 'строки',
 			'строк') } добавили</span>,
 		<span className={ removedColor }> { removedCount } – удалили</span>

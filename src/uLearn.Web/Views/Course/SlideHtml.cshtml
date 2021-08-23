@@ -298,7 +298,7 @@
 }
 
 @helper Block(HtmlBlock block, BlockRenderContext context, HtmlHelper Html)
-{ @(new HtmlString(block.Content)) }
+{ @(new HtmlString(block.GetContent(context.BaseUrlApi))) }
 
 @helper Block(SpoilerBlock block, BlockRenderContext context, HtmlHelper Html)
 {

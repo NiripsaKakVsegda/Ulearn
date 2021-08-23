@@ -122,7 +122,7 @@
 						}
 					</p>
 					<p>
-						@Html.ActionLink("Посмотреть", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, recheck = true }, new { @class = "btn btn-sm btn-info" })
+						@Html.ActionLink("Посмотреть", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, recheck = true, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-info" })
 					</p>
 				}
 				else if (checking.IsLocked)
@@ -137,16 +137,16 @@
 					</p>
 					if (checking.IsLockedBy(User.Identity))
 					{
-						@Html.ActionLink("Вернуться к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-primary" })
+						@Html.ActionLink("Вернуться к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-primary" })
 					}
 					else
 					{
-						@Html.ActionLink("Все равно проверить →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-primary" })
+						@Html.ActionLink("Все равно проверить →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-primary" })
 					}
 				}
 				else
 				{
-					@Html.ActionLink("Перейти к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined }, new { @class = "btn btn-sm btn-success" })
+					@Html.ActionLink("Перейти к проверке →", checkingActionName, new { Model.CourseId, checking.UserId, checking.Id, Group = Model.SelectedGroupsIdsJoined, QueueSlideId = Model.QueueSlideId }, new { @class = "btn btn-sm btn-success" })
 				}
 			</div>
 		</div>

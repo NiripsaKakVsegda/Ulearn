@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -210,6 +211,15 @@ namespace Database.Repos
 		{
 			var publishedCourseVersion = await GetPublishedCourseVersion(courseId);
 			return await GetVersionFile(publishedCourseVersion.Id);
+		}
+
+		[CanBeNull]
+		public async Task<CourseGit> GetCourseRepoSettings(string courseId)
+		{
+			var data = await db.CourseGitRepos.Where(v => v.CourseId == courseId).OrderByDescending(v => v.CreateTime).FirstOrDefaultAsync();
+			if (data?.RepoUrl == null)
+				return null;
+			return data;
 		}
 	}
 }

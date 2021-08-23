@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Database.Models;
@@ -20,6 +21,7 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 					.Select(c => new ReviewQueueItem
 					{
 						SubmissionId = c.Id,
+						SlideId = c.SlideId,
 						UserId = c.UserId,
 						IsLocked = c.IsLocked,
 						Type = c is ManualExerciseChecking
@@ -36,6 +38,9 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	{
 		[DataMember]
 		public int SubmissionId { get; set; } // ExerciseSubmission id or QuizSubmission id
+		
+		[DataMember]
+		public Guid SlideId { get; set; }
 
 		[DataMember]
 		public string UserId { get; set; }

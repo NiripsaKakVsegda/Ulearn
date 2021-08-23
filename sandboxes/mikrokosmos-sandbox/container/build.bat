@@ -1,1 +1,1 @@
-docker build --pull -t mikrokosmos-sandbox .
+docker build -t mikrokosmos-sandbox .

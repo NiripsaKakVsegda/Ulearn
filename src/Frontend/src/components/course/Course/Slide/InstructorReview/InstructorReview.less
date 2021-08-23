@@ -23,6 +23,7 @@
 .reviewStudentName {
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-right: 10%;
 }
 
 .positionWrapper {
@@ -99,6 +100,10 @@
   border-right: 1px solid @lightGrey;
 
   :global {
+    .CodeMirror-gutter-wrapper {
+      height: 100%;
+    }
+
     .CodeMirror-linenumber {
       padding: 0 11px;
       min-width: unset;
@@ -124,7 +129,8 @@
 
       :local(.addedLinesCodeMirror) {
         .CodeMirror-gutter-elt {
-          background: #d6ead1;;
+          background: #d6ead1;
+          height: 100%;
         }
 
         pre.CodeMirror-line {
@@ -135,6 +141,7 @@
       :local(.removedLinesCodeMirror) {
         .CodeMirror-gutter-elt {
           background: #f2cbcb;
+          height: 100%;
         }
 
         pre.CodeMirror-line {
@@ -173,7 +180,8 @@
 }
 
 .marker {
-  display: inline-block;
+  //text span in editor has height = 17px, and code line height = 20px, we enlarging marker to 17 + 1.5*2 = 20
+  padding: 1.5px 0;
 }
 
 .defaultMarker {

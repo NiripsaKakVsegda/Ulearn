@@ -7,6 +7,7 @@ import {
 import { Language } from "src/consts/languages";
 import CodeMirror, { Doc, MarkerRange, TextMarker } from "codemirror";
 import { ReduxData } from "src/redux";
+import { ReviewCompare } from "../../InstructorReview/InstructorReview.types";
 
 enum SubmissionColor {
 	MaxResult = "MaxResult", // Студенту больше ничего не может сделать, ни сийчам ни в будущем
@@ -385,6 +386,39 @@ function isAcceptedSolutionsWillNotDiscardScore(submissions: SubmissionInfo[], i
 	return submissions.filter(
 		s => s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer).length > 0 || isSkipped;
 }
+
+export const areReviewsSame = (
+	newReviews: ReviewCompare[],
+	oldReviews: ReviewCompare[]
+): 'containsNewReviews' | 'containsChangedReviews' | true => {
+	if(newReviews.length !== oldReviews.length) {
+		return 'containsNewReviews';
+	}
+
+	for (let i = 0; i < newReviews.length; i++) {
+		const review = newReviews[i];
+		const compareReview = oldReviews[i];
+
+		if(review.comments.length > compareReview.comments.length) {
+			return 'containsNewReviews';
+		}
+
+		if(review.startLine !== compareReview.startLine
+			|| review.comment !== compareReview.comment
+			|| review.id !== compareReview.id
+			|| review.anchor !== compareReview.anchor
+			|| review.instructor?.outdated !== compareReview.instructor?.outdated
+			|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite) {
+			return 'containsChangedReviews';
+		}
+
+		if(JSON.stringify(review.comments) !== JSON.stringify(compareReview.comments)) {
+			return 'containsChangedReviews';
+		}
+	}
+
+	return true;
+};
 
 export {
 	SubmissionColor,

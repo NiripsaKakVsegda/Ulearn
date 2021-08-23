@@ -120,9 +120,9 @@ namespace Ulearn.Core.Tests.Courses.Slides
 			Assert.IsAssignableFrom<HtmlBlock>(slide.Blocks[0]);
 
 			var firstBlock = (HtmlBlock)slide.Blocks[0];
-			Assert.IsTrue(firstBlock.Content.Contains("Abracadabra"));
-			Assert.IsTrue(firstBlock.Content.Contains("<br />"));
-			Assert.IsTrue(firstBlock.Content.Contains("Second text"));
+			Assert.IsTrue(firstBlock.GetContent("").Contains("Abracadabra"));
+			Assert.IsTrue(firstBlock.GetContent("").Contains("<br />"));
+			Assert.IsTrue(firstBlock.GetContent("").Contains("Second text"));
 		}
 
 		[Test]

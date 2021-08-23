@@ -17,10 +17,10 @@ export function getCourseGroups(courseId: string, userId?: string,): Promise<{ g
 	return api.get(url);
 }
 
-export function getCourseGroupsRedux(courseId: string, userId: string,) {
+export function getCourseGroupsRedux(courseId: string, userId: string, archived?: boolean,) {
 	return (dispatch: Dispatch): Promise<GroupsInfoResponse | string> => {
 		dispatch(groupLoadStartAction(userId));
-		const url = groups + buildQuery({ courseId, userId, });
+		const url = groups + buildQuery({ courseId, userId, archived, });
 		return api.get<GroupsInfoResponse>(url)
 			.then(json => {
 				dispatch(groupLoadSuccessAction(userId, json));

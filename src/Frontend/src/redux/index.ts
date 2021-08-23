@@ -7,7 +7,7 @@ export type ReduxData = {
 
 export function getDataIfLoaded<T>(data: T | ReduxData): T | undefined {
 	const redux = data as ReduxData;
-	if(redux && redux.isLoading) {
+	if(redux && (redux.isLoading || redux.error)) {
 		return undefined;
 	}
 

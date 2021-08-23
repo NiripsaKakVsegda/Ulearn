@@ -16,6 +16,8 @@ import { DiffInfo } from "./utils";
 import CodeMirror, { Editor } from "codemirror";
 import { FavouriteReviewRedux, } from "src/redux/instructor";
 import { SlideContext } from "../Slide.types";
+import { RouteComponentProps } from "react-router-dom";
+import { MatchParams } from "src/models/router";
 
 export interface PropsFromRedux {
 	user?: UserInfo;
@@ -30,6 +32,8 @@ export interface PropsFromRedux {
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
 	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
+
+	submissionIdFromQuery: number;
 }
 
 export interface ApiFromRedux {
@@ -69,11 +73,13 @@ export interface ApiFromRedux {
 	assignBotReview: (submissionId: number, review: ReviewInfo) => Promise<ReviewInfo>;
 }
 
-export interface Props extends PropsFromRedux, ApiFromRedux {
+export interface PropsFromSlide {
 	authorSolution?: React.ReactNode;
 	formulation?: React.ReactNode;
 	slideContext: SlideContext;
 }
+
+export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide & RouteComponentProps<MatchParams>;
 
 export interface InstructorExtraFields {
 	outdated?: boolean;
@@ -131,6 +137,8 @@ export interface State {
 
 export interface SubmissionContext {
 	isLastCheckedSubmission: boolean;
+	lastCheckedSubmissionId?: number;
 	isLastSubmissionWithManualChecking: boolean;
+	lastSubmissionWithManualCheckingId?: number;
 	isEditable: boolean;
 }

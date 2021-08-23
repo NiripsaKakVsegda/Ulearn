@@ -18,10 +18,10 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 		[DataMember(Name = "fromMarkdown")]
 		public bool FromMarkdown { get; set; }
 
-		public HtmlBlockResponse(HtmlBlock htmlBlock, bool fromMarkdown)
+		public HtmlBlockResponse(HtmlBlock htmlBlock, bool fromMarkdown, string ulearnBaseUrlApi)
 		{
 			Hide = htmlBlock.Hide;
-			Content = htmlBlock.Content;
+			Content = htmlBlock.GetContent(ulearnBaseUrlApi);
 			FromMarkdown = fromMarkdown;
 		}
 

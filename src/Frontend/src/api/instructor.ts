@@ -37,7 +37,7 @@ export function prohibitFurtherManualChecking(
 
 export function getReviewQueue(
 	courseId: string,
-	groupsIds: string[] | 'all' | 'not-in-group',
+	groupsIds: string | 'all' | 'not-in-group' | undefined,
 	slideId: string | undefined,
 	userIds: string[] | undefined,
 	done: boolean,

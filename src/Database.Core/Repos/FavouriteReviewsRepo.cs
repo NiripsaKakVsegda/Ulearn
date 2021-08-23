@@ -28,12 +28,12 @@ namespace Database.Repos
 		public async Task<List<FavouriteReview>> GetFavouriteReviewsForOtherUsers(string courseId, Guid slideId, string userIdToExcept, DateTime startDate)
 		{
 			return await db.FavouriteReviews
-				.Where(fr => fr.CourseId == courseId && fr.SlideId == slideId)
+				.Where(fr => fr.CourseId == courseId && fr.SlideId == slideId && !fr.FavouriteReviewsByUser.Any(fbu => fbu.UserId == userIdToExcept))
 				.Select(fr => new
 				{
 					FavouriteReview = fr,
 					Count = fr.FavouriteReviewsByUser.Count(fbu =>
-						fbu.FavouriteReviewId == fr.Id && fbu.UserId != userIdToExcept && fbu.Timestamp >= startDate)
+						fbu.FavouriteReviewId == fr.Id && fbu.Timestamp >= startDate)
 				})
 				.Where(t => t.Count > 0)
 				.OrderBy(t => t.Count)

@@ -273,6 +273,7 @@ export function getSlideNavigationInfoBySlideId(
 
 export interface UlearnQueryParams {
 	slideId: string | null;
+	queueSlideId: string | null;
 	isLti: boolean;
 	submissionId: number | null;
 	userId: string | null;
@@ -285,12 +286,18 @@ export function parseKnownQueryParams(query: string): UlearnQueryParams {
 	const submissionId = queryInLowerCase.get('submissionid');
 
 	return {
+		//slide id for lti slide
 		slideId: queryInLowerCase.get('slideid'),
 		isLti: !!queryInLowerCase.get('islti'),
+		//review parameter
 		submissionId: submissionId ? parseInt(submissionId) : null,
+		//review parameter
 		userId: queryInLowerCase.get('userid'),
+
+		//review checking queue parameters below
 		group: queryInLowerCase.get('group'),
-		done: !!queryInLowerCase.get('done'),
+		queueSlideId: queryInLowerCase.get('queueslideid'),
+		done: queryInLowerCase.get('done') === 'true',
 	};
 }
 

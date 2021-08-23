@@ -53,15 +53,15 @@ namespace Ulearn.Web.Api.Controllers.Review
 		[HttpGet("{courseId}")]
 		public async Task<ReviewQueueResponse> GetReviewQueueInfo(
 			[FromRoute] string courseId,
-			[FromQuery] List<string> groupsIds = null,
+			[FromQuery] string groupsIds = null,
 			[FromQuery] bool done = false,
 			[FromQuery] string userId = "",
 			[FromQuery] Guid? slideId = null
 		)
 		{
 			const int maxShownQueueSize = 500;
-
-			var filterOptions = await GetManualCheckingFilterOptionsByGroup(courseId, groupsIds);
+			var groupsIdsList = groupsIds != null ? groupsIds.Split(',').ToList() : new List<string>();
+			var filterOptions = await GetManualCheckingFilterOptionsByGroup(courseId, groupsIdsList);
 
 			if (!string.IsNullOrEmpty(userId))
 				filterOptions.UserIds = new List<string> { userId };
@@ -83,7 +83,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 				type == QueueItemType.Exercise
 					? await slideCheckingsRepo.FindManualCheckingById<ManualExerciseChecking>(submissionId)
 					: await slideCheckingsRepo.FindManualCheckingById<ManualQuizChecking>(submissionId);
-			
+
 			if (checking == null)
 				return NotFound(new ErrorResponse($"Submission {submissionId} not found"));
 

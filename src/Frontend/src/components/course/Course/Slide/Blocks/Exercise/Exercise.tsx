@@ -49,7 +49,7 @@ import {
 	SolutionRunStatus, SubmissionInfo,
 } from "src/models/exercise";
 import { SlideUserProgress } from "src/models/userProgress";
-import { ExerciseBlockProps } from "src/models/slide";
+import { ExerciseBlock, ExerciseBlockProps } from "src/models/slide";
 import { UserInfo } from "src/utils/courseRoles";
 import { ShortUserInfo } from "src/models/users";
 import { SlideContext } from "../../Slide.types";
@@ -91,7 +91,7 @@ export interface FromReduxProps {
 	forceInitialCode: boolean;
 }
 
-export interface Props extends ExerciseBlockProps, FromReduxDispatch, FromReduxProps {
+export interface Props extends ExerciseBlockProps, FromReduxDispatch, FromReduxProps, ExerciseBlock {
 	className?: string;
 	slideContext: SlideContext;
 }
@@ -238,7 +238,11 @@ class Exercise extends React.Component<Props, State> {
 		}
 
 		if(!prevProps.submissions) {
-			this.loadSlideSubmission();
+			if(forceInitialCode) {
+				this.resetCode();
+			} else {
+				this.loadSlideSubmission();
+			}
 			return;
 		}
 
@@ -257,11 +261,15 @@ class Exercise extends React.Component<Props, State> {
 		}
 
 		if(courseId !== prevProps.slideContext.courseId || slideId !== prevProps.slideContext.slideId || isAuthenticated && isAuthenticated !== prevProps.isAuthenticated) {
-			this.setState({
-				submissionLoading: false,
-			});
-			this.saveCodeDraftToCache(prevProps.slideContext.slideId, value);
-			this.loadSlideSubmission();
+			if(forceInitialCode) {
+				this.resetCode();
+			} else {
+				this.setState({
+					submissionLoading: false,
+				});
+				this.saveCodeDraftToCache(prevProps.slideContext.slideId, value);
+				this.loadSlideSubmission();
+			}
 			return;
 		}
 
@@ -362,11 +370,17 @@ class Exercise extends React.Component<Props, State> {
 	}
 
 	render(): React.ReactElement {
-		const { className, submissions, isAuthenticated } = this.props;
+		const { className, submissions, isAuthenticated, forceInitialCode, } = this.props;
 
 		const opts = this.codeMirrorOptions;
 
 		if(!isAuthenticated) {
+			return (<div className={ classNames(styles.wrapper, className) } ref={ this.wrapper }>
+				{ this.renderControlledCodeMirror(opts, []) }
+			</div>);
+		}
+
+		if(forceInitialCode) {
 			return (<div className={ classNames(styles.wrapper, className) } ref={ this.wrapper }>
 				{ this.renderControlledCodeMirror(opts, []) }
 			</div>);

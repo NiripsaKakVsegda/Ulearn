@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build --pull -t pg-sandbox .
+docker build -t pg-sandbox .

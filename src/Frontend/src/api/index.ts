@@ -102,7 +102,6 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 					if(r === API_JWT_TOKEN_UPDATED) {
 						return request<T>(url, options, true);
 					}
-
 				} else {
 					return response;
 				}
@@ -113,6 +112,10 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 			}
 
 			throw new RequestError(response.status);
+		})
+		.catch(err => {
+			(err as RequestError).showToast();
+			throw  err;
 		})
 		.then(value => {
 			const response = value as Response;

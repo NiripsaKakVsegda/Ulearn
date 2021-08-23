@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>uLearn</RootNamespace>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>CS0219;CS0162;CS0414;CS0169;CS0649</NoWarn>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.9.0">
+    <PackageReference Include="Microsoft.Net.Compilers" Version="3.11.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />

@@ -13,8 +13,10 @@ import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
 import { SubmissionInfo } from "src/models/exercise";
 import { SlideContext } from "../Slide.types";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { MatchParams } from "src/models/router";
 
-interface Props {
+interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;
 }
 
@@ -39,6 +41,11 @@ const mapStateToProps = (
 			state.submissions.submissionsById,
 			state.submissions.reviewsBySubmissionId
 		);
+	const submissionIdFromQuery = slideInfo.query.submissionId;
+
+	if(submissionIdFromQuery == null) {
+		throw new Error("Submission id was not provided in query");
+	}
 
 	const scoresBySubmissionId = state.submissions.reviewScoresByUserIdBySubmissionId[studentId];
 	let studentGroups: ShortGroupInfo[] | undefined;
@@ -68,6 +75,7 @@ const mapStateToProps = (
 		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
 		prohibitFurtherManualChecking,
 		scoresBySubmissionId,
+		submissionIdFromQuery,
 	};
 };
 
@@ -111,7 +119,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		getFavouriteReviews: (courseId: string, slideId: string,) =>
 			api.favouriteReviews.redux.getFavouriteReviews(courseId, slideId,)(dispatch),
 		getStudentGroups: (courseId: string, userId: string,) =>
-			api.groups.getCourseGroupsRedux(courseId, userId)(dispatch),
+			api.groups.getCourseGroupsRedux(courseId, userId, true)(dispatch),
 		enableManualChecking: (submissionId: number,) =>
 			api.submissions.redux.enableManualChecking(submissionId)(dispatch),
 
@@ -121,4 +129,4 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 };
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(InstructorReview);
-export default Connected;
+export default withRouter(Connected);

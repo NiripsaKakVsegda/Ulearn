@@ -44,13 +44,13 @@ class ScoreControls extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>): void {
-		const { score, toggleChecked } = this.props;
+		const { score, toggleChecked, canChangeScore, } = this.props;
 
 		if(prevProps.score !== score) {
 			this.setState({
 				toggleChecked,
 				curScore: score,
-				scoreSaved: score !== undefined,
+				scoreSaved: score !== undefined || !canChangeScore,
 			});
 		}
 

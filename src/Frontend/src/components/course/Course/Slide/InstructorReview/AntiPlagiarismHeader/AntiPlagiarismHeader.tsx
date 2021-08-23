@@ -70,7 +70,7 @@ function AntiPlagiarismHeader({
 	return (
 		<div className={ cn(styles.header, color, { [styles.sticky]: fixed }) }>
 			<span className={ styles.text }>{ text }</span>
-			{ status && status.suspicionLevel == 'strong' &&
+			{ status && status.suspicionLevel !== 'none' &&
 			<>
 				<Link className={ cn(styles.seeDetailsLink, styles.text) }
 					  to={ antiPlagiarismDetailsRoute + buildQuery({ courseId, submissionId }) }>

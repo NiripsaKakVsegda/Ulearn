@@ -29,6 +29,7 @@ import { ReviewCommentResponse, ReviewInfo } from "src/models/exercise";
 
 import styles from "./Review.less";
 import texts from "./Review.texts";
+import { areReviewsSame } from "../ExerciseUtils";
 
 
 class Review extends React.Component<ReviewProps, ReviewState> {
@@ -91,7 +92,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		const oldReviews = this.getCommentsOrderByStart(clone(prevProps.reviews));
 		const newReviewsChanges = newReviews.map(getDataFromReviewToCompareChanges);
 		const oldReviewsChanges = oldReviews.map(getDataFromReviewToCompareChanges);
-		const sameReviews = this.areReviewsSame(newReviewsChanges, oldReviewsChanges);
+		const sameReviews = areReviewsSame(newReviewsChanges, oldReviewsChanges);
 		if(sameReviews === 'containsChangedReviews') {
 			this.setState({
 				renderedReviews: renderedReviews
@@ -118,39 +119,6 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 			});
 		}
 	}
-
-	areReviewsSame = (newReviews: ReviewCompare[],
-		oldReviews: ReviewCompare[]
-	): 'containsNewReviews' | 'containsChangedReviews' | true => {
-		if(newReviews.length !== oldReviews.length) {
-			return 'containsNewReviews';
-		}
-
-		for (let i = 0; i < newReviews.length; i++) {
-			const review = newReviews[i];
-			const compareReview = oldReviews[i];
-
-			if(review.comments.length > compareReview.comments.length) {
-				return 'containsNewReviews';
-			}
-
-			if(review.startLine !== compareReview.startLine
-				|| review.comment !== compareReview.comment
-				|| review.id !== compareReview.id
-				|| review.anchor !== compareReview.anchor
-				|| review.instructor?.outdated !== compareReview.instructor?.outdated
-				|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite) {
-				return 'containsChangedReviews';
-			}
-
-			if(JSON.stringify(review.comments) !== JSON.stringify(compareReview.comments)) {
-				return 'containsChangedReviews';
-			}
-		}
-
-
-		return true;
-	};
 
 	addMarginsToReviews = (renderedReviews: RenderedReview[], selectedReviewId: number,): RenderedReview[] => {
 		if(renderedReviews.length === 0) {

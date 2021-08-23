@@ -23,6 +23,7 @@ const submissionInfo: SubmissionInfo = {
 		reviews: null,
 		checkerLogs:null,
 	},
+	manualCheckingEnabled: true,
 	manualCheckingPassed: false,
 	manualCheckingReviews: [],
 	language: Language.cSharp

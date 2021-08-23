@@ -1,1 +1,1 @@
-docker build --pull -t js-sandbox .
+docker build -t js-sandbox .
