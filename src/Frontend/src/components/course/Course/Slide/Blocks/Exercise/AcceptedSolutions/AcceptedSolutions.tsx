@@ -30,7 +30,7 @@ enum TabsType {
 }
 
 interface _AcceptedSolution extends AcceptedSolution {
-	promoted: boolean
+	promoted: boolean;
 }
 
 interface State {
@@ -100,6 +100,7 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			= solutions.map(
 			s => ({
 				...s,
+				code: s.code.trim(),
 				promoted: promotedSolutions.some(ss => ss.submissionId === s.submissionId)
 			}));
 		const solutionsDict = Object.assign({}, ..._solutions.map((x) => ({ [x.submissionId]: x })));
@@ -204,9 +205,10 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 	renderLikeButton(solution: _AcceptedSolution, asInstructor: boolean) {
 		const className = classnames(styles.button,
 			{ [styles.liked]: solution.likedByMe, [styles.disabled]: asInstructor });
-		debugger;
+
 		return (
-			<span className={ className } onClick={ () => !asInstructor && this.like(solution.submissionId) }>
+			<span className={ className } id={ solution.submissionId.toString() }
+				  onClick={ !asInstructor ? this.like : undefined }>
 				<Hint text={ asInstructor && solution.likesCount !== null
 					? texts.getDisabledLikesHint(solution.likesCount) : null }>
 					<span className={ styles.buttonContent }>
@@ -224,7 +226,7 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 	renderPromoteButton(solution: _AcceptedSolution) {
 		const className = classnames(styles.button, { [styles.promoted]: solution.promoted });
 		return (
-			<span className={ className } onClick={ () => this.promote(solution.submissionId) }>
+			<span className={ className } id={ solution.submissionId.toString() } onClick={ this.promote }>
 				<Hint text={ solution.promoted ? texts.getPromotedByText(solution.promotedBy!) : texts.promoteHint }>
 					<span className={ styles.buttonContent }>
 					{ solution.promoted
@@ -240,7 +242,8 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 		this.fetchContentFromServer(() => this.setState({ activeTab: TabsType[value as keyof typeof TabsType] }));
 	};
 
-	like = (submissionId: number): void => {
+	like = (event: React.MouseEvent<HTMLSpanElement>): void => {
+		const submissionId = parseInt(event.currentTarget.id);
 		const isLike = !this.state.solutions[submissionId].likedByMe;
 		const action = isLike
 			? this.props.acceptedSolutionsApi.likeAcceptedSolution
@@ -257,7 +260,8 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			.catch(error => error.showToast());
 	};
 
-	promote = (submissionId: number): void => {
+	promote = (event: React.MouseEvent<HTMLSpanElement>): void => {
+		const submissionId = parseInt(event.currentTarget.id);
 		const isPromote = !this.state.solutions[submissionId].promoted;
 		const action = isPromote
 			? this.props.acceptedSolutionsApi.promoteAcceptedSolution
@@ -277,6 +281,6 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			})
 			.catch(error => error.showToast());
 	};
-};
+}
 
 export { AcceptedSolutionsModal, AcceptedSolutionsProps };
