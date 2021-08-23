@@ -845,7 +845,7 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	isCommentCanBeAddedToFavourite = (text?: string,): boolean => {
-		const { addCommentValue, favouriteByUserSet, favouriteReviewsSet, } = this.state;
+		const { addCommentValue, favouriteByUserSet, } = this.state;
 		text = text ?? addCommentValue;
 		const trimmed = checker.removeWhiteSpaces(text);
 

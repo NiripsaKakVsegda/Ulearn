@@ -28,7 +28,6 @@ namespace Database.Repos
 		public async Task<List<FavouriteReview>> GetFavouriteReviewsForOtherUsers(string courseId, Guid slideId, string userIdToExcept, DateTime startDate)
 		{
 			return await db.FavouriteReviews
-				.Include(fr => fr.FavouriteReviewsByUser)
 				.Where(fr => fr.CourseId == courseId && fr.SlideId == slideId && !fr.FavouriteReviewsByUser.Any(fbu => fbu.UserId == userIdToExcept))
 				.Select(fr => new
 				{
