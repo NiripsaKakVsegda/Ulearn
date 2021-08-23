@@ -374,7 +374,7 @@ export function getPreviousManualCheckingInfo(
 ): PreviousManualCheckingInfo | undefined {
 	for (let i = lastReviewIndex + 1; i < orderedSubmissionsByTheTime.length; i++) {
 		const submission = orderedSubmissionsByTheTime[i];
-		const manualCheckingPassed = orderedSubmissionsByTheTime[i].manualChecking?.percent !== null;
+		const manualCheckingPassed = (orderedSubmissionsByTheTime[i].manualChecking?.percent || null) !== null;
 		if(manualCheckingPassed) {
 			return { submission, index: i };
 		}
