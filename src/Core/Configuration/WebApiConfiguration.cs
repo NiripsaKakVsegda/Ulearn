@@ -11,9 +11,9 @@ namespace Web.Api.Configuration
 		public UlearnWebConfiguration Web { get; set; }
 
 		public FrontendConfiguration Frontend { get; set; }
-		
-		public string NotificationBar { get; set; } // сообщение в плашке на фронте
-			
+
+		public string NotificationBar { get; set; } // сообщение в плашке на фронте. Показывается сверху, обычно о технических работах
+
 		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки
 	}
 

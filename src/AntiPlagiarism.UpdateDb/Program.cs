@@ -74,8 +74,6 @@ namespace AntiPlagiarism.UpdateDb
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<AntiPlagiarismDb>();
 			optionsBuilder.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2));
-			if (configuration.HostLog.EnableEntityFrameworkLogging)
-				optionsBuilder.UseLoggerFactory(new LoggerFactory().AddVostok(LogProvider.Get()));
 
 			return new AntiPlagiarismDb(optionsBuilder.Options);
 		}

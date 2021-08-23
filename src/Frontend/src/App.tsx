@@ -121,6 +121,11 @@ class InternalUlearnApp extends Component<Props, State> {
 		const isLti = pathname.endsWith('/ltislide') || params.isLti; //TODO remove this flag,that hiding header and nav menu
 		const isHeaderVisible = !isLti;
 
+		if(isLti) {
+			// dirty way to remove padding top from body element (default is 50px, declared in legacy legacy ulearn.global.css main section
+			document.body.style.paddingTop = '0';
+		}
+
 		return (
 			<BrowserRouter>
 				<ThemeContext.Provider value={ theme }>
