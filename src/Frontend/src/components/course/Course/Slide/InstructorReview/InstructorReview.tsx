@@ -450,7 +450,9 @@ class InstructorReview extends React.Component<Props, State> {
 						<span className={ styles.reviewStudentName }>
 							{ texts.getStudentInfo(student.visibleName, studentGroups) }
 						</span>
-						{ texts.getReviewInfo(studentSubmissions, prevScore, curScore,) }
+						<span className={ styles.reviewHeaderScore }>
+							{ texts.getReviewInfo(studentSubmissions, prevScore, curScore,) }
+						</span>
 					</h3>
 					<Tabs value={ currentTab } onValueChange={ this.onTabChange }>
 						<Tabs.Tab key={ InstructorReviewTabs.Review } id={ InstructorReviewTabs.Review }>
