@@ -852,7 +852,7 @@ namespace ManualUtils
 								.GroupBy(r => r.Author.Id)
 								.ToDictionary(r => r.Key, r => r);
 
-							var textToFavoriteReview = new Dictionary<string, FavouriteReview>(StringComparer.OrdinalIgnoreCase);
+							var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
 							foreach (var instructorId in instructorIds)
 							{
 								if (!slideTopReviews.ContainsKey(instructorId))

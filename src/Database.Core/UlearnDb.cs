@@ -51,6 +51,9 @@ namespace Database
 			modelBuilder.HasCollation("case_insensitive", locale: "und@colStrength=secondary", provider: "icu", deterministic: false);
 			modelBuilder.UseDefaultColumnCollation("case_insensitive");
 
+			modelBuilder.Entity<FavouriteReview>()
+				.Property(u => u.Text)
+				.UseCollation("default");
 			// По Names будет осуществляться поиск по регулярном выражению. Такой поиск работает только с deterministic collation
 			modelBuilder.Entity<ApplicationUser>()
 				.Property(u => u.Names)
