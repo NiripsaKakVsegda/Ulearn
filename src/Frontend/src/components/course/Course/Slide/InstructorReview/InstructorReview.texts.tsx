@@ -1,5 +1,9 @@
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
-import { SubmissionInfo } from "src/models/exercise";
+import {
+	AutomaticExerciseCheckingProcessStatus,
+	AutomaticExerciseCheckingResult,
+	SubmissionInfo
+} from "src/models/exercise";
 import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
 import React from "react";
 import getPluralForm from "src/utils/getPluralForm";
@@ -48,13 +52,26 @@ const texts = {
 		selectedSubmissionIsLastSuccess: boolean,
 		waitingForManualChecking: boolean
 	): string => {
-		const { timestamp, manualChecking } = submission;
+		const { timestamp, manualChecking, automaticChecking, } = submission;
 		const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 		const timestampCaption = texts.getSubmissionDate(timestamp);
 		if(manualCheckingPassed) {
 			return timestampCaption + ", прошло код-ревью";
 		} else if(waitingForManualChecking && selectedSubmissionIsLastSuccess) {
 			return timestampCaption + ", ожидает код-ревью";
+		} else if(automaticChecking?.result !== AutomaticExerciseCheckingResult.RightAnswer) {
+			if(automaticChecking?.processStatus === AutomaticExerciseCheckingProcessStatus.Running
+				|| automaticChecking?.processStatus === AutomaticExerciseCheckingProcessStatus.Waiting
+				|| automaticChecking?.processStatus === AutomaticExerciseCheckingProcessStatus.WaitingTimeLimitExceeded
+			) {
+				return timestampCaption + ", проверяется";
+			}
+			if(automaticChecking?.processStatus === AutomaticExerciseCheckingProcessStatus.Done) {
+				return timestampCaption + ", не прошло тесты";
+			}
+			if(automaticChecking?.processStatus === AutomaticExerciseCheckingProcessStatus.ServerError) {
+				return timestampCaption + ", ошибка сервера";
+			}
 		}
 		return timestampCaption;
 	},

@@ -20,12 +20,10 @@ import {
 import { GroupInfo, } from "src/models/groups";
 import { UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
+import { ApiFromRedux, PropsFromSlide } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
-import { SlideContext } from "../Slide.types";
 import { RootState } from "src/redux/reducers";
-import { getDataIfLoaded, ReduxData } from "src/redux";
-import { ShortGroupInfo } from "src/models/comments";
+import { getDataIfLoaded, } from "src/redux";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import {
@@ -78,8 +76,9 @@ import { FavouriteReviewRedux } from "src/redux/instructor";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
 import { assignBotReview, } from "src/api/submissions";
 import { Button } from "ui";
-import { getSubmissionsWithReviews } from "../../CourseUtils";
-import { withRouter } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { mapStateToProps } from "./InstructorReview.redux";
+import { MatchParams } from "../../../../../models/router";
 
 
 const user: UserInfo = getMockedUser({
@@ -439,61 +438,6 @@ const loadingTimes = {
 	enableManualChecking: 100,
 };
 
-const mapStateToProps = (
-	state: RootState,
-	{ slideContext: { courseId, slideId, slideInfo, } }: { slideContext: SlideContext; }
-): PropsFromRedux => {
-	const studentId = slideInfo.query.userId;
-	if(!studentId) {
-		throw new Error('User id was not provided');
-	}
-	const submissionIdFromQuery = slideInfo.query.submissionId;
-	if(submissionIdFromQuery == null) {
-		throw new Error("Submission id was not provided in query");
-	}
-
-	const student = getDataIfLoaded(state.instructor.studentsById[studentId]);
-
-	const studentSubmissions: SubmissionInfo[] | undefined =
-		getSubmissionsWithReviews(
-			courseId,
-			slideId,
-			studentId,
-			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
-			state.submissions.submissionsById,
-			state.submissions.reviewsBySubmissionId
-		);
-
-	let studentGroups: ShortGroupInfo[] | undefined;
-	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
-		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
-	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
-		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
-	}
-	const favouriteReviews = getDataIfLoaded(
-		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
-
-	const antiPlagiarismStatus = studentSubmissions &&
-		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
-
-	const prohibitFurtherManualChecking = state.instructor
-		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
-		?.[slideId]
-		?.[studentId] || false;
-
-	return {
-		user,
-		favouriteReviews,
-		studentGroups,
-		student,
-		studentSubmissions,
-		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
-		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
-		prohibitFurtherManualChecking,
-		submissionIdFromQuery,
-	};
-};
-
 const getNextAPStatus = () => {
 	const rnd = Math.random();
 	let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
@@ -764,7 +708,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(withRouter(InstructorReview));
 
-const Template: Story<PropsFromSlide> = (args: PropsFromSlide) => {
+const Template: Story<PropsFromSlide & RouteComponentProps<MatchParams>> = (args: PropsFromSlide & RouteComponentProps<MatchParams>) => {
 	return (
 		<>
 			<Button use={ 'primary' } onClick={ () => {

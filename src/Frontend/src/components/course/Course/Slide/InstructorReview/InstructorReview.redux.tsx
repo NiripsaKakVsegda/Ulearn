@@ -10,7 +10,7 @@ import api from "src/api";
 import { getDataIfLoaded, ReduxData } from "src/redux";
 import { ShortGroupInfo } from "src/models/comments";
 import { ApiFromRedux, PropsFromRedux } from "./InstructorReview.types";
-import { SubmissionInfo } from "src/models/exercise";
+import { AutomaticExerciseCheckingResult, SubmissionInfo } from "src/models/exercise";
 import { SlideContext } from "../Slide.types";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { RouteComponentProps, withRouter } from "react-router-dom";
@@ -20,7 +20,7 @@ interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;
 }
 
-const mapStateToProps = (
+export const mapStateToProps = (
 	state: RootState,
 	{ slideContext: { courseId, slideId, slideInfo, } }: Props
 ): PropsFromRedux => {
@@ -40,12 +40,21 @@ const mapStateToProps = (
 			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
 			state.submissions.submissionsById,
 			state.submissions.reviewsBySubmissionId
+		)?.filter((s, index) => index === 0
+			|| !s.automaticChecking
+			|| s.automaticChecking.result === AutomaticExerciseCheckingResult.RightAnswer
 		);
-	const submissionIdFromQuery = slideInfo.query.submissionId;
-
-	if(submissionIdFromQuery == null) {
-		throw new Error("Submission id was not provided in query");
-	}
+	const submissionToReview = studentSubmissions && studentSubmissions
+		.find(s =>
+			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			&& s.manualChecking);
+	const lastReviewedSubmission = studentSubmissions && studentSubmissions
+		.find(s =>
+			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			&& s.manualChecking
+			&& s.manualChecking.percent !== null);
+	const curScore = submissionToReview?.manualChecking?.percent || null;
+	const prevScore = lastReviewedSubmission?.manualChecking?.percent || null;
 
 	let studentGroups: ShortGroupInfo[] | undefined;
 	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
@@ -68,14 +77,21 @@ const mapStateToProps = (
 	return {
 		user: buildUserInfo(state.account, courseId,),
 		favouriteReviews,
+
 		studentGroups,
 		student,
+
 		studentSubmissions,
+		curScore,
+		prevScore,
+		lastCheckedSubmissionId: lastReviewedSubmission?.id,
+		lastManualCheckingSubmissionId: submissionToReview?.id,
+
 		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
 		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
 		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
+
 		prohibitFurtherManualChecking,
-		submissionIdFromQuery,
 	};
 };
 

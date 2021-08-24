@@ -24,12 +24,16 @@ export interface PropsFromRedux {
 	studentGroups?: ShortGroupInfo[];
 	studentSubmissions?: SubmissionInfo[];
 
+	curScore: number | null;
+	prevScore: number | null;
+
+	lastManualCheckingSubmissionId?: number;
+	lastCheckedSubmissionId?: number;
+
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
 	antiPlagiarismStatusError: boolean;
 	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
-
-	submissionIdFromQuery: number;
 }
 
 export interface ApiFromRedux {
@@ -71,6 +75,7 @@ export interface PropsFromSlide {
 	authorSolution?: React.ReactNode;
 	formulation?: React.ReactNode;
 	slideContext: SlideContext;
+	expectedOutput?: string | null;
 }
 
 export type Props = PropsFromRedux & ApiFromRedux & PropsFromSlide & RouteComponentProps<MatchParams>;
@@ -113,9 +118,6 @@ export interface State {
 	outdatedReviews: ReviewInfo[];
 	markers: TextMarkersByReviewId;
 
-	curScore: number | null;
-	prevScore: number | null;
-
 	editor: null | Editor;
 
 	addCommentValue: string;
@@ -131,8 +133,6 @@ export interface State {
 
 export interface SubmissionContext {
 	isLastCheckedSubmission: boolean;
-	lastCheckedSubmissionId?: number;
 	isLastSubmissionWithManualChecking: boolean;
-	lastManualCheckingSubmissionId?: number;
 	isEditable: boolean;
 }

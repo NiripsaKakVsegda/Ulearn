@@ -55,6 +55,7 @@ List.args = ([
 ] as { title: string; status?: AntiPlagiarismStatusResponse; zeroButtonDisabled?: boolean; }[]).map(a => ({
 	...a,
 	fixed: false,
+	error: false,
 	submissionId: 1,
 	courseId: 'basic',
 	zeroButtonDisabled: a.zeroButtonDisabled || false,

@@ -220,6 +220,7 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 		: undefined;
 
 	return <InstructorReview
+		expectedOutput={ slideBlocks.length > 0 ? (slideBlocks[exerciseSlideBlockIndex] as ExerciseBlock).expectedOutput : undefined }
 		slideContext={ slideContext }
 		authorSolution={ authorSolution
 			? BlocksRenderer.renderBlocks(authorSolution, slideContext)

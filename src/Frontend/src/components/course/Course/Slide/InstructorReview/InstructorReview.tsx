@@ -27,13 +27,15 @@ import {
 	getSelectedReviewIdByCursor,
 	getTextMarkersByReviews,
 	loadLanguageStyles,
+	SubmissionColor,
 } from "../Blocks/Exercise/ExerciseUtils";
 import { clone } from "src/utils/jsonExtensions";
 import { DiffInfo, getDataFromReviewToCompareChanges, getDiffInfo, getReviewAnchorTop } from "./utils";
 
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
+import { ExerciseOutput } from "../Blocks/Exercise/ExerciseOutput/ExerciseOutput";
 import { Language } from "src/consts/languages";
-import { ReviewInfo, SubmissionInfo } from "src/models/exercise";
+import { AutomaticExerciseCheckingResult, ReviewInfo, SolutionRunStatus, SubmissionInfo } from "src/models/exercise";
 import { FavouriteReview } from "src/models/instructor";
 import CodeMirror, { Editor, EditorConfiguration, MarkerRange, TextMarker, } from "codemirror";
 import {
@@ -62,8 +64,6 @@ class InstructorReview extends React.Component<Props, State> {
 		let diffInfo: DiffInfo | undefined = undefined;
 		let reviews: InstructorReviewInfo[] | undefined = [];
 		let outdatedReviews: InstructorReviewInfo[] | undefined = [];
-		let curScore: number | null = null;
-		let prevScore: number | null = null;
 
 		const favReviewsByUser = favouriteReviews?.filter(r => r.isFavourite);
 		const favReviews = favouriteReviews?.filter(r => !r.isFavourite);
@@ -78,9 +78,6 @@ class InstructorReview extends React.Component<Props, State> {
 			diffInfo = submissionInfo.diffInfo;
 
 			currentSubmissionContext = this.getSubmissionContext(studentSubmissions, currentSubmission);
-
-			curScore = currentSubmission.manualChecking?.percent || null;
-			prevScore = diffInfo && diffInfo.prevReviewedSubmission?.manualChecking?.percent || null;
 
 			const allReviews = this.getReviewsFromSubmission(currentSubmission, diffInfo, false,);
 			reviews = allReviews.reviews;
@@ -101,8 +98,6 @@ class InstructorReview extends React.Component<Props, State> {
 			diffInfo: diffInfo,
 			favouriteReviewsSet,
 			favouriteByUserSet,
-			curScore,
-			prevScore,
 		};
 	}
 
@@ -110,10 +105,7 @@ class InstructorReview extends React.Component<Props, State> {
 		studentSubmissions: SubmissionInfo[],
 		currentSubmission: SubmissionInfo
 	): SubmissionContext => {
-		const lastCheckedSubmissionId = studentSubmissions
-			.find(s => (s.manualChecking?.percent || null) !== null)?.id;
-		const lastManualCheckingSubmissionId = studentSubmissions
-			.find(s => s.manualChecking !== null)?.id;
+		const { lastCheckedSubmissionId, lastManualCheckingSubmissionId, } = this.props;
 		const isLastCheckedSubmission = currentSubmission.id === lastCheckedSubmissionId;
 		const isLastSubmissionWithManualChecking = currentSubmission.id === lastManualCheckingSubmissionId;
 
@@ -121,9 +113,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 		return {
 			isLastCheckedSubmission,
-			lastCheckedSubmissionId,
 			isLastSubmissionWithManualChecking,
-			lastManualCheckingSubmissionId,
 			isEditable,
 		};
 	};
@@ -182,7 +172,6 @@ class InstructorReview extends React.Component<Props, State> {
 			antiPlagiarismStatusError,
 			antiPlagiarismStatusLoading,
 			slideContext,
-			submissionIdFromQuery,
 		} = this.props;
 		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
 
@@ -204,7 +193,8 @@ class InstructorReview extends React.Component<Props, State> {
 
 
 		if(!currentSubmission && studentSubmissions && studentSubmissions.length > 0) {
-			const index = Math.max(studentSubmissions.findIndex(s => s.id === submissionIdFromQuery), 0);
+			const index = Math.max(
+				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
 			this.loadSubmission(studentSubmissions, index);
 			return;
 		}
@@ -376,8 +366,8 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	static getDerivedStateFromProps(props: Readonly<Props>, state: Readonly<State>): Partial<State> | null {
-		const { favouriteReviews, studentSubmissions, submissionIdFromQuery, } = props;
-		const { favouriteReviewsSet, favouriteByUserSet, curScore, prevScore, } = state;
+		const { favouriteReviews, } = props;
+		const { favouriteReviewsSet, favouriteByUserSet, } = state;
 		const favReviewsByUser = favouriteReviews?.filter(r => r.isFavourite);
 		const favReviews = favouriteReviews?.filter(r => !r.isFavourite);
 
@@ -389,23 +379,6 @@ class InstructorReview extends React.Component<Props, State> {
 				favouriteReviewsSet: new Set(favReviews?.map(r => r.text)),
 				favouriteByUserSet: new Set(favReviewsByUser?.map(r => r.text)),
 			};
-		}
-
-		if(studentSubmissions) {
-			const currentCheckingSubmissionIndex = studentSubmissions.findIndex(s => s.id === submissionIdFromQuery);
-			if(currentCheckingSubmissionIndex > -1) {
-				const prevReview = getPreviousManualCheckingInfo(studentSubmissions, currentCheckingSubmissionIndex);
-				const newScore = studentSubmissions[currentCheckingSubmissionIndex].manualChecking?.percent || null;
-				const newPrevScore = prevReview?.submission.manualChecking?.percent || null;
-
-				if(newScore !== curScore || newPrevScore !== prevScore) {
-					newState = {
-						...newState,
-						curScore: newScore,
-						prevScore: newPrevScore,
-					};
-				}
-			}
 		}
 
 		if(Object.keys(newState).length > 0) {
@@ -424,12 +397,12 @@ class InstructorReview extends React.Component<Props, State> {
 			formulation,
 			favouriteReviews,
 			user,
+			curScore,
+			prevScore,
 		} = this.props;
 		const {
 			currentTab,
 			currentSubmission,
-			curScore,
-			prevScore,
 		} = this.state;
 
 		if(!user?.isAuthenticated) {
@@ -507,6 +480,7 @@ class InstructorReview extends React.Component<Props, State> {
 			prohibitFurtherManualChecking,
 			favouriteReviews,
 			studentSubmissions,
+			expectedOutput,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -514,7 +488,7 @@ class InstructorReview extends React.Component<Props, State> {
 			diffInfo,
 		} = this.state;
 
-		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !currentSubmissionContext) {
+		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !currentSubmissionContext || expectedOutput === undefined) {
 			return null;
 		}
 
@@ -525,6 +499,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 		const submissionPercent = currentSubmission.manualChecking?.percent || null;
 		const prevSubmissionPercent = diffInfo && diffInfo.prevReviewedSubmission && diffInfo.prevReviewedSubmission.manualChecking?.percent || null;
+		const outputMessage = currentSubmission.automaticChecking?.output;
 
 		return (
 			<BlocksWrapper withoutBottomPaddings>
@@ -534,6 +509,18 @@ class InstructorReview extends React.Component<Props, State> {
 					renderSticker={ this.renderHeader }
 					renderContent={ this.renderEditor }
 				/>
+				{
+					currentSubmission.automaticChecking
+					&& currentSubmission.automaticChecking.result !== AutomaticExerciseCheckingResult.RightAnswer
+					&& <ExerciseOutput
+						withoutMargin
+						solutionRunStatus={ SolutionRunStatus.Success }
+						message={ outputMessage }
+						expectedOutput={ expectedOutput }
+						automaticChecking={ currentSubmission.automaticChecking }
+						submissionColor={ SubmissionColor.WrongAnswer }
+					/>
+				}
 				{ (isEditable || submissionPercent !== null) &&
 				<ScoreControls
 					canChangeScore={ isEditable }
@@ -614,22 +601,22 @@ class InstructorReview extends React.Component<Props, State> {
 			addReview,
 			slideContext,
 			student,
-			submissionIdFromQuery,
+			lastManualCheckingSubmissionId,
+			curScore,
 		} = this.props;
 		const {
 			currentSubmission,
-			curScore,
 		} = this.state;
 
-		if(!student || !currentSubmission) {
+		if(!student || !currentSubmission || !lastManualCheckingSubmissionId) {
 			return;
 		}
 
-		onScoreSubmit(submissionIdFromQuery, 0, curScore);
+		onScoreSubmit(lastManualCheckingSubmissionId, 0, curScore);
 		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, true);
-		addReview(submissionIdFromQuery, this.shameComment, 0, 0, 0, 1)
+		addReview(lastManualCheckingSubmissionId, this.shameComment, 0, 0, 0, 1)
 			.then(r => this.highlightReview(r.id));
-		if(currentSubmission.id !== submissionIdFromQuery) {
+		if(currentSubmission.id !== lastManualCheckingSubmissionId) {
 			Toast.push('Оценка и комментарий были оставлены к решению ожидающему ревью', {
 				label: 'Перейти',
 				handler: this.handleZeroButtonToastClick
@@ -638,13 +625,13 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	handleZeroButtonToastClick = (): void => {
-		const { studentSubmissions, submissionIdFromQuery, } = this.props;
+		const { studentSubmissions, lastManualCheckingSubmissionId, } = this.props;
 
 		if(!studentSubmissions) {
 			return;
 		}
 
-		const index = studentSubmissions.findIndex(s => s.id === submissionIdFromQuery);
+		const index = studentSubmissions.findIndex(s => s.id === lastManualCheckingSubmissionId);
 
 		if(!studentSubmissions || index === -1) {
 			Toast.push('Произошла ошибка');
@@ -652,7 +639,7 @@ class InstructorReview extends React.Component<Props, State> {
 				console.error(new Error('Student submissions were undefined'));
 			} else {
 				console.error(new Error(
-					`Student submissions does not contain id ${ submissionIdFromQuery }, submissions ids=${ studentSubmissions.map(
+					`Student submissions does not contain id ${ lastManualCheckingSubmissionId }, submissions ids=${ studentSubmissions.map(
 						s => s.id).join(', ') }`));
 			}
 			return;
@@ -692,8 +679,8 @@ class InstructorReview extends React.Component<Props, State> {
 			antiPlagiarismStatus,
 			antiPlagiarismStatusError,
 			slideContext: { courseId, },
+			curScore,
 		} = this.props;
-		const { curScore, } = this.state;
 		const submissionId = studentSubmissions?.[0].id;
 
 		return (<AntiPlagiarismHeader
@@ -712,6 +699,8 @@ class InstructorReview extends React.Component<Props, State> {
 			user,
 			favouriteReviews,
 			studentSubmissions,
+			lastManualCheckingSubmissionId,
+			lastCheckedSubmissionId,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -728,6 +717,7 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!favouriteReviews || !currentSubmission || !studentSubmissions || !currentSubmissionContext) {
 			return null;
 		}
+
 		const { isEditable, } = currentSubmissionContext;
 
 		return (
@@ -908,7 +898,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	renderSubmissionsSelect = (): React.ReactNode => {
 		const { currentSubmission, currentSubmissionContext, } = this.state;
-		const { studentSubmissions, submissionIdFromQuery, } = this.props;
+		const { studentSubmissions, lastManualCheckingSubmissionId, } = this.props;
 
 		if(!studentSubmissions || !currentSubmission || !currentSubmissionContext) {
 			return null;
@@ -919,8 +909,8 @@ class InstructorReview extends React.Component<Props, State> {
 				submission.id,
 				texts.getSubmissionCaption(
 					submission,
-					submissionIdFromQuery === submission.id,
-					submissionIdFromQuery === submission.id)
+					lastManualCheckingSubmissionId === submission.id,
+					lastManualCheckingSubmissionId === submission.id)
 			]))
 		];
 
