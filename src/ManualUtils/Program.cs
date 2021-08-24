@@ -834,31 +834,29 @@ namespace ManualUtils
 
 				foreach (var course in courses)
 				{
-					using (var transaction = db.Database.BeginTransaction())
-					{
+					//using (var transaction = db.Database.BeginTransaction())
+					//{
 						courseCounter++;
 						Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
-						var slides = course.GetSlidesNotSafe();
+						var slides = course.GetSlidesNotSafe().OfType<ExerciseSlide>().ToList();
 						var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
 						var slideCounter = 0;
 						foreach (var slide in slides)
 						{
 							slideCounter++;
 							Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
-							var slideTopReviews = db.ExerciseCodeReviews
-								.Include(r => r.Author)
-								.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && !r.HiddenFromTopComments && !r.IsDeleted)
-								.ToList()
-								.GroupBy(r => r.Author.Id)
-								.ToDictionary(r => r.Key, r => r);
 
 							var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
 							foreach (var instructorId in instructorIds)
 							{
-								if (!slideTopReviews.ContainsKey(instructorId))
+								var slideTopReviewsForInstructor = db.ExerciseCodeReviews
+									.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && r.AuthorId == instructorId && !r.HiddenFromTopComments && !r.IsDeleted)
+									.ToList();
+
+								if (!slideTopReviewsForInstructor.Any())
 									continue;
 
-								var userTopReviews = slideTopReviews[instructorId]
+								var userTopReviews = slideTopReviewsForInstructor
 									.GroupBy(r => r.Comment)
 									.OrderByDescending(g => g.Count())
 									.ThenByDescending(g => g.Max(r => r.AddingTime))
@@ -897,8 +895,8 @@ namespace ManualUtils
 						}
 
 						await db.SaveChangesAsync();
-						transaction.Commit();
-					}
+						//transaction.Commit();
+					//}
 				}
 			}
 		}
