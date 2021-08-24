@@ -1,11 +1,12 @@
 import React from "react";
 import ProgressBar from "./ProgressBar.js";
+import { Story } from "@storybook/react";
 
 export default {
 	title: "Cards/ProgressBar",
 };
 
-export const Scores11251018 = (): React.ReactNode => (
+const Scores11251018 = (): React.ReactElement => (
 	<ProgressBar
 		statistics={ {
 			notRated: 1,
@@ -19,9 +20,7 @@ export const Scores11251018 = (): React.ReactNode => (
 	/>
 );
 
-Scores11251018.storyName = "scores: 1,1,2,5,10,18";
-
-export const Scores1000000 = (): React.ReactNode => (
+const Scores1000000 = (): React.ReactElement => (
 	<ProgressBar
 		statistics={ {
 			notRated: 10,
@@ -35,9 +34,7 @@ export const Scores1000000 = (): React.ReactNode => (
 	/>
 );
 
-Scores1000000.storyName = "scores: 10,0,0,0,0,0";
-
-export const Scores222222 = (): React.ReactNode => (
+const Scores222222 = (): React.ReactElement => (
 	<ProgressBar
 		statistics={ {
 			notRated: 2,
@@ -51,4 +48,8 @@ export const Scores222222 = (): React.ReactNode => (
 	/>
 );
 
-Scores222222.storyName = "scores: 2,2,2,2,2,2";
+export const Scores: Story = () => <>
+	<Scores222222/>
+	<Scores11251018/>
+	<Scores1000000/>
+</>;
