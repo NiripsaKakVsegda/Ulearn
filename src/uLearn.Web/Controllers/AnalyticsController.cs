@@ -38,6 +38,7 @@ namespace uLearn.Web.Controllers
 		private readonly UnitsRepo unitsRepo;
 		private readonly AdditionalScoresRepo additionalScoresRepo;
 		private readonly UlearnConfiguration configuration;
+		private readonly SystemAccessesRepo systemAccessesRepo;
 
 		public AnalyticsController()
 			: this(new ULearnDb(), WebCourseManager.CourseStorageInstance)
@@ -55,6 +56,7 @@ namespace uLearn.Web.Controllers
 			usersRepo = new UsersRepo(db);
 			visitsRepo = new VisitsRepo(db);
 			unitsRepo = new UnitsRepo(db);
+			systemAccessesRepo = new SystemAccessesRepo(db);
 			configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		}
 
@@ -402,6 +404,8 @@ namespace uLearn.Web.Controllers
 			else
 				groups = groupsRepo.GetUserGroups(courseId, currentUserId);
 
+			var canViewProfiles = systemAccessesRepo.HasSystemAccess(currentUserId, SystemAccessType.ViewAllProfiles) || User.IsSystemAdministrator();
+
 			var uriBuilder = new ExportUriBuilder(configuration.BaseUrlApi, courseId);
 			var jsonExportUrl = uriBuilder.BuildExportJsonUrl();
 			var xmlExportUrl = uriBuilder.BuildExportXmlUrl();
@@ -410,6 +414,7 @@ namespace uLearn.Web.Controllers
 			var model = new CourseStatisticPageModel
 			{
 				IsInstructor = isInstructor,
+				CanViewProfiles = canViewProfiles,
 				CourseId = course.Id,
 				CourseTitle = course.Title,
 				Units = visibleUnits,
