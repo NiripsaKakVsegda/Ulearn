@@ -58,6 +58,7 @@ const mapStateToProps = (
 
 	const antiPlagiarismStatus = studentSubmissions &&
 		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
+	const antiPlagiarismStatusRedux = antiPlagiarismStatus as ReduxData;
 
 	const prohibitFurtherManualChecking = state.instructor
 		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
@@ -71,7 +72,8 @@ const mapStateToProps = (
 		student,
 		studentSubmissions,
 		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
-		antiPlagiarismStatusLoading: !!(antiPlagiarismStatus as ReduxData)?.isLoading,
+		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
+		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
 		prohibitFurtherManualChecking,
 		submissionIdFromQuery,
 	};

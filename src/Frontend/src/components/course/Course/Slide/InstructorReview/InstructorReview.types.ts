@@ -2,11 +2,7 @@ import React from "react";
 
 import { UserInfo } from "src/utils/courseRoles";
 import { ShortGroupInfo } from "src/models/comments";
-import {
-	AntiPlagiarismStatusResponse,
-	FavouriteReview,
-	FavouriteReviewResponse,
-} from "src/models/instructor";
+import { AntiPlagiarismStatusResponse, FavouriteReview, FavouriteReviewResponse, } from "src/models/instructor";
 import { ShortUserInfo } from "src/models/users";
 import { ReviewCommentResponse, ReviewInfo, SubmissionInfo } from "src/models/exercise";
 import { GroupsInfoResponse } from "src/models/groups";
@@ -29,6 +25,7 @@ export interface PropsFromRedux {
 	studentSubmissions?: SubmissionInfo[];
 
 	antiPlagiarismStatus?: AntiPlagiarismStatusResponse;
+	antiPlagiarismStatusError: boolean;
 	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
 

@@ -15,6 +15,7 @@ import texts from './AntiPlagiarismHeader.texts';
 
 export interface Props {
 	status?: AntiPlagiarismStatusResponse;
+	error: boolean;
 	courseId?: string;
 	submissionId?: number;
 
@@ -30,6 +31,7 @@ function AntiPlagiarismHeader({
 	fixed,
 	zeroButtonDisabled,
 	submissionId,
+	error,
 	courseId,
 }: Props): React.ReactElement {
 	let text: React.ReactNode;
@@ -56,12 +58,11 @@ function AntiPlagiarismHeader({
 					color = styles.suspicionColor;
 					break;
 				}
-				default: {
-					text = texts.errorText;
-					color = styles.notCheckingColor;
-				}
 			}
 		}
+	} else if(error) {
+		text = texts.errorText;
+		color = styles.notCheckingColor;
 	} else {
 		text = texts.runningText;
 		color = styles.runningColor;
