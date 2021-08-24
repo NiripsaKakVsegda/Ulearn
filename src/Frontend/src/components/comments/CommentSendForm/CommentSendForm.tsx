@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import classNames from 'classnames';
 
-import { Button } from "ui";
+import { Button, Gapped } from "ui";
 import Avatar from "../../common/Avatar/Avatar";
 import MarkdownEditor from "./MarkdownEditor/MarkdownEditor";
 
@@ -65,10 +65,10 @@ class CommentSendForm extends Component<Props, State> {
 						text={ text }
 						handleChange={ this.handleChange }
 						handleSubmit={ this.handleSubmit }>
-						<div className={ styles.buttons }>
+						<Gapped gap={ 10 } className={ styles.buttons }>
 							{ this.renderSubmitButton() }
 							{ this.renderCancelButton() }
-						</div>
+						</Gapped>
 					</MarkdownEditor>
 				</form>
 			</div>
