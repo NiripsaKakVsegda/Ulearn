@@ -3,20 +3,20 @@ import cn from "classnames";
 
 import Avatar from "src/components/common/Avatar/Avatar";
 import {
-	DropdownMenu,
-	MenuItem,
-	MenuSeparator,
-	Textarea,
-	ThemeContext,
 	Button,
+	DropdownMenu,
 	Gapped,
 	Hint,
+	MenuItem,
+	MenuSeparator,
 	ScrollContainer,
+	Textarea,
+	ThemeContext,
 } from "ui";
-import { Send3, MenuKebab, } from "icons";
+import { MenuKebab, Send3, } from "icons";
 import { getDataFromReviewToCompareChanges } from "../../../InstructorReview/utils";
 import reviewPolicyChecker from "../../../InstructorReview/reviewPolicyChecker";
-import { InstructorReviewInfo, ReviewCompare, } from "../../../InstructorReview/InstructorReview.types";
+import { InstructorReviewInfo, } from "../../../InstructorReview/InstructorReview.types";
 import { CommentReplies, RenderedReview, ReviewProps, ReviewState } from "./Review.types";
 import { ShortUserInfo } from "src/models/users";
 
@@ -246,6 +246,27 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 			>
 				{ this.renderComment(review) }
 				{
+					authorToRender.id === this.botUser.id
+					&& user
+					&& !outdated
+					&& selectedReviewId === id
+					&& assignBotComment
+					&& isInstructor(user)
+					&& <Gapped gap={ 8 } className={ cn({ [styles.botReviewWithComments]: comments.length > 0 }) }>
+						{ comments.length === 0 &&
+						<Hint pos={ 'bottom center' }
+							  text={ texts.botReview.hintText }>
+							<Button use={ 'primary' } onClick={ this.assignBotComment }
+									disabled={ comments.length > 0 }>
+								{ texts.botReview.assign }
+							</Button>
+						</Hint> }
+						<Button onClick={ this.deleteBotReview }>
+							{ texts.botReview.delete }
+						</Button>
+					</Gapped>
+				}
+				{
 					comments.length > 0 &&
 					<ol className={ styles.commentRepliesList }>
 						{ comments.map((c, i) =>
@@ -261,25 +282,6 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				&& !outdated
 				&& (authorToRender.id !== this.botUser.id || comments.length > 0)
 				&& this.renderAddReviewComment(replies[id], id) }
-				{
-					authorToRender.id === this.botUser.id
-					&& user
-					&& !outdated
-					&& selectedReviewId === id
-					&& assignBotComment
-					&& isInstructor(user)
-					&& <Gapped gap={ 8 }>
-						<Hint pos={ 'bottom center' }
-							  text={ texts.botReview.hintText }>
-							<Button use={ 'primary' } onClick={ this.assignBotComment }>
-								{ texts.botReview.assign }
-							</Button>
-						</Hint>
-						<Button onClick={ this.deleteBotReview }>
-							{ texts.botReview.delete }
-						</Button>
-					</Gapped>
-				}
 			</li>
 		);
 	};
