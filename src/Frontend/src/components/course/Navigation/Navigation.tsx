@@ -351,7 +351,6 @@ class Navigation extends Component<Props, State> {
 			unitProgress,
 			deviceType,
 		} = this.props;
-
 		const isInsideCourse = unitTitle === undefined;
 
 		return (

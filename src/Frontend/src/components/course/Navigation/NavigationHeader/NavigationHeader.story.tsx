@@ -166,4 +166,7 @@ DynamicallyChangingProgressList.args = [
 	{ swapAtPercentage: 0, },
 	{ startFromChanging: 'inProgress', swapAtPercentage: 0, },
 ];
+DynamicallyChangingProgressList.parameters = {
+	loki: { skip: true },
+};
 

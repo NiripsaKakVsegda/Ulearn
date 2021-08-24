@@ -3,7 +3,11 @@ import { SlideType } from "src/models/slide";
 import { Props } from "./Navigation";
 import { mock } from "src/storiesUtils";
 import { DeviceType } from "src/consts/deviceType";
-import React from "react";
+import React, { CSSProperties } from "react";
+import { getDeviceType } from "../../../utils/getDeviceType";
+import { connect } from "react-redux";
+import { deviceChangeAction } from "../../../actions/device";
+import { RootState } from "../../../redux/reducers";
 
 export const DesktopWrapper: React.FunctionComponent = ({ children }) => (
 	<div style={ { width: '360px', } }>
@@ -11,11 +15,115 @@ export const DesktopWrapper: React.FunctionComponent = ({ children }) => (
 	</div>
 );
 
+
+interface ViewportChangeHandlerProps {
+	setDeviceType: (deviceType: DeviceType) => void;
+	deviceType: DeviceType;
+	render: (deviceType: DeviceType) => React.ReactNode;
+}
+
+interface ViewportChangeHandlerState {
+	resizeTimeout?: NodeJS.Timeout;
+}
+
+class ViewportChangeHandler extends React.Component<ViewportChangeHandlerProps, ViewportChangeHandlerState> {
+	constructor(props: ViewportChangeHandlerProps) {
+		super(props);
+
+		this.state = {
+			resizeTimeout: undefined,
+		};
+	}
+
+	componentDidMount = () => {
+		addEventListener("resize", this.onWindowResize);
+	};
+
+	componentWillUnmount = () => {
+		removeEventListener("resize", this.onWindowResize);
+	};
+
+	onWindowResize = () => {
+		const { resizeTimeout, } = this.state;
+
+		const throttleTimeout = 66;
+
+		//resize event can be called rapidly, to prevent performance issue, we throttling event handler
+		if(!resizeTimeout) {
+			this.setState({
+				resizeTimeout: setTimeout(this.handleResize, throttleTimeout)
+			});
+		}
+	};
+
+	handleResize = () => {
+		const { setDeviceType, } = this.props;
+
+		this.setState({
+			resizeTimeout: undefined,
+		});
+		setDeviceType(getDeviceType());
+	};
+
+	render() {
+		const { deviceType, render, } = this.props;
+
+		return render(deviceType);
+	}
+}
+
+export const ViewportChangeHandlerRedux = connect(
+	(rootState: RootState) => ({ deviceType: rootState.device.deviceType }),
+	(dispatch =>
+			({
+				setDeviceType: (deviceType: DeviceType) => dispatch(deviceChangeAction(deviceType)),
+			})
+	))(ViewportChangeHandler);
+
+export const deviceTypeToViewportStyle = (dt: DeviceType): CSSProperties => {
+	switch (dt) {
+		case DeviceType.desktop:
+			return { height: 1080, width: 1920 };
+		case DeviceType.laptop:
+			return { height: 768, width: 1366 };
+		case DeviceType.tablet:
+			return { height: 1024, width: 800 };
+		case DeviceType.mobile:
+			return { height: 240, width: 320 };
+	}
+};
+
+export const ViewportWrapper = ({ children }: { children: React.ReactNode }) => {
+	return (
+		<ViewportChangeHandlerRedux
+			render={ (dt) =>
+				<div style={ deviceTypeToViewportStyle(dt) }>
+					{ children }
+				</div>
+			}/>
+	);
+};
+
 export const disableViewport = {
 	parameters: {
 		viewport: {
 			disable: true,
 		},
+	},
+};
+
+export const skipLoki = {
+	parameters: {
+		loki: { skip: true },
+	},
+};
+
+export const disableViewportAnLoki = {
+	parameters: {
+		viewport: {
+			disable: true,
+		},
+		loki: { skip: true },
 	},
 };
 

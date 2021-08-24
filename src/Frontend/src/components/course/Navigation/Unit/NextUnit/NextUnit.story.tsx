@@ -3,14 +3,11 @@ import NextUnit, { Props } from "./NextUnit";
 import { SlideType } from "src/models/slide";
 import type { Story } from "@storybook/react";
 import { mock } from "src/storiesUtils";
+import { disableViewportAnLoki } from "../../stroies.data";
 
 export default {
 	title: "NextModule",
-	parameters: {
-		viewport: {
-			disable: true,
-		},
-	},
+	...disableViewportAnLoki,
 };
 
 const defaultProps: Props = {

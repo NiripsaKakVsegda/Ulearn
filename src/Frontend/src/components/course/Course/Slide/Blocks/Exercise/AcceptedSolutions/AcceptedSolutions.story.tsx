@@ -2,21 +2,26 @@ import React from 'react';
 
 import { AcceptedSolutionsModal, AcceptedSolutionsProps } from './AcceptedSolutions';
 import type { Story } from "@storybook/react";
-import { AcceptedSolutionsApi } from "src/api/acceptedSolutions";
+
+import { ViewportWrapper } from "../../../../../Navigation/stroies.data";
 import {
 	AcceptedSolution,
 	AcceptedSolutionsResponse,
 	LikedAcceptedSolutionsResponse
-} from "src/models/acceptedSolutions";
-import { Language } from "src/consts/languages";
-import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
+} from "../../../../../../../models/acceptedSolutions";
+import { mockFunc, returnPromiseAfterDelay } from "../../../../../../../utils/storyMock";
+import { AcceptedSolutionsApi } from "../../../../../../../api/acceptedSolutions";
+import { Language } from "../../../../../../../consts/languages";
 import { getMockedShortUser } from "../../../../../../comments/storiesData";
 
-const Template: Story<AcceptedSolutionsProps> = (args: AcceptedSolutionsProps) =>
-	<AcceptedSolutionsModal { ...args } />;
+const Template: Story<AcceptedSolutionsProps> = (args: AcceptedSolutionsProps) => {
+	return <ViewportWrapper>
+		<AcceptedSolutionsModal { ...args } />
+	</ViewportWrapper>;
+};
 
 const getAcceptedSolutionsApi = (promotedSolutions: AcceptedSolution[], randomLikedSolutions: AcceptedSolution[],
-	newestSolutions: AcceptedSolution[], likedSolutions: AcceptedSolution[] | null
+	newestSolutions: AcceptedSolution[], likedSolutions: AcceptedSolution[] | null, loadTime = 0,
 ): AcceptedSolutionsApi => {
 	return {
 		getAcceptedSolutions: (courseId: string, slideId: string) => {
@@ -25,19 +30,19 @@ const getAcceptedSolutionsApi = (promotedSolutions: AcceptedSolution[], randomLi
 				randomLikedSolutions: randomLikedSolutions,
 				newestSolutions: newestSolutions,
 			};
-			return returnPromiseAfterDelay(500, acceptedSolutionsResponse);
+			return returnPromiseAfterDelay(loadTime, acceptedSolutionsResponse);
 		},
 		getLikedAcceptedSolutions: (courseId: string, slideId: string, offset: number, count: number) => {
 			if(likedSolutions == null) {
 				throw new Error();
 			}
 			const likedSolutionsResponse: LikedAcceptedSolutionsResponse = { likedSolutions: likedSolutions };
-			return returnPromiseAfterDelay(500, likedSolutionsResponse);
+			return returnPromiseAfterDelay(loadTime, likedSolutionsResponse);
 		},
-		likeAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(200, {} as Response),
-		dislikeAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(200, {} as Response),
-		promoteAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(200, {} as Response),
-		unpromoteAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(200, {} as Response),
+		likeAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(loadTime, {} as Response),
+		dislikeAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(loadTime, {} as Response),
+		promoteAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(loadTime, {} as Response),
+		unpromoteAcceptedSolution: (solutionId: number) => returnPromiseAfterDelay(loadTime, {} as Response),
 	};
 };
 

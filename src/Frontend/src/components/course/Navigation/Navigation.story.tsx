@@ -3,19 +3,24 @@ import Navigation, { Props } from "./Navigation";
 import {
 	defaultNavigationProps,
 	DesktopWrapper,
-	disableViewport,
+	disableViewportAnLoki,
 	getCourseModules,
-	getModuleNavigationProps, standardSlideProps
+	getModuleNavigationProps,
+	standardSlideProps,
+	ViewportChangeHandlerRedux
 } from "./stroies.data";
 import type { Story } from "@storybook/react";
-import { SlideType } from "src/models/slide";
 
 export default {
 	title: "Navigation",
-	...disableViewport
+	...disableViewportAnLoki,
 };
 
-const Template: Story<Props> = args => <DesktopWrapper> <Navigation { ...args }/></DesktopWrapper>;
+const Template: Story<Props> = args => <ViewportChangeHandlerRedux
+	render={ (deviceType) => <DesktopWrapper>
+		<Navigation { ...args } deviceType={ deviceType }/>
+	</DesktopWrapper> }
+/>;
 
 export const ModuleNavigation = Template.bind({});
 const args: Props = {

@@ -32,7 +32,7 @@ const viewports = {
 	tablet: {
 		name: 'tablet',
 		styles: {
-			width: '768px',
+			width: '800px',
 			height: '1024px',
 		},
 	},

@@ -11,19 +11,15 @@ import {
 } from "src/models/exercise";
 import { returnPromiseAfterDelay } from "src/utils/storyMock";
 import { getMockedShortUser, getMockedUser } from "../../../../comments/storiesData";
-import { instructor, renderMd, reduxStore } from "src/storiesUtils";
-import {
-	AntiPlagiarismInfo,
-	AntiPlagiarismStatusResponse,
-	FavouriteReview,
-} from "src/models/instructor";
+import { instructor, reduxStore, renderMd } from "src/storiesUtils";
+import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview, } from "src/models/instructor";
 import { GroupInfo, } from "src/models/groups";
-import { UserInfo } from "src/utils/courseRoles";
+import { buildUserInfo, UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, PropsFromSlide } from "./InstructorReview.types";
+import { ApiFromRedux, Props, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
 import { RootState } from "src/redux/reducers";
-import { getDataIfLoaded, } from "src/redux";
+import { getDataIfLoaded, ReduxData, } from "src/redux";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import {
@@ -64,9 +60,11 @@ import {
 } from "src/actions/favouriteReviews";
 import {
 	antiplagiarimsStatusLoadFailAction,
-	antiplagiarimsStatusLoadStartAction, antiplagiarimsStatusLoadSuccessAction,
+	antiplagiarimsStatusLoadStartAction,
+	antiplagiarimsStatusLoadSuccessAction,
 	studentLoadFailAction,
-	studentLoadStartAction, studentLoadSuccessAction,
+	studentLoadStartAction,
+	studentLoadSuccessAction,
 	studentProhibitFurtherManualCheckingFailAction,
 	studentProhibitFurtherManualCheckingStartAction
 } from "src/actions/instructor";
@@ -77,8 +75,10 @@ import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } fro
 import { assignBotReview, } from "src/api/submissions";
 import { Button } from "ui";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import { mapStateToProps } from "./InstructorReview.redux";
 import { MatchParams } from "../../../../../models/router";
+import { skipLoki } from "../../../Navigation/stroies.data";
+import { getSubmissionsWithReviews } from "../../CourseUtils";
+import { ShortGroupInfo } from "../../../../../models/comments";
 
 
 const user: UserInfo = getMockedUser({
@@ -706,6 +706,79 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	};
 };
 
+const mapStateToProps = (
+	state: RootState,
+	{ slideContext: { courseId, slideId, slideInfo, } }: PropsFromSlide
+): PropsFromRedux => {
+	const studentId = slideInfo.query.userId;
+
+	if(!studentId) {
+		throw new Error('User id was not provided');
+	}
+
+	const studentSubmissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			studentId,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById,
+			state.submissions.reviewsBySubmissionId
+		)?.filter((s, index) => index === 0
+			|| !s.automaticChecking
+			|| s.automaticChecking.result === AutomaticExerciseCheckingResult.RightAnswer
+		);
+	const submissionToReview = studentSubmissions && studentSubmissions
+		.find(s =>
+			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			&& s.manualChecking);
+	const lastReviewedSubmission = studentSubmissions && studentSubmissions
+		.find(s =>
+			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			&& s.manualChecking
+			&& s.manualChecking.percent !== null);
+	const curScore = submissionToReview?.manualChecking?.percent || null;
+	const prevScore = lastReviewedSubmission?.manualChecking?.percent || null;
+
+	let studentGroups: ShortGroupInfo[] | undefined;
+	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
+		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
+	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
+		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
+	}
+	const favouriteReviews = getDataIfLoaded(
+		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
+
+	const antiPlagiarismStatus = studentSubmissions &&
+		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
+	const antiPlagiarismStatusRedux = antiPlagiarismStatus as ReduxData;
+
+	const prohibitFurtherManualChecking = state.instructor
+		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
+		?.[slideId]
+		?.[studentId] || false;
+
+	return {
+		user,
+		favouriteReviews,
+
+		studentGroups,
+		student,
+
+		studentSubmissions,
+		curScore,
+		prevScore,
+		lastCheckedSubmissionId: lastReviewedSubmission?.id,
+		lastManualCheckingSubmissionId: submissionToReview?.id,
+
+		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
+		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
+		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
+
+		prohibitFurtherManualChecking,
+	};
+};
+
 const Connected = connect(mapStateToProps, mapDispatchToProps)(withRouter(InstructorReview));
 
 const Template: Story<PropsFromSlide & RouteComponentProps<MatchParams>> = (args: PropsFromSlide & RouteComponentProps<MatchParams>) => {
@@ -754,6 +827,7 @@ const args: PropsFromSlide = {
 			},
 		}
 	},
+	expectedOutput: null,
 	authorSolution: <BlocksWrapper>
 		<StaticCode
 			language={ Language.cSharp }
@@ -770,4 +844,5 @@ Default.args = args;
 
 export default {
 	title: 'Exercise/InstructorReview',
+	...skipLoki,
 };

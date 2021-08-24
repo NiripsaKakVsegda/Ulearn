@@ -2,10 +2,9 @@ import React from "react";
 import AddCommentForm, { Props } from "./AddCommentForm";
 import type { Story } from "@storybook/react";
 import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
-import { StoryUpdater } from "src/storiesUtils";
 
 const Template: Story<Props> = (args) => {
-	return (<StoryUpdater args={ args } childrenBuilder={ (args) => <AddCommentForm  { ...args } /> }/>);
+	return (<AddCommentForm  { ...args } />);
 };
 
 const comments = [

@@ -412,7 +412,6 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!isInstructor(user)) {
 			throw new UrlError();
 		}
-
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
 		}

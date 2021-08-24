@@ -166,36 +166,5 @@
       "\\.(css|less)$": "identity-obj-proxy"
     }
   },
-  "proxy": "https://localhost:44300",
-  "loki": {
-    "configurations": {
-      "chrome.desktop": {
-        "target": "chrome.app",
-        "width": 1920,
-        "height": 1080,
-        "deviceScaleFactor": 1,
-        "mobile": false
-      },
-      "chrome.laptop": {
-        "target": "chrome.app",
-        "width": 1366,
-        "height": 768,
-        "deviceScaleFactor": 1,
-        "mobile": false
-      },
-      "chrome.tablet": {
-        "target": "chrome.app",
-        "width": 768,
-        "height": 1024,
-        "deviceScaleFactor": 1,
-        "mobile": false
-      },
-      "chrome.phone": {
-        "target": "chrome.app",
-        "width": 320,
-        "height": 240,
-        "mobile": true
-      }
-    }
-  }
+  "proxy": "https://localhost:44300"
 }

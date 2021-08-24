@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { getMoment } from "src/utils/momentUtils";
 import { withRouter } from "react-router-dom";
-import api from "src/api";
 import { User, Delete } from "icons";
 import { Kebab, MenuItem, Gapped, Loader, Toast } from "ui";
 import ComboboxInstructorsSearch from "./Combobox/ComboboxInstructorsSearch";
@@ -37,7 +36,7 @@ class GroupMembers extends Component {
 			loadingTeachers: true,
 		});
 
-		api.groups.getGroupAccesses(groupId)
+		this.props.getGroupAccesses(groupId)
 			.then(json => {
 				let accesses = json.accesses;
 				this.setState({
@@ -58,7 +57,7 @@ class GroupMembers extends Component {
 			loadingStudents: true,
 		});
 
-		api.groups.getStudents(groupId)
+		this.props.getStudents(groupId)
 			.then(json => {
 				let students = json.students;
 				this.setState({
@@ -217,7 +216,7 @@ class GroupMembers extends Component {
 		const { accesses } = this.state;
 		const { group } = this.props;
 
-		api.groups.changeGroupOwner(group.id, user.id)
+		this.props.changeGroupOwner(group.id, user.id)
 			.then(() => {
 				const updatedAccesses = accesses.map(item =>
 					item.user.id === user.id ? { ...item, user: group.owner, grantTime: new Date() } : item);
@@ -235,7 +234,7 @@ class GroupMembers extends Component {
 	onRemoveTeacher = (user) => {
 		const { accesses } = this.state;
 
-		api.groups.removeAccess(this.props.group.id, user.id)
+		this.props.removeAccess(this.props.group.id, user.id)
 			.then(() => {
 				const updatedAccesses = accesses
 					.filter(item => item.user.id !== user.id);
@@ -261,7 +260,7 @@ class GroupMembers extends Component {
 		const { group, account, } = this.props;
 		const grantedBy = this.getUserFromAccount(account);
 
-		api.groups.addGroupAccesses(group.id, item.value)
+		this.props.addGroupAccesses(group.id, item.value)
 			.then(() => {
 				const updatedAccesses = accesses
 					.filter(i => i.user.id !== item.value)
@@ -297,7 +296,7 @@ class GroupMembers extends Component {
 	onDeleteStudents = (students) => {
 		const { group } = this.props;
 
-		api.groups.deleteStudents(group.id, students)
+		this.props.deleteStudents(group.id, students)
 			.then(() => {
 				const updatedStudents = this.state.students.filter((item) => !students.includes(item.user.id));
 
@@ -322,6 +321,12 @@ GroupMembers.propTypes = {
 	account: PropTypes.object,
 	isSysAdmin: PropTypes.bool,
 	systemAccesses: PropTypes.array,
+	getGroupAccesses:PropTypes.func,
+	getStudents:PropTypes.func,
+	changeGroupOwner:PropTypes.func,
+	removeAccess:PropTypes.func,
+	addGroupAccesses:PropTypes.func,
+	deleteStudents:PropTypes.func,
 };
 
 export default withRouter(GroupMembers);

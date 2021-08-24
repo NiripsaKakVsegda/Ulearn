@@ -46,16 +46,16 @@ function UlearnApp(): React.ReactElement {
 }
 
 interface Props {
-	account: AccountState,
-	getNotificationsCount: () => void,
-	getCurrentUser: () => void,
-	getCourses: () => void,
-	setDeviceType: (deviceType: DeviceType) => void,
+	account: AccountState;
+	getNotificationsCount: () => void;
+	getCurrentUser: () => void;
+	getCourses: () => void;
+	setDeviceType: (deviceType: DeviceType) => void;
 }
 
 interface State {
-	initializing: boolean,
-	resizeTimeout?: NodeJS.Timeout,
+	initializing: boolean;
+	resizeTimeout?: NodeJS.Timeout;
 }
 
 class InternalUlearnApp extends Component<Props, State> {

@@ -117,16 +117,18 @@ AllControls.args = {
 
 export const OpenedHints = () => {
 	return (
-		<Controls>
-			<Controls.ShowHintButton
-				showedHintsCountOnStart={ hints.length }
-				onAllHintsShowed={ mockFunc }
-				renderedHints={ hints }
-				showControlsText={ true }
-				subTooltipTrigger={ 'opened' }
-				mainTooltipTrigger={ 'opened' }
-			/>
-		</Controls>
+		<div style={ { height: '500px' } }>
+			<Controls>
+				<Controls.ShowHintButton
+					showedHintsCountOnStart={ hints.length }
+					onAllHintsShowed={ mockFunc }
+					renderedHints={ hints }
+					showControlsText={ true }
+					subTooltipTrigger={ 'opened' }
+					mainTooltipTrigger={ 'opened' }
+				/>
+			</Controls>
+		</div>
 	);
 };
 
@@ -162,6 +164,7 @@ export const OpenedStatistics = () => {
 					} }
 				/>
 			</Controls>
+			<div/>
 		</Gapped>
 	);
 };
@@ -169,13 +172,15 @@ export const OpenedStatistics = () => {
 
 export const OpenedAcceptedSolutionsButton = () => {
 	return (
-		<Controls>
-			<Controls.AcceptedSolutionsButton
-				tooltipTrigger={ 'opened' }
-				onVisitAcceptedSolutions={ mockFunc }
-				isShowAcceptedSolutionsAvailable={ true }
-			/>
-		</Controls>
+		<div style={ { height: '170px' } }>
+			<Controls>
+				<Controls.AcceptedSolutionsButton
+					tooltipTrigger={ 'opened' }
+					onVisitAcceptedSolutions={ mockFunc }
+					isShowAcceptedSolutionsAvailable={ true }
+				/>
+			</Controls>
+		</div>
 	);
 };
 
