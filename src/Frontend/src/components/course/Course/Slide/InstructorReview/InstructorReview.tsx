@@ -914,7 +914,6 @@ class InstructorReview extends React.Component<Props, State> {
 			return null;
 		}
 
-		console.log(studentSubmissions, submissionIdFromQuery);
 		const items = [...studentSubmissions.map(
 			(submission,) => ([
 				submission.id,
