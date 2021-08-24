@@ -57,7 +57,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 		public async Task<ActionResult<SubmissionsResponse>> GetSubmissions([FromQuery] [CanBeNull] string userId, [FromQuery] string courseId, [FromQuery] Guid slideId)
 		{
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin);
-			if (userId != null && !isCourseAdmin)
+			if (userId != null && !isCourseAdmin && userId != UserId)
 			{
 				var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor);
 				if (!isInstructor)
