@@ -1,14 +1,12 @@
 using NUnit.Framework;
-using Ulearn.Core;
 using Ulearn.Core.Markdown;
-using Markdown = MarkdownDeep.Markdown;
 
-namespace uLearn
+namespace Ulearn.Core.Tests.Markdown
 {
 	[TestFixture]
-	public class Md_should
+	public class MarkdownTests
 	{
-		private static MarkdownRenderContext DefaultMdContext = new MarkdownRenderContext("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
+		private static readonly MarkdownRenderContext DefaultMdContext = new MarkdownRenderContext("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
 
 		[Test]
 		public void qualify_urls()
@@ -24,7 +22,7 @@ namespace uLearn
 		{
 			Assert.AreEqual(
 				"<p><strong>x</strong>,</p>\n",
-				new Markdown { ExtraMode = true }.Transform("__x__,"));
+				new MarkdownDeep.Markdown { ExtraMode = true }.Transform("__x__,"));
 		}
 
 		[Test]
@@ -32,7 +30,7 @@ namespace uLearn
 		{
 			Assert.AreEqual(
 				"<p><span>_x_</span></p>\n",
-				new Markdown { ExtraMode = true }.Transform("<span>_x_</span>"));
+				new MarkdownDeep.Markdown { ExtraMode = true }.Transform("<span>_x_</span>"));
 		}
 
 		[Test]
