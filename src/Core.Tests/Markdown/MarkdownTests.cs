@@ -9,16 +9,7 @@ namespace Ulearn.Core.Tests.Markdown
 		private static readonly MarkdownRenderContext DefaultMdContext = new MarkdownRenderContext("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
 
 		[Test]
-		public void qualify_urls()
-		{
-			Assert.That("[a](a.html)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"https://api.ulearn.me/courses/BasicProgramming/files/Unit1/a.html\""));
-			Assert.That("[a](a.html)".RenderMarkdown(DefaultMdContext with { UnitDirectoryRelativeToCourse = "Unit1/" }), Does.Contain("href=\"https://api.ulearn.me/courses/BasicProgramming/files/Unit1/a.html\""));
-			Assert.That("[a](/a.html)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"/a.html\""));
-			Assert.That("[a](abc)".RenderMarkdown(DefaultMdContext), Does.Contain("href=\"abc\""));
-		}
-
-		[Test]
-		public void emphasize_underscore()
+		public void EmphasizeUnderscore()
 		{
 			Assert.AreEqual(
 				"<p><strong>x</strong>,</p>\n",
@@ -26,7 +17,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void dot_emphasize_in_html()
+		public void DotEmphasizeInHtml()
 		{
 			Assert.AreEqual(
 				"<p><span>_x_</span></p>\n",
@@ -34,7 +25,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void dot_emphasize_in_html2()
+		public void DotEmphasizeInHtml2()
 		{
 			Assert.AreEqual(
 				@"<p><span class=""tex"">noise_V, noise_{\omega}</span></p>",
@@ -42,7 +33,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex()
+		public void RenderTex()
 		{
 			Assert.AreEqual(
 				@"<p>a <span class='tex'>x</span> b</p>",
@@ -50,7 +41,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex1()
+		public void RenderTex1()
 		{
 			Assert.AreEqual(
 				@"<p><span class='tex'>x</span></p>",
@@ -58,7 +49,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void dont_render_not_separate_dollar()
+		public void DontRenderNotSeparateDollar()
 		{
 			Assert.AreEqual(
 				@"<p>1$=2$</p>",
@@ -66,7 +57,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex_with_spaces_inside()
+		public void RenderTexWithSpacesInside()
 		{
 			Assert.AreEqual(
 				@"<p>1 <span class='tex'> = 2 </span></p>",
@@ -74,7 +65,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_md_vs_tex()
+		public void RenderMdWithTex()
 		{
 			Assert.AreEqual(
 				@"<p><span class='tex'>a_1=b_2</span></p>",
@@ -82,7 +73,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void dont_markdown()
+		public void DontMarkdown()
 		{
 			Assert.AreEqual(
 				"<div>\n*ha*</div>",
@@ -90,7 +81,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_complex_tex()
+		public void RenderComplexTex()
 		{
 			Assert.AreEqual(
 				@"<p><span class='tex'>\rho\subset\Sigma^*\times\Sigma^*</span></p>",
@@ -98,7 +89,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex_div()
+		public void RenderTexDiv()
 		{
 			Assert.AreEqual(
 				@"<div class='tex'>\displaystyle x_1=y_1</div>",
@@ -106,7 +97,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex_div_and_span()
+		public void RenderTexDivAndSpan()
 		{
 			Assert.AreEqual(
 				@"<div class='tex'>\displaystyle x_1=y_1</div><p> <span class='tex'>1</span></p>",
@@ -114,7 +105,7 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
-		public void render_tex_div_and_div()
+		public void RenderTexDivAndDiv()
 		{
 			Assert.AreEqual(
 				@"<div class='tex'>\displaystyle 1</div><div class='tex'>\displaystyle 2</div>",
@@ -123,7 +114,7 @@ $$2$$".RenderMarkdown(DefaultMdContext).Trim());
 		}
 
 		[Test]
-		public void render_tex_triple_div()
+		public void RenderTexTripleDiv()
 		{
 			Assert.AreEqual(
 				@"<div class='tex'>\displaystyle 1</div><div class='tex'>\displaystyle 2</div><div class='tex'>\displaystyle 3</div>",
@@ -133,19 +124,11 @@ $$3$$".RenderMarkdown(DefaultMdContext).Trim());
 		}
 
 		[Test]
-		public void render_tex_div_surrounded_by_spaces()
+		public void RenderTexDivSurroundedBySpaces()
 		{
 			Assert.AreEqual(
 				@"<div class='tex'>\displaystyle 1</div>",
 				@" $$1$$ ".RenderMarkdown(DefaultMdContext).Trim());
-		}
-
-		[Test]
-		public void add_root_url()
-		{
-			Assert.AreEqual(
-				"<p><a href=\"/Link\">Hello world</a></p>\n",
-				@"[Hello world](/Link)".RenderMarkdown(DefaultMdContext));
 		}
 	}
 }
