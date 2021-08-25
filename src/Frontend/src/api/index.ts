@@ -114,7 +114,10 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 			throw new RequestError(response.status);
 		})
 		.catch(err => {
-			(err as RequestError).showToast();
+			const reqError = err as RequestError;
+			if(reqError.showToast) {
+				reqError.showToast();
+			}
 			throw  err;
 		})
 		.then(value => {
