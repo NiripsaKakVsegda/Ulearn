@@ -324,7 +324,8 @@ class Exercise extends React.Component<Props, State> {
 			}
 
 			const reviewsCompare = (submission.manualChecking?.reviews ?? []).map(getDataFromReviewToCompareChanges);
-			const newReviewsCompare = (currentSubmission.manualChecking?.reviews ?? []).map(getDataFromReviewToCompareChanges);
+			const newReviewsCompare = (currentSubmission.manualChecking?.reviews ?? []).map(
+				getDataFromReviewToCompareChanges);
 
 			if(submission && JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) { // Отличаться должны только в случае изменения комментериев
 				this.setCurrentSubmission(submission,
@@ -690,9 +691,11 @@ class Exercise extends React.Component<Props, State> {
 	): React.ReactNode => {
 		const { currentSubmission, visibleCheckingResponse } = this.state;
 		const { waitingForManualChecking, prohibitFurtherManualChecking, score } = this.props.slideProgress;
+		const { submissions } = this.props;
 		if(!currentSubmission && !visibleCheckingResponse) {
 			return null;
 		}
+		const hasSubmissionWithManualChecking = submissions?.some(s => s.manualChecking != null);
 		return (
 			<ExerciseFormHeader
 				solutionRunStatus={ visibleCheckingResponse ? visibleCheckingResponse.solutionRunStatus : null }
@@ -703,6 +706,7 @@ class Exercise extends React.Component<Props, State> {
 				selectedSubmissionIsLastSuccess={ selectedSubmissionIsLastSuccess }
 				score={ score }
 				submissionColor={ submissionColor }
+				hasSubmissionWithManualChecking={ hasSubmissionWithManualChecking }
 			/>
 		);
 	};
