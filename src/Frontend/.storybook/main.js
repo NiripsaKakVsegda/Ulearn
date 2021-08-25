@@ -27,6 +27,7 @@ module.exports = {
 					{
 						loader: 'css-loader',
 						options: {
+							esModule: false,
 							modules: {
 								mode: 'local',
 								localIdentName: '[name]__[local]--[hash:base64:5]',
@@ -59,6 +60,7 @@ module.exports = {
 					{
 						loader: 'css-loader',
 						options: {
+							esModule: false,
 							modules: {
 								auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
 								mode: 'global',

@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import api from "src/api";
 import configureStore from "src/configureStore";
 import queryString from "query-string";
-import { Provider, connect, } from "react-redux";
+import { connect, Provider, } from "react-redux";
 
 import { ThemeContext, Toast } from "ui";
 import ErrorBoundary from "src/components/common/ErrorBoundary";

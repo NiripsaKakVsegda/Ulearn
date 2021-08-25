@@ -74,7 +74,7 @@ module.exports = merge([base, {
 						loader: 'url-loader',
 						options: {
 							limit: 10000,
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 					{
@@ -97,10 +97,11 @@ module.exports = merge([base, {
 							{
 								loader: "css-loader",
 								options: {
+									esModule: false,
 									sourceMap: shouldUseSourceMap,
 									modules: {
 										mode: 'local',
-										localIdentName: '[hash:base64:5]',
+										localIdentName: '[contenthash:base64:5]',
 									},
 									importLoaders: 2,
 								}
@@ -134,6 +135,7 @@ module.exports = merge([base, {
 							{
 								loader: 'css-loader',
 								options: {
+									esModule: false,
 									modules: {
 										auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
 										mode: 'global',
@@ -161,7 +163,7 @@ module.exports = merge([base, {
 						loader: 'file-loader',
 						exclude: [/\.(js|jsx|mjs|ts|tsx)$/, /\.html$/, /\.json$/],
 						options: {
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 					// ** STOP ** Are you adding a new loader?

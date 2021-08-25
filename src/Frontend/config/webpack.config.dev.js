@@ -8,7 +8,6 @@ const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeM
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
-const FixMessageFormatterPlugin = require("./HotFixFormtWebpackMessagesPlugin.ts");
 const pwaPlugins = require('./pwa.webpack.plugins.ts');
 
 const publicPath = '/';
@@ -23,13 +22,12 @@ module.exports = merge([base, {
 	devtool: 'eval-cheap-module-source-map',
 	entry: {
 		oldBrowser: paths.oldBrowserJs,
-		hmr: 'react-dev-utils/webpackHotDevClient',
 		main: [paths.legacy, paths.appIndexTsx],
 	},
 	output: {
-		filename: '[name].[hash:8].js',
-		sourceMapFilename: '[name].[hash:8].map',
-		chunkFilename: 'chunk_[id].[hash:8].js',
+		filename: '[name].[fullhash:8].js',
+		sourceMapFilename: '[name].[fullhash:8].map',
+		chunkFilename: 'chunk_[id].[fullhash:8].js',
 		publicPath: publicPath,
 		devtoolModuleFilenameTemplate: info =>
 			path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
@@ -57,7 +55,7 @@ module.exports = merge([base, {
 						loader: 'url-loader',
 						options: {
 							limit: 10000,
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 					{
@@ -77,9 +75,10 @@ module.exports = merge([base, {
 							{
 								loader: 'css-loader',
 								options: {
+									esModule: false,
 									modules: {
 										mode: 'local',
-										localIdentName: '[name]__[local]--[hash:5]',
+										localIdentName: '[name]__[local]--[contenthash:5]',
 									},
 									importLoaders: 2,
 								},
@@ -111,6 +110,7 @@ module.exports = merge([base, {
 							{
 								loader: 'css-loader',
 								options: {
+									esModule: false,
 									modules: {
 										auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
 										mode: 'global',
@@ -138,7 +138,7 @@ module.exports = merge([base, {
 						loader: 'file-loader',
 						exclude: [/\.(js|jsx|mjs|ts|tsx)$/, /\.html$/, /\.json$/],
 						options: {
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 				],
@@ -173,8 +173,6 @@ module.exports = merge([base, {
 			resourceRegExp: /^\.\/locale$/,
 			contextRegExp: /moment$/,
 		}),
-		//fix from https://github.com/facebook/create-react-app/issues/9880, should be removed as issue closed
-		new FixMessageFormatterPlugin(),
 		...pwaPlugins,
 	],
 	performance: {
