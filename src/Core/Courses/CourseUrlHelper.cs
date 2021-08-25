@@ -26,8 +26,17 @@ namespace Ulearn.Core.Courses
 				.Where(p => !string.IsNullOrEmpty(p))
 				.ToArray();
 			var url = string.Join("/", ps);
-			var uri = new Uri(url);
-			return uri.AbsoluteUri; // Применяет .. внутри ссылки
+			if (!url.Contains(".."))
+				return url;
+			try
+			{
+				var uri = new Uri(url);
+				return uri.AbsoluteUri; // Применяет .. внутри ссылки
+			}
+			catch (Exception ex)
+			{
+				return url;
+			}
 		}
 	}
 }
