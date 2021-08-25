@@ -139,7 +139,7 @@ namespace Database.Repos
 					return (0, null);
 			}
 
-			var percent = await GetLastReviewPercentForExerciseSlide(courseId, userId);
+			var percent = await GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
 			if (percent == null)
 				return (automaticScore, null);
@@ -151,11 +151,10 @@ namespace Database.Repos
 			return (int)Math.Ceiling(manualCheckingPercent / 100m * scoreWithCodeReview);
 		}
 
-		public async Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, string userId, DateTime? submissionBefore = null)
+		public async Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null)
 		{
 			var query = db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId && c.IsChecked)
-				.Where(c => c.IsChecked);
+				.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked);
 			if (submissionBefore != null)
 				query = query.Where(c => c.Submission.Timestamp < submissionBefore);
 			var lastChecking = await query

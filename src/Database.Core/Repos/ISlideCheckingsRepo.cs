@@ -22,7 +22,7 @@ namespace Database.Repos
 		Task RemoveAttempts(string courseId, Guid slideId, string userId, bool saveChanges = true);
 		Task<bool> IsSlidePassed(string courseId, Guid slideId, string userId);
 		Task<(int Score, int? Percent)> GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId);
-		Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, string userId, DateTime? submissionBefore = null);
+		Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null);
 		Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId);
 		List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits);
 		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;

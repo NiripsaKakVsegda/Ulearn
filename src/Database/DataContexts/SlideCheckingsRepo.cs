@@ -133,7 +133,7 @@ namespace Database.DataContexts
 					return (0, null);
 			}
 
-			var percent = GetLastReviewPercentForExerciseSlide(courseId, userId);
+			var percent = GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
 			if (percent == null)
 				return (automaticScore, null);
@@ -145,10 +145,10 @@ namespace Database.DataContexts
 			return (int)Math.Ceiling(manualCheckingPercent / 100m * scoreWithCodeReview);
 		}
 
-		public int? GetLastReviewPercentForExerciseSlide(string courseId, string userId, DateTime? submissionBefore = null)
+		public int? GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null)
 		{
 			var query = db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId && c.IsChecked)
+				.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked)
 				.Where(c => c.IsChecked);
 			if (submissionBefore != null)
 				query = query.Where(c => c.Submission.Timestamp < submissionBefore);

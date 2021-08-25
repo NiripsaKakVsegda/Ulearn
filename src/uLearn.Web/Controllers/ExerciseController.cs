@@ -490,6 +490,7 @@ namespace uLearn.Web.Controllers
 			var checking = (ManualExerciseChecking)context.ManualChecking;
 			var prevReviewPercent = slideCheckingsRepo.GetLastReviewPercentForExerciseSlide(
 				context.Course.Id,
+				checking.SlideId,
 				checking.UserId,
 				checking.Submission.Timestamp);
 			var model = new ExerciseScoreFormModel (
