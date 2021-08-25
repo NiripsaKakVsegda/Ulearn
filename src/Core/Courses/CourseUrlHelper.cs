@@ -1,18 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace Ulearn.Core.Courses
 {
 	public static class CourseUrlHelper
 	{
-		// Не учитывает возможность /../
+		// filePathRelativeToUnit может содержать .. Еесли будут лишнее, съест часть префикса ссылки.
 		// В качестве baseUrlApi можно передавать HtmlBlock.BaseUrlApiPlaceholder, если это ссылка для HtmlBlock
 		public static string GetAbsoluteUrlToFile(string baseUrlApi, string courseId, string unitPathRelativeToCourse, string filePathRelativeToUnit)
 		{
 			return GetUrlFromParts(baseUrlApi, $"courses/{courseId}/files", unitPathRelativeToCourse, filePathRelativeToUnit);
 		}
 
-		// Не учитывает возможность /../
 		public static string GetAbsoluteUrlToStudentZip(string baseUrlApi, string courseId, Guid slideId, string studentZipName)
 		{
 			return GetUrlFromParts(baseUrlApi, $"slides/{courseId}/{slideId}/exercise/student-zip/{studentZipName}");
@@ -25,7 +25,9 @@ namespace Ulearn.Core.Courses
 				.Select(p => p.Replace('\\', '/').Trim('/'))
 				.Where(p => !string.IsNullOrEmpty(p))
 				.ToArray();
-			return string.Join("/", ps);
+			var url = string.Join("/", ps);
+			var uri = new Uri(url);
+			return uri.AbsoluteUri; // Применяет .. внутри ссылки
 		}
 	}
 }

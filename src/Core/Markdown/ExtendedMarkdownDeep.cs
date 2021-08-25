@@ -20,6 +20,8 @@ namespace Ulearn.Core.Markdown
 		{
 			base.OnPrepareLink(tag);
 			var href = tag.attributes["href"];
+			if (href.StartsWith("./"))
+				href = href.Substring(2);
 
 			var isFileToDownload = fileToDownloadLinkRegex.IsMatch(href);
 			if (isFileToDownload)
