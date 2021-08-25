@@ -37,6 +37,13 @@ namespace Ulearn.Core.Tests.Markdown
 		}
 
 		[Test]
+		public void UrlToFileWithParams()
+		{
+			Assert.That("[a](a.pdf#page1)".RenderMarkdown(defaultMdContext), Does.Contain($"href=\"{apiFilePrefix}/Unit1/a.pdf#page1\""));
+			Assert.That("[a](a.pdf?page=1&bla=2)".RenderMarkdown(defaultMdContext), Does.Contain($"href=\"{apiFilePrefix}/Unit1/a.pdf?page=1&amp;bla=2\""));
+		}
+
+		[Test]
 		public void UrlWithDot()
 		{
 			Assert.That("[a](./link)".RenderMarkdown(defaultMdContext), Does.Contain("href=\"link\""));
