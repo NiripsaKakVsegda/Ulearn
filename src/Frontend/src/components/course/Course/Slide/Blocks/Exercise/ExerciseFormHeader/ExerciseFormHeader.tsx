@@ -67,7 +67,7 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 			hasSubmissionWithManualChecking
 		} = this.props;
 		const { automaticChecking, manualChecking, } = selectedSubmission;
-		const manualCheckingPassed = manualChecking?.percent !== null;
+		const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 		if(automaticChecking) {
 			if(automaticChecking.output === CheckingResult.RuntimeError) {
 				automaticChecking.result = CheckingResult.RuntimeError;
@@ -103,7 +103,7 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 					return null;
 			}
 		} else {
-			const manualCheckingPassed = selectedSubmission.manualChecking?.percent !== null;
+			const manualCheckingPassed = (selectedSubmission.manualChecking?.percent || null) !== null;
 			return ExerciseFormHeader.getTextNoTests(waitingForManualChecking,
 				prohibitFurtherManualChecking, manualCheckingPassed,
 				selectedSubmissionIsLastSuccess);

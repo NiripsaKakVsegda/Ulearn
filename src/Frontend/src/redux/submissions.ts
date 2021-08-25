@@ -1,67 +1,57 @@
 import {
-	SubmissionsAction,
-
-	SUBMISSIONS_ADD_SUBMISSION,
-	SubmissionsAddSubmissionAction,
-
-	REVIEWS_ADD_SCORE_START,
-	REVIEWS_ADD_SCORE_FAIL,
-	ReviewsAddScoreStartAction,
-	ReviewsAddScoreFailAction,
-
-	SUBMISSIONS_LOAD_START,
-	SUBMISSIONS_LOAD_SUCCESS,
-	SUBMISSIONS_LOAD_FAIL,
-	SubmissionsLoadStartAction,
-	SubmissionsLoadSuccessAction,
-	SubmissionsLoadFailAction,
-
+	REVIEWS_ADD_COMMENT_FAIL,
 	REVIEWS_ADD_COMMENT_START,
 	REVIEWS_ADD_COMMENT_SUCCESS,
-	REVIEWS_ADD_COMMENT_FAIL,
-	ReviewsAddCommentStartAction,
-	ReviewsAddCommentSuccessAction,
-	ReviewsAddCommentFailAction,
-
-	REVIEWS_EDIT_START,
-	REVIEWS_EDIT_SUCCESS,
-	REVIEWS_EDIT_FAIL,
-	ReviewsEditStartAction,
-	ReviewsEditSuccessAction,
-	ReviewsEditFailAction,
-
-	REVIEWS_DELETE_COMMENT_START,
-	REVIEWS_DELETE_COMMENT_SUCCESS,
-	REVIEWS_DELETE_COMMENT_FAIL,
-	ReviewsDeleteCommentStartAction,
-	ReviewsDeleteCommentSuccessAction,
-	ReviewsDeleteCommentFailAction,
-
 	REVIEWS_ADD_FAIL,
+	REVIEWS_ADD_SCORE_FAIL,
+	REVIEWS_ADD_SCORE_START,
 	REVIEWS_ADD_START,
 	REVIEWS_ADD_SUCCESS,
-	ReviewsAddFailAction,
-	ReviewsAddStartAction,
-	ReviewsAddSuccessAction,
-
-	REVIEWS_DELETE_START,
-	REVIEWS_DELETE_SUCCESS,
-	REVIEWS_DELETE_FAIL,
-	ReviewsDeleteStartAction,
-	ReviewsDeleteSuccessAction,
-	ReviewsDeleteFailAction,
-
-	SUBMISSIONS_ENABLE_MANUAL_CHECKING_START,
-	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
-	SubmissionsEnableManualCheckingStartAction,
-	SubmissionsEnableManualCheckingFailAction,
-
+	REVIEWS_ASSIGN_BOT_FAIL,
 	REVIEWS_ASSIGN_BOT_START,
 	REVIEWS_ASSIGN_BOT_SUCCESS,
-	REVIEWS_ASSIGN_BOT_FAIL,
+	REVIEWS_DELETE_COMMENT_FAIL,
+	REVIEWS_DELETE_COMMENT_START,
+	REVIEWS_DELETE_COMMENT_SUCCESS,
+	REVIEWS_DELETE_FAIL,
+	REVIEWS_DELETE_START,
+	REVIEWS_DELETE_SUCCESS,
+	REVIEWS_EDIT_FAIL,
+	REVIEWS_EDIT_START,
+	REVIEWS_EDIT_SUCCESS,
+	ReviewsAddCommentFailAction,
+	ReviewsAddCommentStartAction,
+	ReviewsAddCommentSuccessAction,
+	ReviewsAddFailAction,
+	ReviewsAddScoreFailAction,
+	ReviewsAddScoreStartAction,
+	ReviewsAddStartAction,
+	ReviewsAddSuccessAction,
+	ReviewsAssignBotFailAction,
 	ReviewsAssignBotStartAction,
 	ReviewsAssignBotSuccessAction,
-	ReviewsAssignBotFailAction,
+	ReviewsDeleteCommentFailAction,
+	ReviewsDeleteCommentStartAction,
+	ReviewsDeleteCommentSuccessAction,
+	ReviewsDeleteFailAction,
+	ReviewsDeleteStartAction,
+	ReviewsDeleteSuccessAction,
+	ReviewsEditFailAction,
+	ReviewsEditStartAction,
+	ReviewsEditSuccessAction,
+	SUBMISSIONS_ADD_SUBMISSION,
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL,
+	SUBMISSIONS_ENABLE_MANUAL_CHECKING_START,
+	SUBMISSIONS_LOAD_FAIL,
+	SUBMISSIONS_LOAD_START,
+	SUBMISSIONS_LOAD_SUCCESS,
+	SubmissionsAction,
+	SubmissionsAddSubmissionAction,
+	SubmissionsEnableManualCheckingFailAction,
+	SubmissionsEnableManualCheckingStartAction,
+	SubmissionsLoadFailAction,
+	SubmissionsLoadStartAction,
+	SubmissionsLoadSuccessAction,
 } from 'src/actions/submissions.types';
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse, } from "src/models/exercise";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
@@ -127,8 +117,12 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 						...newState.submissionsById,
 						[submission.id]: {
 							...submission,
-							manualChecking: { ...submission.manualChecking, reviews: [] },
-							automaticChecking: { ...submission.automaticChecking, reviews: null, }
+							manualChecking: submission.manualChecking
+								? { ...submission.manualChecking, reviews: [] }
+								: null,
+							automaticChecking: submission.automaticChecking
+								? { ...submission.automaticChecking, reviews: null, }
+								: null,
 						},
 					},
 					reviewsBySubmissionId: {
@@ -215,8 +209,12 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 			const submissionsByIds = submissions.reduce((pv, cv) => {
 				pv[cv.id] = {
 					...cv,
-					manualChecking: cv.manualChecking ? { ...cv.manualChecking, reviews: [] } : null,
-					automaticChecking: cv.automaticChecking ? { ...cv.automaticChecking, reviews: null, } : null,
+					manualChecking: cv.manualChecking
+						? { ...cv.manualChecking, reviews: [] }
+						: null,
+					automaticChecking: cv.automaticChecking
+						? { ...cv.automaticChecking, reviews: null, }
+						: null,
 				} as SubmissionInfoRedux;
 				return pv;
 			}, {} as { [submissionId: string]: SubmissionInfoRedux });
