@@ -452,6 +452,7 @@ class Exercise extends React.Component<Props, State> {
 		const submissionColor = getSubmissionColor(visibleCheckingResponse?.solutionRunStatus,
 			automaticChecking?.result,
 			hasSuccessSubmission(submissions), selectedSubmissionIsLast, selectedSubmissionIsLastSuccess,
+			slideProgress.waitingForManualChecking,
 			slideProgress.prohibitFurtherManualChecking, slideProgress.isSkipped, isMaxScore);
 
 		const wrapperClassName = classNames(

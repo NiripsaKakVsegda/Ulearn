@@ -28,8 +28,9 @@ function getSubmissionColor(
 	solutionRunStatus: SolutionRunStatus | undefined,
 	checkingResult: CheckingResult | undefined, // undefined если automaticChecking null
 	hasSuccessSolution: boolean, // Задача прошла автопроверку или автопроверки нет?
-	selectedSubmissionIsLast: boolean, // Это последнее решение, прошедшее тесты?
+	selectedSubmissionIsLast: boolean, // Это последнее решение?
 	selectedSubmissionIsLastSuccess: boolean, // Это последнее решение, прошедшее тесты?
+	waitingForManualChecking: boolean,
 	prohibitFurtherManualChecking: boolean,
 	isSkipped: boolean,
 	isMaxScore: boolean, // Балл студента равен максимальному за задачу
@@ -45,11 +46,11 @@ function getSubmissionColor(
 		return selectedSubmissionIsLast ? SubmissionColor.MaxResult : SubmissionColor.Message;
 	}
 	if(selectedSubmissionIsLastSuccess) {
-		return !isMaxScore && !prohibitFurtherManualChecking
+		return !isMaxScore && !prohibitFurtherManualChecking && waitingForManualChecking
 			? SubmissionColor.NeedImprovements
 			: SubmissionColor.MaxResult;
 	}
-	return selectedSubmissionIsLast && !isMaxScore && !prohibitFurtherManualChecking
+	return selectedSubmissionIsLast && !isMaxScore && !prohibitFurtherManualChecking && waitingForManualChecking
 		? SubmissionColor.NeedImprovements
 		: SubmissionColor.Message;
 }
