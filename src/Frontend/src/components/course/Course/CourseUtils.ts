@@ -350,14 +350,18 @@ export const getSubmissionsWithReviews = (
 
 			return ({
 				...r,
-				manualChecking: {
-					...r.manualChecking,
-					reviews: reviews?.manualCheckingReviews || [],
-				},
-				automaticChecking: {
-					...r.automaticChecking,
-					reviews: reviews?.automaticCheckingReviews || null,
-				},
+				manualChecking: r.manualChecking
+					? {
+						...r.manualChecking,
+						reviews: reviews?.manualCheckingReviews || [],
+					}
+					: null,
+				automaticChecking: r.automaticChecking
+					? {
+						...r.automaticChecking,
+						reviews: reviews?.automaticCheckingReviews || null,
+					}
+					: null,
 			} as SubmissionInfo);
 		});
 };
