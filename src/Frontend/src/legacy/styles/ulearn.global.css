@@ -2590,6 +2590,7 @@ table.tablesorter .headerSortDown .tablesorter-header-inner:after {
 	height: 19px;
 	left: 0;
 	margin-left: -20px;
+	margin-top: 3px;
 	border: 1px solid #cccccc;
 	border-radius: 3px;
 	background-color: #fff;
