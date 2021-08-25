@@ -2842,6 +2842,7 @@ table.tablesorter .headerSortDown .tablesorter-header-inner:after {
 	height: 17px;
 	left: 0;
 	margin-left: -20px;
+	margin-top: 4px;
 	border: 1px solid #cccccc;
 	border-radius: 50%;
 	background-color: #fff;
@@ -2859,6 +2860,7 @@ table.tablesorter .headerSortDown .tablesorter-header-inner:after {
 	left: 3px;
 	top: 3px;
 	margin-left: -20px;
+	margin-top: 4px;
 	border-radius: 50%;
 	background-color: #555555;
 	-webkit-transform: scale(0, 0);
