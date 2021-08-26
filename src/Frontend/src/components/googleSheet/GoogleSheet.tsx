@@ -1,35 +1,40 @@
-﻿import React, { RefObject } from "react";
-import { getAllCourseTasks, GoogleSheetsExportTaskResponse, updateCourseTask, exportTaskNow, deleteTask } from "../../api/googleSheet";
+﻿import React from "react";
 import CourseLoader from "../course/Course/CourseLoader";
 import { Button, Checkbox, DatePicker, Input, Switcher } from "ui";
 import { Gapped } from "@skbkontur/react-ui";
 import moment from "moment";
-import { convertDefaultTimezoneToLocal } from "../../utils/momentUtils";
-import { SlideUserProgress } from "../../models/userProgress";
+import { clone } from "src/utils/jsonExtensions";
+import { GoogleSheetsExportTaskListResponse, GoogleSheetsExportTaskResponse } from "src/models/googleSheet";
+import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
 
 import styles from './googleSheet.less';
 import texts from './googleSheet.texts';
 
-let re = /^https:\/\/docs.google.com\/spreadsheets\/d\/(.)+\/edit#gid=(\d)+$/;
-
-const courseId = 'basicprogramming';
-
-
-export interface Props {
+export interface Props extends Api {
 	columnName: string;
+	courseId: string;
+}
+
+interface Api {
+	deleteTask: (courseId: string, taskId: number) => Promise<GoogleSheetsExportTaskResponse>;
+	exportTaskNow: (taskId: number) => Promise<GoogleSheetsExportTaskResponse>;
+	getAllCourseTasks: (courseId: string) => Promise<GoogleSheetsExportTaskListResponse>;
+	updateCourseTask: (taskId: number, fieldsToUpdate: any) => Promise<GoogleSheetsExportTaskResponse>;
 }
 
 export interface State {
 	tasks?: GoogleSheetsExportTaskResponse[];
 	currentOpenedTaskId: number;
-	actualTasks?: ActualTask;
+	actualTasks?: ActualTasks;
 }
 
-interface ActualTask {
+interface ActualTasks {
 	[id: number]: GoogleSheetsExportTaskResponse;
 }
 
 class GoogleSheet extends React.Component<Props, State> {
+	private sheetRegex = /^https:\/\/docs.google.com\/spreadsheets\/d\/(.)+\/edit#gid=(\d)+$/;
+
 	constructor(props: Props) {
 		super(props);
 
@@ -39,44 +44,45 @@ class GoogleSheet extends React.Component<Props, State> {
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
+		const { courseId, getAllCourseTasks, } = this.props;
+
 		getAllCourseTasks(courseId)
 			.then(r => {
 				this.setState({
 					tasks: r.googleSheetsExportTasks,
 					actualTasks: r.googleSheetsExportTasks
 						.reduce((previousValue, currentValue) => {
-							previousValue[currentValue.id] = JSON.parse(
-								JSON.stringify(currentValue)) as GoogleSheetsExportTaskResponse;
+							previousValue[currentValue.id] = clone(currentValue);
 							return previousValue;
-						}, {} as ActualTask)
+						}, {} as ActualTasks)
 				});
 			});
 	}
 
 	isTasksEqual(task: GoogleSheetsExportTaskResponse,
 		actualTask: GoogleSheetsExportTaskResponse
-	) {
+	): boolean {
 		return task.isVisibleForStudents === actualTask.isVisibleForStudents &&
 			task.refreshStartDate === actualTask.refreshStartDate &&
 			task.refreshEndDate === actualTask.refreshEndDate &&
-			task.refreshTimeInMinutes === actualTask.refreshTimeInMinutes && 
+			task.refreshTimeInMinutes === actualTask.refreshTimeInMinutes &&
 			task.spreadsheetId == actualTask.spreadsheetId &&
 			task.listId == actualTask.listId;
 	}
-	
-	getOpenedTaskCopy() {
+
+	getOpenedTaskCopy(): GoogleSheetsExportTaskResponse | void {
 		const { currentOpenedTaskId, actualTasks, } = this.state;
 		if(!actualTasks) {
 			return;
 		}
-		return JSON.parse(
-			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+
+		return clone(actualTasks[currentOpenedTaskId]);
 	}
 
-	changeVisibility = () => {
-		const {actualTasks} = this.state;
-		const task = this.getOpenedTaskCopy()
+	changeVisibility = (): void => {
+		const { actualTasks } = this.state;
+		const task = this.getOpenedTaskCopy();
 		if(task) {
 			this.setState({
 				actualTasks: {
@@ -87,9 +93,9 @@ class GoogleSheet extends React.Component<Props, State> {
 		}
 	};
 
-	changeRefreshInterval = (value: string) => {
-		const {actualTasks} = this.state;
-		const task = this.getOpenedTaskCopy()
+	changeRefreshInterval = (value: string): void => {
+		const { actualTasks } = this.state;
+		const task = this.getOpenedTaskCopy();
 		if(task) {
 			this.setState({
 				actualTasks: {
@@ -100,70 +106,76 @@ class GoogleSheet extends React.Component<Props, State> {
 		}
 	};
 
-	changeRefreshStartDate = (value: string) => {
-		const {actualTasks} = this.state;
-		const task = this.getOpenedTaskCopy()
+	changeRefreshStartDate = (value: string): void => {
+		const { actualTasks } = this.state;
+		const task = this.getOpenedTaskCopy();
 		if(task) {
 			this.setState({
 				actualTasks: {
 					...actualTasks,
 					[task.id]: {
 						...task,
-						refreshStartDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format())
+						refreshStartDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format()).format()
 					}
 				}
 			});
 		}
 	};
 
-	changeRefreshEndDate = (value: string) => {
-		const {actualTasks} = this.state;
-		const task = this.getOpenedTaskCopy()
+	changeRefreshEndDate = (value: string): void => {
+		const { actualTasks } = this.state;
+		const task = this.getOpenedTaskCopy();
 		if(task) {
 			this.setState({
 				actualTasks: {
 					...actualTasks,
 					[task.id]: {
 						...task,
-						refreshEndDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format())
+						refreshEndDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format()).format()
 					}
 				}
 			});
 		}
 	};
 
-	changeLink = (value: string) => {
-		const {actualTasks} = this.state;
-		const task = this.getOpenedTaskCopy()
-		if (re.test(value)) {
-			let [spreadsheetId, listId] = value.split('/d/')[1].split('/edit#gid=');
+	changeLink = (value: string): void => {
+		const { actualTasks } = this.state;
+		const task = this.getOpenedTaskCopy();
+		if(this.sheetRegex.test(value)) {
+			const [spreadsheetId, listId] = value.split('/d/')[1].split('/edit#gid=');
 			if(task) {
 				this.setState({
 					actualTasks: {
 						...actualTasks,
-						[task.id]: { ...task, spreadsheetId: spreadsheetId, listId: listId }
+						[task.id]: { ...task, spreadsheetId: spreadsheetId, listId: parseInt(listId) }
 					}
 				});
 			}
 		}
 	};
-	
-	isLinkMatchRegexp = (value: string) => {
-		return re.test(value);
-	}
+
+	isLinkMatchRegexp = (value: string): boolean => {
+		return this.sheetRegex.test(value);
+	};
+
+	buildLink = (task: GoogleSheetsExportTaskResponse): string => {
+		return `https://docs.google.com/spreadsheets/d/${ task.spreadsheetId }/edit#gid=${ task.listId }`;
+	};
 
 
-	openTask = (event: React.MouseEvent) => {
+	openTask = (event: React.MouseEvent): void => {
 		this.setState({ currentOpenedTaskId: parseInt(event.currentTarget.id, 10) });
 	};
 
-	saveTask = () => {
+	saveTask = (): void => {
 		const { currentOpenedTaskId, actualTasks, } = this.state;
+		const { updateCourseTask, } = this.props;
+
 		if(!actualTasks) {
 			return;
 		}
-		const task = JSON.parse(
-			JSON.stringify(actualTasks[currentOpenedTaskId])) as GoogleSheetsExportTaskResponse;
+		const task = clone(actualTasks[currentOpenedTaskId]);
+
 		if(task) {
 			this.setState({
 				tasks: this.state.tasks?.map(e => e.id === task.id ? task : e)
@@ -171,18 +183,22 @@ class GoogleSheet extends React.Component<Props, State> {
 		}
 		updateCourseTask(currentOpenedTaskId, actualTasks[currentOpenedTaskId]);
 	};
-	
-	exportTask = () => {
-		const { currentOpenedTaskId } = this.state;
-		exportTaskNow(currentOpenedTaskId);
-	}
-	
-	deleteTask = () =>{
-		const { currentOpenedTaskId } = this.state;
-		deleteTask(currentOpenedTaskId, courseId);
-	}
 
-	render() {
+	exportTask = (): void => {
+		const { currentOpenedTaskId } = this.state;
+		const { exportTaskNow } = this.props;
+
+		exportTaskNow(currentOpenedTaskId);
+	};
+
+	deleteTask = (): void => {
+		const { currentOpenedTaskId } = this.state;
+		const { deleteTask, courseId, } = this.props;
+
+		deleteTask(courseId, currentOpenedTaskId);
+	};
+
+	render(): React.ReactElement {
 		const { tasks, actualTasks, currentOpenedTaskId } = this.state;
 
 		if(!tasks || !actualTasks) {
@@ -199,14 +215,14 @@ class GoogleSheet extends React.Component<Props, State> {
 
 	renderTasks = (
 		tasks: GoogleSheetsExportTaskResponse[],
-		actualTasks: ActualTask,
+		actualTasks: ActualTasks,
 		currentOpenedTaskId: number,
-	) => {
+	): React.ReactNode => {
 		return tasks.map(t =>
 			currentOpenedTaskId === t.id
 				?
 				<Gapped gap={ 8 } vertical className={ styles.wrapper }>
-				
+
 				<span>
 					{ t.groups.map(g => g.name).join(', ') }
 				</span>
@@ -242,14 +258,14 @@ class GoogleSheet extends React.Component<Props, State> {
 					</Gapped>
 
 					<Gapped gap={ 8 }>
-						<label> {actualTasks[t.id].authorInfo.visibleName }</label>
+						<label> { actualTasks[t.id].authorInfo.visibleName }</label>
 					</Gapped>
 
 					<Gapped gap={ 8 }>
 						<Input
 							selectAllOnFocus
-							error={ !this.isLinkMatchRegexp(`https://docs.google.com/spreadsheets/d/${ actualTasks[t.id].spreadsheetId }/edit#gid=${ actualTasks[t.id].listId }`) }
-							width={ 800 } 
+							error={ !this.isLinkMatchRegexp(this.buildLink(actualTasks[t.id])) }
+							width={ 800 }
 							value={ `https://docs.google.com/spreadsheets/d/${ actualTasks[t.id].spreadsheetId }/edit#gid=${ actualTasks[t.id].listId }` }
 							onValueChange={ this.changeLink }/>
 					</Gapped>

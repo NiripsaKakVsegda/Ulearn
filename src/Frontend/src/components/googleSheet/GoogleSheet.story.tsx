@@ -1,8 +1,9 @@
-﻿import GoogleSheet, {Props} from './GoogleSheet';
+﻿import GoogleSheet, { Props } from './GoogleSheet';
 import { Meta, Story } from "@storybook/react";
 import React from "react";
+import { deleteTask, exportTaskNow, getAllCourseTasks, updateCourseTask } from "src/api/googleSheet";
 
-const ListTemplate: Story<{ items: {props: Props, header: string,}[] }>
+const ListTemplate: Story<{ items: { props: Props, header: string, }[] }>
 	= ({ items }) => {
 	return <>
 		{ items.map((item) =>
@@ -17,10 +18,17 @@ const ListTemplate: Story<{ items: {props: Props, header: string,}[] }>
 export const Default = ListTemplate.bind({});
 
 Default.args = {
-	items:[
+	items: [
 		{
-			props:{columnName:'title'},
-			header:'Default',
+			props: {
+				courseId: 'basicprogramming',
+				columnName: 'title',
+				deleteTask,
+				exportTaskNow,
+				getAllCourseTasks,
+				updateCourseTask,
+			},
+			header: 'Default',
 		}
 	]
 };

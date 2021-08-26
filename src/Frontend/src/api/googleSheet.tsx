@@ -1,10 +1,6 @@
 ﻿import api from "./index";
 import { buildQuery } from "../utils";
-import {
-	GoogleSheetsExportTaskListResponse,
-	GoogleSheetsExportTaskParams,
-	GoogleSheetsExportTaskResponse
-} from "../models/googleSheet";
+import { GoogleSheetsExportTaskListResponse, GoogleSheetsExportTaskResponse } from "../models/googleSheet";
 
 const courseStatisticsGoogleSheet = `course-statistics/export/to-google-sheets/tasks`;
 
@@ -25,17 +21,17 @@ export function updateCourseTask(
 		listId: number
 	}
 ): Promise<GoogleSheetsExportTaskResponse> {
-	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
+	const url = `${ courseStatisticsGoogleSheet }/${ taskId }`;
 	return api.patch(url,
 		api.createRequestParams(params));
 }
 
-export function exportTaskNow(taskId: number) : Promise<GoogleSheetsExportTaskResponse>{
-	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
+export function exportTaskNow(taskId: number): Promise<GoogleSheetsExportTaskResponse> {
+	const url = `${ courseStatisticsGoogleSheet }/${ taskId }`;
 	return api.post(url);
 }
 
-export function deleteTask(taskId: number, courseId: string) : Promise<GoogleSheetsExportTaskResponse>{
-	const url = `${courseStatisticsGoogleSheet}/${taskId}`;
-	return api.delete(url, api.createRequestParams( {courseId: courseId}));
+export function deleteTask(courseId: string, taskId: number,): Promise<GoogleSheetsExportTaskResponse> {
+	const url = `${ courseStatisticsGoogleSheet }/${ taskId }`;
+	return api.delete(url, api.createRequestParams({ courseId: courseId }));
 }
