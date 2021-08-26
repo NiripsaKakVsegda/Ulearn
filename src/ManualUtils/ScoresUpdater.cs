@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Database;
 using Database.Models.Quizzes;
 using Database.Repos;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Quizzes;
@@ -15,6 +16,39 @@ namespace ManualUtils
 	public static class ScoresUpdater
 	{
 		private const int MaxFillInBlockSize = 8 * 1024;
+
+		public static async Task UpdateVisitsForExercises(IServiceProvider serviceProvider, DateTime from)
+		{
+			var db = serviceProvider.GetService<UlearnDb>();
+			var courseStorage = serviceProvider.GetService<ICourseStorage>();
+			var visitsRepo = serviceProvider.GetService<IVisitsRepo>();
+
+			var keys = (await db.UserExerciseSubmissions
+				.Where(s => s.AutomaticCheckingIsRightAnswer && (s.Timestamp > from || (s.ManualChecking != null && s.ManualChecking.Timestamp > from)))
+				.Select(s => new { s.CourseId, s.SlideId, s.UserId })
+				.Distinct()
+				.OrderBy(s => s.CourseId)
+				.ThenBy(s => s.SlideId)
+				.ThenBy(s => s.UserId)
+				.ToListAsync())
+				.Select(s => (s.CourseId, s.SlideId, s.UserId))
+				.ToList();
+
+			Console.WriteLine($"records to update count: {keys.Count}");
+
+			var i = 0;
+			foreach (var (courseId, slideId, userId) in keys)
+			{
+				var course = courseStorage.GetCourse(courseId);
+				var slide = course.FindSlideByIdNotSafe(slideId);
+				if (slide == null)
+					continue;
+				await visitsRepo.UpdateScoreForVisit(courseId, slide, userId);
+				i++;
+				if (i % 10 == 0)
+					Console.WriteLine($"{i}/{keys.Count}"); 
+			}
+		}
 
 		// Обновляет пройденные тесты с нулевым баллом
 		public static async Task UpdateTests(IServiceProvider serviceProvider, string courseId)
@@ -66,6 +100,7 @@ namespace ManualUtils
 
 					await visitsRepo.UpdateScoreForVisit(courseId, test, visit.UserId);
 				}
+
 				Console.WriteLine(test.Id);
 			}
 		}

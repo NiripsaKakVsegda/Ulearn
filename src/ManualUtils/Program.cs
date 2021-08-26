@@ -130,6 +130,7 @@ namespace ManualUtils
 			// await BuildFavouriteReviewsFromReviews(serviceProvider);
 			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
 			// await SetPercentByScore(serviceProvider);
+			// await ScoresUpdater.UpdateVisitsForExercises(serviceProvider, new DateTime(2021, 8, 15));
 		}
 
 		private static void GenerateUpdateSequences()
