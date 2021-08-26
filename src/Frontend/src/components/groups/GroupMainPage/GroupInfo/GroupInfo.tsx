@@ -106,15 +106,11 @@ function GroupInfo({ group, courseId, deleteGroup, toggleArchived, }: Props): Re
 
 		return (
 			<div className={ styles["group-action"] }>
-				{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */ }
-				{/* @ts-ignore*/ }
 				<Mobile>
 					<Kebab size="medium" positions={ ["left top"] } disableAnimations={ true }>
 						{ menuItems }
 					</Kebab>
 				</Mobile>
-				{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */ }
-				{/* @ts-ignore*/ }
 				<NotMobile>
 					<Kebab size="large" positions={ ["bottom right"] } disableAnimations={ false }>
 						{ menuItems }
