@@ -11,7 +11,7 @@ export default function renderSimpleMarkdown(text: string,
 	text = text.replace(/(?:<br\/?>)*```(?:<br\/?>)*(.+?)```(?:<br\/?>)*/g, '<pre>$1</pre>');
 
 	/* `Inline code` */
-	text = text.replace(/(?<=(?:\s|^|>))`(.+?)`(?!\d)/g, `<span class="inline-pre">$1</span>`);
+	text = text.replace(/`([^`\n\r]+)`/g, `<span class="inline-pre">$1</span>`);
 
 	if(removeOptions && removeOptions.removeBr) {
 		text = text.replace(/<br\/>/g, ` `);
