@@ -11,7 +11,7 @@ import styles from "./Marks.less";
 
 
 interface MarksProps {
-	authorGroups: ShortGroupInfo[];
+	authorGroups: ShortGroupInfo[] | null;
 	courseId: string;
 	comment: Comment;
 }

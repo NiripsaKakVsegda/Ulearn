@@ -12,8 +12,9 @@ import CourseFlashcardsPage from 'src/pages/course/CourseFlashcardsPage.js';
 import PreviewUnitPageFromAllCourse from "src/components/flashcards/UnitPage/PreviewUnitPageFromAllCourse";
 import SlideHeader from "./Slide/SlideHeader/SlideHeader";
 import { BlocksWrapper } from "src/components/course/Course/Slide/Blocks";
+import NavigationButtons from "./NavigationButtons";
 import CommentsView from "src/components/comments/CommentsView";
-import Slide from './Slide/Slide';
+import Slide from './Slide/Slide.redux';
 
 import { UrlError } from "src/components/common/Error/NotFoundErrorBoundary";
 import Error404 from "src/components/common/Error/Error404";
@@ -23,21 +24,24 @@ import { Edit, } from "icons";
 import CourseLoader from "./CourseLoader";
 
 import {
-	CourseSlideInfo,
+	SlideInfo,
 	findNextUnit,
 	findUnitIdBySlideId,
 	getCourseStatistics,
-	getSlideInfoById,
 } from "./CourseUtils";
 import { buildQuery } from "src/utils";
 import { UserInfo, UserRoles } from "src/utils/courseRoles";
 import documentReadyFunctions from "src/legacy/legacy";
 import runLegacy from "src/legacy/legacyRunner";
 
-import { constructPathToSlide, flashcards, flashcardsPreview, signalrWS, } from 'src/consts/routes';
+import {
+	adminCheckingQueuePath,
+	constructPathToSlide,
+	signalrWS,
+} from 'src/consts/routes';
 import { ShortSlideInfo, SlideType, } from 'src/models/slide';
 import Meta from "src/consts/Meta";
-import { CourseInfo, PageInfo, UnitInfo, UnitsInfo } from "src/models/course";
+import { CourseInfo, UnitInfo, UnitsInfo } from "src/models/course";
 import { SlideUserProgress, } from "src/models/userProgress";
 import { AccountState } from "src/redux/account";
 import { CourseRoleType } from "src/consts/accessType";
@@ -53,20 +57,13 @@ import {
 
 import styles from "./Course.less";
 
-const slideNavigationButtonTitles = {
-	next: "Далее",
-	previous: "Назад",
-	nextModule: "Следующий модуль",
-	previousModule: "Предыдущий модуль",
-};
-
 interface State {
-	Page?: React.ReactNode;
+	Page: React.ComponentType | React.ElementType;
 	title?: string;
 	highlightedUnit: string | null;
-	currentSlideInfo: CourseSlideInfo | null;
 	currentCourseId: string;
 	currentSlideId?: string;
+	currentSlideType?: SlideType;
 	meta: Meta;
 
 	openedUnit?: UnitInfo;
@@ -76,7 +73,7 @@ interface State {
 
 interface CourseProps extends RouteComponentProps {
 	courseId: string;
-	slideId?: string;
+	slideInfo: SlideInfo;
 
 	courseInfo: CourseInfo;
 	user: AccountState;
@@ -84,7 +81,6 @@ interface CourseProps extends RouteComponentProps {
 	units: UnitsInfo | null;
 	courseLoadingErrorStatus: string | null;
 	loadedCourseIds: Record<string, unknown>;
-	pageInfo: PageInfo;
 	flashcardsStatisticsByUnits?: { [unitId: string]: FlashcardsStatistics },
 	flashcardsLoading: boolean;
 
@@ -113,11 +109,13 @@ class Course extends Component<CourseProps, State> {
 
 	constructor(props: CourseProps) {
 		super(props);
+		const { slideInfo, courseInfo, } = props;
+		const Page = Course.getOpenedPage(courseInfo, slideInfo.slideType);
 
 		this.state = {
+			Page,
 			currentCourseId: "",
 			currentSlideId: "",
-			currentSlideInfo: null,
 			highlightedUnit: null,
 			meta: defaultMeta,
 			courseStatistics: {
@@ -200,8 +198,9 @@ class Course extends Component<CourseProps, State> {
 			loadFlashcards,
 			flashcardsLoading,
 			flashcardsStatisticsByUnits,
+			slideInfo,
 		} = this.props;
-		const { title, currentSlideInfo, } = this.state;
+		const { title, } = this.state;
 		const { isAuthenticated, } = user;
 
 		if(isAuthenticated !== prevProps.user.isAuthenticated && user.id) {
@@ -220,15 +219,15 @@ class Course extends Component<CourseProps, State> {
 			}
 		}
 
-		if(!prevProps.progress && progress && !isHijacked && currentSlideInfo && currentSlideInfo.current && currentSlideInfo.current.id) {
-			updateVisitedSlide(courseId, currentSlideInfo.current.id);
+		if(!prevProps.progress && progress && !isHijacked && slideInfo.slideId) {
+			updateVisitedSlide(courseId, slideInfo.slideId);
 		}
 	}
 
 	static getDerivedStateFromProps(props: CourseProps, state: State): State | null {
 		const {
 			courseId,
-			slideId,
+			slideInfo,
 			units,
 			enterToCourse,
 			courseInfo,
@@ -246,17 +245,18 @@ class Course extends Component<CourseProps, State> {
 		//TMP TODO rozentor: remove next line if orrange approved
 		newStats.courseProgress.inProgress = 0;
 
-		if(state.currentCourseId !== courseId || state.currentSlideId !== slideId) {
+		const slideId = slideInfo.slideId;
+
+		if(state.currentCourseId !== courseId || state.currentSlideId !== slideId || slideInfo.slideType !== state.currentSlideType) {
 			enterToCourse(courseId);
 			const openUnitId = findUnitIdBySlideId(slideId, courseInfo);
 			const openedUnit = openUnitId ? units[openUnitId] : undefined;
 			window.scrollTo(0, 0);
 
-			const slideInfo = getSlideInfoById(props.slideId, props.courseInfo);
-			const Page = Course.getOpenedPage(props.slideId, props.courseInfo, slideInfo?.slideType, props.pageInfo);
-			const title = Course.getTitle(slideInfo?.current?.title);
-			if(slideInfo && slideInfo.current && slideInfo.current.id && progress && !isHijacked) {
-				updateVisitedSlide(courseId, slideInfo.current.id);
+			const Page = Course.getOpenedPage(props.courseInfo, slideInfo?.slideType);
+			const title = Course.getTitle(slideInfo.navigationInfo?.current.title);
+			if(slideId && progress && !isHijacked) {
+				updateVisitedSlide(courseId, slideId);
 			}
 
 			return {
@@ -264,8 +264,8 @@ class Course extends Component<CourseProps, State> {
 				Page,
 				title,
 				currentSlideId: slideId,
-				currentSlideInfo: slideInfo,
 				currentCourseId: courseId,
+				currentSlideType: slideInfo.slideType,
 				highlightedUnit: openUnitId || null,
 				openedUnit,
 				courseStatistics: newStats,
@@ -283,16 +283,14 @@ class Course extends Component<CourseProps, State> {
 	}
 
 	static getOpenedPage = (
-		slideId: string | undefined,
 		courseInfo: CourseInfo | undefined,
 		slideType: SlideType | undefined,
-		pageInfo: PageInfo
-	): React.ReactNode => {
-		if(slideId === flashcardsPreview) {
+	): React.ComponentType | React.ElementType => {
+		if(slideType === SlideType.PreviewFlashcards) {
 			return PreviewUnitPageFromAllCourse;
 		}
 
-		if(slideId === flashcards) {
+		if(slideType === SlideType.CourseFlashcards) {
 			return CourseFlashcardsPage;
 		}
 
@@ -309,8 +307,7 @@ class Course extends Component<CourseProps, State> {
 		}
 
 		if(slideType &&
-			(slideType === SlideType.Lesson
-				|| (slideType === SlideType.Exercise && !pageInfo.isReview))) {
+			(slideType === SlideType.Lesson || (slideType === SlideType.Exercise))) {
 			return Slide;
 		}
 
@@ -338,7 +335,7 @@ class Course extends Component<CourseProps, State> {
 		const {
 			courseInfo,
 			courseLoadingErrorStatus,
-			pageInfo: { isNavigationVisible, },
+			slideInfo: { isNavigationVisible, },
 			navigationOpened,
 			flashcardsStatisticsByUnits,
 		} = this.props;
@@ -374,17 +371,20 @@ class Course extends Component<CourseProps, State> {
 	}
 
 	renderSlide(): React.ReactElement {
-		const { pageInfo: { isNavigationVisible, isReview, isLti, }, user, courseId, isStudentMode, } = this.props;
-		const { currentSlideInfo, currentSlideId, currentCourseId, Page, title, openedUnit, } = this.state;
+		const { user, courseId, isStudentMode, slideInfo, } = this.props;
+		const { Page, title, openedUnit, } = this.state;
+
+		const { isNavigationVisible, isReview, isLti } = slideInfo;
 
 		const wrapperClassName = classnames(
 			styles.rootWrapper,
-			{ [styles.withoutNavigation]: !isNavigationVisible }, // TODO remove isNavMenuVisible flag
+			{ [styles.review]: isReview },
+			{ [styles.lti]: isLti },
 			{ [styles.forStudents]: isNavigationVisible && isStudentMode },
 		);
 
-		const slideInfo = currentSlideInfo
-			? currentSlideInfo.current
+		const currentSlideInfo = slideInfo.navigationInfo
+			? slideInfo.navigationInfo.current
 			: null;
 
 		const { isSystemAdministrator, roleByCourse } = user;
@@ -395,41 +395,39 @@ class Course extends Component<CourseProps, State> {
 		};
 		return (
 			<main className={ wrapperClassName }>
+				{ isReview &&
+				<label className={ styles.reviewReturnToQueueLink }>
+					<Link to={ adminCheckingQueuePath + buildQuery({
+						courseId,
+						slideId: slideInfo.query.queueSlideId || undefined,
+						group: slideInfo.query.group || undefined,
+						done: slideInfo.query.done,
+					}) }>
+						← Код-ревью и проверка тестов
+					</Link>
+				</label> }
 				{ (isNavigationVisible || isReview) && title &&
 				<h1 className={ styles.title }>
 					{ title }
-					{ slideInfo && slideInfo.gitEditLink && this.renderGitEditLink(slideInfo) }
+					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 				</h1> }
 				<div className={ styles.slide }>
-					{ isNavigationVisible && !isStudentMode && <SlideHeader
-						courseId={ courseId }
-						slideId={ currentSlideId || '' }
-						isHiddenSlide={ slideInfo && slideInfo.hide || false }
-						slideType={ currentSlideInfo?.slideType }
+					{ isNavigationVisible && !isStudentMode &&
+					<SlideHeader
+						slideInfo={ slideInfo }
 						userRoles={ userRoles }
 						openUnitId={ openedUnit?.id }
 					/> }
 					{
 						Page === Slide
-							?
-							slideInfo && <Slide
-								slideId={ currentSlideId }
-								courseId={ currentCourseId }
-								showHiddenBlocks={ !isStudentMode }
-								slideInfo={ slideInfo }
-								isLti={ isLti }
-							/>
+							? slideInfo && <Slide slideInfo={ slideInfo }/>
 							: <BlocksWrapper>
-								{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */ }
-								{/* @ts-ignore*/ }
 								<Page/>
 							</BlocksWrapper>
 					}
 				</div>
-				{ currentSlideInfo && isNavigationVisible && this.renderNavigationButtons(currentSlideInfo) }
-				{ currentSlideInfo && currentSlideInfo.current
-				&& slideInfo && slideInfo.id && isNavigationVisible
-				&& this.renderComments(currentSlideInfo.current) }
+				<NavigationButtons slideInfo={ slideInfo }/>
+				{ currentSlideInfo && isNavigationVisible && this.renderComments(currentSlideInfo) }
 				{ isNavigationVisible && this.renderFooter() }
 			</main>
 		);
@@ -444,55 +442,6 @@ class Course extends Component<CourseProps, State> {
 		);
 	};
 
-	renderNavigationButtons(slideInfo: CourseSlideInfo): React.ReactElement {
-		const { courseId, } = this.props;
-		const { next, current, } = slideInfo;
-		const prevSlideHref = this.getPreviousSlideUrl(slideInfo);
-		const nextSlideHref = next ? constructPathToSlide(courseId, next.slug) : null;
-
-		const previousButtonText = current?.firstInModule ? slideNavigationButtonTitles.previousModule : slideNavigationButtonTitles.previous;
-		const nextButtonText = current?.lastInModule ? slideNavigationButtonTitles.nextModule : slideNavigationButtonTitles.next;
-
-		return (
-			<div className={ styles.navigationButtonsWrapper }>
-				{
-					prevSlideHref
-						? <Link className={ classnames(styles.slideButton, styles.previousSlideButton) }
-								to={ this.constructPathWithAutoplay(prevSlideHref) }>
-							{ previousButtonText }
-						</Link>
-						: <div className={ classnames(styles.slideButton, styles.disabledSlideButton) }>
-							{ previousButtonText }
-						</div>
-				}
-				{
-					nextSlideHref
-						?
-						<Link className={ classnames(styles.slideButton, styles.nextSlideButton) }
-							  to={ this.constructPathWithAutoplay(nextSlideHref) }>
-							{ nextButtonText }
-						</Link>
-						: <div className={ classnames(styles.slideButton, styles.disabledSlideButton) }>
-							{ nextButtonText }
-						</div>
-				}
-			</div>
-		);
-	}
-
-	getPreviousSlideUrl = (slideInfo: CourseSlideInfo): string | null => {
-		const { courseId, } = this.props;
-		const { previous, current, } = slideInfo;
-
-		return previous
-			? constructPathToSlide(courseId, previous.slug)
-			: null;
-	};
-
-	constructPathWithAutoplay = (baseHref: string): string => {
-		return baseHref + buildQuery({ autoplay: true });
-	};
-
 	renderComments(currentSlide: ShortSlideInfo,): React.ReactElement {
 		const { user, courseId, isSlideReady, } = this.props;
 		const { isSystemAdministrator, accessesByCourse, roleByCourse, systemAccesses, } = user;
@@ -505,7 +454,7 @@ class Course extends Component<CourseProps, State> {
 			isSystemAdministrator,
 			courseRole: roleByCourse[courseId],
 			courseAccesses,
-			systemAccesses
+			systemAccesses,
 		};
 
 		return (
@@ -557,16 +506,16 @@ class Course extends Component<CourseProps, State> {
 		courseProgress: Progress,
 		flashcardsStatistics: FlashcardsStatistics,
 	): CourseNavigationProps {
-		const { courseInfo, slideId, } = this.props;
+		const { courseInfo, slideInfo: { slideId, }, } = this.props;
 		const { highlightedUnit, } = this.state;
 
 		return {
 			courseId: courseInfo.id,
-			slideId: slideId,
+			slideId,
 
 			flashcardsStatistics,
 
-			courseProgress: courseProgress,
+			courseProgress,
 			courseItems: courseInfo.units.map(item => ({
 				title: item.title,
 				id: item.id,
@@ -587,7 +536,7 @@ class Course extends Component<CourseProps, State> {
 		openUnit: UnitInfo,
 		unitFlashcardsStatistic: FlashcardsStatistics | undefined,
 	): UnitNavigationProps {
-		const { courseInfo, slideId, courseId, progress, } = this.props;
+		const { courseInfo, slideInfo, courseId, progress, } = this.props;
 
 		return {
 			unitTitle: openUnit.title,
@@ -597,7 +546,7 @@ class Course extends Component<CourseProps, State> {
 				progress,
 				courseId,
 				unitProgress && unitProgress.statusesBySlides,
-				slideId,
+				slideInfo.slideId,
 			),
 			nextUnit: findNextUnit(openUnit, courseInfo),
 			unitFlashcardsStatistic,
@@ -631,7 +580,7 @@ class Course extends Component<CourseProps, State> {
 	}
 
 	unitClickHandle = (id: string): void => {
-		const { units, history, courseId, slideId, courseInfo, } = this.props;
+		const { units, history, courseId, slideInfo: { slideId, }, courseInfo, } = this.props;
 		const { courseStatistics, } = this.state;
 
 		if(units) {
@@ -662,7 +611,7 @@ class Course extends Component<CourseProps, State> {
 	};
 
 	returnInUnit = (): void => {
-		const { slideId, courseInfo, units, } = this.props;
+		const { slideInfo: { slideId, }, courseInfo, units, } = this.props;
 		if(!units) {
 			return;
 		}

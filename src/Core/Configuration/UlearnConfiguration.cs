@@ -69,22 +69,20 @@ namespace Ulearn.Core.Configuration
 
 	public class HostLogConfiguration
 	{
-		public bool Console { get; set; }
+		public bool Console { get; set; } // Печатать ли логи на консоль
 
-		public bool ErrorLogsToTelegram { get; set; }
+		public bool ErrorLogsToTelegram { get; set; } // Отправлять ли логи в телеграм
 
-		public string PathFormat { get; set; }
+		public string PathFormat { get; set; } // Путь до файла с логами
 
-		public string MinimumLevel { get; set; }
+		public string MinimumLevel { get; set; } // Минимальный уровень логирования
 
-		public string DbMinimumLevel { get; set; }
-
-		public bool EnableEntityFrameworkLogging { get; set; }
+		public string DbMinimumLevel { get; set; } // Минимальный уровень логирования событий, связанных с базой данных. Debug заставляет вываодть SQL код отправленных запросов
 	}
 
-	public class DatabaseConfiguration : UlearnConfigurationBase
+	public class DatabaseConfiguration : UlearnConfigurationBase // Класс настроек, используемый в проекте Database
 	{
-		public string Database { get; set; }
+		public string Database { get; set; } // Connection string к базе
 	}
 
 	public class UlearnConfiguration : UlearnConfigurationBase
@@ -92,66 +90,68 @@ namespace Ulearn.Core.Configuration
 		public TelegramConfiguration Telegram { get; set; }
 
 		[CanBeNull]
-		public string BaseUrl { get; set; }
+		public string BaseUrl { get; set; } // Адрес, на котором запущен Ulearn.Web
 
 		[CanBeNull]
-		public string BaseUrlApi { get; set; }
+		public string BaseUrlApi { get; set; } // Адрес, на котором запущен Web.Api
 
-		public string CoursesDirectory { get; set; }
+		public string CoursesDirectory { get; set; } // Папка, где ulearn хранит курсы
 
-		public string ExerciseStudentZipsDirectory { get; set; }
-		
-		public string ExerciseCheckerZipsDirectory { get; set; }
-		
-		public bool ExerciseCheckerZipsCacheDisabled { get; set; }
+		public string ExerciseStudentZipsDirectory { get; set; } // Папка, где ulearn хранит кэш архивов с практиками, которые скачиваются со слайдов задач
 
-		public CertificateConfiguration Certificates { get; set; }
+		public string ExerciseCheckerZipsDirectory { get; set; } // Папка, где ulearn хранит кэш архивов с чеккерами
 
-		public string GraphiteServiceName { get; set; }
+		public bool ExerciseCheckerZipsCacheDisabled { get; set; } // Отключает кэш архивов с чеккерами
 
-		public string Database { get; set; }
+		public CertificateConfiguration Certificates { get; set; } 
+
+		public string GraphiteServiceName { get; set; } // Имя сервиса. Используется в метриках и др.
+
+		public string Database { get; set; } // Connection string к базе
 
 		public GitConfiguration Git { get; set; }
 
 		public string StatsdConnectionString { get; set; } // ConnectionString для подключения к Graphite-relay в формате "address=graphite-relay.com;port=8125;prefixKey=ulearn.local". Можно оставить пустой, чтобы не отправлять метрики
 
-		public string SubmissionsUrl { get; set; } // Url to Ulearn.Web instance. I.E. https://ulearn.me
+		public string SubmissionsUrl { get; set; } // Url to Ulearn.Web instance. I.E. https://ulearn.me Используется в RunCsJob и RunCheckerJob
 
 		public string RunnerToken { get; set; } // Must be equal on Ulearn.Web and RunC***Job instance
 
-		public int? KeepAliveInterval { get; set; }
-		
-		public HostLogConfiguration HostLog { get; set; }
+		public int? KeepAliveInterval { get; set; } // Некоторые сервисы регулярно посылают пинг в сборщик метрик, по отсутствию пингов можно определить, что сервис умер
+
+		public HostLogConfiguration HostLog { get; set; } // Настроки логирования
 
 		public int? Port { get; set; }
 
 		public bool? ForceHttps { get; set; }
 
-		public string Environment { get; set; }
+		public string Environment { get; set; } // Имя окружения. Например, чтобы отличать логи и метрики тетсовых сервисов от боевых
 
-		public HerculesSinkConfiguration Hercules { get; set; }
+		public HerculesSinkConfiguration Hercules { get; set; } // Настройки сборки логов в Контур Геркулес
 
 		[CanBeNull] public AntiplagiarismClientConfiguration AntiplagiarismClient { get; set; }
 
 		[CanBeNull] public VideoAnnotationsClientConfiguration VideoAnnotationsClient { get; set; }
-		
-		[CanBeNull] public XQueueWatcherConfiguration XQueueWatcher { get; set; }
-		
-		public bool DisableKonturServices { get; set; }
 
-		public string GoogleAccessCredentials { get; set; }
+		[CanBeNull] public XQueueWatcherConfiguration XQueueWatcher { get; set; }
+
+		public bool DisableKonturServices { get; set; } // Нужно поставить true, если вы запускаетесь вне сети Контура, тогда при запуске не будет попыток найти сервисы контура
+
+		public string GoogleAccessCredentials { get; set; } // Авторизация в гугл, чтобы синхронизировать ведомость курса с гугл-документом
+
+		public string TempDirectory { get; set; } // Папка со временными файлами, которые можно безопасно удалять, по умолчанию системный temp пользователя
 	}
 
 	public class VideoAnnotationsClientConfiguration
 	{
-		public string Endpoint { get; set; }
+		public string Endpoint { get; set; } // Адрес, куда делать запросы к VideoAnnotations
 	}
 
 	public class AntiplagiarismClientConfiguration
 	{
-		public bool Enabled { get; set; }
-		public string Endpoint { get; set; }
-		public string Token { get; set; }
+		public bool Enabled { get; set; } // Включает отправку задач в антиплагиат
+		public string Endpoint { get; set; } // Адрес, куда делать запросы к VideoAnnotations
+		public string Token { get; set; } // Токен авторизации сервиса в сервисе антиплагиата, соответствует значению в таюблице Antiplagiarism.Clients
 	}
 
 	public class XQueueWatcherConfiguration
@@ -184,7 +184,7 @@ namespace Ulearn.Core.Configuration
 
 	public class GitConfiguration
 	{
-		public GitWebhookConfiguration Webhook { get; set; }
+		public GitWebhookConfiguration Webhook { get; set; } // При коммите в курс, если настроена интеграция, ulearn будет получать событие.
 	}
 
 	public class GitWebhookConfiguration

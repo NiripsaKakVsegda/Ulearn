@@ -19,7 +19,6 @@ import { SlideType } from "src/models/slide";
 import { DeviceType } from "src/consts/deviceType";
 
 import styles from './Navigation.less';
-import { findUnitIdBySlideId } from "../Course/CourseUtils";
 
 export type Props = PropsFromRedux & DefaultNavigationProps & CourseNavigationProps & UnitNavigationProps;
 
@@ -352,7 +351,6 @@ class Navigation extends Component<Props, State> {
 			unitProgress,
 			deviceType,
 		} = this.props;
-
 		const isInsideCourse = unitTitle === undefined;
 
 		return (

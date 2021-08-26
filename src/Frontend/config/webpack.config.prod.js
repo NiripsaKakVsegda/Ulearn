@@ -3,7 +3,6 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
@@ -69,23 +68,13 @@ module.exports = merge([base, {
 		strictExportPresence: true,
 		rules: [
 			{
-				test: /\.(js|jsx|mjs)$/,
-				include: paths.appSrc,
-				loader: 'eslint-loader',
-				enforce: 'pre',
-				options: {
-					formatter: eslintFormatter,
-					eslintPath: 'eslint',
-				},
-			},
-			{
 				oneOf: [
 					{
 						test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
 						loader: 'url-loader',
 						options: {
 							limit: 10000,
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 					{
@@ -105,14 +94,14 @@ module.exports = merge([base, {
 								loader: MiniCssExtractPlugin.loader,
 								options: miniCssExtractPluginOptions,
 							},
-							'@teamsupercell/typings-for-css-modules-loader',
 							{
 								loader: "css-loader",
 								options: {
+									esModule: false,
 									sourceMap: shouldUseSourceMap,
 									modules: {
 										mode: 'local',
-										localIdentName: '[hash:base64:5]',
+										localIdentName: '[contenthash:base64:5]',
 									},
 									importLoaders: 2,
 								}
@@ -143,10 +132,10 @@ module.exports = merge([base, {
 						test: /\.css$/,
 						use: [
 							'style-loader',
-							'@teamsupercell/typings-for-css-modules-loader',
 							{
 								loader: 'css-loader',
 								options: {
+									esModule: false,
 									modules: {
 										auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
 										mode: 'global',
@@ -174,7 +163,7 @@ module.exports = merge([base, {
 						loader: 'file-loader',
 						exclude: [/\.(js|jsx|mjs|ts|tsx)$/, /\.html$/, /\.json$/],
 						options: {
-							name: paths.static.media + '/[name].[hash:8].[ext]',
+							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},
 					},
 					// ** STOP ** Are you adding a new loader?

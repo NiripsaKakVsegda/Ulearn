@@ -8,26 +8,26 @@ import styles from './Image.less';
 
 import 'react-image-gallery/styles/css/image-gallery.css';
 
-interface Props {
-	className: string,
-	imageUrls: string[],
+export interface Props {
+	className: string;
+	imageUrls: string[];
 }
 
 interface ImageInfo {
-	index: number,
-	error?: boolean,
-	img?: HTMLImageElement,
+	index: number;
+	error?: boolean;
+	img?: HTMLImageElement;
 }
 
 interface State {
-	fullscreen: boolean,
-	currentImage: ImageInfo,
-	anyImageLoaded: boolean,
-	images: ImageInfo[],
+	fullscreen: boolean;
+	currentImage: ImageInfo;
+	anyImageLoaded: boolean;
+	images: ImageInfo[];
 }
 
 interface ImageGalleryRef extends ImageGallery {
-	imageGallery: RefObject<HTMLDivElement>,
+	imageGallery: RefObject<HTMLDivElement>;
 }
 
 class Image extends React.Component<Props, State> {

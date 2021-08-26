@@ -1,21 +1,23 @@
 ﻿import React from "react";
-import { Review, ReviewProps } from "./Review";
+import Review from "./Review";
+import { ReviewProps } from "./Review.types";
 
-import { ReviewInfo, } from "src/models/exercise";
 import type { Story } from "@storybook/react";
+import { UserInfo } from "src/utils/courseRoles";
+import { getMockedUser } from "../../../../../../comments/storiesData";
+import { InstructorReviewInfoWithAnchor } from "../../../InstructorReview/InstructorReview.types";
 
 const addingTime = "2020-12-03T20:03:29.9725057+05:00";
 
-const author = {
+const author: UserInfo = getMockedUser({
 	avatarUrl: "",
 	firstName: "Name",
-	gender: null,
 	id: "0",
 	lastName: "LastName",
 	visibleName: "Name LastName",
 	login: undefined,
 	email: undefined,
-};
+});
 
 const authorWithLongName = {
 	...author,
@@ -32,7 +34,7 @@ const comment = {
 	author: author
 };
 
-const review = {
+const review: InstructorReviewInfoWithAnchor = {
 	id: 0,
 	author: null,
 	startLine: 10,
@@ -42,7 +44,8 @@ const review = {
 	comment: "text **bold** __italic__ ```code```",
 	renderedComment: "text <b>bold</b> <i>italic</i> <pre>code</pre>",
 	addingTime: null,
-	comments: [comment, { ...comment, id: 1 }]
+	comments: [comment, { ...comment, id: 1 }],
+	anchor: 0,
 };
 
 const teacherReview = {
@@ -60,11 +63,13 @@ const reviews = [
 const props: ReviewProps = {
 	reviews,
 	selectedReviewId: -1,
-	userId: "-1",
-	onSelectComment: () => void (0),
+	user: { ...author, id: '-1' },
+	onReviewClick: () => void (0),
 	addReviewComment: () => void (0),
-	deleteReviewComment: () => void (0),
-	getReviewAnchorTop: (review: ReviewInfo) => review.startLine * 15,
+	deleteReviewOrComment: () => void (0),
+	editReviewOrComment: () => void (0),
+	toggleReviewFavourite: () => void (0),
+	assignBotComment: () => void (0),
 };
 
 const Template: Story<ReviewProps> = (args: ReviewProps) =>
@@ -98,7 +103,7 @@ ThirdSelected.args = {
 export const UserCanDeleteComment = Template.bind({});
 UserCanDeleteComment.args = {
 	...props,
-	userId: author.id,
+	user: author,
 	selectedReviewId: 1,
 };
 

@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <CscToolPath>C:\git\Ulearn\src\RunCsJob\bin\Debug\net472\Microsoft.Net.Compilers.3.9.0</CscToolPath>
+    <CscToolPath>C:\git\Ulearn\src\RunCsJob\bin\Debug\net472\Microsoft.Net.Compilers.3.11.0</CscToolPath>
     <AlwaysCompileMarkupFilesInSeparateDomain>True</AlwaysCompileMarkupFilesInSeparateDomain>
     <DisableOutOfProcTaskHost>true</DisableOutOfProcTaskHost>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>

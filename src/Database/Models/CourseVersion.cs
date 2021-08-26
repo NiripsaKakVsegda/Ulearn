@@ -38,5 +38,8 @@ namespace Database.Models
 
 		// Устанавливается из настройки курса или как пусть единственного course.xml, если курс загружен из репозитория
 		public string PathToCourseXml { get; set; }
+
+		[Required]
+		public string CourseName { get; set; }
 	}
 }

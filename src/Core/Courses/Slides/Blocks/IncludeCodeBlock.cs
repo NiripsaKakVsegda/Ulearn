@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -7,8 +6,6 @@ using System.IO;
 using System.Xml.Serialization;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Model.Edx.EdxComponents;
-using Component = Ulearn.Core.Model.Edx.EdxComponents.Component;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
@@ -64,13 +61,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 			if (!Language.HasValue)
 				Language = LanguageHelpers.GuessByExtension(new FileInfo(CodeFile));
-		}
-
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			if (!string.IsNullOrEmpty(CodeFile))
-				throw new Exception("IncludeCodeBlock: File string is not empty.");
-			return new CodeComponent();
 		}
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)

@@ -54,7 +54,7 @@ namespace Ulearn.Core.Model.Edx
 	{
 		public override Component LoadComponent(string folderName, string urlName, EdxLoadOptions options)
 		{
-			return SlideProblemComponent.Load(folderName, urlName, options);
+			return ProblemComponent.Load(folderName, urlName, options);
 		}
 	}
 }

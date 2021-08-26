@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
@@ -8,9 +7,10 @@ using System.Threading.Tasks;
 using Database.Extensions;
 using Database.Models;
 using JetBrains.Annotations;
-using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses;
+using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Extensions;
 
 namespace Database.DataContexts
 {
@@ -57,20 +57,15 @@ namespace Database.DataContexts
 			return automaticChecking;
 		}
 
-		public bool HasManualExerciseChecking(string courseId, Guid slideId, string userId, int submissionId)
-		{
-			return db.ManualExerciseCheckings.Any(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId && c.SubmissionId == submissionId);
-		}
-
 		public async Task<ManualExerciseChecking> AddManualExerciseChecking(string courseId, Guid slideId, string userId, UserExerciseSubmission submission)
 		{
 			var manualChecking = new ManualExerciseChecking
 			{
+				Id = submission.Id,
 				CourseId = courseId,
 				SlideId = slideId,
 				UserId = userId,
 				Timestamp = DateTime.Now,
-				SubmissionId = submission.Id,
 			};
 			db.ManualExerciseCheckings.Add(manualChecking);
 
@@ -85,7 +80,7 @@ namespace Database.DataContexts
 			{
 				var checkings = GetSlideCheckingsByUser<T>(courseId, slideId, userId, noTracking: false)
 					.AsEnumerable()
-					.Where(c => !c.IsChecked && !c.IsLocked)
+					.Where(c => !c.IsChecked && c.LockedById != null)
 					.ToList();
 				foreach (var checking in checkings)
 				{
@@ -137,82 +132,30 @@ namespace Database.DataContexts
 				if (!isRightAnswer)
 					return (0, null);
 			}
-			var checkedScoresAndPercents = GetCheckedScoresAndPercents(courseId, slide, userId, null);
+
+			var percent = GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (checkedScoresAndPercents.Count == 0)
+			if (percent == null)
 				return (automaticScore, null);
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
+			return (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
 		}
 
-		public static (int Score, int? Percent) GetExerciseSubmissionManualCheckingsScoreAndPercent(IList<ManualExerciseChecking> manualCheckings, ExerciseSlide slide)
+		public static int ConvertExerciseManualCheckingPercentToScore(int manualCheckingPercent, int scoreWithCodeReview)
 		{
-			var checkedScoresAndPercents = manualCheckings
-				.Where(c => c.IsChecked)
-				.OrderBy(c => c.Timestamp)
-				.Select(c => (c.Score, c.Percent))
-				.ToList();
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
+			return (int)Math.Ceiling(manualCheckingPercent / 100m * scoreWithCodeReview);
 		}
 
-		private static (int Score, int? Percent) GetScoreAndPercentByScoresAndPercents(
-			ExerciseSlide slide,
-			List<(int? Score, int? Percent)> checkedScoresAndPercents)
+		public int? GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null)
 		{
-			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (checkedScoresAndPercents.Count == 0)
-				return (automaticScore, null);
-			var scores = checkedScoresAndPercents
-				.Where(p => p.Score != null)
-				.Select(p => p.Score.Value)
-				.ToList();
-			var lastPercent = checkedScoresAndPercents
-				.Select(p => p.Percent)
-				.LastOrDefault(p => p != null) ?? 0;
-			var scoreFormPercent = (int)Math.Ceiling(lastPercent / 100m * slide.Scoring.ScoreWithCodeReview);
-			var scoreFormScore = scores.Count == 0 ? 0 : automaticScore + scores.Max();
-			return scoreFormPercent >= scoreFormScore
-				? (scoreFormPercent, lastPercent)
-				: (scoreFormScore, (int)Math.Ceiling(scoreFormScore * 100m / slide.Scoring.ScoreWithCodeReview));
-		}
-
-		public int? GetUserReviewPercentForExerciseSlide(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore = null)
-		{
-			var checkedScoresAndPercents = GetCheckedScoresAndPercents(courseId, slide, userId, submissionBefore);
-			return GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents).Percent;
-		}
-
-		private List<(int? Score, int? Percent)> GetCheckedScoresAndPercents(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore)
-		{
-			var query = GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slide.Id, userId)
+			var query = db.ManualExerciseCheckings
+				.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked)
 				.Where(c => c.IsChecked);
 			if (submissionBefore != null)
 				query = query.Where(c => c.Submission.Timestamp < submissionBefore);
-			var checkedScoresAndPercents = query
-				.Select(c => new { c.Score, c.Percent, CheckingTimestamp = c.Timestamp, SubmissionTimestamp = c.Submission.Timestamp })
-				.OrderBy(c => c.SubmissionTimestamp)
-				.ThenBy(c => c.CheckingTimestamp)
-				.Select(c => new { c.Score, c.Percent })
-				.AsEnumerable()
-				.Select(c => (c.Score, c.Percent))
-				.ToList();
-			return checkedScoresAndPercents;
-		}
-
-		public List<(Guid SlideId, int Score, int Percent)> GetPassedManualExerciseCheckingsScoresAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)
-		{
-			var checkings = db.ManualExerciseCheckings
-				.Where(c => c.CourseId == course.Id && c.UserId == userId && c.IsChecked)
-				.ToList();
-			var slides = course.GetSlides(false, visibleUnits).OfType<ExerciseSlide>().Select(s => s.Id).ToHashSet();
-			return checkings.GroupBy(s => s.SlideId)
-				.Where(s => slides.Contains(s.Key))
-				.Select(g =>
-				{
-					var checkedScoresAndPercents = g.Select(c => (c.Score, c.Percent )).ToList();
-					var slide = course.GetSlideByIdNotSafe(g.Key) as ExerciseSlide;
-					var (score, percent) = GetScoreAndPercentByScoresAndPercents(slide, checkedScoresAndPercents);
-					return (g.Key, score, percent.Value);
-				}).ToList();
+			var lastChecking = query
+				.OrderByDescending(c => c.Timestamp)
+				.FirstOrDefault();
+			return lastChecking?.Percent;
 		}
 
 		public int GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId)
@@ -222,6 +165,22 @@ namespace Database.DataContexts
 			return automaticScore + manualScore;
 		}
 
+		public List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)
+		{
+			var checkings = db.ManualExerciseCheckings
+				.Where(c => c.CourseId == course.Id && c.UserId == userId && c.IsChecked)
+				.Select(c => new { c.SlideId, c.Timestamp, c.Percent })
+				.ToList();
+			var slides = course.GetSlides(false, visibleUnits).OfType<ExerciseSlide>().Select(s => s.Id).ToHashSet();
+			return checkings.GroupBy(s => s.SlideId)
+				.Where(s => slides.Contains(s.Key))
+				.Select(g =>
+				{
+					var lastPercent = g.MaxBy(c => c.Timestamp).Percent.Value;
+					return (g.Key, lastPercent);
+				}).ToList();
+		}
+
 		#endregion
 
 		public IEnumerable<T> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
@@ -229,19 +188,20 @@ namespace Database.DataContexts
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
 			query = query.OrderByDescending(c => c.Timestamp);
 
-			const int reserveForStartedReviews = 100;
+			const int reserveForStartedOrDoubleCheckedReviews = 100;
 			if (options.Count > 0)
-				query = query.Take(options.Count + reserveForStartedReviews);
+				query = query.Take(options.Count + reserveForStartedOrDoubleCheckedReviews);
 
 			var enumerable = query.AsEnumerable();
-			// Отфильтровывает неактуальные начатые ревью
+			// Метод RemoveWaitingManualCheckings удалил непосещенные преподавателем старые ManualChecking. Здесь отфильтровываются посещенные преподавателем.
 			enumerable = enumerable
 				.GroupBy(g => new { g.UserId, g.SlideId })
 				.Select(g => g.First())
 				.OrderByDescending(c => c.Timestamp);
+
 			if (options.Count > 0)
 				enumerable = enumerable.Take(options.Count);
-			
+
 			return enumerable;
 		}
 
@@ -259,36 +219,31 @@ namespace Database.DataContexts
 				else
 					query = query.Where(c => options.UserIds.Contains(c.UserId));
 			}
+
 			return query;
 		}
 
 		/// For calculating not checked submissions as well as checked ones
-		public int GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeTimestamp)
+		public int GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeSubmissionTimestamp)
 		{
 			var queue = db.ManualQuizCheckings.Where(c =>
 				c.CourseId == courseId
 				&& c.SlideId == slideId
 				&& c.UserId == userId
 				&& !c.IgnoreInAttemptsCount);
-			if (beforeTimestamp != null)
-				queue = queue.Where(s => s.Timestamp < beforeTimestamp);
+			if (beforeSubmissionTimestamp != null)
+				queue = queue.Where(s => s.Submission.Timestamp < beforeSubmissionTimestamp);
 			return queue.Count();
 		}
 
 		public HashSet<Guid> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options);
-			return query.Select(c => c.SlideId).Distinct().AsEnumerable().ToHashSet();
+			return GetManualCheckingQueue<T>(options).Select(c => c.SlideId).Distinct().AsEnumerable().ToHashSet();
 		}
 
 		public T FindManualCheckingById<T>(int id) where T : AbstractManualSlideChecking
 		{
 			return db.Set<T>().Find(id);
-		}
-
-		public bool IsProhibitedToSendExerciseToManualChecking(string courseId, Guid slideId, string userId)
-		{
-			return GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slideId, userId).Any(c => c.ProhibitFurtherManualCheckings);
 		}
 
 		public async Task LockManualChecking<T>(T checkingItem, string lockedById) where T : AbstractManualSlideChecking
@@ -300,7 +255,6 @@ namespace Database.DataContexts
 
 		public async Task MarkManualQuizCheckingAsChecked(ManualQuizChecking queueItem, int score)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Score = score;
@@ -309,50 +263,45 @@ namespace Database.DataContexts
 
 		public async Task MarkManualExerciseCheckingAsChecked(ManualExerciseChecking queueItem, int percent)
 		{
-			queueItem.LockedBy = null;
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
 			queueItem.Percent = percent;
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		// Помечает оцененными посещенные но не оцененные старые ревью
+		// Помечает оцененными посещенные но не оцененные старые ревью. Большинство удаляется RemoveWaitingManualCheckings
 		public async Task MarkManualExerciseCheckingAsCheckedBeforeThis(ManualExerciseChecking queueItem)
 		{
 			var itemsForMark = db.Set<ManualExerciseChecking>()
 				.Include(c => c.Submission)
 				.Where(c => c.CourseId == queueItem.CourseId && c.UserId == queueItem.UserId && c.SlideId == queueItem.SlideId && c.Timestamp < queueItem.Timestamp)
-				.AsEnumerable()
-				.OrderBy(c => c.Submission.Timestamp)
-				.ThenBy(c => c.Timestamp);
+				.OrderBy(c => c.Timestamp)
+				.ToList();
 			int? percent = 0;
-			int? score = 0;
 			var changed = false;
 			foreach (var item in itemsForMark)
 			{
 				if (item.IsChecked)
 				{
 					percent = item.Percent;
-					score = item.Score;
 				}
 				else
 				{
-					item.LockedBy = null;
 					item.LockedUntil = null;
 					item.IsChecked = true;
-					queueItem.Percent = percent;
-					queueItem.Score = score;
+					item.Percent = percent;
 					changed = true;
 				}
 			}
-			if(changed)
+
+			if (changed)
 				await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
 		public async Task ProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId)
 		{
 			var checkings = db.ManualExerciseCheckings
-				.Where(c => c.CourseId == courseId && c.UserId == userId &&  c.SlideId == slideId && c.ProhibitFurtherManualCheckings)
+				.Where(c => c.CourseId == courseId && c.UserId == userId && c.SlideId == slideId && c.ProhibitFurtherManualCheckings)
 				.ToList();
 			if (checkings.Count == 0)
 				return;

@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import api from "src/api";
 import configureStore from "src/configureStore";
 import queryString from "query-string";
-import { Provider, connect, } from "react-redux";
+import { connect, Provider, } from "react-redux";
 
 import { ThemeContext, Toast } from "ui";
 import ErrorBoundary from "src/components/common/ErrorBoundary";
@@ -46,16 +46,16 @@ function UlearnApp(): React.ReactElement {
 }
 
 interface Props {
-	account: AccountState,
-	getNotificationsCount: () => void,
-	getCurrentUser: () => void,
-	getCourses: () => void,
-	setDeviceType: (deviceType: DeviceType) => void,
+	account: AccountState;
+	getNotificationsCount: () => void;
+	getCurrentUser: () => void;
+	getCourses: () => void;
+	setDeviceType: (deviceType: DeviceType) => void;
 }
 
 interface State {
-	initializing: boolean,
-	resizeTimeout?: NodeJS.Timeout,
+	initializing: boolean;
+	resizeTimeout?: NodeJS.Timeout;
 }
 
 class InternalUlearnApp extends Component<Props, State> {
@@ -121,15 +121,16 @@ class InternalUlearnApp extends Component<Props, State> {
 		const isLti = pathname.endsWith('/ltislide') || params.isLti; //TODO remove this flag,that hiding header and nav menu
 		const isHeaderVisible = !isLti;
 
+		if(isLti) {
+			// dirty way to remove padding top from body element (default is 50px, declared in legacy legacy ulearn.global.css main section
+			document.body.style.paddingTop = '0';
+		}
+
 		return (
 			<BrowserRouter>
 				<ThemeContext.Provider value={ theme }>
 					<ErrorBoundary>
-						{ isHeaderVisible &&
-						<React.Fragment>
-							<Header initializing={ initializing }/>
-						</React.Fragment>
-						}
+						{ isHeaderVisible && <Header initializing={ initializing }/> }
 						<NotFoundErrorBoundary>
 							{ !initializing && // Avoiding bug: don't show page while initializing.
 							// Otherwise we make two GET requests sequentially.
@@ -171,7 +172,7 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
 	return {
-		getCurrentUser: () => api.account.getCurrentUser()(dispatch),
+		getCurrentUser: () => api.account.redux.getCurrentUser()(dispatch),
 		getCourses: () => api.courses.getCourses()(dispatch),
 		getNotificationsCount: () => api.notifications.getNotificationsCount()(dispatch),
 		setDeviceType: (deviceType: DeviceType) => dispatch(deviceChangeAction(deviceType)),

@@ -10,7 +10,7 @@ import { ShortUserInfo } from "src/models/users";
 import { AccountProblem } from "src/models/account";
 import { GroupAsStudentInfo } from "../models/groups";
 
-export interface AccountState extends Partial<ShortUserInfo>{
+export interface AccountState extends Partial<ShortUserInfo> {
 	accountLoaded: boolean;
 	isAuthenticated: boolean;
 	isSystemAdministrator: boolean;
@@ -52,6 +52,16 @@ function accountReducer(state = initialAccountState, action: AccountAction): Acc
 				newState.accountProblems = action.accountProblems || [];
 				newState.systemAccesses = action.systemAccesses || [];
 				newState.gender = action.user?.gender;
+			} else {
+				newState.id = undefined;
+				newState.login = undefined;
+				newState.firstName = undefined;
+				newState.lastName = undefined;
+				newState.visibleName = undefined;
+				newState.avatarUrl = undefined;
+				newState.accountProblems = [];
+				newState.systemAccesses = [];
+				newState.gender = undefined;
 			}
 			return newState;
 		}

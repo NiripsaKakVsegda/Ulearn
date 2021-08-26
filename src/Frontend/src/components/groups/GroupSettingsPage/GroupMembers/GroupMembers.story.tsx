@@ -2,16 +2,25 @@ import React from "react";
 import GroupMembers from "./GroupMembers.js";
 
 import "./groupMembers.less";
+import { ViewportWrapper } from "../../../course/Navigation/stroies.data";
 
 export default {
 	title: "Settings/GroupMembers",
 };
 
 export const Default = (): React.ReactNode =>
-	<GroupMembers
-		systemAccesses={ ["viewAllProfiles"] }
-		group={ getGroup() }
-	/>;
+	<ViewportWrapper>
+		<GroupMembers
+			getGroupAccesses={ () => Promise.reject() }
+			getStudents={ () => Promise.reject() }
+			changeGroupOwner={ () => Promise.reject() }
+			removeAccess={ () => Promise.reject() }
+			addGroupAccesses={ () => Promise.reject() }
+			deleteStudents={ () => Promise.reject() }
+			systemAccesses={ ["viewAllProfiles"] }
+			group={ getGroup() }
+		/>
+	</ViewportWrapper>;
 
 Default.storyName = "default";
 

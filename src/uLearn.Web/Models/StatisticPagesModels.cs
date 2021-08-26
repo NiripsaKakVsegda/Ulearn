@@ -34,8 +34,10 @@ namespace uLearn.Web.Models
 	public class CourseStatisticPageModel : StatisticPageModel
 	{
 		public bool IsInstructor { get; set; }
-
+		
 		public bool IsAdmin { get; set; }
+
+		public bool CanViewProfiles { get; set; }
 
 		/* Dictionary<(userId, unitId, scoringGroupId), additionalScore> */
 		public DefaultDictionary<Tuple<string, Guid, string>, int> AdditionalScores { get; set; }

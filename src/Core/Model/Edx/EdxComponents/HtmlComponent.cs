@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace Ulearn.Core.Model.Edx.EdxComponents
 {
+	public record StaticFileForEdx(FileInfo StaticFile, string EdxFileName);
+
 	[XmlRoot("html")]
 	public class HtmlComponent : Component
 	{
 		[XmlIgnore]
-		public string Source;
+		public string HtmlContent;
 
 		[XmlIgnore]
-		public string CourseDirectory;
-
-		[XmlIgnore]
-		public string UnitDirectoryRelativeToCourse;
-
-		[XmlIgnore]
-		public List<string> LocalFiles;
+		public List<StaticFileForEdx> StaticFiles;
 
 		[XmlAttribute("filename")]
 		public string Filename;
@@ -36,29 +33,27 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		{
 		}
 
-		public HtmlComponent(string urlName, string displayName, string filename, string source)
+		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent)
 		{
 			UrlName = urlName;
 			DisplayName = displayName;
 			Filename = filename;
-			Source = source;
+			HtmlContent = htmlContent;
 		}
 
-		public HtmlComponent(string urlName, string displayName, string filename, string source, string courseDirectory, string unitDirectoryRelativeToCourse, List<string> localFiles)
+		public HtmlComponent(string urlName, string displayName, string filename, string htmlContent, List<StaticFileForEdx> staticFiles)
 		{
 			UrlName = urlName;
 			DisplayName = displayName;
 			Filename = filename;
-			Source = source;
-			CourseDirectory = courseDirectory;
-			UnitDirectoryRelativeToCourse = unitDirectoryRelativeToCourse;
-			LocalFiles = localFiles;
+			HtmlContent = htmlContent;
+			StaticFiles = staticFiles;
 		}
 
 		public override void Save(string folderName)
 		{
 			base.Save(folderName);
-			File.WriteAllText(string.Format("{0}/{1}/{2}.html", folderName, SubfolderName, UrlName), Source);
+			File.WriteAllText(string.Format("{0}/{1}/{2}.html", folderName, SubfolderName, UrlName), HtmlContent);
 		}
 
 		public override void SaveAdditional(string folderName)
@@ -66,13 +61,15 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 			if (Subcomponents != null)
 				foreach (var subcomponent in Subcomponents)
 					subcomponent.SaveAdditional(folderName);
+			SaveStaticFiles(folderName, StaticFiles);
+		}
+
+		private static void SaveStaticFiles(string folderName, List<StaticFileForEdx> staticFiles)
+		{
 			try
 			{
-				foreach (var localFile in LocalFiles ?? new List<string>())
-					File.Copy(
-						Path.Combine(CourseDirectory, UnitDirectoryRelativeToCourse, localFile),
-						string.Format("{0}/static/{1}_{2}", folderName, UrlName, localFile.Replace("/", "_")),
-						overwrite: true);
+				foreach (var (file, edxFileName) in staticFiles.EmptyIfNull())
+					File.Copy(file.FullName, $"{folderName}/static/{edxFileName}", overwrite: true);
 			}
 			catch (Exception e)
 			{
@@ -87,13 +84,13 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 
 		public override string AsHtmlString()
 		{
-			return Source;
+			return HtmlContent;
 		}
 
 		public static HtmlComponent Load(string folderName, string urlName, EdxLoadOptions options)
 		{
 			return Load<HtmlComponent>(folderName, "html", urlName, options,
-				c => { c.Source = File.ReadAllText(string.Format("{0}/html/{1}.html", folderName, c.Filename)); });
+				c => { c.HtmlContent = File.ReadAllText(string.Format("{0}/html/{1}.html", folderName, c.Filename)); });
 		}
 	}
 }

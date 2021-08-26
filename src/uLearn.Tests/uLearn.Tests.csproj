@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>uLearn</RootNamespace>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>CS0219;CS0162;CS0414;CS0169;CS0649</NoWarn>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
@@ -22,10 +22,10 @@
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.1.20200127.214830" />
     <PackageReference Include="MarkdownDeep.NET.Core" Version="1.5.0.4" />
-    <PackageReference Include="Microsoft.Build" Version="16.10.0" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.10.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.10.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.10.0" />
+    <PackageReference Include="Microsoft.Build" Version="16.11.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.11.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.9.0">
+    <PackageReference Include="Microsoft.Net.Compilers" Version="3.11.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
@@ -73,6 +73,9 @@
     <Compile Remove="CSharp\testProject\projDir\inner-dir-1\inner-dir-2\MeaningOfLifeTask.cs" />
     <Compile Remove="CSharp\ProjectExerciseBlock_Should.cs" />
     <Compile Remove="CSharp\testProject\projDir\AnotherTask.WrongAnswer.88.cs" />
+    <Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_Code.cs" />
+    <Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_FirstStep.cs" />
+    <Compile Remove="CourseTool\TestData\TestCourse\Prelude.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Hunspellx64.dll">
@@ -81,6 +84,9 @@
     <None Include="Hunspellx86.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="CourseTool\TestData\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Remove="Model\**" />
     <None Remove="CourseTool\Config_Test.ConfigTemplate_IsOk.approved.xml" />
     <None Remove="toZip\**" />
@@ -103,7 +109,6 @@
   <ItemGroup>
     <Compile Remove="toZip\**" />
     <Compile Remove="Model\**" />
-    <Compile Remove="CourseTool\ConverterMonitor_Should.cs" />
     <Compile Remove="CSharp\ArrayGetLengthValidation\TestData\Correct\GetLengthInInitializersPartOfFor.cs" />
   </ItemGroup>
   <ItemGroup>

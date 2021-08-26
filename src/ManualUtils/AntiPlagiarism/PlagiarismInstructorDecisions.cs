@@ -77,7 +77,7 @@ namespace ManualUtils.AntiPlagiarism
 				.Where(r => r.Comment.StartsWith("Ой! Наш робот") && !r.IsDeleted)
 				.Select(r => new
 				{
-					r.ExerciseChecking.SubmissionId,
+					SubmissionId = r.ExerciseChecking.Id,
 					r.ExerciseChecking.UserId,
 					r.ExerciseChecking.CourseId,
 					r.ExerciseChecking.SlideId,
@@ -105,7 +105,7 @@ namespace ManualUtils.AntiPlagiarism
 				.Where(r => r.Submission.Timestamp > dateTime)
 				.Select(r => new
 				{
-					r.SubmissionId,
+					SubmissionId = r.Id,
 					r.UserId,
 					r.CourseId,
 					r.SlideId,

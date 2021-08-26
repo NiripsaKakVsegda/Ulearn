@@ -69,7 +69,7 @@ namespace Database.Models
 		[Index("IDX_UserExerciseSubmissions_BySandbox")]
 		public string Sandbox { get; set; } // null if csharp sandbox
 
-		public virtual IList<ManualExerciseChecking> ManualCheckings { get; set; }
+		public virtual ManualExerciseChecking ManualChecking { get; set; }
 
 		[Obsolete] // YT: ULEARN-217; Используй AntiPlagiarism.Web.Database.Models.Submission.ClientSubmissionId
 		[Index("IDX_UserExerciseSubmission_ByAntiPlagiarismSubmissionId")]
@@ -82,7 +82,7 @@ namespace Database.Models
 
 		public List<ExerciseCodeReview> GetAllReviews()
 		{
-			var manualCheckingReviews = ManualCheckings.SelectMany(c => c.NotDeletedReviews);
+			var manualCheckingReviews = (ManualChecking?.NotDeletedReviews).EmptyIfNull();
 			return manualCheckingReviews.Concat(NotDeletedReviews).ToList();
 		}
 	}

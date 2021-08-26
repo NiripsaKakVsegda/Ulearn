@@ -11,7 +11,7 @@ import { CourseMenuItem, UnitProgress } from "../../types";
 
 import styles from "./CourseNavigationItem.less";
 
-interface Props extends CourseMenuItem {
+export interface Props extends CourseMenuItem {
 	getRefToActive?: React.RefObject<HTMLLIElement>;
 }
 

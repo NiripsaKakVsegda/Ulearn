@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Ulearn.Common.Api;
+using Ulearn.Core.Courses.Manager;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Metrics;
 using Vostok.Hosting.Abstractions;
@@ -70,6 +71,7 @@ namespace Notifications
 		protected override void ConfigureDi(IServiceCollection services)
 		{
 			base.ConfigureDi(services);
+
 			services.AddSingleton<OneTimeEmailSender>();
 			services.AddSingleton<IEmailSender, KonturSpamEmailSender>();
 			services.AddScoped<INotificationSender, NotificationSender>();
@@ -77,7 +79,9 @@ namespace Notifications
 			services.AddScoped<DeliveriesProcessor>();
 			services.AddScoped(sp => new MetricSender(
 				((IOptions<NotificationsConfiguration>)sp.GetService(typeof(IOptions<NotificationsConfiguration>)))!.Value.GraphiteServiceName));
-			services.AddDatabaseServices();
+			services.AddSingleton<UpdateCoursesWorker>();
+
+			services.AddDatabaseServices(true);
 		}
 
 		public async Task MainLoop()

@@ -27,6 +27,8 @@ using Ulearn.Core.Telegram;
 using Ulearn.Web.Api.Controllers.Runner;
 using Ulearn.Web.Api.Models.Parameters.Exercise;
 using Ulearn.Web.Api.Models.Responses.Exercise;
+using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.Courses;
 using Vostok.Logging.Abstractions;
 using AutomaticExerciseCheckingStatus = Database.Models.AutomaticExerciseCheckingStatus;
 
@@ -43,12 +45,12 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly IUnitsRepo unitsRepo;
 		private readonly MetricSender metricSender;
 		private readonly IServiceScopeFactory serviceScopeFactory;
-		private readonly IWebCourseManager courseManager;
+		private readonly IMasterCourseManager courseManager;
 		private readonly StyleErrorsResultObserver styleErrorsResultObserver;
 		private readonly ErrorsBot errorsBot = new ErrorsBot();
 		private static ILog log => LogProvider.Get().ForContext(typeof(ExerciseController));
 
-		public ExerciseController(ICourseStorage courseStorage, IWebCourseManager courseManager, UlearnDb db, MetricSender metricSender,
+		public ExerciseController(ICourseStorage courseStorage, IMasterCourseManager courseManager, UlearnDb db, MetricSender metricSender,
 			IUsersRepo usersRepo, IUserSolutionsRepo userSolutionsRepo, ICourseRolesRepo courseRolesRepo, IVisitsRepo visitsRepo,
 			ISlideCheckingsRepo slideCheckingsRepo, IGroupsRepo groupsRepo, StyleErrorsResultObserver styleErrorsResultObserver,
 			IStyleErrorsRepo styleErrorsRepo, IUnitsRepo unitsRepo, IServiceScopeFactory serviceScopeFactory)
@@ -197,8 +199,8 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			}
 
 			var score = await visitsRepo.GetScore(courseId, exerciseSlide.Id, userId);
-			var waitingForManualChecking = submissionNoTracking.ManualCheckings.Any(c => !c.IsChecked) ? true : (bool?)null;
-			var prohibitFurtherManualChecking = submissionNoTracking.ManualCheckings.Any(c => c.ProhibitFurtherManualCheckings);
+			var waitingForManualChecking = !submissionNoTracking.ManualChecking?.IsChecked;
+			var prohibitFurtherManualChecking = submissionNoTracking.ManualChecking?.ProhibitFurtherManualCheckings ?? false;
 			var result = new RunSolutionResponse(SolutionRunStatus.Success)
 			{
 				Score = score,
@@ -282,7 +284,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			if ((exerciseSlide.Exercise as UniversalExerciseBlock)?.NoStudentZip ?? false)
 				return NotFound();
 
-			var zipFile = courseManager.GenerateOrFindStudentZip(courseId, exerciseSlide);
+			var zipFile = await courseManager.GenerateOrFindStudentZip(courseId, exerciseSlide);
 
 			return PhysicalFile(zipFile.FullName, "application/zip", studentZipName);
 		}

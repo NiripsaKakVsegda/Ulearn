@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Ulearn.Common.Api.Models.Parameters;
@@ -14,6 +15,10 @@ namespace Ulearn.Web.Api.Models.Parameters.Groups
 
 		[FromQuery(Name = "archived")]
 		public bool Archived { get; set; } = false;
+		
+		[FromQuery(Name = "userId")]
+		[CanBeNull]
+		public string UserId { get; set; } // Для получения групп, где есть этот студент
 
 		[FromQuery(Name = "offset")]
 		[MinValue(0, ErrorMessage = "Offset should be non-negative")]

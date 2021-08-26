@@ -51,6 +51,9 @@ namespace Database
 			modelBuilder.HasCollation("case_insensitive", locale: "und@colStrength=secondary", provider: "icu", deterministic: false);
 			modelBuilder.UseDefaultColumnCollation("case_insensitive");
 
+			modelBuilder.Entity<FavouriteReview>()
+				.Property(u => u.Text)
+				.UseCollation("default");
 			// По Names будет осуществляться поиск по регулярном выражению. Такой поиск работает только с deterministic collation
 			modelBuilder.Entity<ApplicationUser>()
 				.Property(u => u.Names)
@@ -153,6 +156,12 @@ namespace Database
 				.HasForeignKey(d => d.NotificationId)
 				.OnDelete(DeleteBehavior.Cascade);
 
+			modelBuilder.Entity<ExerciseCodeReview>()
+				.HasOne(s => s.ExerciseChecking)
+				.WithMany(c => c.Reviews)
+				.HasForeignKey(p => p.ExerciseCheckingId)
+				.OnDelete(DeleteBehavior.Cascade);
+
 			modelBuilder.Entity<UserQuizSubmission>()
 				.HasOne(s => s.AutomaticChecking)
 				.WithOne(c => c.Submission)
@@ -165,7 +174,14 @@ namespace Database
 				.HasForeignKey<ManualQuizChecking>(p => p.Id)
 				.OnDelete(DeleteBehavior.Restrict);
 
+			modelBuilder.Entity<UserExerciseSubmission>()
+				.HasOne(s => s.ManualChecking)
+				.WithOne(c => c.Submission)
+				.HasForeignKey<ManualExerciseChecking>(p => p.Id)
+				.OnDelete(DeleteBehavior.Restrict);
+
 			SetDeleteBehavior<CourseRole, ApplicationUser>(modelBuilder, r => r.User, r => r.UserId, DeleteBehavior.Cascade);
+			SetDeleteBehavior<ReceivedCommentToCodeReviewNotification, ExerciseCodeReviewComment>(modelBuilder, c => c.Comment, c => c.CommentId, DeleteBehavior.Cascade);
 
 			SetDeleteBehavior<ExerciseCodeReview, ApplicationUser>(modelBuilder, c => c.Author, c => c.AuthorId);
 
@@ -180,28 +196,7 @@ namespace Database
 
 			SetDeleteBehavior<GraderClient, ApplicationUser>(modelBuilder, c => c.User, c => c.UserId);
 
-			SetDeleteBehavior<Notification, ApplicationUser>(modelBuilder, c => c.InitiatedBy, c => c.InitiatedById);
-			SetDeleteBehavior<AddedInstructorNotification, ApplicationUser>(modelBuilder, c => c.AddedUser, c => c.AddedUserId);
-			SetDeleteBehavior<LikedYourCommentNotification, ApplicationUser>(modelBuilder, c => c.LikedUser, c => c.LikedUserId);
-			SetDeleteBehavior<JoinedToYourGroupNotification, ApplicationUser>(modelBuilder, c => c.JoinedUser, c => c.JoinedUserId);
-			SetDeleteBehavior<JoinedToYourGroupNotification, Group>(modelBuilder, c => c.Group, c => c.GroupId);
-			SetDeleteBehavior<GrantedAccessToGroupNotification, GroupAccess>(modelBuilder, c => c.Access, c => c.AccessId);
-			SetDeleteBehavior<RevokedAccessToGroupNotification, GroupAccess>(modelBuilder, c => c.Access, c => c.AccessId);
-			SetDeleteBehavior<CreatedGroupNotification, Group>(modelBuilder, c => c.Group, c => c.GroupId);
-			SetDeleteBehavior<PassedManualExerciseCheckingNotification, ManualExerciseChecking>(modelBuilder, c => c.Checking, c => c.CheckingId);
-			SetDeleteBehavior<PassedManualQuizCheckingNotification, ManualQuizChecking>(modelBuilder, c => c.Checking, c => c.CheckingId);
 			SetDeleteBehavior<ReceivedAdditionalScoreNotification, AdditionalScore>(modelBuilder, c => c.Score, c => c.ScoreId, DeleteBehavior.Cascade);
-
-			SetDeleteBehavior<NewCommentNotification, Comment>(modelBuilder, c => c.Comment, c => c.CommentId);
-			SetDeleteBehavior<NewCommentFromYourGroupStudentNotification, Comment>(modelBuilder, c => c.Comment, c => c.CommentId);
-			SetDeleteBehavior<LikedYourCommentNotification, Comment>(modelBuilder, c => c.Comment, c => c.CommentId);
-			SetDeleteBehavior<RepliedToYourCommentNotification, Comment>(modelBuilder, c => c.Comment, c => c.CommentId);
-			SetDeleteBehavior<RepliedToYourCommentNotification, Comment>(modelBuilder, c => c.ParentComment, c => c.ParentCommentId);
-
-			SetDeleteBehavior<UploadedPackageNotification, CourseVersion>(modelBuilder, c => c.CourseVersion, c => c.CourseVersionId);
-			SetDeleteBehavior<PublishedPackageNotification, CourseVersion>(modelBuilder, c => c.CourseVersion, c => c.CourseVersionId);
-
-			SetDeleteBehavior<CourseExportedToStepikNotification, StepikExportProcess>(modelBuilder, c => c.Process, c => c.ProcessId);
 
 			SetDeleteBehavior<XQueueWatcher, ApplicationUser>(modelBuilder, c => c.User, c => c.UserId);
 
@@ -382,7 +377,7 @@ namespace Database
 			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
 			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
 
-			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
+			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId }, true);
 			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp }); // посещения за период
 			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.UserId }); // поиск всех слайдов
 
@@ -390,8 +385,14 @@ namespace Database
 
 			AddIndex<UserFlashcardsVisit>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId, c.FlashcardId }, false);
 			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
-
+			
 			AddIndex<GoogleSheetExportTask>(modelBuilder, c => new { c.CourseId, c.AuthorId });
+
+			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
+			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Text }, true);
+
+			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
+			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
 		}
 
 		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class
@@ -448,7 +449,8 @@ namespace Database
 		public DbSet<CommentsPolicy> CommentsPolicies { get; set; }
 
 		public DbSet<CourseVersion> CourseVersions { get; set; }
-		public DbSet<CourseFile> CourseFiles { get; set; }
+		public DbSet<CourseVersionFile> CourseVersionFiles { get; set; }
+
 		public DbSet<CourseGit> CourseGitRepos { get; set; }
 
 		public DbSet<ManualExerciseChecking> ManualExerciseCheckings { get; set; }
@@ -521,5 +523,8 @@ namespace Database
 		public DbSet<GoogleSheetExportTask> GoogleSheetExportTasks { get; set; }
 
 		public DbSet<GoogleSheetExportTaskGroup> GoogleSheetExportTaskGroups { get; set; }
+
+		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
+		public DbSet<FavouriteReviewByUser> FavouriteReviewsByUsers { get; set; }
 	}
 }

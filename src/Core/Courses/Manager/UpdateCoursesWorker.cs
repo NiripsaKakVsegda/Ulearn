@@ -26,17 +26,18 @@ namespace Ulearn.Core.Courses.Manager
 		private void RunUpdateCoursesWorker(IScheduledActionsBuilder builder)
 		{
 			var updateCoursesScheduler = Scheduler.Multi(Scheduler.Periodical(coursesUpdatePeriod), Scheduler.OnDemand(out var updateCourses));
-			builder.Schedule(UpdateCoursesJobName, updateCoursesScheduler, courseUpdater.UpdateCourses);
+			builder.Schedule(UpdateCoursesJobName, updateCoursesScheduler, courseUpdater.UpdateCoursesAsync);
 
 			var updateTempCoursesScheduler = Scheduler.Multi(Scheduler.Periodical(tempCoursesUpdatePeriod), Scheduler.OnDemand(out var updateTempCourses));
-			builder.Schedule(UpdateTempCoursesJobName, updateTempCoursesScheduler, courseUpdater.UpdateTempCourses);
+			builder.Schedule(UpdateTempCoursesJobName, updateTempCoursesScheduler, courseUpdater.UpdateTempCoursesAsync);
 
-			updateCourses();
-			updateTempCourses();
+			courseUpdater.UpdateCoursesAsync().Wait(); // в этом потоке
+			updateTempCourses(); // в другом потоке
 		}
 
-		public void RunCoursesUpdateInThreads()
+		public void DoInitialCourseLoadAndRunCoursesUpdateInThreads()
 		{
+			courseUpdater.UpdateCoursesAsync().Wait();
 			var coursesThread = new Thread(UpdateCoursesLoop);
 			coursesThread.Start();
 			var tempCoursesThread = new Thread(UpdateTempCoursesLoop);
@@ -47,7 +48,7 @@ namespace Ulearn.Core.Courses.Manager
 		{
 			while (true)
 			{
-				courseUpdater.UpdateCourses().Wait();
+				courseUpdater.UpdateCoursesAsync().Wait();
 				Thread.Sleep(coursesUpdatePeriod);
 			}
 			// ReSharper disable once FunctionNeverReturns
@@ -57,7 +58,7 @@ namespace Ulearn.Core.Courses.Manager
 		{
 			while (true)
 			{
-				courseUpdater.UpdateTempCourses().Wait();
+				courseUpdater.UpdateTempCoursesAsync().Wait();
 				Thread.Sleep(tempCoursesUpdatePeriod);
 			}
 			// ReSharper disable once FunctionNeverReturns

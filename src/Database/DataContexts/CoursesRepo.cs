@@ -46,13 +46,14 @@ namespace Database.DataContexts
 			return db.CourseVersions.Where(v => v.CourseId == courseId).OrderByDescending(v => v.LoadingTime);
 		}
 
-		public async Task<CourseVersion> AddCourseVersion(string courseId, Guid versionId, string authorId,
-			string pathToCourseXmlInRepo, string repoUrl, string commitHash, string description)
+		public async Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
+			string pathToCourseXmlInRepo, string repoUrl, string commitHash, string description, byte[] courseContent)
 		{
 			var courseVersion = new CourseVersion
 			{
 				Id = versionId,
 				CourseId = courseId,
+				CourseName = courseName,
 				LoadingTime = DateTime.Now,
 				PublishTime = null,
 				AuthorId = authorId,
@@ -62,7 +63,15 @@ namespace Database.DataContexts
 				RepoUrl = repoUrl
 			};
 			db.CourseVersions.Add(courseVersion);
-			await db.SaveChangesAsync();
+			var courseVersionFile = new CourseVersionFile
+			{
+				CourseVersionId = versionId,
+				CourseVersion = courseVersion,
+				CourseId = courseId,
+				File = courseContent
+			};
+			db.CourseVersionFiles.Add(courseVersionFile);
+			await db.SaveChangesAsync(); // автоматически выполнит обе операции в транзации
 
 			return courseVersion;
 		}
@@ -183,37 +192,15 @@ namespace Database.DataContexts
 			return db.CourseAccesses.Where(x => x.UserId == userId && x.CourseId == courseId).ToList();
 		}
 
-		// Add new and remove old course file
-		public async Task AddCourseFile(string courseId, Guid versionId, byte[] content)
+		public CourseVersionFile GetVersionFile(Guid courseVersion)
 		{
-			var file = new CourseFile
-			{
-				CourseId = courseId,
-				CourseVersionId = versionId,
-				File = content
-			};
-			db.CourseFiles.RemoveRange(db.CourseFiles.Where(f => f.CourseId == courseId));
-			db.CourseFiles.Add(file);
-			await db.SaveChangesAsync();
+			return db.CourseVersionFiles.FirstOrDefault(f => f.CourseVersionId == courseVersion);
 		}
 
-		[CanBeNull]
-		public CourseFile GetCourseFile(string courseId)
+		public CourseVersionFile GetPublishedVersionFile(string courseId)
 		{
-			return db.CourseFiles.FirstOrDefault(f => f.CourseId == courseId);
-		}
-
-		// Итерирование выполняется лениво и должно быть закончено до выполнения любых других методов
-		// AsNoTracking делает запрос ленивым
-		// Запрос всего списка сразу приведет к переполнению памяти в базе.
-		//public IQueryable<CourseFile> GetCourseFilesLazyNotSafe(IEnumerable<string> existingOnDiskCourseIds)
-		//{
-		//	return db.CourseFiles.Where(a => !existingOnDiskCourseIds.Contains(a.CourseId)).AsNoTracking();
-		//}
-
-		public List<string> GetCourseIdsFromCourseFiles()
-		{
-			return db.CourseFiles.Select(cf => cf.CourseId).ToList();
+			var publishedCourseVersion = GetPublishedCourseVersion(courseId);
+			return GetVersionFile(publishedCourseVersion.Id);
 		}
 
 		[CanBeNull]

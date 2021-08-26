@@ -12,6 +12,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Api.Models.Responses;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
@@ -35,11 +36,12 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly ILtiRequestsRepo ltiRequestsRepo;
 		private readonly ILtiConsumersRepo ltiConsumersRepo;
 		private readonly IUnitsRepo unitsRepo;
+		private readonly IGroupsRepo groupsRepo;
 
 		public UserProgressController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			IVisitsRepo visitsRepo, IUserQuizzesRepo userQuizzesRepo, IAdditionalScoresRepo additionalScoresRepo,
 			ICourseRolesRepo courseRolesRepo, IGroupAccessesRepo groupAccessesRepo, IGroupMembersRepo groupMembersRepo,
-			ISlideCheckingsRepo slideCheckingsRepo, ILtiRequestsRepo ltiRequestsRepo, ILtiConsumersRepo ltiConsumersRepo, IUnitsRepo unitsRepo)
+			ISlideCheckingsRepo slideCheckingsRepo, ILtiRequestsRepo ltiRequestsRepo, ILtiConsumersRepo ltiConsumersRepo, IUnitsRepo unitsRepo, IGroupsRepo groupsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.visitsRepo = visitsRepo;
@@ -52,6 +54,7 @@ namespace Ulearn.Web.Api.Controllers
 			this.ltiRequestsRepo = ltiRequestsRepo;
 			this.ltiConsumersRepo = ltiConsumersRepo;
 			this.unitsRepo = unitsRepo;
+			this.groupsRepo = groupsRepo;
 		}
 
 		/// <summary>
@@ -59,7 +62,7 @@ namespace Ulearn.Web.Api.Controllers
 		/// </summary>
 		[HttpPost("{courseId}")]
 		[Authorize]
-		public async Task<ActionResult<UsersProgressResponse>> UserProgress([FromRoute]string courseId, [FromBody]UserProgressParameters parameters)
+		public async Task<ActionResult<UsersProgressResponse>> UserProgress([FromRoute] string courseId, [FromBody] UserProgressParameters parameters)
 		{
 			if (!courseStorage.HasCourse(courseId))
 				return NotFound(new ErrorResponse($"Course {courseId} not found"));
@@ -98,6 +101,7 @@ namespace Ulearn.Web.Api.Controllers
 			var waitingExerciseSlides = await slideCheckingsRepo.GetSlideIdsWaitingForManualExerciseCheckAsync(course.Id, userIds).ConfigureAwait(false);
 			var prohibitFurtherManualCheckingSlides = await slideCheckingsRepo.GetProhibitFurtherManualCheckingSlides(course.Id, userIds).ConfigureAwait(false);
 			var skippedSlides = await visitsRepo.GetSkippedSlides(course.Id, userIds);
+			var usersIdsWithEnabledManualChecking = await groupsRepo.GetUsersIdsWithEnabledManualChecking(course, userIds);
 
 			var usersProgress = new Dictionary<string, UserProgress>();
 			foreach (var userId in scores.Keys)
@@ -106,18 +110,19 @@ namespace Ulearn.Web.Api.Controllers
 					= scores[userId]
 						.Where(kvp => visibleSlides.Contains(kvp.Key))
 						.ToDictionary(kvp => kvp.Key, kvp => new UserProgressSlideResult
-					{
-						Visited = true, 
-						Timestamp = visitsTimestamps.TryGetValue(kvp.Key, out var visit) ? visit.Timestamp : null,
-						Score = kvp.Value,
-						IsSkipped = skippedSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false,
-						UsedAttempts = attempts.GetValueOrDefault(userId)?.GetValueOrDefault(kvp.Key) ?? 0,
-						WaitingForManualChecking = (waitingExerciseSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false)
-							|| (waitingQuizSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false),
-						ProhibitFurtherManualChecking = prohibitFurtherManualCheckingSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false
-					});
+						{
+							Visited = true,
+							Timestamp = visitsTimestamps.TryGetValue(kvp.Key, out var visit) ? visit.Timestamp : null,
+							Score = kvp.Value,
+							IsSkipped = skippedSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false,
+							UsedAttempts = attempts.GetValueOrDefault(userId)?.GetValueOrDefault(kvp.Key) ?? 0,
+							WaitingForManualChecking =
+								usersIdsWithEnabledManualChecking.Contains(userId)
+								&& ((waitingExerciseSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false) || (waitingQuizSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false)),
+							ProhibitFurtherManualChecking = prohibitFurtherManualCheckingSlides.GetValueOrDefault(userId)?.Contains(kvp.Key) ?? false
+						});
 				var userAdditionalScores = additionalScores.GetValueOrDefault(userId);
-					usersProgress[userId] = new UserProgress
+				usersProgress[userId] = new UserProgress
 				{
 					VisitedSlides = visitedSlides,
 					AdditionalScores = userAdditionalScores
@@ -129,7 +134,7 @@ namespace Ulearn.Web.Api.Controllers
 				UserProgress = usersProgress,
 			};
 		}
-		
+
 		[ItemCanBeNull]
 		private async Task<List<string>> GetUserIdsWithProgressNotVisibleForUser(string courseId, List<string> userIds)
 		{
@@ -141,9 +146,9 @@ namespace Ulearn.Web.Api.Controllers
 			var userRole = await courseRolesRepo.GetRole(UserId, courseId).ConfigureAwait(false);
 			var groups = userRole == CourseRoleType.Instructor ? await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, false, true, false) : new List<Group>();
 			groups = groups
-				.Concat((await groupMembersRepo.GetUserGroupsAsync(courseId, UserId, false)).Where(g=> g.CanUsersSeeGroupProgress))
+				.Concat((await groupMembersRepo.GetUserGroupsAsync(courseId, UserId, false)).Where(g => g.CanUsersSeeGroupProgress))
 				.Distinct().ToList();
-			var members = new []{UserId}.Concat(await groupMembersRepo.GetGroupsMembersIdsAsync(groups.Select(g => g.Id).ToList())).ToHashSet();
+			var members = new[] { UserId }.Concat(await groupMembersRepo.GetGroupsMembersIdsAsync(groups.Select(g => g.Id).ToList())).ToHashSet();
 			var allIdsInMembers = members.IsSupersetOf(userIds);
 			if (allIdsInMembers)
 				return null;
@@ -151,7 +156,7 @@ namespace Ulearn.Web.Api.Controllers
 			notVisibleUserIds.ExceptWith(members);
 			return notVisibleUserIds.ToList();
 		}
-		
+
 		private async Task<Dictionary<string, Dictionary<Guid, Dictionary<string, int>>>> GetAdditionalScores(string courseId, List<string> userIds)
 		{
 			return (await additionalScoresRepo.GetAdditionalScoresForUsers(courseId, userIds).ConfigureAwait(false))
@@ -184,11 +189,27 @@ namespace Ulearn.Web.Api.Controllers
 				if (instructorNote != null && isInstructor)
 					slide = instructorNote;
 			}
+
 			if (slide == null)
 				return StatusCode((int)HttpStatusCode.NotFound, $"No slide with id {slideId}");
 			var visit = await visitsRepo.AddVisit(course.Id, slideId, UserId, GetRealClientIp());
 			await ResendLtiScore(course.Id, slide, visit);
 			return await UserProgress(course.Id, new UserProgressParameters());
+		}
+
+		[HttpPut("{courseId}/{slideId}/prohibit-further-manual-checking")]
+		[Authorize(Policy = "Instructors")]
+		public async Task<ActionResult> ProhibitFurtherManualChecking([FromRoute] string courseId, [FromRoute] Guid slideId, [FromQuery] string userId, [FromQuery] bool prohibit)
+		{
+			if (!await groupAccessesRepo.HasInstructorViewAccessToStudentGroup(User.GetUserId(), userId))
+				return StatusCode((int)HttpStatusCode.Forbidden, "This student should be member of one of accessible for you groups");
+
+			if (prohibit)
+				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(courseId, userId, slideId);
+			else
+				await slideCheckingsRepo.EnableFurtherManualCheckings(courseId, userId, slideId);
+
+			return Ok($"{(prohibit ? "Prohibited" : "Enabled")} further exercise manual checking  for {courseId}/{slideId}");
 		}
 
 		/// <summary>

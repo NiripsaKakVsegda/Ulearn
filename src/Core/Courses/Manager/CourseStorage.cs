@@ -3,12 +3,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Core.Courses.Manager
 {
-	public class CourseStorage : ICourseStorage, IUpdateCourseStorage
+	public class CourseStorage : ICourseStorage, ICourseStorageUpdater
 	{
 		private readonly ConcurrentDictionary<string, Course> courses = new ConcurrentDictionary<string, Course>(StringComparer.InvariantCultureIgnoreCase);
+
+		private static ILog log => LogProvider.Get().ForContext(typeof(CourseStorage));
+
 		public event CourseChangedEventHandler CourseChangedEvent;
 
 		public Course GetCourse(string courseId)
@@ -29,16 +33,17 @@ namespace Ulearn.Core.Courses.Manager
 			return FindCourse(courseId) != null;
 		}
 
-		public void AddOrUpdateCourse(Course course, Guid version)
+		public void AddOrUpdateCourse(Course course)
 		{
-			course.CourseVersion = version;
 			courses.AddOrUpdate(course.Id, _ => course, (_, _) => course);
+			log.Info($"В CourseStorage загружен курс {course.Id} версии {course.CourseVersionToken}");
 			CourseChangedEvent?.Invoke(course.Id);
 		}
 
 		public void TryRemoveCourse(string courseId)
 		{
-			courses.TryRemove(courseId, out _);
+			if (courses.TryRemove(courseId, out _))
+				log.Warn($"Из CourseStorage удален курс {courseId}");
 		}
 
 		public IEnumerable<Course> GetCourses()

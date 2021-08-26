@@ -3,10 +3,9 @@ import { connect, ConnectedProps } from "react-redux";
 import classNames from 'classnames';
 
 import DownloadedHtmlContent from 'src/components/common/DownloadedHtmlContent.js';
-import { Modal, } from "ui";
+import { Link, Modal, } from "ui";
 
 import { isInstructor } from "src/utils/courseRoles";
-import { getSlideInfoById } from "../../CourseUtils";
 
 import { SlideType } from "src/models/slide";
 import { constructPathToStudentSubmissions } from "src/consts/routes";
@@ -14,10 +13,19 @@ import { RootState } from "src/models/reduxState";
 
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
+import { SubmissionInfo } from "../../../../../models/exercise";
+import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
+import { Loader } from "@skbkontur/react-ui";
 
+interface State {
+	isModalShowed: boolean;
+	isContentInModalReady: boolean;
+}
 
 const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
-	const [isModalShowed, showModal] = useState(false);
+	const [{ isModalShowed, isContentInModalReady }, setState] = useState<State>(
+		{ isModalShowed: false, isContentInModalReady: false, });
+
 
 	const {
 		score,
@@ -58,52 +66,76 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 				{ texts.getSlideScore(score, maxScore, anyTryUsed) }
 			</span>
 			{ message && <span className={ styles.headerStatusText }>{ message }</span> }
-			{ showStudentSubmissions && <a onClick={ openModal } className={ styles.headerLinkText }>
-				{ texts.showAcceptedSolutionsText }
-			</a> }
+			{ showStudentSubmissions &&
+			<Link loading={ !isContentInModalReady && isModalShowed } onClick={ openModal }
+				  className={ styles.headerLinkText }>
+				<Loader type={ 'mini' } caption={ '' }
+						active={ !isContentInModalReady && isModalShowed }>
+					{ texts.showAcceptedSolutionsText }
+				</Loader>
+			</Link>
+			}
 			{ isModalShowed &&
 			<DownloadedHtmlContent
 				url={ constructPathToStudentSubmissions(courseId, slideId) }
-				injectInWrapperAfterContentReady={ (html: React.ReactNode) =>
-					<Modal width={ modalWidth } onClose={ closeModal }>
-						<Modal.Header>
-							<h2>
-								{ texts.showAcceptedSolutionsHeaderText }
-							</h2>
-						</Modal.Header>
-						<Modal.Body>
-							{ html }
-						</Modal.Body>
-					</Modal> }/>
+				injectInWrapperAfterContentReady={ injectInWrapperAfterContentReady }
+			/>
 			}
 		</div>
 	);
 
+	function injectInWrapperAfterContentReady(html: React.ReactNode) {
+		if(!isContentInModalReady) {
+			setState({ isContentInModalReady: true, isModalShowed: true });
+		}
+		return (
+			<Modal width={ modalWidth } onClose={ closeModal }>
+				<Modal.Header>
+					<h2>
+						{ texts.showAcceptedSolutionsHeaderText }
+					</h2>
+				</Modal.Header>
+				<Modal.Body>
+					{ html }
+				</Modal.Body>
+			</Modal>);
+	}
+
 	function closeModal() {
-		showModal(false);
+		setState({ isContentInModalReady: false, isModalShowed: false });
 	}
 
 	function openModal() {
-		showModal(true);
+		if(!isModalShowed) {
+			setState({ isContentInModalReady: false, isModalShowed: true });
+		}
 	}
 };
 
 interface ScoreHeaderProps {
-	courseId: string;
-	slideId: string;
+	slideInfo: SlideInfo;
 }
 
 const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
-	const { userProgress, courses, slides, account, } = state;
-	const { submissionsByCourses, } = slides;
-	const { courseId, slideId } = ownProps;
+	const { userProgress, account, } = state;
+	const { slideInfo, } = ownProps;
+	const { slideId, courseId, slideType, } = slideInfo;
+
+	if(!slideId) {
+		throw new Error('No slide id provided');
+	}
 
 	const slideProgress = userProgress.progress[courseId]?.[slideId];
-	const courseInfo = courses.fullCoursesInfo[courseId];
-	const slideInfo = getSlideInfoById(slideId, courseInfo)?.current;
-	const submissions = submissionsByCourses[courseId]?.[slideId];
+	const submissions: SubmissionInfo[] | undefined =
+		getSubmissionsWithReviews(
+			courseId,
+			slideId,
+			state.account.id,
+			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
+			state.submissions.submissionsById, state.submissions.reviewsBySubmissionId
+		);
 	const hasReviewedSubmissions = submissions
-		? Object.values(submissionsByCourses[courseId][slideId]).some(s => s.manualCheckingPassed)
+		? submissions.some(s => (s.manualChecking?.percent || null) !== null)
 		: false;
 	const instructor = isInstructor(
 		{ isSystemAdministrator: account.isSystemAdministrator, courseRole: account.roleByCourse[courseId] });
@@ -115,9 +147,9 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		isSkipped: slideProgress?.isSkipped ?? false,
 		waitingForManualChecking: slideProgress?.waitingForManualChecking ?? false,
 		prohibitFurtherManualChecking: slideProgress?.prohibitFurtherManualChecking ?? false,
-		maxScore: slideInfo?.maxScore || 0,
+		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		hasReviewedSubmissions: hasReviewedSubmissions,
-		showStudentSubmissions: slideInfo?.type === SlideType.Exercise && instructor,
+		showStudentSubmissions: slideType === SlideType.Exercise && instructor,
 	};
 };
 const connector = connect(mapState);

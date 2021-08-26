@@ -9,15 +9,21 @@ namespace Ulearn.Core.Courses
 {
 	public class Course : ICourse
 	{
-		public Course(string id, List<Unit> units, [NotNull]CourseSettings settings)
+		public Course(string id, List<Unit> units, [NotNull]CourseSettings settings, [NotNull]CourseVersionToken courseVersionToken)
 		{
 			Id = id;
 			this.units = units;
 			Settings = settings;
+			CourseVersionToken = courseVersionToken;
 		}
 
 		public string Id { get; set; }
-		public Guid CourseVersion { get; set; } // TODO устанавливать в конструкторе
+
+		[NotNull]
+		public CourseVersionToken CourseVersionToken { get; set; }
+
+		public bool IsTempCourse() => CourseVersionToken.IsTempCourse();
+
 		public string Title => Settings.Title;
 		[NotNull]
 		public CourseSettings Settings { get; private set; }

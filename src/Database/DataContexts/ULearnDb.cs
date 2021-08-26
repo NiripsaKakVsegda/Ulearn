@@ -64,6 +64,12 @@ namespace Database.DataContexts
 				.HasForeignKey(d => d.NotificationId)
 				.WillCascadeOnDelete(true);
 
+			modelBuilder.Entity<ExerciseCodeReview>()
+				.HasRequired(s => s.ExerciseChecking)
+				.WithMany(c => c.Reviews)
+				.HasForeignKey(p => p.ExerciseCheckingId)
+				.WillCascadeOnDelete(true);
+
 			modelBuilder.Entity<UserQuizSubmission>()
 				.HasOptional(s => s.AutomaticChecking)
 				.WithRequired(c => c.Submission)
@@ -74,6 +80,17 @@ namespace Database.DataContexts
 				.WithRequired(c => c.Submission)
 				.WillCascadeOnDelete(false);
 
+			modelBuilder.Entity<UserExerciseSubmission>()
+				.HasOptional(s => s.ManualChecking)
+				.WithRequired(c => c.Submission)
+				.WillCascadeOnDelete(false);
+
+			modelBuilder.Entity<FavouriteReviewByUser>()
+				.HasRequired(s => s.FavouriteReview)
+				.WithMany(c => c.FavouriteReviewsByUser)
+				.HasForeignKey(p => p.FavouriteReviewId)
+				.WillCascadeOnDelete(true);
+
 			modelBuilder.Entity<UserRole>().HasRequired(r => r.User).WithMany().HasForeignKey(r => r.UserId).WillCascadeOnDelete();
 
 			CancelCascaseDeleting<ExerciseCodeReview, ApplicationUser, string>(modelBuilder, c => c.Author, c => c.AuthorId);
@@ -82,7 +99,7 @@ namespace Database.DataContexts
 			CancelCascaseDeleting<ManualExerciseChecking, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
 
 			CancelCascaseDeleting<ExerciseCodeReviewComment, ApplicationUser, string>(modelBuilder, c => c.Author, c => c.AuthorId);
-//			CancelCascaseDeleting<ExerciseCodeReviewComment, ExerciseCodeReview, int>(modelBuilder, c => c.Review, c => c.ReviewId);
+			//			CancelCascaseDeleting<ExerciseCodeReviewComment, ExerciseCodeReview, int>(modelBuilder, c => c.Review, c => c.ReviewId);
 
 			CancelCascaseDeleting<Certificate, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
 			CancelCascaseDeleting<Certificate, ApplicationUser, string>(modelBuilder, c => c.Instructor, c => c.InstructorId);
@@ -91,31 +108,6 @@ namespace Database.DataContexts
 			CancelCascaseDeleting<AdditionalScore, ApplicationUser, string>(modelBuilder, c => c.Instructor, c => c.InstructorId);
 
 			CancelCascaseDeleting<GraderClient, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
-
-			CancelCascaseDeleting<Notification, ApplicationUser, string>(modelBuilder, c => c.InitiatedBy, c => c.InitiatedById);
-			CancelCascaseDeleting<AddedInstructorNotification, ApplicationUser, string>(modelBuilder, c => c.AddedUser, c => c.AddedUserId);
-			CancelCascaseDeleting<LikedYourCommentNotification, ApplicationUser, string>(modelBuilder, c => c.LikedUser, c => c.LikedUserId);
-			CancelCascaseDeleting<JoinedToYourGroupNotification, ApplicationUser, string>(modelBuilder, c => c.JoinedUser, c => c.JoinedUserId);
-			CancelCascaseDeleting<JoinedToYourGroupNotification, Group, int>(modelBuilder, c => c.Group, c => c.GroupId);
-			CancelCascaseDeleting<GrantedAccessToGroupNotification, GroupAccess, int>(modelBuilder, c => c.Access, c => c.AccessId);
-			CancelCascaseDeleting<RevokedAccessToGroupNotification, GroupAccess, int>(modelBuilder, c => c.Access, c => c.AccessId);
-			CancelCascaseDeleting<GroupMembersHaveBeenRemovedNotification, Group, int>(modelBuilder, c => c.Group, c => c.GroupId);
-			CancelCascaseDeleting<GroupMembersHaveBeenAddedNotification, Group, int>(modelBuilder, c => c.Group, c => c.GroupId);
-			CancelCascaseDeleting<CreatedGroupNotification, Group, int>(modelBuilder, c => c.Group, c => c.GroupId);
-			CancelCascaseDeleting<PassedManualExerciseCheckingNotification, ManualExerciseChecking, int>(modelBuilder, c => c.Checking, c => c.CheckingId);
-			CancelCascaseDeleting<PassedManualQuizCheckingNotification, ManualQuizChecking, int>(modelBuilder, c => c.Checking, c => c.CheckingId);
-
-			CancelCascaseDeleting<NewCommentNotification, Comment, int>(modelBuilder, c => c.Comment, c => c.CommentId);
-			CancelCascaseDeleting<NewCommentFromYourGroupStudentNotification, Comment, int>(modelBuilder, c => c.Comment, c => c.CommentId);
-			CancelCascaseDeleting<LikedYourCommentNotification, Comment, int>(modelBuilder, c => c.Comment, c => c.CommentId);
-			CancelCascaseDeleting<RepliedToYourCommentNotification, Comment, int>(modelBuilder, c => c.Comment, c => c.CommentId);
-			CancelCascaseDeleting<RepliedToYourCommentNotification, Comment, int>(modelBuilder, c => c.ParentComment, c => c.ParentCommentId);
-			CancelCascaseDeleting<NewCommentForInstructorsOnlyNotification, Comment, int>(modelBuilder, c => c.Comment, c => c.CommentId);
-
-			CancelCascaseDeleting<UploadedPackageNotification, CourseVersion, Guid>(modelBuilder, c => c.CourseVersion, c => c.CourseVersionId);
-			CancelCascaseDeleting<PublishedPackageNotification, CourseVersion, Guid>(modelBuilder, c => c.CourseVersion, c => c.CourseVersionId);
-
-			CancelCascaseDeleting<CourseExportedToStepikNotification, StepikExportProcess, int>(modelBuilder, c => c.Process, c => c.ProcessId);
 
 			CancelCascaseDeleting<XQueueWatcher, ApplicationUser, string>(modelBuilder, c => c.User, c => c.UserId);
 
@@ -199,7 +191,7 @@ namespace Database.DataContexts
 		public DbSet<CommentsPolicy> CommentsPolicies { get; set; }
 
 		public DbSet<CourseVersion> CourseVersions { get; set; }
-		public DbSet<CourseFile> CourseFiles { get; set; }
+		public DbSet<CourseVersionFile> CourseVersionFiles { get; set; }
 		public DbSet<CourseGit> CourseGitRepos { get; set; }
 
 		public DbSet<ManualExerciseChecking> ManualExerciseCheckings { get; set; }
@@ -255,10 +247,12 @@ namespace Database.DataContexts
 		public DbSet<WorkQueueItem> WorkQueueItems { get; set; }
 
 		public DbSet<AcceptedSolutionsPromote> AcceptedSolutionsPromotes { get; set; }
-		
 
 		public DbSet<GoogleSheetExportTask> GoogleSheetExportTasks { get; set; }
 
 		public DbSet<GoogleSheetExportTaskGroup> GoogleSheetExportTaskGroups { get; set; }
+
+		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
+		public DbSet<FavouriteReviewByUser> FavouriteReviewByUsers { get; set; }
 	}
 }

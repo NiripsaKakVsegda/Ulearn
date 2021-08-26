@@ -3,9 +3,11 @@ import NavigationHeader, { Props } from "./NavigationHeader";
 import { DeviceType } from "src/consts/deviceType";
 import type { Story } from "@storybook/react";
 import { Button } from "ui";
+import { mock } from "src/storiesUtils";
+import { DesktopWrapper } from "../stroies.data";
 
 export default {
-	title: "CourseNavigation",
+	title: "CourseNavigationHeader",
 };
 
 const defaultProps = {
@@ -16,11 +18,11 @@ const defaultProps = {
 	courseProgress: { current: 0, max: 100, inProgress: 0, },
 	groupsAsStudent: [],
 
-	returnToCourseNavigationClicked: () => ({}),
+	returnToCourseNavigationClicked: mock,
 };
 
 const ListTemplate: Story<Partial<Props>[]> = propsArray => {
-	return <div>
+	return <DesktopWrapper>
 		{ Object.values(propsArray).map((props, index) => (
 			<>
 				<span style={ { color: 'green' } }>{ props.courseProgress?.current || 0 }</span>/
@@ -29,7 +31,7 @@ const ListTemplate: Story<Partial<Props>[]> = propsArray => {
 				<NavigationHeader key={ index } { ...defaultProps } { ...props }/>
 			</>
 		)) }
-	</div>;
+	</DesktopWrapper>;
 };
 
 const args = [
@@ -128,7 +130,7 @@ class DynamicallyChangingProgressClass extends React.Component<ChangingProps, Pr
 		this.setState({ ...this.props }, () => {
 			setTimeout(() => {
 				this.interval = setInterval(this.update, this.timeout) as unknown as number;
-				this.currentChange = 'current';
+				this.currentChange = this.props.startFromChanging;
 			}, 1000);
 		});
 	};
@@ -142,7 +144,7 @@ const defaultChangingProps: ChangingProps = {
 };
 
 const DynamicallyChangingProgressListTemplate: Story<Partial<ChangingProps>[]> = propsArray => {
-	return <div>
+	return <DesktopWrapper>
 		{ Object.values(propsArray).map((props, index) => (
 			<>
 				<div style={ { marginBottom: '15px' } }>
@@ -153,7 +155,7 @@ const DynamicallyChangingProgressListTemplate: Story<Partial<ChangingProps>[]> =
 				</div>
 			</>
 		)) }
-	</div>;
+	</DesktopWrapper>;
 };
 
 export const DynamicallyChangingProgressList = DynamicallyChangingProgressListTemplate.bind({});
@@ -164,4 +166,7 @@ DynamicallyChangingProgressList.args = [
 	{ swapAtPercentage: 0, },
 	{ startFromChanging: 'inProgress', swapAtPercentage: 0, },
 ];
+DynamicallyChangingProgressList.parameters = {
+	loki: { skip: true },
+};
 

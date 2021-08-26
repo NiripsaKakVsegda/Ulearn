@@ -50,7 +50,7 @@ namespace Database.Core.Tests.Repos
 
 			services.AddSingleton(db);
 			services.AddLogging(builder => builder.AddVostok(LogProvider.Get()));
-			services.AddDatabaseServices();
+			services.AddDatabaseServices(true);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
 
 			return services.BuildServiceProvider();

@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Xml.Serialization;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
 {
@@ -26,11 +23,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)
 		{
 			yield return new ImageGalleryBlock(context.UnitDirectory.GetFilenames(Directory)) { Hide = Hide };
-		}
-
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
 		}
 	}
 }

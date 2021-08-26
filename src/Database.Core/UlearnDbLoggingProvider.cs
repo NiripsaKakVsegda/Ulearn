@@ -6,7 +6,7 @@ using Vostok.Logging.Abstractions;
 
 namespace Database
 {
-	internal class UlearnDbLoggingProvider : INpgsqlLoggingProvider
+	public class UlearnDbLoggingProvider : INpgsqlLoggingProvider
 	{
 		public NpgsqlLogger CreateLogger(string name)
 		{
@@ -20,19 +20,8 @@ namespace Database
 
 		public UlearnDbLogger(string name)
 		{
-			dbMinimumLevel = GetDbMinimumLevelFromConfig();
-		}
-
-		private static LogLevel GetDbMinimumLevelFromConfig()
-		{
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
-			var minimumLevelString = configuration.HostLog.MinimumLevel ?? "debug";
-			var dbMinimumLevelString = configuration.HostLog.DbMinimumLevel ?? "";
-			if (!LoggerSetup.TryParseLogLevel(minimumLevelString, out var minimumLevel))
-				minimumLevel = LogLevel.Debug;
-			if (!LoggerSetup.TryParseLogLevel(dbMinimumLevelString, out var dbMinimumLevel))
-				dbMinimumLevel = minimumLevel;
-			return dbMinimumLevel;
+			(_, dbMinimumLevel) = LoggerSetup.GetMinimumLevels(configuration.HostLog);
 		}
 
 		public override bool IsEnabled(NpgsqlLogLevel level)
@@ -42,8 +31,11 @@ namespace Database
 
 		public override void Log(NpgsqlLogLevel level, int connectorId, string msg, Exception? exception = null)
 		{
+			var thisMessageVostokLogLevel = ToVostokLogLevel(level);
+			if (thisMessageVostokLogLevel < dbMinimumLevel)
+				return;
 			var log = LogProvider.Get().ForContext(nameof(UlearnDb));
-			log.Log(new LogEvent(ToVostokLogLevel(level), DateTimeOffset.Now, msg, exception));
+			log.Log(new LogEvent(thisMessageVostokLogLevel, DateTimeOffset.Now, msg, exception));
 		}
 
 		private static LogLevel ToVostokLogLevel(NpgsqlLogLevel level)

@@ -50,7 +50,7 @@ namespace Database.Repos.Groups
 				.ToDictionary(g => g.Key, g => g.ToList());
 			foreach (var acceptedSubmissionsForSlide in acceptedSubmissionsBySlide.Values)
 				/* If exists at least one manual checking for at least one submissions on slide, then ignore this slide */
-				if (!acceptedSubmissionsForSlide.Any(s => s.ManualCheckings.Any()))
+				if (acceptedSubmissionsForSlide.All(s => s.ManualChecking == null))
 				{
 					/* Otherwise found the latest accepted submission */
 					var lastSubmission = acceptedSubmissionsForSlide.OrderByDescending(s => s.Timestamp).First();

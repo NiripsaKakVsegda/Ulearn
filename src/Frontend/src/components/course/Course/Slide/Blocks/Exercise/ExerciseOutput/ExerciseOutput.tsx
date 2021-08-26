@@ -1,12 +1,12 @@
 ﻿import React from "react";
-
+import cn from "classnames";
 import { Warning } from "@skbkontur/react-icons";
 
 import texts from "./ExerciseOutput.texts";
 import styles from "./ExerciseOutput.less";
 import {
-	AutomaticExerciseCheckingResult as CheckingResult,
 	AutomaticExerciseCheckingProcessStatus as ProcessStatus,
+	AutomaticExerciseCheckingResult as CheckingResult,
 	ExerciseAutomaticCheckingResponse,
 	SolutionRunStatus
 } from "src/models/exercise";
@@ -52,16 +52,17 @@ function HasOutput(message: string | null | undefined,
 }
 
 interface OutputTypeProps {
-	solutionRunStatus?: SolutionRunStatus, // Success, если не посылка прямо сейчас
-	message?: string | null,
-	expectedOutput: string | null,
-	automaticChecking?: ExerciseAutomaticCheckingResponse | null,
-	submissionColor: SubmissionColor
+	solutionRunStatus?: SolutionRunStatus; // Success, если не посылка прямо сейчас
+	message?: string | null;
+	expectedOutput: string | null;
+	automaticChecking?: ExerciseAutomaticCheckingResponse | null;
+	submissionColor: SubmissionColor;
+	withoutMargin?: boolean;
 }
 
 class ExerciseOutput extends React.Component<OutputTypeProps> {
 	render(): React.ReactNode {
-		const { expectedOutput, submissionColor } = this.props;
+		const { expectedOutput, submissionColor, withoutMargin, } = this.props;
 		const { outputType, body } = this.getOutputTypeAndBody();
 		const style = submissionColorToStyle[submissionColor];
 		const header = outputTypeToHeader[outputType];
@@ -70,7 +71,7 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 		const isSimpleTextOutput = !expectedOutput || !isWrongAnswer;
 
 		return (
-			<div className={ style }>
+			<div className={ cn(style, { [styles.outputWithMargin]: !withoutMargin }) }>
 				<span className={ styles.outputHeader }>
 					{ <React.Fragment>
 						{ showIcon

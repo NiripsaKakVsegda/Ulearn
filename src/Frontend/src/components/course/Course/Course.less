@@ -73,15 +73,34 @@
   margin-bottom: 32px;
 }
 
-.rootWrapper.withoutNavigation {
+.rootWrapper.lti {
   position: relative;
 
   width: 100%;
   max-width: 100vw;
   min-height: 0;
 
+  margin: -@headerHeight auto auto;
   padding: 0;
-  margin: 0;
+
+  .slide {
+    border-radius: 0;
+  }
+
+  .commentsWrapper {
+    border-radius: 0;
+  }
+}
+
+.rootWrapper.review {
+  position: relative;
+
+  width: 100%;
+  max-width: 100vw;
+  min-height: calc(100vh - @headerHeight - @headerDividerHeight);
+
+  padding: 0;
+  margin: auto;
 
   .slide {
     border-radius: 0;
@@ -143,6 +162,22 @@
   text-decoration: none;
 }
 
+.reviewButtonsWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.reviewButton {
+  margin-bottom: 16px;
+}
+
+.reviewQueueNumberLabel {
+  color: @additionalColor;
+  margin-bottom: 72px;
+}
+
 .footer {
   text-align: center;
   font-size: 12px;
@@ -166,6 +201,14 @@
   margin-left: 10px;
 }
 
+.reviewReturnToQueueLink {
+  font-family: @defaultFonts;
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 @media (min-width: @minTabletWidth) {
   .rootWrapper {
     width: @tabletSlideWidth;
@@ -175,6 +218,14 @@
     padding: @tabletSlidePadding 0 calc(@tabletSlidePadding * 2 + @additionalFooterMargins) 0;
 
     z-index: unset;
+  }
+
+  .rootWrapper.review {
+    max-width: calc(100vw - 48px);
+
+    .slide {
+      border-radius: 24px;
+    }
   }
 
   .title {
@@ -209,6 +260,11 @@
     padding-right: @tabletSlidePadding;
     padding-bottom: @tabletSlidePadding;
   }
+
+  .reviewReturnToQueueLink {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
 }
 
 @media (min-width: @minLaptopWidth) {
@@ -217,6 +273,10 @@
     max-width: @laptopSlideWidth;
     margin-left: calc(@maxNavigationMenuWidth + (100vw - @maxNavigationMenuWidth - @laptopSlideWidth) / 2);
     padding: @laptopSlidePadding 0 calc(@desktopSlidePadding + @additionalFooterMargins) 0;
+  }
+
+  .rootWrapper.review {
+    max-width: 1254px;
   }
 
   .title {
@@ -233,6 +293,11 @@
 
   .commentsWrapper {
     margin-bottom: @desktopSlidePadding;
+  }
+
+  .reviewReturnToQueueLink {
+    font-size: 16px;
+    line-height: 22px;
   }
 }
 

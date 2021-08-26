@@ -1,1 +1,1 @@
-docker build --pull -t algorithms-sandbox .
+docker build -t algorithms-sandbox .

@@ -19,6 +19,7 @@ interface ExerciseFormHeaderProps {
 	selectedSubmissionIsLast?: boolean,
 	selectedSubmissionIsLastSuccess?: boolean, // Это последнее решение, прошедшее тесты?
 	prohibitFurtherManualChecking?: boolean, // True, если ревью по задаче включено, но запрещено для задачи этого студента преподавателем
+	hasSubmissionWithManualChecking?: boolean // Есть решение с ManualChecking, пусть и не оцененным (для определения самого факта, что студент посылал задачу, когда была доступна проверка)
 	score?: number,
 }
 
@@ -27,7 +28,7 @@ const submissionColorToStyle: EnumDictionary<SubmissionColor, string> = {
 	[SubmissionColor.NeedImprovements]: styles.needImprovementsHeader,
 	[SubmissionColor.MaxResult]: styles.successHeader,
 	[SubmissionColor.Message]: styles.header,
-}
+};
 
 class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 	render(): React.ReactNode {
@@ -52,24 +53,32 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 			text = this.getTextForSelectedSubmission(selectedSubmission);
 		}
 		if(selectedSubmissionIsLast && score !== null && score !== undefined) {
-			const plural = getPluralForm(score, 'балл', 'балла', 'баллов')
+			const plural = getPluralForm(score, 'балл', 'балла', 'баллов');
 			text = `${ score } ${ plural }. ${ text }`;
 		}
 		return text;
 	}
 
 	getTextForSelectedSubmission(selectedSubmission: SubmissionInfo): string | null {
-		const { waitingForManualChecking, prohibitFurtherManualChecking, selectedSubmissionIsLastSuccess } = this.props;
-		const { automaticChecking, manualCheckingPassed, } = selectedSubmission;
+		const {
+			waitingForManualChecking,
+			prohibitFurtherManualChecking,
+			selectedSubmissionIsLastSuccess,
+			hasSubmissionWithManualChecking
+		} = this.props;
+		const { automaticChecking, manualChecking, } = selectedSubmission;
+		const manualCheckingPassed = (manualChecking?.percent || null) !== null;
 		if(automaticChecking) {
-			if (automaticChecking.output === CheckingResult.RuntimeError)
+			if(automaticChecking.output === CheckingResult.RuntimeError) {
 				automaticChecking.result = CheckingResult.RuntimeError;
+			}
 			switch (automaticChecking.processStatus) {
 				case ProcessStatus.Done:
 					switch (automaticChecking.result) {
 						case CheckingResult.RightAnswer:
 							return ExerciseFormHeader.getTextAllTestPassed(waitingForManualChecking,
-								prohibitFurtherManualChecking, manualCheckingPassed, !!selectedSubmissionIsLastSuccess);
+								prohibitFurtherManualChecking, manualCheckingPassed, hasSubmissionWithManualChecking,
+								!!selectedSubmissionIsLastSuccess);
 						case CheckingResult.CompilationError:
 							return texts.compilationError;
 						case CheckingResult.RuntimeError:
@@ -94,8 +103,9 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 					return null;
 			}
 		} else {
+			const manualCheckingPassed = (selectedSubmission.manualChecking?.percent || null) !== null;
 			return ExerciseFormHeader.getTextNoTests(waitingForManualChecking,
-				prohibitFurtherManualChecking, selectedSubmission.manualCheckingPassed,
+				prohibitFurtherManualChecking, manualCheckingPassed,
 				selectedSubmissionIsLastSuccess);
 		}
 	}
@@ -120,7 +130,9 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 
 	static getTextAllTestPassed(waitingForManualChecking: boolean | undefined,
 		prohibitFurtherManualChecking: boolean | undefined,
-		manualCheckingPassed: boolean, selectedSubmissionIsLastSuccess: boolean
+		manualCheckingPassed: boolean,
+		hasSubmissionWithManualChecking: boolean | undefined,
+		selectedSubmissionIsLastSuccess: boolean,
 	): string | null {
 		if(manualCheckingPassed) {
 			return texts.allTestPassedWasReviewed;
@@ -128,7 +140,7 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 		if(waitingForManualChecking && selectedSubmissionIsLastSuccess) {
 			return texts.allTestPassedPendingReview;
 		}
-		if(prohibitFurtherManualChecking && selectedSubmissionIsLastSuccess) {
+		if((prohibitFurtherManualChecking || (hasSubmissionWithManualChecking && !waitingForManualChecking)) && selectedSubmissionIsLastSuccess) {
 			return texts.allTestPassedProhibitFurtherReview;
 		}
 		if(selectedSubmissionIsLastSuccess) {
@@ -154,4 +166,4 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 	}
 }
 
-export { ExerciseFormHeader, ExerciseFormHeaderProps }
+export { ExerciseFormHeader, ExerciseFormHeaderProps };

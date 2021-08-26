@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import classNames from 'classnames';
 
-import { Button } from "ui";
+import { Button, Gapped } from "ui";
 import Avatar from "../../common/Avatar/Avatar";
 import MarkdownEditor from "./MarkdownEditor/MarkdownEditor";
 
@@ -49,7 +49,7 @@ class CommentSendForm extends Component<Props, State> {
 	}
 
 	render(): React.ReactElement {
-		const { author, isShowFocus, className } = this.props;
+		const { author, isShowFocus: { inSendForm, inEditForm, inReplyForm, }, className } = this.props;
 		const { error, text } = this.state;
 
 		const classes = classNames(className, styles.formContainer);
@@ -60,15 +60,15 @@ class CommentSendForm extends Component<Props, State> {
 					<Avatar className={ styles.avatar } user={ author as ShortUserInfo } size="big"/>) }
 				<form className={ styles.form } onSubmit={ this.handleSubmit }>
 					<MarkdownEditor
-						isShowFocus={ isShowFocus }
+						isShowFocus={ !!inSendForm || !!inEditForm || !!inReplyForm }
 						hasError={ error !== null }
 						text={ text }
 						handleChange={ this.handleChange }
 						handleSubmit={ this.handleSubmit }>
-						<div className={ styles.buttons }>
+						<Gapped gap={ 10 } className={ styles.buttons }>
 							{ this.renderSubmitButton() }
 							{ this.renderCancelButton() }
-						</div>
+						</Gapped>
 					</MarkdownEditor>
 				</form>
 			</div>

@@ -7,6 +7,7 @@ using Ulearn.Core;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
+using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Model.Edx;
@@ -16,39 +17,48 @@ using uLearn.CSharp;
 namespace uLearn.CourseTool
 {
 	[TestFixture]
-	[Explicit]
 	public class Converter_should
 	{
 		private Course course;
 
-		private readonly Slide aTextSlide = new Slide(new MarkdownBlock("hello"))
-		{
-			Id = Guid.NewGuid(),
-			Title = "title",
-		};
+		private Slide aTextSlide;
+		private ExerciseSlide exerciseSlide;
 
-		private readonly Slide exerciseSlide = new Slide(new CsProjectExerciseBlock(), new SingleFileExerciseBlock())
-		{
-			Id = slideIdFromCourse,
-			Title = "title",
-		};
-
-		private const string youtubeIdFromCourse = "GZS36w_fxdg";
-		private static readonly Guid slideIdFromCourse = Guid.Parse("108C89D9-36F0-45E3-BBEE-B93AC971063F");
-		private readonly DirectoryInfo testCourseDirectory = new DirectoryInfo(@"..\..\..\..\courses\ForTests\Slides");
-		private const string ulearnBaseUrlWeb = "https://192.168.33.1:44300";
-		private const string ulearnBaseUrlApi = "https://192.168.33.1:8000";
+		private const string courseId = "TestCourse";
+		private const string youtubeIdFromCourse = "ihyw2FdX4xs";
+		private static readonly string slideIdWithVideoFromCourse = "6b4382d1-ff21-4297-b276-fc873fc3579e";
+		private static readonly Guid slideIdFromCourse = Guid.Parse(slideIdWithVideoFromCourse);
+		private readonly DirectoryInfo testCourseDirectory = new DirectoryInfo($@"CourseTool/TestData/{courseId}");
+		private const string ulearnBaseUrlWeb = "https://localhost:44300";
+		private const string ulearnBaseUrlApi = "https://localhost:8000";
 		private const string ltiId = "edx";
 		private const string testFolderName = "test";
 
 		[SetUp]
 		public void SetUp()
 		{
+			TearDown();
 			Directory.SetCurrentDirectory(TestsHelper.TestDirectory);
 			if (!Directory.Exists(testFolderName))
 				Directory.CreateDirectory(testFolderName);
 			var loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
-			course = loader.Load(testCourseDirectory);
+			var fullCoursePath = testCourseDirectory.FullName;
+			if (!testCourseDirectory.Exists)
+				throw new Exception($"{fullCoursePath} not exists");
+			course = loader.Load(testCourseDirectory, courseId);
+			var unit = course.GetUnitsNotSafe()[0];
+			aTextSlide = new Slide(new MarkdownBlock("hello"))
+			{
+				Id = Guid.NewGuid(),
+				Title = "title",
+				Unit = unit
+			};
+			exerciseSlide = new ExerciseSlide(new CsProjectExerciseBlock(), new SingleFileExerciseBlock())
+			{
+				Id = slideIdFromCourse,
+				Title = "title",
+				Unit = unit
+			};
 		}
 
 		[TearDown]
@@ -57,23 +67,17 @@ namespace uLearn.CourseTool
 			Utils.DeleteDirectoryIfExists(testFolderName);
 		}
 
-		private EdxCourse ConvertForTestsCourseToEdx(Dictionary<string, string> youtubeId2UlearnVideoIds = null)
+		private EdxCourse ConvertForTestsCourseToEdx()
 		{
 			var config = new Config
 			{
 				Organization = "org",
 				LtiId = ""
 			};
-			return Converter.ToEdxCourse(course, config, ulearnBaseUrlWeb, ulearnBaseUrlApi,
-				youtubeId2UlearnVideoIds ?? new Dictionary<string, string>(), testCourseDirectory.Parent);
+			return Converter.ToEdxCourse(course, config, ulearnBaseUrlWeb, ulearnBaseUrlApi, testCourseDirectory);
 		}
 
-		private IEnumerable<VideoComponent> GetVideoComponentFromDictionary(Dictionary<string, Tuple<string, string>> dict)
-		{
-			return dict.Select(x => new VideoComponent(x.Key, x.Value.Item2, x.Value.Item1));
-		}
-
-		public HashSet<string> GetDirectoryFiles(string directory)
+		private HashSet<string> GetDirectoryFiles(string directory)
 		{
 			var files = Directory.GetFiles(directory).Select(Path.GetFileName);
 			var dirFiles = Directory.GetDirectories(directory).SelectMany(x => Directory.GetFiles(x).Select(Path.GetFileName));
@@ -110,25 +114,24 @@ namespace uLearn.CourseTool
 		[Test]
 		public void convert_assign_VideoIds_accordingToPassedDictionary()
 		{
-			var ulearnVideoGuid = Utils.NewNormalizedGuid();
-			var edxCourse = ConvertForTestsCourseToEdx(new Dictionary<string, string> { { youtubeIdFromCourse, ulearnVideoGuid } });
-			Assert.AreEqual(youtubeIdFromCourse, edxCourse.GetVideoById(ulearnVideoGuid).NormalSpeedVideoId);
+			var edxCourse = ConvertForTestsCourseToEdx();
+			Assert.AreEqual(youtubeIdFromCourse, edxCourse.GetVideoBySlideId(slideIdWithVideoFromCourse).NormalSpeedVideoId);
 		}
 
 		[Test]
 		public void patch_updates_YoutubeIds()
 		{
 			var ulearnVideoGuid = Utils.NewNormalizedGuid();
-			var edxCourse = ConvertForTestsCourseToEdx(new Dictionary<string, string> { { youtubeIdFromCourse, ulearnVideoGuid } });
-			var olxPath = string.Format("{0}/{1}", testFolderName, course.Id);
+			var edxCourse = ConvertForTestsCourseToEdx();
+			var olxPath = $"{testFolderName}/{course.Id}";
 			edxCourse.Save(olxPath);
 
-			var videoDict = new Dictionary<string, Tuple<string, string>> { { ulearnVideoGuid, Tuple.Create("QWFuk3ymXxc", "") } };
+			const string youtubeId = "QWFuk3ymXxc";
+			var videoComponents = new List<VideoComponent> { new VideoComponent(ulearnVideoGuid, "", youtubeId) };
 
-			new OlxPatcher(olxPath)
-				.PatchComponents(edxCourse, GetVideoComponentFromDictionary(videoDict));
+			new OlxPatcher(olxPath).PatchComponents(edxCourse, videoComponents);
 
-			Assert.That(File.ReadAllText(string.Format("{0}/video/{1}.xml", olxPath, ulearnVideoGuid)).Contains("QWFuk3ymXxc"));
+			Assert.That(File.ReadAllText($"{olxPath}/video/{ulearnVideoGuid}.xml").Contains(youtubeId));
 		}
 
 		[Test]
@@ -136,28 +139,28 @@ namespace uLearn.CourseTool
 		{
 			var videoGuid = Utils.NewNormalizedGuid();
 			var videoGuid2 = Utils.NewNormalizedGuid();
-			var edxCourse = ConvertForTestsCourseToEdx(new Dictionary<string, string> { { youtubeIdFromCourse, videoGuid } });
-			var olxPath = string.Format("{0}/{1}", testFolderName, course.Id);
+			var edxCourse = ConvertForTestsCourseToEdx();
+			var olxPath = $"{testFolderName}/{course.Id}";
 			edxCourse.Save(olxPath);
 
 			var patcher = new OlxPatcher(olxPath);
 
-			var videoDict = new Dictionary<string, Tuple<string, string>>
+			var videoComponents = new List<VideoComponent>
 			{
-				{ videoGuid, Tuple.Create("QWFuk3ymXxc", "") },
-				{ videoGuid2, Tuple.Create("w8_GlqSkG-U", "") }
+				new VideoComponent(videoGuid, "", "QWFuk3ymXxc"),
+				new VideoComponent(videoGuid, "", "w8_GlqSkG-U"),
 			};
 
-			patcher.PatchComponents(edxCourse, GetVideoComponentFromDictionary(videoDict));
+			patcher.PatchComponents(edxCourse, videoComponents);
 
-			videoDict = new Dictionary<string, Tuple<string, string>>
+			videoComponents = new List<VideoComponent>
 			{
-				{ videoGuid, Tuple.Create("QWFuk3ymXxc", "") },
-				{ videoGuid2, Tuple.Create("w8_GlqSkG-U", "") },
-				{ Utils.NewNormalizedGuid(), Tuple.Create("qTnKi67AAlg", "") }
+				new VideoComponent(videoGuid, "", "QWFuk3ymXxc"),
+				new VideoComponent(videoGuid2, "", "w8_GlqSkG-U"),
+				new VideoComponent(Utils.NewNormalizedGuid(), "", "qTnKi67AAlg"),
 			};
 
-			patcher.PatchComponents(edxCourse, GetVideoComponentFromDictionary(videoDict));
+			patcher.PatchComponents(edxCourse, videoComponents);
 
 			var edxCourse2 = EdxCourse.Load(olxPath);
 			Assert.AreEqual("Unsorted", edxCourse2.CourseWithChapters.Chapters[1].DisplayName);
@@ -168,7 +171,7 @@ namespace uLearn.CourseTool
 		public void patch_doesNotCreateUnsortedChapter_ifNoNewSlides()
 		{
 			var edxCourse = ConvertForTestsCourseToEdx();
-			var olxPath = string.Format("{0}/{1}", testFolderName, course.Id);
+			var olxPath = $"{testFolderName}/{course.Id}";
 			edxCourse.Save(olxPath);
 
 			new OlxPatcher(olxPath).PatchVerticals(edxCourse, course.GetSlidesNotSafe()
@@ -176,9 +179,8 @@ namespace uLearn.CourseTool
 					course.Id,
 					ulearnBaseUrlWeb,
 					ulearnBaseUrlApi,
-					new Dictionary<string, string>(),
 					ltiId,
-					testCourseDirectory.Parent
+					testCourseDirectory
 				).ToArray()));
 
 			var edxCourse2 = EdxCourse.Load(olxPath);
@@ -197,9 +199,8 @@ namespace uLearn.CourseTool
 					course.Id,
 					ulearnBaseUrlWeb,
 					ulearnBaseUrlApi,
-					new Dictionary<string, string>(),
 					ltiId,
-					testCourseDirectory.Parent
+					testCourseDirectory
 				).ToArray()));
 
 			var edxCourse2 = EdxCourse.Load(olxPath);
@@ -210,24 +211,23 @@ namespace uLearn.CourseTool
 		public void patch_updatesOrdinarySlide_withExerciseSlide()
 		{
 			var edxCourse = ConvertForTestsCourseToEdx();
-			var olxPath = string.Format("{0}/{1}", testFolderName, course.Id);
+			var olxPath = $"{testFolderName}/{course.Id}";
 			edxCourse.Save(olxPath);
 
-			var slidesCount = edxCourse.CourseWithChapters.Chapters[0].Sequentials[0].Verticals.Count();
+			var slidesCount = edxCourse.CourseWithChapters.Chapters[0].Sequentials[0].Verticals.Length;
 
 			new OlxPatcher(olxPath).PatchVerticals(edxCourse, new[] { exerciseSlide }
 				.Select(x => x.ToVerticals(
 					course.Id,
 					ulearnBaseUrlWeb,
 					ulearnBaseUrlApi,
-					new Dictionary<string, string>(),
 					ltiId,
-					testCourseDirectory.Parent
+					testCourseDirectory
 				).ToArray()));
 
 			var edxCourse2 = EdxCourse.Load(olxPath);
-			var patchedSlidesCount = edxCourse2.CourseWithChapters.Chapters[0].Sequentials[0].Verticals.Count();
-			Assert.AreEqual(slidesCount + 1, patchedSlidesCount);
+			var patchedSlidesCount = edxCourse2.CourseWithChapters.Chapters[0].Sequentials[0].Verticals.Length;
+			Assert.AreEqual(slidesCount, patchedSlidesCount);
 		}
 	}
 }

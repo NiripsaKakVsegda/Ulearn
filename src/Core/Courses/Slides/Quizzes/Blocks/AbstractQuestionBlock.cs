@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using Ulearn.Core.Courses.Slides.Blocks;
 
 namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 {

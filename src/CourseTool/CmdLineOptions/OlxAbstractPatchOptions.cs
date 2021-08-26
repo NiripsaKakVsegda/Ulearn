@@ -27,7 +27,7 @@ namespace uLearn.CourseTool.CmdLineOptions
 			if (!SkipExtractingTarGz)
 			{
 				var tarGzPath = WorkingDirectory.GetSingleFile(CourseTarGz ?? "*.tar.gz");
-				EdxInteraction.ExtractEdxCourseArchive(WorkingDirectory, tarGzPath);
+				EdxInteraction.ExtractEdxCourseArchive(WorkingDirectory, tarGzPath, true);
 			}
 
 			Console.WriteLine("Loading OLX");

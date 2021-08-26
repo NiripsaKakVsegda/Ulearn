@@ -1,6 +1,6 @@
 import React from "react";
 import CommentSendForm from "./CommentSendForm";
-import { avatarUrl, sysAdmin } from "../storiesData";
+import { avatarUrl, sysAdmin } from "src/storiesUtils";
 
 interface State {
 	id: number,

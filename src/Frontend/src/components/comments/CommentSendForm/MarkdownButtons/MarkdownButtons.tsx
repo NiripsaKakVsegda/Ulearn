@@ -10,24 +10,27 @@ import styles from "./MarkdownButtons.less";
 interface Props {
 	markupByOperation: MarkdownDescription;
 
+	hideDescription?: boolean;
+
 	onClick: (operation: MarkdownOperation) => void;
 }
 
 function MarkdownButtons(props: Props): React.ReactElement {
-	const { markupByOperation, onClick } = props;
+	const { markupByOperation, onClick, hideDescription, } = props;
 
 	return (
 		<div className={ styles.markdownButtons }>
-			<span className={ styles.markdownText }>Поддерживаем Markdown</span>
+			{ !hideDescription && <span className={ styles.markdownText }>Поддерживаем Markdown</span> }
 			{ Object.entries(markupByOperation)
 				.map(([name, operation]) =>
 					<div key={ name } className={ styles.buttonBlock }>
-						{ !isMobile() ?
-							<Hint
+						{ !isMobile()
+							? <Hint
 								pos="bottom"
 								text={ renderHint(operation) }>
 								{ renderMarkdownButton(name, operation) }
-							</Hint> : renderMarkdownButton(name, operation) }
+							</Hint>
+							: renderMarkdownButton(name, operation) }
 					</div>) }
 		</div>
 	);
@@ -36,15 +39,9 @@ function MarkdownButtons(props: Props): React.ReactElement {
 		return (
 			<button
 				className={ styles.button }
-				onClick={ () => handleClick(operation) }
+				onClick={ () => onClick(operation) }
 				type="button">
-				<svg
-					width={ 20 }
-					height={ 18 }
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none">
-					{ operation.icon }
-				</svg>
+				{ operation.icon }
 			</button>
 		);
 	}
@@ -58,10 +55,6 @@ function MarkdownButtons(props: Props): React.ReactElement {
 				{ !isMobile() &&
 				<span className={ styles.lightYellow }>{ hotkey.asText }</span> }
 			</span>);
-	}
-
-	function handleClick(operation: MarkdownOperation) {
-		onClick(operation);
 	}
 }
 

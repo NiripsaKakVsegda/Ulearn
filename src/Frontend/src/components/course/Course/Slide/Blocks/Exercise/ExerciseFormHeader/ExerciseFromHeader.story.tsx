@@ -4,11 +4,13 @@ import { ExerciseFormHeader, ExerciseFormHeaderProps } from "./ExerciseFormHeade
 import {
 	AutomaticExerciseCheckingProcessStatus,
 	AutomaticExerciseCheckingResult,
-	SolutionRunStatus, SubmissionInfo,
+	SolutionRunStatus,
+	SubmissionInfo,
 } from "src/models/exercise";
 import { Language } from "src/consts/languages";
 
 import { SubmissionColor } from "../ExerciseUtils";
+import { skipLoki } from "../../../../../Navigation/stroies.data";
 
 const Template: Story<ExerciseFormHeaderProps> = (args) => <ExerciseFormHeader { ...args } />;
 
@@ -21,10 +23,12 @@ const submissionInfo: SubmissionInfo = {
 		result: AutomaticExerciseCheckingResult.RightAnswer,
 		output: null,
 		reviews: null,
-		checkerLogs:null,
+		checkerLogs: null,
 	},
-	manualCheckingPassed: false,
-	manualCheckingReviews: [],
+	manualChecking: {
+		reviews: [],
+		percent: null,
+	},
 	language: Language.cSharp
 };
 
@@ -52,5 +56,6 @@ export default {
 				options: [...Object.values(SubmissionColor)],
 			},
 		},
-	}
+	},
+	...skipLoki,
 };

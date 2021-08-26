@@ -1,7 +1,6 @@
-interface MatchParams {
+export interface MatchParams {
 	courseId: string;
-	slideId: string,
-	//TODO not all fields are added
+	slideSlugOrAction?: string;
+	groupId?: string;
+	groupPage?: string; // if not undefined => groupId is not undefined
 }
-
-export { MatchParams, };

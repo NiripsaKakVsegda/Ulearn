@@ -5,13 +5,13 @@ outdatedBrowserRework({
 	browserSupport: {
 		Chrome: 89, // Includes Chrome for mobile devices
 		Edge: 89,
-		Firefox: 86,
+		Firefox: 78,
 		Opera: 70,
 		Safari: 12,
 		"Mobile Safari": 12,
 		Yandex: 20,
 	},
-	requireChromeOnAndroid: true,
+	requireChromeOnAndroid: false,
 	isUnknownBrowserOK: true,
 	messages: {
 		en: {

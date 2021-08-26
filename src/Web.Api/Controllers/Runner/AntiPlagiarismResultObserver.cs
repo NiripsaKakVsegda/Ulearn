@@ -6,7 +6,9 @@ using AntiPlagiarism.Api.Models.Parameters;
 using Database.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Ulearn.Common.Api;
 using Ulearn.Core.RunCheckerJobApi;
+using Vostok.Logging.Abstractions;
 using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Controllers.Runner
@@ -15,6 +17,7 @@ namespace Ulearn.Web.Api.Controllers.Runner
 	{
 		private readonly IAntiPlagiarismClient antiPlagiarismClient;
 		private readonly bool isEnabled;
+		private static ILog log => LogProvider.Get().ForContext(typeof(AntiPlagiarismResultObserver));
 
 		public AntiPlagiarismResultObserver(IOptions<WebApiConfiguration> configuration)
 		{
@@ -48,7 +51,14 @@ namespace Ulearn.Web.Api.Controllers.Runner
 				AdditionalInfo = JsonConvert.SerializeObject(new AntiPlagiarismAdditionalInfo { SubmissionId = submission.Id }),
 				ClientSubmissionId = submission.Id.ToString()
 			};
-			await antiPlagiarismClient.AddSubmissionAsync(parameters).ConfigureAwait(false);
+			try
+			{
+				await antiPlagiarismClient.AddSubmissionAsync(parameters).ConfigureAwait(false);
+			}
+			catch (ApiClientException ex)
+			{
+				log.Error(ex);
+			}
 		}
 	}
 

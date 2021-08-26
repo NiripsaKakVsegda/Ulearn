@@ -33,8 +33,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Common.Api.Application\Common.Api.Application.csproj" />
-		<ProjectReference Include="..\Common.Api\Common.Api.csproj" />
-		<ProjectReference Include="..\Core\Core.csproj" />
 		<ProjectReference Include="..\VideoAnnotations.Api\VideoAnnotations.Api.csproj" />
 	</ItemGroup>
 

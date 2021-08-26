@@ -1,11 +1,7 @@
 using System;
-using System.IO;
 using System.Linq;
 using CommandLine;
-using Newtonsoft.Json;
-using uLearn.CourseTool.Json;
 using Ulearn.Common.Extensions;
-using Ulearn.Core;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Model.Edx;
 
@@ -45,11 +41,8 @@ namespace uLearn.CourseTool.CmdLineOptions
 				}
 			}
 
-			var video = LoadVideoInfo();
-			VideoHistory.UpdateHistory(WorkingDirectory, video);
-
 			Console.WriteLine($"Loading ulearn course from {Config.ULearnCourseId}");
-			var course = new CourseLoader().Load(CourseDirectory);
+			var course = new CourseLoader().Load(CourseDirectory, Config.ULearnCourseId);
 
 			Console.WriteLine($"Converting ulearn course \"{course.Id}\" to edx course");
 			Converter.ToEdxCourse(
@@ -57,19 +50,13 @@ namespace uLearn.CourseTool.CmdLineOptions
 				Config,
 				profile.UlearnBaseUrlApi,
 				profile.UlearnBaseUrlWeb,
-				video.Records.ToDictionary(x => x.Data.Id, x => x.Guid.GetNormalizedGuid()), CourseDirectory).Save(WorkingDirectory + "/olx");
+				CourseDirectory).Save(WorkingDirectory + "/olx");
+
+			CopyStaticDirectoryFromCourseToolToOlx();
 
 			EdxInteraction.CreateEdxCourseArchive(WorkingDirectory, course.Id);
 
 			Console.WriteLine($"Now you can upload {course.Id}.tar.gz to edx via Tools - Import menu");
-		}
-
-		private Video LoadVideoInfo()
-		{
-			var videoFile = $"{WorkingDirectory}/{Config.Video}";
-			return File.Exists(videoFile)
-				? JsonConvert.DeserializeObject<Video>(File.ReadAllText(Config.Video))
-				: new Video { Records = new Record[0] };
 		}
 	}
 }

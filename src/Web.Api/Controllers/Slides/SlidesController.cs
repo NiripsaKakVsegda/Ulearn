@@ -70,8 +70,15 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			var getSlideMaxScoreFunc = await BuildGetSlideMaxScoreFunc(solutionsRepo, userQuizzesRepo, visitsRepo, groupsRepo, course, userId);
 			var getGitEditLinkFunc = await BuildGetGitEditLinkFunc(userId, course, courseRolesRepo, coursesRepo);
 
-			var slideRenderContext = new SlideRenderContext(course.Id, slide, UserId, configuration.BaseUrlApi, configuration.BaseUrl, !isInstructor,
-				course.Settings.VideoAnnotationsGoogleDoc, Url);
+			var slideRenderContext = new SlideRenderContext(
+				course.Id, 
+				slide,
+				UserId,
+				configuration.BaseUrlApi,
+				configuration.BaseUrl,
+				!isInstructor,
+				course.Settings.VideoAnnotationsGoogleDoc, 
+				Url);
 
 			return await slideRenderer.BuildSlideInfo(slideRenderContext, getSlideMaxScoreFunc, getGitEditLinkFunc);
 		}

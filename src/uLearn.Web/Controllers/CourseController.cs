@@ -27,6 +27,7 @@ using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Units;
+using Ulearn.Core.Markdown;
 
 namespace uLearn.Web.Controllers
 {
@@ -122,7 +123,6 @@ namespace uLearn.Web.Controllers
 				if (queueItem == null)
 				{
 					/* It's possible when checking has not been fully checked, lock has been released, but after it user re-send his solution and we removed old waiting checking */
-					var fakeQueueItem = slide is QuizSlide ? (AbstractManualSlideChecking)new ManualQuizChecking() : new ManualExerciseChecking();
 					return RedirectToAction("CheckingQueue", "Admin", new
 					{
 						courseId = courseId,
@@ -331,7 +331,8 @@ namespace uLearn.Web.Controllers
 				return null;
 			if (publishedCourseVersion.PathToCourseXml == null)
 				return null;
-			return GitUtils.GetSlideEditLink(publishedCourseVersion.RepoUrl, publishedCourseVersion.PathToCourseXml, slideFilePathRelativeToCourse);
+			var branch = coursesRepo.GetCourseRepoSettings(course.Id)?.Branch ?? "master";
+			return GitUtils.GetSlideEditLink(publishedCourseVersion.RepoUrl, branch, publishedCourseVersion.PathToCourseXml, slideFilePathRelativeToCourse);
 		}
 
 		private int GetMaxSlideScoreForUser(Course course, Slide slide, string userId)
@@ -404,8 +405,6 @@ namespace uLearn.Web.Controllers
 			db.Visits.RemoveSlideAction(courseId, slideId, userId);
 			await slideCheckingsRepo.RemoveAttempts(courseId, slideId, userId, false);
 
-			db.UserQuestions.RemoveSlideAction(courseId, slideId, userId);
-			db.SlideRates.RemoveSlideAction(courseId, slideId, userId);
 			db.Hints.RemoveSlideAction(courseId, slideId, userId);
 			await db.SaveChangesAsync();
 
@@ -431,13 +430,14 @@ namespace uLearn.Web.Controllers
 					|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 			}
 
-			var incorrectChars = new string(WebCourseManager.GetInvalidCharacters().OrderBy(c => c).Where(c => 32 <= c).ToArray());
+			var incorrectChars = new string(CourseManager.InvalidForCourseIdCharacters.OrderBy(c => c).Where(c => 32 <= c).ToArray());
 			if (isSystemAdministrator)
 				courses = courses.OrderBy(course => course.Id, StringComparer.InvariantCultureIgnoreCase);
 			else
 				courses = courses.OrderBy(course => course.Title, StringComparer.InvariantCultureIgnoreCase);
 
-			var tempCourses = tempCoursesRepo.GetTempCourses().Select(c => c.CourseId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var allTempCourses = tempCoursesRepo.GetAllTempCourses()
+				.ToDictionary(t => t.CourseId, t => t, StringComparer.InvariantCultureIgnoreCase);
 			var model = new CourseListViewModel
 			{
 				Courses = courses
@@ -445,7 +445,7 @@ namespace uLearn.Web.Controllers
 					{
 						Id = course.Id,
 						Title = course.Title,
-						IsTemp = tempCourses.Contains(course.Id)
+						TempCourse = allTempCourses.GetOrDefault(course.Id)
 					})
 					.ToList(),
 				LastTryCourseId = courseId,

@@ -10,18 +10,14 @@ require('../config/env');
 const fs = require('fs-extra');
 const chalk = require('chalk');
 const webpack = require('webpack');
-const webpackDevServer = require('webpack-dev-server');
+const Server = require('webpack-dev-server');
 const clearConsole = require('react-dev-utils/clearConsole');
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
 const {
 	choosePort,
-	createCompiler,
 	prepareProxy,
 	prepareUrls,
 } = require('react-dev-utils/WebpackDevServerUtils');
-const openBrowser = require('react-dev-utils/openBrowser');
-const ignoredFiles = require('react-dev-utils/ignoredFiles');
-const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware');
 const paths = require('../config/paths');
 const config = require('../config/webpack.config.dev');
 
@@ -61,58 +57,50 @@ choosePort(HOST, DEFAULT_PORT)
 		const urls = prepareUrls(protocol, HOST, port);
 		const proxySetting = require(paths.appPackageJson).proxy;
 		const proxyConfig = prepareProxy(proxySetting, paths.appPublic);
+
 		const options = {
-			disableHostCheck: !proxyConfig || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true',
-			compress: true,
-			clientLogLevel: 'info',
-			contentBase: paths.appPublic,
-			watchContentBase: true,
-			hot: true,
-			transportMode: 'ws',
-			injectClient: false,
-			quiet: true,
-			watchOptions: {
-				ignored: ignoredFiles(paths.appSrc),
+			allowedHosts: (!proxyConfig || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true') ? "all" : "0.0.0.0",
+			client: {
+				logging: "info",
+				overlay: false,
+				progress: false,
 			},
+			static: {
+				directory: paths.appPublic,
+			},
+			hot: true,
+			webSocketServer: "ws",
 			https: protocol === 'https',
 			host: HOST,
-			overlay: false,
+			port: port,
 			proxy: proxyConfig,
 			historyApiFallback: {
 				disableDotRule: true,
 			},
-			public: urls.lanUrlForConfig,
-			publicPath: config.output.publicPath,
-			before(app) {
-				app.use(errorOverlayMiddleware());
+			devMiddleware: {
+				publicPath: config.output.publicPath,
 			},
+			open: urls.localUrlForBrowser,
+			setupExitSignals: true,
 		};
-		webpackDevServer.addDevServerEntrypoints(config, options);
-		const compiler = createCompiler({
-			webpack,
-			config,
-			appName,
-			urls,
-			useYarn,
-		});
-		const devServer = new webpackDevServer(compiler, options);
-		devServer.listen(port, HOST, err => {
-			if(err) {
-				return console.log(err);
-			}
+		/*	const compiler = createCompiler({
+				webpack,
+				config,
+				appName,
+				urls,
+				useYarn,
+			});*/ //TODO https://github.com/facebook/create-react-app/pull/10121
+		const devServer = new Server(options, webpack(config));
+
+		(async () => {
+			await devServer.start();
+
 			if(isInteractive) {
 				clearConsole();
 			}
-			console.log(chalk.cyan('Starting the development server...\n'));
-			openBrowser(urls.localUrlForBrowser);
-		});
 
-		['SIGINT', 'SIGTERM'].forEach(function (sig) {
-			process.on(sig, function () {
-				devServer.close();
-				process.exit();
-			});
-		});
+			console.log(chalk.cyan('Starting the development server...\n'));
+		})();
 	})
 	.catch(err => {
 		if(err && err.message) {

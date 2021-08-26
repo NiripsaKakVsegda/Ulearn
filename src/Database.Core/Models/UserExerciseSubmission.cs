@@ -51,7 +51,7 @@ namespace Database.Models
 		[StringLength(40)]
 		public string Sandbox { get; set; }
 
-		public virtual IList<ManualExerciseChecking> ManualCheckings { get; set; }
+		public virtual ManualExerciseChecking ManualChecking { get; set; }
 
 		[Obsolete] // YT: ULEARN-217; Используй AntiPlagiarism.Web.Database.Models.Submission.ClientSubmissionId
 		public int? AntiPlagiarismSubmissionId { get; set; }

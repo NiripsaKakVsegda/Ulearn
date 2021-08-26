@@ -44,7 +44,7 @@ namespace Ulearn.Common.Api
 				builder.SetPort(ulearnConfiguration.Port.Value);
 			if (ulearnConfiguration.BaseUrl != null)
 				builder.SetBaseUrlPath(ulearnConfiguration.BaseUrl);
-			builder	
+			builder
 				.DisableServiceBeacon()
 				.SetupHerculesSink(sinkBuilder => SetupHerculesSink(sinkBuilder, ulearnConfiguration))
 				.SetupLog((logBuilder, context) => SetupLog(logBuilder, ulearnConfiguration))
@@ -69,20 +69,16 @@ namespace Ulearn.Common.Api
 		{
 			var log = LoggerSetup.Setup(ulearnConfiguration.HostLog, ulearnConfiguration.GraphiteServiceName, false);
 			logBuilder.AddLog(log);
-			logBuilder.CustomizeLog(logCustomization => logCustomization.WithMinimumLevel(LogLevel.Debug));
 
-			const LogLevel minimumLevel = LogLevel.Info;
-			var dbMinimumLevelString = ulearnConfiguration.HostLog.DbMinimumLevel ?? "";
-			if (!LoggerSetup.TryParseLogLevel(dbMinimumLevelString, out var dbMinimumLevel))
-				dbMinimumLevel = minimumLevel;
+			var (minimumLevel, dbMinimumLevel) = LoggerSetup.GetMinimumLevels(ulearnConfiguration.HostLog);
 			var min = dbMinimumLevel > minimumLevel ? minimumLevel : dbMinimumLevel;
+
 			logBuilder.SetupHerculesLog(herculesLogBuilder =>
 			{
 				herculesLogBuilder.SetStream(ulearnConfiguration.Hercules.Stream);
 				herculesLogBuilder.SetApiKeyProvider(() => ulearnConfiguration.Hercules.ApiKey);
-				herculesLogBuilder.CustomizeLog(lb =>
-					lb
-						.WithMinimumLevelForSourceContext("ULearnDb", dbMinimumLevel) // Database
+				herculesLogBuilder.CustomizeLog(l =>
+					LoggerSetup.FilterLogs(l, minimumLevel, dbMinimumLevel)
 						.WithMinimumLevel(min)
 				);
 			});

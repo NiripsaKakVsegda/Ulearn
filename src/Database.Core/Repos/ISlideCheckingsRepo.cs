@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using Database.Models.Quizzes;
@@ -21,12 +22,12 @@ namespace Database.Repos
 		Task RemoveAttempts(string courseId, Guid slideId, string userId, bool saveChanges = true);
 		Task<bool> IsSlidePassed(string courseId, Guid slideId, string userId);
 		Task<(int Score, int? Percent)> GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId);
-		Task<int?> GetUserReviewPercentForExerciseSlide(string courseId, ExerciseSlide slide, string userId, DateTime? submissionBefore = null);
-		Task<List<(Guid SlideId, int Score, int Percent)>> GetPassedManualExerciseCheckingsScoresAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits);
+		Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null);
 		Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId);
+		List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits);
 		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
+		IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<int> GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeTimestamp);
-		Task<HashSet<Guid>> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<T> FindManualCheckingById<T>(int id) where T : AbstractManualSlideChecking;
 		Task<bool> IsProhibitedToSendExerciseToManualChecking(string courseId, Guid slideId, string userId);
 		Task LockManualChecking<T>(T checkingItem, string lockedById) where T : AbstractManualSlideChecking;
@@ -36,7 +37,7 @@ namespace Database.Repos
 		Task ProhibitFurtherExerciseManualChecking(string courseId, string userId, Guid slideId);
 		Task ResetManualCheckingLimitsForUser(string courseId, string userId);
 		Task ResetAutomaticCheckingLimitsForUser(string courseId, string userId);
-		Task DisableProhibitFurtherManualCheckings(string courseId, string userId, Guid? slideId = null);
+		Task EnableFurtherManualCheckings(string courseId, string userId, Guid? slideId = null);
 		Task NotCountOldAttemptsToQuizzesWithManualChecking(string courseId, string userId);
 		Task NotCountOldAttemptsToQuizzesWithAutomaticChecking(string courseId, string userId);
 		Task<ExerciseCodeReview> AddExerciseCodeReview(ManualExerciseChecking checking, string userId, int startLine, int startPosition, int finishLine, int finishPosition, string comment, bool setAddingTime = true);
@@ -56,5 +57,6 @@ namespace Database.Repos
 		Task<int> GetExerciseUsersCount(string courseId, Guid slideId);
 		Task<int> GetExerciseUsersWithRightAnswerCount(string courseId, Guid slideId);
 		Task RefreshExerciseStatisticsMaterializedViews();
+		Task EditExerciseCodeReviewComment(ExerciseCodeReviewComment codeReviewComment, string text);
 	}
 }

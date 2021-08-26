@@ -3,22 +3,21 @@ import CommentsView, { Props } from "./CommentsView";
 import { Comment, CommentPolicy } from "src/models/comments";
 import { SlideType } from "src/models/slide";
 import { DeviceType } from "src/consts/deviceType";
+import { fakeFullCommentsApi, getMockedComment } from "../storiesData";
+import type { Story } from "@storybook/react";
+import { CourseRoleType } from "src/consts/accessType";
+import { isInstructor, UserInfo } from "src/utils/courseRoles";
+import { FullCommentsApi } from "../utils";
 import {
 	accessesToSeeProfiles,
 	courseAccessesToEditComments,
 	courseAccessesToViewSubmissions,
 	courseAdmin,
-	fakeFullCommentsApi,
-	getMockedComment,
 	instructor,
 	student,
 	sysAdmin,
 	unAuthUser
-} from "../storiesData";
-import type { Story } from "@storybook/react";
-import { CourseRoleType } from "src/consts/accessType";
-import { isInstructor, UserInfo } from "src/utils/courseRoles";
-import { FullCommentsApi } from "../utils";
+} from "src/storiesUtils";
 
 const comments: Comment[] = [
 	{
@@ -259,6 +258,10 @@ LongCommentsLoading.args = {
 	commentsLoadTimeMs: 2500,
 };
 
+LongCommentsLoading.parameters = {
+	loki: { skip: true },
+};
+
 export const UserFromStudentToInstructor = Template.bind({});
 UserFromStudentToInstructor.args = {
 	user: student,
@@ -269,6 +272,9 @@ UserFromStudentToInstructor.args = {
 		inMs: 1000,
 		newRole: CourseRoleType.instructor,
 	},
+};
+UserFromStudentToInstructor.parameters = {
+	loki: { skip: true },
 };
 
 export const UserFromInstructorToStudent = Template.bind({});
@@ -282,5 +288,6 @@ UserFromInstructorToStudent.args = {
 		newRole: CourseRoleType.student,
 	},
 };
-
-
+UserFromInstructorToStudent.parameters = {
+	loki: { skip: true },
+};

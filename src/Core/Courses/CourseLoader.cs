@@ -7,12 +7,15 @@ using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Extensions;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Core.Courses
 {
 	public class CourseLoader : ICourseLoader
 	{
 		private readonly IUnitLoader unitLoader;
+		public const char CourseIdDelimiter = '@'; // После @ в название могут добавляться доп. символы для временных папок
+		private static ILog log => LogProvider.Get().ForContext(typeof(CourseLoader));
 
 		public CourseLoader(IUnitLoader unitLoader)
 		{
@@ -25,11 +28,11 @@ namespace Ulearn.Core.Courses
 		{
 		}
 
-		public Course Load(DirectoryInfo dir)
+		public Course Load(DirectoryInfo dir, string courseId)
 		{
 			try
 			{
-				return UnsafeLoad(dir);
+				return UnsafeLoad(dir, courseId);
 			}
 			catch (Exception e) when (!e.GetType().IsAssignableFrom(typeof(CourseLoadingException)))
 			{
@@ -37,10 +40,8 @@ namespace Ulearn.Core.Courses
 			}
 		}
 
-		private Course UnsafeLoad(DirectoryInfo courseDirectory)
+		private Course UnsafeLoad(DirectoryInfo courseDirectory, string courseId)
 		{
-			var courseId = courseDirectory.Name;
-
 			CourseSettings settings;
 			try
 			{
@@ -60,7 +61,7 @@ namespace Ulearn.Core.Courses
 				catch (Exception e)
 				{
 					throw new CourseLoadingException(
-						"Не удалось прочитать настройки курса. Скорее всего, отсутствует или неправильно заполнен файл course.xml"
+						$"Не удалось прочитать настройки курса. Скорее всего, отсутствует или неправильно заполнен файл course.xml. {e.Message}", e.InnerException
 					);
 				}
 			}
@@ -69,6 +70,8 @@ namespace Ulearn.Core.Courses
 			{
 				settings.Description = "";
 			}
+
+			var versionToken = CourseVersionToken.Load(courseDirectory);
 
 			var context = new CourseLoadingContext(courseId, settings, courseDirectory);
 
@@ -84,7 +87,7 @@ namespace Ulearn.Core.Courses
 			AddDefaultScoringGroupIfNeeded(units, slides, settings);
 			CalculateScoringGroupScores(units, settings);
 
-			return new Course(courseId, units, settings);
+			return new Course(courseId, units, settings, versionToken);
 		}
 
 		private static string GetValidationLog(List<Unit> units)
@@ -128,6 +131,7 @@ namespace Ulearn.Core.Courses
 					unit.Scoring.Groups.Add(defaultScoringGroup.Id, defaultScoringGroup);
 			}
 		}
+
 
 		private IEnumerable<Unit> LoadUnits(CourseLoadingContext context)
 		{

@@ -154,7 +154,7 @@
 				@UserName(notification.InitiatedBy) @( notification.IsRecheck ? "пере" : "")проверил@( notification.InitiatedBy.Gender.ChooseEnding()) ваше решение<br/>по&nbsp;«@slide.Title.MakeNestedQuotes()»
 			</div>
 			@{
-				var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(new List<ManualExerciseChecking> { notification.Checking }, slide).Score.PluralizeInRussian(RussianPluralizationOptions.Score);
+				var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(notification.Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview).PluralizeInRussian(RussianPluralizationOptions.Score);
 			}
 			<div class="notifications__notification__score">Вы получили @score из @slide.Scoring.ScoreWithCodeReview.PluralizeInRussian(RussianPluralizationOptions.Score)</div>
 			<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>

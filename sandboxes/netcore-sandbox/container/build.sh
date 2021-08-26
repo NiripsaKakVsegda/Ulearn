@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build --pull -t netcore-sandbox .
+docker build -t netcore-sandbox .

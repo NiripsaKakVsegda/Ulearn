@@ -199,13 +199,24 @@ namespace Database.Repos.Groups
 		}
 
 		/* Instructor can view student if he is a course admin or if student is member of one of accessible for instructor group */
-		public async Task<bool> CanInstructorViewStudentAsync(string instructorId, string studentId)
+		public async Task<bool> HasInstructorViewAccessToStudentGroup(string instructorId, string studentId)
 		{
 			if (await courseRolesRepo.HasUserAccessTo_Any_Course(instructorId, CourseRoleType.CourseAdmin).ConfigureAwait(false))
 				return true;
 
 			var coursesIds = courseStorage.GetCourses().Select(c => c.Id).ToList();
 			var groups = await GetAvailableForUserGroupsAsync(coursesIds, instructorId, false, actual: true, archived: false).ConfigureAwait(false);
+			var members = await groupMembersRepo.GetGroupsMembersAsync(groups.Select(g => g.Id).ToList()).ConfigureAwait(false);
+			return members.Select(m => m.UserId).Contains(studentId);
+		}
+
+		public async Task<bool> HasInstructorEditAccessToStudentGroup(string instructorId, string studentId)
+		{
+			if (await courseRolesRepo.HasUserAccessTo_Any_Course(instructorId, CourseRoleType.CourseAdmin).ConfigureAwait(false))
+				return true;
+
+			var coursesIds = courseStorage.GetCourses().Select(c => c.Id).ToList();
+			var groups = await GetAvailableForUserGroupsAsync(coursesIds, instructorId, true, actual: true, archived: false).ConfigureAwait(false);
 			var members = await groupMembersRepo.GetGroupsMembersAsync(groups.Select(g => g.Id).ToList()).ConfigureAwait(false);
 			return members.Select(m => m.UserId).Contains(studentId);
 		}
@@ -221,13 +232,13 @@ namespace Database.Repos.Groups
 			return result;
 		}
 
-		public async Task<List<GroupMember>> GetMembersOfAllGroupsAvailableForUserAsync(string userId)
+		public async Task<List<GroupMember>> GetMembersOfAllGroupsVisibleForUserAsync(string userId)
 		{
 			var groups = await GetAvailableForUserGroupsAsync(userId, false, actual: true, archived: true).ConfigureAwait(false);
 			return await groupMembersRepo.GetGroupsMembersAsync(groups.Select(g => g.Id).ToList()).ConfigureAwait(false);
 		}
 
-		public async Task<List<ApplicationUser>> GetInstructorsOfAllGroupsAvailableForUserAsync(string userId)
+		public async Task<List<ApplicationUser>> GetInstructorsOfAllGroupsVisibleForUserAsync(string userId)
 		{
 			var groups = await GetAvailableForUserGroupsAsync(userId, false, actual: true, archived: true).ConfigureAwait(false);
 			var accesses = await GetGroupAccessesAsync(groups.Select(g => g.Id)).ConfigureAwait(false);

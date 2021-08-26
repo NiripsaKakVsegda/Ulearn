@@ -143,9 +143,9 @@ namespace Ulearn.Core.Tests.Courses.Slides
 			var imageGalleryBlock = (ImageGalleryBlock)slide.Blocks[4];
 			CollectionAssert.AreEqual(new []
 			{
-				"baseUrlApi/courses/courseId/files/unit/image1.png",
-				"baseUrlApi/courses/courseId/files/unit/image2.png"
-			}, imageGalleryBlock.GetAbsoluteImageUrls("baseUrlApi", "courseId", "unit"));
+				"https://api.ulearn.me/courses/courseId/files/unit/image1.png",
+				"https://api.ulearn.me/courses/courseId/files/unit/image2.png"
+			}, imageGalleryBlock.GetAbsoluteImageUrls("https://api.ulearn.me/", "courseId", "unit"));
 		}
 	}
 }

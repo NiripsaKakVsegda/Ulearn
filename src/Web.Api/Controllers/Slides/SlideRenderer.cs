@@ -8,7 +8,6 @@ using Database.Repos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
-using Ulearn.Core;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises;
@@ -16,6 +15,7 @@ using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
+using Ulearn.Core.Markdown;
 using Ulearn.Web.Api.Clients;
 using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Responses.Exercise;
@@ -112,7 +112,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(HtmlBlock b, SlideRenderContext context)
 		{
-			return new[] { new HtmlBlockResponse(b, false) };
+			return new[] { new HtmlBlockResponse(b, false, context.BaseUrlApi) };
 		}
 		
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(ImageGalleryBlock b, SlideRenderContext context)
@@ -155,16 +155,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(AbstractExerciseBlock b, SlideRenderContext context)
 		{
-			var submissions = await solutionsRepo
-				.GetAllSubmissionsByUser(context.CourseId, context.Slide.Id, context.UserId)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.Output)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.CompilationError)
-				.Include(s => s.AutomaticChecking).ThenInclude(c => c.DebugLogs)
-				.Include(s => s.SolutionCode)
-				.Include(s => s.Reviews).ThenInclude(c => c.Author)
-				.Include(s => s.ManualCheckings).ThenInclude(c => c.Reviews).ThenInclude(r => r.Author)
-				.ToListAsync();
-			var codeReviewComments = await slideCheckingsRepo.GetExerciseCodeReviewComments(context.CourseId, context.Slide.Id, context.UserId);
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(context.UserId, context.CourseId, CourseRoleType.CourseAdmin);
 			
 			ExerciseAttemptsStatistics exerciseAttemptsStatistics = null;
@@ -183,8 +173,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 			var exerciseSlideRendererContext = new ExerciseSlideRendererContext
 			{
-				Submissions = submissions,
-				CodeReviewComments = codeReviewComments,
 				CanSeeCheckerLogs = isCourseAdmin,
 				AttemptsStatistics = exerciseAttemptsStatistics,
 				markdownRenderContext = new (context.BaseUrlApi, context.BaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse)

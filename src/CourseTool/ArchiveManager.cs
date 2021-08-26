@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 
@@ -6,6 +7,8 @@ namespace uLearn.CourseTool
 {
 	class ArchiveManager
 	{
+		private static readonly Encoding encoding = Encoding.UTF8;
+
 		/// <summary>
 		/// Extracts contents of Tar file to specified directory
 		/// </summary>
@@ -14,7 +17,7 @@ namespace uLearn.CourseTool
 		public static void ExtractTar(string filename, string directory)
 		{
 			using (Stream inStream = File.OpenRead(filename))
-			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(inStream))
+			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(inStream, encoding))
 				tarArchive.ExtractContents(directory);
 		}
 
@@ -27,7 +30,7 @@ namespace uLearn.CourseTool
 		{
 			using (Stream inStream = File.OpenRead(filename))
 			using (Stream gzipStream = new GZipInputStream(inStream))
-			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream))
+			using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream, encoding))
 				tarArchive.ExtractContents(directory);
 		}
 
@@ -41,7 +44,7 @@ namespace uLearn.CourseTool
 		{
 			using (FileStream fs = new FileStream(outputTarFilename, FileMode.Create, FileAccess.Write, FileShare.None))
 			using (Stream gzipStream = new GZipOutputStream(fs))
-			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(gzipStream))
+			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(gzipStream, encoding))
 				AddDirectoryFilesToTar(tarArchive, sourceDirectory, true);
 		}
 
@@ -53,7 +56,7 @@ namespace uLearn.CourseTool
 		public static void CreateTar(string outputTarFilename, string sourceDirectory)
 		{
 			using (FileStream fs = new FileStream(outputTarFilename, FileMode.Create, FileAccess.Write, FileShare.None))
-			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(fs))
+			using (TarArchive tarArchive = TarArchive.CreateOutputTarArchive(fs, encoding))
 				AddDirectoryFilesToTar(tarArchive, sourceDirectory, true);
 		}
 

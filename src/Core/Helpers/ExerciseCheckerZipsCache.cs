@@ -43,7 +43,7 @@ namespace Ulearn.Core.Helpers
 			if (!string.IsNullOrEmpty(directory))
 				return new DirectoryInfo(directory);
 
-			return CourseManager.GetCoursesDirectory().GetSubdirectory("ExerciseCheckerZips");
+			return CourseManager.CoursesDirectory.GetSubdirectory("ExerciseCheckerZips");
 		}
 
 		public static MemoryStream GetZip(IExerciseCheckerZipBuilder zipBuilder, string userCodeFilePathRelativeToUnit, byte[] userCodeFileContent, string courseDirectory)

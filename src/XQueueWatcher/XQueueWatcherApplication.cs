@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Common.Api;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Metrics;
 using Vostok.Hosting.Abstractions;
 using Vostok.Logging.Abstractions;
@@ -49,7 +50,8 @@ namespace XQueueWatcher
 		protected override void ConfigureDi(IServiceCollection services)
 		{
 			base.ConfigureDi(services);
-			services.AddDatabaseServices();
+			services.AddSingleton<UpdateCoursesWorker>();
+			services.AddDatabaseServices(true);
 		}
 
 		public async Task StartXQueueWatchers(CancellationToken cancellationToken)

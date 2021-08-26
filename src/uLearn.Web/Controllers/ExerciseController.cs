@@ -283,7 +283,7 @@ namespace uLearn.Web.Controllers
 
 		[System.Web.Mvc.HttpPost]
 		[ULearnAuthorize(MinAccessLevel = CourseRole.Instructor)]
-		public async Task<ActionResult> SimpleScoreExercise(int submissionId, int exercisePercent, bool ignoreNewestSubmission = false, int? updateCheckingId = null)
+		public async Task<ActionResult> SimpleScoreExercise(int submissionId, int exercisePercent, bool ignoreNewestSubmission = false)
 		{
 			var submission = userSolutionsRepo.FindSubmissionById(submissionId);
 			var courseId = submission.CourseId;
@@ -297,7 +297,7 @@ namespace uLearn.Web.Controllers
 			if (slide == null)
 				return new HttpStatusCodeResult(HttpStatusCode.NotFound);
 
-			if (!ignoreNewestSubmission && !updateCheckingId.HasValue)
+			if (!ignoreNewestSubmission && submission.ManualChecking == null)
 			{
 				var lastAcceptedSubmission = userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).OrderByDescending(s => s.Timestamp).FirstOrDefault();
 				if (lastAcceptedSubmission != null && lastAcceptedSubmission.Id != submission.Id)
@@ -315,8 +315,8 @@ namespace uLearn.Web.Controllers
 
 			await slideCheckingsRepo.RemoveWaitingManualCheckings<ManualExerciseChecking>(courseId, slideId, userId).ConfigureAwait(false);
 			ManualExerciseChecking checking;
-			if (updateCheckingId.HasValue)
-				checking = slideCheckingsRepo.FindManualCheckingById<ManualExerciseChecking>(updateCheckingId.Value);
+			if (submission.ManualChecking != null)
+				checking = submission.ManualChecking;
 			else
 				checking = await slideCheckingsRepo.AddManualExerciseChecking(courseId, slideId, userId, submission).ConfigureAwait(false);
 
@@ -379,10 +379,9 @@ namespace uLearn.Web.Controllers
 
 			var submissionReviews = submission?.GetAllReviews();
 
-			var hasUncheckedReview = submission?.ManualCheckings.Any(c => !c.IsChecked) ?? false;
-			var hasCheckedReview = submission?.ManualCheckings.Any(c => c.IsChecked) ?? false;
-			var reviewState = hasCheckedReview ? ExerciseReviewState.Reviewed :
-				hasUncheckedReview ? ExerciseReviewState.WaitingForReview :
+			var hasCheckedReview = submission?.ManualChecking?.IsChecked;
+			var reviewState = hasCheckedReview == true ? ExerciseReviewState.Reviewed :
+				hasCheckedReview == false ? ExerciseReviewState.WaitingForReview :
 				ExerciseReviewState.NotReviewed;
 
 			var submissions = onlyAccepted ?
@@ -404,7 +403,7 @@ namespace uLearn.Web.Controllers
 		private UserExerciseSubmission GetExerciseSubmissionShownByDefault(string courseId, Guid slideId, string userId, bool allowNotAccepted = false)
 		{
 			var submissions = userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).ToList();
-			var lastSubmission = submissions.LastOrDefault(s => s.ManualCheckings != null && s.ManualCheckings.Any()) ??
+			var lastSubmission = submissions.LastOrDefault(s => s.ManualChecking != null) ??
 								submissions.LastOrDefault(s => s.AutomaticCheckingIsRightAnswer);
 			if (lastSubmission == null && allowNotAccepted)
 				lastSubmission = userSolutionsRepo.GetAllSubmissionsByUser(courseId, slideId, userId).ToList().LastOrDefault();
@@ -471,27 +470,27 @@ namespace uLearn.Web.Controllers
 		{
 			var reviewedSubmission = userSolutionsRepo
 				.GetAllAcceptedSubmissionsByUser(courseId, new []{slideId}, userId)
-				.Where(s => s.ManualCheckings.Any(c => c.IsChecked))
+				.Where(s => s.ManualChecking != null && s.ManualChecking.IsChecked)
 				.OrderByDescending(s => s.Timestamp)
 				.FirstOrDefault();
-			var lastManualChecking = reviewedSubmission?.ManualCheckings.OrderBy(c => c.Timestamp).LastOrDefault(c => c.IsChecked);
+			var manualChecking = reviewedSubmission?.ManualChecking;
 
-			if (lastManualChecking == null || !lastManualChecking.NotDeletedReviews.Any())
+			if (manualChecking == null || !manualChecking.NotDeletedReviews.Any())
 				return new EmptyResult();
 			return PartialView("~/Views/Exercise/_ExerciseLastReviewComments.cshtml",
 				new ExerciseLastReviewCommentModel
 				{
 					ReviewedSubmission = reviewedSubmission,
-					NotDeletedReviews = lastManualChecking.NotDeletedReviews
+					NotDeletedReviews = manualChecking.NotDeletedReviews
 				});
 		}
 
 		public ActionResult ExerciseScoreForm(BlockRenderContext context)
 		{
 			var checking = (ManualExerciseChecking)context.ManualChecking;
-			var prevReviewPercent = slideCheckingsRepo.GetUserReviewPercentForExerciseSlide(
+			var prevReviewPercent = slideCheckingsRepo.GetLastReviewPercentForExerciseSlide(
 				context.Course.Id,
-				context.Slide as ExerciseSlide,
+				checking.SlideId,
 				checking.UserId,
 				checking.Submission.Timestamp);
 			var model = new ExerciseScoreFormModel (

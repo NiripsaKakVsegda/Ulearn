@@ -29,7 +29,7 @@
 
 		var classString = Model.IsGuest ? "code-guest" : "code-exercise";
 		var canAddReviews = false;
-		if (Model.ManualChecking != null && Model.ManualChecking.SubmissionId == currentSubmissionId)
+		if (Model.ManualChecking != null && Model.ManualChecking.Id == currentSubmissionId)
 		{
 			classString = "code-review";
 			canAddReviews = true;
@@ -55,13 +55,13 @@
 						: texts.WaitingForCodeReviewInstructorView;
 					status = string.Format(
 						messageFormat,
-						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualCheckings.OrderBy(c => c.Timestamp).Last().Id })
+						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id })
 						);
 				}
 			}
 			else if (Model.ReviewState == ExerciseReviewState.Reviewed)
 			{
-				var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(Model.SubmissionSelectedByUser.ManualCheckings, Model.Slide).Score;
+				var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Model.SubmissionSelectedByUser.ManualChecking.Percent.Value, Model.Slide.Scoring.ScoreWithCodeReview);
 				var scoreVerb = score.SelectPluralWordInRussian(new RussianPluralizationOptions
 				{
 					One = "получен",
@@ -75,7 +75,7 @@
 						? "Все тесты пройдены, за&nbsp;<a href=\"{0}\" title=\"Отредактировать код-ревью\">код-ревью</a> {1} +{2}"
 						: texts.CodeReviewPassedInstructorView;
 					status = string.Format(messageFormat,
-						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualCheckings.OrderBy(c => c.Timestamp).Last().Id, recheck = true }),
+						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id, recheck = true }),
 						scoreVerb,
 						pluralizedScore);
 				}

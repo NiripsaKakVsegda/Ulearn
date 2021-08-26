@@ -63,10 +63,10 @@
 
 			@if (requireReview)
 			{
-				if (userSubmissions.Any(s => s.ManualCheckings.Any()))
+				if (userSubmissions.Any(s => s.ManualChecking != null))
 				{
 					<td>
-						@if (userSubmissions.All(s => s.ManualCheckings.All(c => !c.IsChecked)))
+						@if (userSubmissions.Where(s => s.ManualChecking != null).All(s => !s.ManualChecking.IsChecked))
 						{
 							<span class="text-muted">Ожидает</span>
 						}

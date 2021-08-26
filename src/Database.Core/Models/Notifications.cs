@@ -9,6 +9,7 @@ using Database.Models.Comments;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -324,10 +325,14 @@ namespace Database.Models
 
 		public virtual ICollection<NotificationDelivery> Deliveries { get; set; }
 
+		[NotNull]
 		public abstract string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl);
+		[NotNull]
 		public abstract string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl);
+		[CanBeNull]
 		public abstract NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl);
 
+		// Этот метод, в частности, должен проверять существование и доступность слайда пользователям, которые получают сообщение.
 		public abstract Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course);
 		public virtual bool IsNotificationForEveryone => false;
 
@@ -371,11 +376,16 @@ namespace Database.Models
 			return baseUrl + $"/Admin/Groups?courseId={course.Id.EscapeHtml()}";
 		}
 
+		protected static bool DoesSlideExist(Guid slideId, Course course)
+		{
+			return course.FindSlideByIdNotSafe(slideId) != null;
+		}
+
 		protected static async Task<bool> IsSlideVisible(Guid slideId, Course course, IServiceProvider serviceProvider)
 		{
 			var unitsRepo = serviceProvider.GetService<IUnitsRepo>();
 			var slide = course.GetSlideByIdNotSafe(slideId);
-			return !slide.Hide && await unitsRepo.IsUnitVisibleForStudents(course, slide.Unit.Id);
+			return slide != null && !slide.Hide && await unitsRepo.IsUnitVisibleForStudents(course, slide.Unit.Id);
 		}
 	}
 
@@ -487,10 +497,7 @@ namespace Database.Models
 
 		public override NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return new NotificationButton("Перейти к комментарию", GetCommentUrl(course, slide, baseUrl));
 		}
 
@@ -518,25 +525,21 @@ namespace Database.Models
 	{
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"<b>{Comment.Author.VisibleName.EscapeHtml()} прокомментировал{Comment.Author.Gender.ChooseEnding()} «{GetSlideTitle(course, slide).EscapeHtml()}»</b><br/><br/>" +
 					$"{GetHtmlCommentText()}";
 		}
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"{Comment.Author.VisibleName} прокомментировал{Comment.Author.Gender.ChooseEnding()} «{GetSlideTitle(course, slide)}»\n\n{Comment.Text.Trim()}";
 		}
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Comment.SlideId, course))
+				return new List<string>();
 			if (!await IsSlideVisible(Comment.SlideId, course, serviceProvider))
 			{
 				var courseRoleUsersFilter = serviceProvider.GetService<ICourseRolesRepo>();
@@ -573,10 +576,7 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"<b>{Comment.Author.VisibleName.EscapeHtml()} ответил{Comment.Author.Gender.ChooseEnding()} на ваш комментарий в «{GetSlideTitle(course, slide).EscapeHtml()}»</b><br/><br/>" +
 					$"{GetHtmlCommentText(ParentComment, isCitation: true)}<br/><br/>" +
 					$"{GetHtmlCommentText()}<br/>";
@@ -584,10 +584,7 @@ namespace Database.Models
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"{Comment.Author.VisibleName} ответил{Comment.Author.Gender.ChooseEnding()} на ваш комментарий в «{GetSlideTitle(course, slide)}»\n\n" +
 					$"> {ParentComment.Text.Trim().Replace("\n", "\n> ")}\n\n" +
 					$"{Comment.Text.Trim()}";
@@ -595,6 +592,8 @@ namespace Database.Models
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Comment.SlideId, course))
+				return new List<string>();
 			if (await IsSlideVisible(Comment.SlideId, course, serviceProvider))
 				return new List<string> { ParentComment.AuthorId };
 			var courseRolesRepo = serviceProvider.GetService<ICourseRolesRepo>();
@@ -609,25 +608,21 @@ namespace Database.Models
 	{
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"<b>{Comment.Author.VisibleName.EscapeHtml()} прокомментировал{Comment.Author.Gender.ChooseEnding()} «{GetSlideTitle(course, slide).EscapeHtml()}»</b><br/><br/>" +
 					$"{GetHtmlCommentText()}";
 		}
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"{Comment.Author.VisibleName} прокомментировал{Comment.Author.Gender.ChooseEnding()} «{GetSlideTitle(course, slide)}»\n\n{Comment.Text.Trim()}";
 		}
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Comment.SlideId, course))
+				return new List<string>();
 			var groupAccessesRepo = serviceProvider.GetService<IGroupAccessesRepo>();
 			return await groupAccessesRepo.GetInstructorsOfAllGroupsWhereUserIsMemberAsync(CourseId, Comment.Author.Id);
 		}
@@ -656,26 +651,22 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"<b>{InitiatedBy.VisibleName.EscapeHtml()} лайкнул{InitiatedBy.Gender.ChooseEnding()} ваш комментарий в «{GetSlideTitle(course, slide).EscapeHtml()}»</b>:<br/><br/>" +
 					$"{GetHtmlCommentText(isCitation: true)}";
 		}
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Comment.SlideId);
 			return $"{InitiatedBy.VisibleName} лайкнул{InitiatedBy.Gender.ChooseEnding()} ваш комментарий в «{GetSlideTitle(course, slide)}»\n\n" +
 					$"> {Comment.Text.Trim().Replace("\n", "\n >")}";
 		}
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Comment.SlideId, course))
+				return new List<string>();
 			if (await IsSlideVisible(Comment.SlideId, course, serviceProvider))
 				return new List<string> { Comment.AuthorId };
 			var courseRolesRepo = serviceProvider.GetService<ICourseRolesRepo>();
@@ -785,43 +776,38 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
-			if (slide == null)
-				return null;
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
 
 			var commentsText = GetReviewsText(Checking, html: true);
-			var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(new List<ManualExerciseChecking> { Checking }, slide).Score;
+			var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview);
 
-			return $"{InitiatedBy.VisibleName.EscapeHtml()} проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide).EscapeHtml()}»<br/><br/>" +
+			return $"{InitiatedBy.VisibleName.EscapeHtml()} {(IsRecheck ? "пере" : "")}проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide).EscapeHtml()}»<br/><br/>" +
 					$"<b>Вы получили {score.PluralizeInRussian(RussianPluralizationOptions.Score)}</b><br/><br/>" +
 					commentsText;
 		}
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
-			if (slide == null)
-				return null;
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId) as ExerciseSlide;
 
 			var commentsText = GetReviewsText(Checking, html: false);
-			var score = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(new List<ManualExerciseChecking> { Checking }, slide).Score;
+			var score = SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(Checking.Percent.Value, slide.Scoring.ScoreWithCodeReview);
 
-			return $"{InitiatedBy.VisibleName} проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide)}»\n" +
+			return $"{InitiatedBy.VisibleName} {(IsRecheck ? "пере" : "")}проверил{InitiatedBy.Gender.ChooseEnding()} ваше решение в «{GetSlideTitle(course, slide)}»\n" +
 					$"Вы получили {score.PluralizeInRussian(RussianPluralizationOptions.Score)}\n\n" +
 					commentsText;
 		}
 
 		public override NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId);
 			return new NotificationButton("Перейти к странице с заданием", GetSlideUrl(course, slide, baseUrl));
 		}
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Checking.SlideId, course))
+				return new List<string>();
 			if (await IsSlideVisible(Checking.SlideId, course, serviceProvider))
 				return new List<string> { Checking.UserId };
 			var courseRolesRepo = serviceProvider.GetService<ICourseRolesRepo>();
@@ -846,35 +832,28 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId);
 			return $"<b>{InitiatedBy.VisibleName.EscapeHtml()} проверил{InitiatedBy.Gender.ChooseEnding()} ваш тест «{GetSlideTitle(course, slide).EscapeHtml()}»:</b><br/>" +
 					$"вы получили {Checking.Score.PluralizeInRussian(RussianPluralizationOptions.Score)}";
 		}
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId);
 			return $"{InitiatedBy.VisibleName} проверил{InitiatedBy.Gender.ChooseEnding()} ваш тест «{GetSlideTitle(course, slide)}»:\n" +
 					$"вы получили {Checking.Score.PluralizeInRussian(RussianPluralizationOptions.Score)}";
 		}
 
 		public override NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Checking.SlideId);
-			if (slide == null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(Checking.SlideId);
 			return new NotificationButton("Перейти к странице с тестом", GetSlideUrl(course, slide, baseUrl));
 		}
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			if (!DoesSlideExist(Checking.SlideId, course))
+				return new List<string>();
 			if (await IsSlideVisible(Checking.SlideId, course, serviceProvider))
 				return new List<string> { Checking.UserId };
 			var courseRolesRepo = serviceProvider.GetService<ICourseRolesRepo>();
@@ -941,10 +920,8 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var unit = course.FindUnitByIdNotSafe(Score.UnitId);
-			var scoringGroup = unit?.Scoring.Groups.GetOrDefault(Score.ScoringGroupId, null);
-			if (scoringGroup == null)
-				return null;
+			var unit = course.GetUnitByIdNotSafe(Score.UnitId);
+			var scoringGroup = unit.Scoring.Groups[Score.ScoringGroupId];
 
 			return $"<b>{InitiatedBy.VisibleName.EscapeHtml()}</b> поставил{InitiatedBy.Gender.ChooseEnding()} вам баллы <b>{scoringGroup.Name.EscapeHtml()}</b> в модуле «{GetUnitTitle(course, unit).EscapeHtml()}»:<br/>" +
 					$"вы получили {Score.Score.PluralizeInRussian(RussianPluralizationOptions.Score)}<br/><br/>" +
@@ -953,10 +930,8 @@ namespace Database.Models
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var unit = course.FindUnitByIdNotSafe(Score.UnitId);
-			var scoringGroup = unit?.Scoring.Groups.GetOrDefault(Score.ScoringGroupId, null);
-			if (scoringGroup == null)
-				return null;
+			var unit = course.GetUnitByIdNotSafe(Score.UnitId);
+			var scoringGroup = unit.Scoring.Groups[Score.ScoringGroupId];
 
 			return $"{InitiatedBy.VisibleName} поставил{InitiatedBy.Gender.ChooseEnding()} вам баллы {scoringGroup.Name} в модуле «{GetUnitTitle(course, unit)}»:\n" +
 					$"вы получили {Score.Score.PluralizeInRussian(RussianPluralizationOptions.Score)}\n\n" +
@@ -970,6 +945,10 @@ namespace Database.Models
 
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
+			var unitsRepo = serviceProvider.GetService<IUnitsRepo>();
+			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, Score.UserId);
+			if (!visibleUnits.Contains(Score.UnitId))
+				return new List<string>();
 			return new List<string> { Score.UserId };
 		}
 
@@ -988,13 +967,8 @@ namespace Database.Models
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var checking = Comment?.Review?.ExerciseChecking;
-			if (checking == null)
-				return null;
-
-			var slide = course.FindSlideByIdNotSafe(checking.SlideId);
-			if (slide == null)
-				return null;
+			var checking = Comment.Review.ExerciseChecking;
+			var slide = course.GetSlideByIdNotSafe(checking.SlideId);
 
 			var messagePrefix = $"{InitiatedBy.VisibleName.EscapeHtml()} оставил{InitiatedBy.Gender.ChooseEnding()} комментарий в код-ревью задания «{GetSlideTitle(course, slide).EscapeHtml()}»<br/><br/>";
 			if (transport is MailNotificationTransport)
@@ -1016,13 +990,8 @@ namespace Database.Models
 
 		public override string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl)
 		{
-			var checking = Comment?.Review?.ExerciseChecking;
-			if (checking == null)
-				return null;
-
-			var slide = course.FindSlideByIdNotSafe(checking.SlideId);
-			if (slide == null)
-				return null;
+			var checking = Comment.Review.ExerciseChecking;
+			var slide = course.GetSlideByIdNotSafe(checking.SlideId);
 
 			var messagePrefix = $"{InitiatedBy.VisibleName} оставил{InitiatedBy.Gender.ChooseEnding()} комментарий в код-ревью задания «{GetSlideTitle(course, slide)}»<br/><br/>";
 			if (transport is MailNotificationTransport)
@@ -1043,10 +1012,6 @@ namespace Database.Models
 
 		public override NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment?.Review?.ExerciseChecking?.SlideId ?? Guid.Empty);
-			if (slide == null)
-				return null;
-
 			var currentUserId = transport.UserId;
 			var isStudent = currentUserId == Comment.Review.ExerciseChecking.UserId;
 			var url = GetUrl(course, baseUrl, currentUserId);
@@ -1055,22 +1020,26 @@ namespace Database.Models
 			return new NotificationButton(title, url);
 		}
 
-
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
 			var review = Comment.Review;
 			if (review == null)
 				return new List<string>();
 
-			var authorsIds = new HashSet<string>(review.Comments.Select(c => c.AuthorId));
-			authorsIds.Add(review.AuthorId);
-			authorsIds.Add(review.ExerciseChecking.UserId);
+			if (!DoesSlideExist(Comment.Review.SlideId, course))
+				return new List<string>();
 
-			if (await IsSlideVisible(review.ExerciseChecking.SlideId, course, serviceProvider))
-				return authorsIds.ToList();
+			var userIds = new HashSet<string>(review.Comments.Select(c => c.AuthorId));
+			userIds.Add(review.AuthorId);
+			userIds.Add(review.SubmissionAuthorId);
+			// Создавший комментарий, о котором уведомление, пользователь отфильтруется InitiatedBy.
+
+			if (await IsSlideVisible(review.SlideId, course, serviceProvider))
+				return userIds.ToList();
+
 			var courseRolesRepo = serviceProvider.GetService<ICourseRolesRepo>();
 			var usersWithAccess = new List<string>();
-			foreach (var authorsId in authorsIds)
+			foreach (var authorsId in userIds)
 			{
 				if (await courseRolesRepo.HasUserAccessToCourse(authorsId, course.Id, CourseRoleType.Instructor))
 					usersWithAccess.Add(authorsId);
@@ -1105,14 +1074,12 @@ namespace Database.Models
 
 		public string GetUrl(Course course, string baseUrl, string currentUserId)
 		{
-			var slide = course.FindSlideByIdNotSafe(Comment?.Review?.ExerciseChecking?.SlideId ?? Guid.Empty);
-			if (slide == null)
-				return null;
+			var slide = course.GetSlideByIdNotSafe(Comment.Review.SlideId);
 
-			var isStudent = currentUserId == Comment.Review.ExerciseChecking.UserId;
+			var isStudent = currentUserId == Comment.Review.SubmissionAuthorId;
 			var url = GetSlideUrl(course, slide, baseUrl);
 			if (!isStudent)
-				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}";
+				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}&SubmissionId={Comment.Review.SubmissionId}&UserId={Comment.Review.SubmissionAuthorId}";
 			return url;
 		}
 	}
@@ -1272,7 +1239,7 @@ namespace Database.Models
 		public override async Task<List<string>> GetRecipientsIdsAsync(IServiceProvider serviceProvider, Course course)
 		{
 			var groupAccessesRepo = serviceProvider.GetService<IGroupAccessesRepo>();
-			var accesses = await groupAccessesRepo.GetGroupAccessesAsync(GroupId).ConfigureAwait(false);
+			var accesses = await groupAccessesRepo.GetGroupAccessesAsync(GroupId);
 			return accesses.Select(a => a.UserId).Concat(new[] { Group.OwnerId }).ToList();
 		}
 

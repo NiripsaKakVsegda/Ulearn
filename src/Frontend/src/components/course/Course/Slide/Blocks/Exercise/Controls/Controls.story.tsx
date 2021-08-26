@@ -4,10 +4,9 @@ import type { Story } from "@storybook/react";
 import Controls from "./Controls";
 import texts from "../Exercise.texts";
 import { Gapped } from "ui";
+import { mockFunc } from "src/utils/storyMock";
 
 const defaultHints: string[] = [];
-
-const mockFunc = () => ({});
 
 const defaultProps = {
 	isEditable: true,
@@ -67,7 +66,6 @@ const ListTemplate: Story<{ items: { props: typeof defaultProps, header: string 
 					<Controls.StatisticsHint attemptsStatistics={ props.attemptsStatistics }/>
 					{ (!props.hideSolutions && (props.hints.length === props.showedHintsCount || props.isShowAcceptedSolutionsAvailable))
 					&& <Controls.AcceptedSolutionsButton
-						acceptedSolutionsUrl={ '' }
 						onVisitAcceptedSolutions={ props.onVisitAcceptedSolutions }
 						isShowAcceptedSolutionsAvailable={ props.isShowAcceptedSolutionsAvailable }
 					/> }
@@ -119,16 +117,18 @@ AllControls.args = {
 
 export const OpenedHints = () => {
 	return (
-		<Controls>
-			<Controls.ShowHintButton
-				showedHintsCountOnStart={ hints.length }
-				onAllHintsShowed={ mockFunc }
-				renderedHints={ hints }
-				showControlsText={ true }
-				subTooltipTrigger={ 'opened' }
-				mainTooltipTrigger={ 'opened' }
-			/>
-		</Controls>
+		<div style={ { height: '500px' } }>
+			<Controls>
+				<Controls.ShowHintButton
+					showedHintsCountOnStart={ hints.length }
+					onAllHintsShowed={ mockFunc }
+					renderedHints={ hints }
+					showControlsText={ true }
+					subTooltipTrigger={ 'opened' }
+					mainTooltipTrigger={ 'opened' }
+				/>
+			</Controls>
+		</div>
 	);
 };
 
@@ -164,6 +164,7 @@ export const OpenedStatistics = () => {
 					} }
 				/>
 			</Controls>
+			<div/>
 		</Gapped>
 	);
 };
@@ -171,14 +172,15 @@ export const OpenedStatistics = () => {
 
 export const OpenedAcceptedSolutionsButton = () => {
 	return (
-		<Controls>
-			<Controls.AcceptedSolutionsButton
-				tooltipTrigger={ 'opened' }
-				acceptedSolutionsUrl={ '' }
-				onVisitAcceptedSolutions={ mockFunc }
-				isShowAcceptedSolutionsAvailable={ true }
-			/>
-		</Controls>
+		<div style={ { height: '170px' } }>
+			<Controls>
+				<Controls.AcceptedSolutionsButton
+					tooltipTrigger={ 'opened' }
+					onVisitAcceptedSolutions={ mockFunc }
+					isShowAcceptedSolutionsAvailable={ true }
+				/>
+			</Controls>
+		</div>
 	);
 };
 

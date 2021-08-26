@@ -9,6 +9,7 @@ using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Web.Api.Authorization;
@@ -63,14 +64,14 @@ namespace Ulearn.Web.Api.Controllers
 
 			var exerciseSlides = course.GetSlidesNotSafe().OfType<ExerciseSlide>().ToList();
 
-			var allSlideCheckings = (await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(new ManualCheckingQueueFilterOptions
+			var allSlideCheckings = await slideCheckingsRepo.GetManualCheckingQueueFilterQuery<ManualExerciseChecking>(new ManualCheckingQueueFilterOptions
 			{
 				CourseId = course.Id,
 				Count = count,
 				OnlyChecked = null,
 				From = @from.Value,
 				To = to.Value,
-			}).ConfigureAwait(false)).ToList();
+			}).ToListAsync();
 
 			var result = new CodeReviewInstructorsStatisticsResponse
 			{
@@ -91,7 +92,7 @@ namespace Ulearn.Web.Api.Controllers
 							slide => new CodeReviewExerciseStatistics
 							{
 								SlideId = slide.Id,
-								ReviewedSubmissionsCount = checkingsCheckedByInstructor.Where(c => c.SlideId == slide.Id).DistinctBy(c => c.SubmissionId).Count(),
+								ReviewedSubmissionsCount = checkingsCheckedByInstructor.Count(c => c.SlideId == slide.Id),
 								QueueSize = checkingQueue.Count(c => c.SlideId == slide.Id),
 								CommentsCount = comments.Count(c => c.ExerciseChecking.SlideId == slide.Id),
 							}

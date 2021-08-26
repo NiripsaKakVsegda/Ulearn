@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -8,7 +9,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 	public class GalleryComponent : Component
 	{
 		[XmlIgnore]
-		public string[] Images;
+		public (FileInfo ImageFile, string RelativeToUnitDirectoryImagePath)[] Images;
 
 		[XmlAttribute("filename")]
 		public string Filename;
@@ -20,7 +21,7 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 		{
 		}
 
-		public GalleryComponent(string urlName, string displayName, string filename, string[] images)
+		public GalleryComponent(string urlName, string displayName, string filename, (FileInfo ImageFile, string RelativeToUnitDirectoryImagePath)[] images)
 		{
 			UrlName = urlName;
 			DisplayName = displayName;
@@ -36,11 +37,12 @@ namespace Ulearn.Core.Model.Edx.EdxComponents
 
 		public override void SaveAdditional(string folderName)
 		{
-			foreach (var image in Images)
-				File.Copy($"{image}", $"{folderName}/static/{UrlName}_{image.Replace("/", "_")}");
+			string PathToEdxFileName(string path) => path.Replace("\\", "/").Replace("/", "_").Replace(" ", "_");
+			foreach (var (file, relativeToUnitDirectoryImagePath) in Images)
+				File.Copy(file.FullName, $"{folderName}/static/{UrlName}_{PathToEdxFileName(relativeToUnitDirectoryImagePath)}", true);
 			File.WriteAllText($"{folderName}/static/gallery_{UrlName}.html",
 				File.ReadAllText($"{Utils.GetRootDirectory()}/templates/gallery.html")
-					.Replace("{0}", string.Join("", Images.Select(x => "<li><img src='" + UrlName + "_" + x.Replace("/", "_") + "' alt=''/></li>"))));
+					.Replace("{0}", string.Join("", Images.Select(t => "<li><img src='" + UrlName + "_" + PathToEdxFileName(t.RelativeToUnitDirectoryImagePath) + "' alt=''/></li>"))));
 		}
 
 		public override EdxReference GetReference()

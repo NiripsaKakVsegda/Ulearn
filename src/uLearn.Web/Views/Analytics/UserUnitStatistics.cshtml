@@ -1,5 +1,4 @@
-﻿@using Database.DataContexts
-@using uLearn.Web.Extensions
+﻿@using uLearn.Web.Extensions
 @using Ulearn.Core.Courses.Slides.Exercises
 @using Ulearn.Core.Extensions
 @using uLearn.Web.Controllers
@@ -64,7 +63,7 @@
 					<p>
 						Код-ревью
 						@{
-							manualPercent = SlideCheckingsRepo.GetExerciseSubmissionManualCheckingsScoreAndPercent(submission.ManualCheckings, slide).Percent;
+							manualPercent = submission.ManualChecking?.Percent;
 							var isChecked = manualPercent != null;
 							if (isChecked)
 							{
@@ -72,7 +71,7 @@
 							}
 							else
 							{
-								<span> (это первое ревью)</span>
+								<span> (это первое ревью этой посылки)</span>
 							}
 						}
 					</p>
@@ -96,16 +95,16 @@
 
 				@{
 					var reviewedSubmission = Model.ReviewedSubmissions.FirstOrDefault(s => s.SlideId == submission.SlideId);
-					var lastManualChecking = reviewedSubmission?.ManualCheckings.OrderBy(c => c.Timestamp).LastOrDefault(c => c.IsChecked);
+					var manualChecking = reviewedSubmission?.ManualChecking;
 				}
-				@if (lastManualChecking != null && lastManualChecking.NotDeletedReviews.Any())
+				@if (manualChecking != null && manualChecking.NotDeletedReviews.Any())
 				{
 					@Html.Partial(
 						"~/Views/Exercise/_ExerciseLastReviewComments.cshtml",
 						new ExerciseLastReviewCommentModel
 						{
 							ReviewedSubmission = reviewedSubmission,
-							NotDeletedReviews = lastManualChecking.NotDeletedReviews
+							NotDeletedReviews = manualChecking.NotDeletedReviews
 						})
 				}
 			</div>

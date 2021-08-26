@@ -4,11 +4,11 @@ import { SlideType } from "src/models/slide";
 import {
 	fakeCommentsApi,
 	getMockedComment,
-	policyCommentsPostModeration,
-	student
+	policyCommentsPostModeration
 } from "../storiesData";
 import { Comment } from "src/models/comments";
 import type { Story } from "@storybook/react";
+import { student } from "src/storiesUtils";
 
 const comments: Comment[] = [
 	{

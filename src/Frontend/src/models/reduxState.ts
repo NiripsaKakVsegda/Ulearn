@@ -5,23 +5,14 @@ import {
 	SubmissionInfo
 } from "./exercise";
 import { RootState } from "src/redux/reducers";
+import { ReduxData } from "../redux";
 
-interface ReviewCommentResponseRedux extends ReviewCommentResponse {
-	isDeleted?: boolean,
-	isLoading?: boolean,
+interface ReviewInfoRedux extends Omit<ReviewInfo, 'comments'> {
+	comments: (ReviewCommentResponse | ReduxData)[];
+	isDeleted?: boolean;
 }
 
-interface ReviewInfoRedux extends ReviewInfo {
-	comments: ReviewCommentResponseRedux[];
-}
-
-interface ExerciseAutomaticCheckingResponseRedux extends ExerciseAutomaticCheckingResponse {
-	reviews: ReviewInfoRedux[] | null;
-}
-
-interface SubmissionInfoRedux extends SubmissionInfo {
-	automaticChecking: ExerciseAutomaticCheckingResponseRedux | null; // null если задача не имеет автоматических тестов, это не отменяет возможности ревью.
-	manualCheckingReviews: ReviewInfoRedux[];
-}
+type ExerciseAutomaticCheckingResponseRedux = Omit<ExerciseAutomaticCheckingResponse, 'reviews'>;
+type SubmissionInfoRedux = Omit<SubmissionInfo, 'automaticChecking.reviews' | 'manualChecking.reviews'>;
 
 export { SubmissionInfoRedux, ReviewInfoRedux, RootState, };

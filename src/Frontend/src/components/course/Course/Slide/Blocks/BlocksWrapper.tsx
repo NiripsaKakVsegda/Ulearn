@@ -9,14 +9,14 @@ import styles from "./BlocksWrapper.less";
 
 const hiddenHintText = "Студенты не видят этот блок";
 
-interface Props {
-	className?: string,
-	isBlock?: boolean,
-	withoutBottomPaddings?: boolean,
-	withoutTopPaddings?: boolean,
-	withoutEyeHint?: boolean,
-	hide?: boolean,
-	children?: React.ReactNode,
+export interface Props {
+	className?: string;
+	isBlock?: boolean;
+	withoutBottomPaddings?: boolean;
+	withoutTopPaddings?: boolean;
+	withoutEyeHint?: boolean;
+	hide?: boolean;
+	children?: React.ReactNode;
 }
 
 function BlocksWrapper({

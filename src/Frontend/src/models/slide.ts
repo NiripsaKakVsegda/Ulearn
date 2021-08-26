@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { Language } from "src/consts/languages";
-import { SubmissionInfoRedux } from "src/models/reduxState";
 import { AttemptsStatistics, SubmissionInfo } from "src/models/exercise";
 
 interface ShortSlideInfo {
@@ -38,40 +37,40 @@ export enum BlockTypes {
 	exercise = 'exercise',
 }
 
-interface Block<T extends BlockTypes> {
-	$type: T;
-	key: number;
-	hide: boolean;
+interface Block {
+	$type: BlockTypes;
+	hide?: boolean;
 }
 
-interface SpoilerBlock extends Block<BlockTypes.spoiler> {
-	blocks: Block<BlockTypes>[];
+interface SpoilerBlock extends Block {
+	$type: BlockTypes.spoiler;
+	blocks: Block[];
 	blocksId: string;
 	isPreviousBlockHidden: boolean;
 	renderedBlocks: ReactNode[];
 }
 
-interface TexBlock extends Block<BlockTypes.tex> {
+interface TexBlock extends Block {
+	$type: BlockTypes.tex;
 	content: string;
 	lines: string[];
 }
 
-interface VideoBlock extends Block<BlockTypes.video> {
+interface VideoBlock extends Block {
+	$type: BlockTypes.video;
 	autoplay: boolean;
 	openAnnotation: boolean;
 	annotationWithoutBottomPaddings: boolean;
 }
 
-interface ExerciseBlock extends Block<BlockTypes.exercise> {
+interface ExerciseBlockProps {
 	slideId: string;
 	courseId: string;
 	forceInitialCode: boolean;
-	maxScore?: number;
-	submissions?: SubmissionInfo[],//we're moving this field to other state in redux reducer
-	isLti: boolean;
 }
 
-interface ExerciseBlockProps {
+interface ExerciseBlock extends Block {
+	$type: BlockTypes.exercise;
 	languages: Language[];
 	languageInfo: EnumDictionary<Language, LanguageLaunchInfo> | null;
 	defaultLanguage: Language | null;
@@ -79,7 +78,6 @@ interface ExerciseBlockProps {
 	exerciseInitialCode: string;
 	hideSolutions: boolean;
 	expectedOutput: string;
-	submissions: SubmissionInfoRedux[];
 	attemptsStatistics: AttemptsStatistics | null;
 	pythonVisualizerEnabled?: boolean;
 }

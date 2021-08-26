@@ -16,11 +16,6 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		[XmlAttribute("explanation")]
 		public string Explanation;
 
-		public override Component ToEdxComponent(EdxComponentBuilderContext context)
-		{
-			throw new NotSupportedException();
-		}
-
 		public OrderingItem[] ShuffledItems()
 		{
 			return Items.Shuffle().ToArray();

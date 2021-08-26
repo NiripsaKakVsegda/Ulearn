@@ -40,6 +40,7 @@ namespace uLearn.Web.Controllers
 		private readonly AdditionalScoresRepo additionalScoresRepo;
 		private readonly UlearnConfiguration configuration;
 		private readonly GoogleSheetExportTasksRepo googleSheetExportTasksRepo;
+		private readonly SystemAccessesRepo systemAccessesRepo;
 
 		public AnalyticsController()
 			: this(new ULearnDb(), WebCourseManager.CourseStorageInstance)
@@ -58,6 +59,7 @@ namespace uLearn.Web.Controllers
 			visitsRepo = new VisitsRepo(db);
 			unitsRepo = new UnitsRepo(db);
 			googleSheetExportTasksRepo = new GoogleSheetExportTasksRepo(db,courseStorage);
+			systemAccessesRepo = new SystemAccessesRepo(db);
 			configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		}
 
@@ -330,7 +332,7 @@ namespace uLearn.Web.Controllers
 			var courseId = param.CourseId;
 			var periodStart = param.PeriodStartDate;
 			var periodFinish = param.PeriodFinishDate;
-			var groupsIds = Request.GetMultipleValuesFromQueryString("group");
+			var groupsIds = Request.GetMultipleValuesFromQueryString("groupsIds").Concat(Request.GetMultipleValuesFromQueryString("group")).ToList();
 			var isInstructor = User.HasAccessFor(courseId, CourseRole.Instructor);
 			var isStudent = !isInstructor;
 			var isAdmin = User.HasAccessFor(courseId, CourseRole.CourseAdmin);
@@ -406,6 +408,8 @@ namespace uLearn.Web.Controllers
 			else
 				groups = groupsRepo.GetUserGroups(courseId, currentUserId);
 
+			var canViewProfiles = systemAccessesRepo.HasSystemAccess(currentUserId, SystemAccessType.ViewAllProfiles) || User.IsSystemAdministrator();
+
 			var uriBuilder = new ExportUriBuilder(configuration.BaseUrlApi, courseId);
 			var jsonExportUrl = uriBuilder.BuildExportJsonUrl();
 			var xmlExportUrl = uriBuilder.BuildExportXmlUrl();
@@ -427,6 +431,7 @@ namespace uLearn.Web.Controllers
 			{
 				IsInstructor = isInstructor,
 				IsAdmin = isAdmin,
+				CanViewProfiles = canViewProfiles,
 				CourseId = course.Id,
 				CourseTitle = course.Title,
 				Units = visibleUnits,
@@ -536,7 +541,7 @@ namespace uLearn.Web.Controllers
 				.ToList();
 			var reviewedSubmissions = userSolutionsRepo
 				.GetAllAcceptedSubmissionsByUser(courseId, exercises.Select(s => s.Id), userId)
-				.Where(s => s.ManualCheckings.Any(c => c.IsChecked))
+				.Where(s => s.ManualChecking != null && s.ManualChecking.IsChecked)
 				.OrderByDescending(s => s.Timestamp)
 				.DistinctBy(u => u.SlideId)
 				.ToList();

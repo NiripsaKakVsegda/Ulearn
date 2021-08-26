@@ -22,9 +22,12 @@ using Newtonsoft.Json;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
+using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
+using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Utils.LTI;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File;
@@ -37,6 +40,7 @@ namespace ManualUtils
 		public static async Task Main(string[] args)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+			Console.OutputEncoding = Encoding.UTF8;
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			LoggerSetup.Setup(configuration.HostLog, configuration.GraphiteServiceName);
 			try
@@ -50,6 +54,11 @@ namespace ManualUtils
 					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2));
 				var adb = new AntiPlagiarismDb(aOptionsBuilder.Options);
 				var serviceProvider = ConfigureDI(adb, db);
+
+				var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
+				await courseManager.UpdateCoursesAsync();
+				await courseManager.UpdateTempCoursesAsync();
+
 				await Run(adb, db, serviceProvider);
 			}
 			finally
@@ -62,10 +71,20 @@ namespace ManualUtils
 		{
 			var services = new ServiceCollection();
 			services.AddLogging(builder => builder.AddVostok(LogProvider.Get()));
+
 			services.AddSingleton(db);
-			services.AddDatabaseServices();
-			services.AddSingleton(adb);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
+			services.AddDatabaseServices(false);
+
+			services.AddSingleton(SlaveCourseManager.CourseStorageInstance);
+			services.AddSingleton(SlaveCourseManager.CourseStorageUpdaterInstance);
+			services.AddSingleton<ISlaveCourseManager, SlaveCourseManager>();
+			services.AddSingleton<ExerciseStudentZipsCache>();
+
+			services.AddScoped<TempCourseRemover>();
+
+			services.AddSingleton(adb);
+
 			return services.BuildServiceProvider();
 		}
 
@@ -100,6 +119,18 @@ namespace ManualUtils
 			// await UploadStagingFromDbAndExtractToCourses(serviceProvider);
 			// await SetCourseIdAndSlideIdInLikesAndPromotes(db);
 			// await SetNewFieldsInReview(db, serviceProvider);
+			// await UploadCourseVersions(serviceProvider);
+			// await RemoveVersionsWithoutFile(serviceProvider);
+			// await RemoveDuplicateExerciseManualCheckings(serviceProvider);
+			// await RemoveTempCourse(serviceProvider);
+			// await AddVersionFilesToCoursesOnDisk(serviceProvider);
+			// await CreateNewVersionFromZip(serviceProvider, "test4", @"C:\Users\vorkulsky\Downloads\test4.zip");
+			// await SetCourseNamesToVersions(serviceProvider, false);
+			// await UnifyVisits(serviceProvider);
+			// await BuildFavouriteReviewsFromReviews(serviceProvider);
+			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
+			// await SetPercentByScore(serviceProvider);
+			// await ScoresUpdater.UpdateVisitsForExercises(serviceProvider, new DateTime(2021, 8, 15));
 		}
 
 		private static void GenerateUpdateSequences()
@@ -393,7 +424,7 @@ namespace ManualUtils
 
 		private static void ConvertZipsToCourseXmlInRoot()
 		{
-			var mainDirectory = WebCourseManager.GetCoursesDirectory();
+			var mainDirectory = CourseManager.CoursesDirectory;
 			var stagingDirectory = mainDirectory.GetSubdirectory("Courses.Staging");
 			var versionsDirectory = mainDirectory.GetSubdirectory("Courses.Versions");
 
@@ -427,8 +458,8 @@ namespace ManualUtils
 				{
 					Console.WriteLine($"Start process {file.Name}");
 					using (var stream = ZipUtils.GetZipWithFileWithNameInRoot(file.FullName, "course.xml"))
-						using (var fileStream = File.Create(Path.Combine(newDirectory.FullName, file.Name)))
-							stream.CopyTo(fileStream);
+					using (var fileStream = File.Create(Path.Combine(newDirectory.FullName, file.Name)))
+						stream.CopyTo(fileStream);
 				}
 				catch (Exception ex)
 				{
@@ -439,23 +470,24 @@ namespace ManualUtils
 
 		private static async Task UploadStagingToDb(IServiceProvider serviceProvider)
 		{
-			var mainDirectory = WebCourseManager.GetCoursesDirectory();
-			var stagingDirectory = mainDirectory.GetSubdirectory("Courses.Staging");
+			var stagingDirectory = CourseManager.CoursesDirectory.GetSubdirectory("Courses.Staging");
 
 			var db = serviceProvider.GetService<UlearnDb>();
 			var coursesRepo = serviceProvider.GetService<ICoursesRepo>();
 
-			var courseIdsFromCourseFiles = await coursesRepo.GetCourseIdsFromCourseFiles();
+			var publishedCourseVersions = await coursesRepo.GetPublishedCourseVersions();
 
-			foreach (var courseId in courseIdsFromCourseFiles)
+			foreach (var publishedCourseVersion in publishedCourseVersions)
 			{
-				var fileInDb = await coursesRepo.GetCourseFile(courseId);
+				var versionId = publishedCourseVersion.Id;
+				var fileInDb = await coursesRepo.GetVersionFile(versionId);
 				var zip = stagingDirectory.GetFile($"{fileInDb.CourseId}.zip");
 				if (!zip.Exists)
 				{
 					Console.WriteLine($"{fileInDb.CourseId}.zip does not exist");
 					return;
 				}
+
 				var content = await zip.ReadAllContentAsync();
 				if (fileInDb.File.Length != content.Length)
 				{
@@ -466,19 +498,23 @@ namespace ManualUtils
 			}
 		}
 
-		private static async Task UploadStagingFromDbAndExtractToCourses(IServiceProvider serviceProvider)
+		/*private static async Task UploadStagingFromDbAndExtractToCourses(IServiceProvider serviceProvider)
 		{
 			var db = serviceProvider.GetService<UlearnDb>();
-			var courseManager = serviceProvider.GetService<IWebCourseManager>();
+			var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
+			var coursesRepo = serviceProvider.GetService<ICoursesRepo>();
 
-			foreach (var courseFile in db.CourseFiles.AsNoTracking())
+			var publishedCourseVersions = await coursesRepo.GetPublishedCourseVersions();
+
+			foreach (var publishedCourseVersion in publishedCourseVersions)
 			{
-				var stagingCourseFile = courseManager.GetStagingCourseFile(courseFile.CourseId);
-				await File.WriteAllBytesAsync(stagingCourseFile.FullName, courseFile.File);
-				var versionCourseFile = courseManager.GetCourseVersionFile(courseFile.CourseVersionId);
+				var fileInDb = await coursesRepo.GetVersionFile(publishedCourseVersion.Id);
+				var stagingCourseFile = courseManager.GetStagingCourseFile(fileInDb.CourseId);
+				await File.WriteAllBytesAsync(stagingCourseFile.FullName, fileInDb.File);
+				var versionCourseFile = courseManager.GetCourseVersionFile(fileInDb.CourseVersionId);
 				if (!versionCourseFile.Exists)
-					await File.WriteAllBytesAsync(versionCourseFile.FullName, courseFile.File);
-				var unpackDirectory = courseManager.GetExtractedCourseDirectory(courseFile.CourseId);
+					await File.WriteAllBytesAsync(versionCourseFile.FullName, fileInDb.File);
+				var unpackDirectory = courseManager.GetExtractedCourseDirectory(fileInDb.CourseId);
 				using (var zip = ZipFile.Read(stagingCourseFile.FullName, new ReadOptions { Encoding = ZipUtils.Cp866 }))
 				{
 					zip.ExtractAll(unpackDirectory.FullName, ExtractExistingFileAction.OverwriteSilently);
@@ -486,7 +522,7 @@ namespace ManualUtils
 						f.Attributes &= ~FileAttributes.ReadOnly;
 				}
 			}
-		}
+		}*/
 
 		private static async Task SetCourseIdAndSlideIdInLikesAndPromotes(UlearnDb db)
 		{
@@ -500,6 +536,7 @@ namespace ManualUtils
 				if (i % 1000 == 0)
 					db.SaveChanges();
 			}
+
 			db.SaveChanges();
 
 			var promotes = await db.AcceptedSolutionsPromotes.Include(s => s.Submission).ToListAsync();
@@ -508,12 +545,13 @@ namespace ManualUtils
 				promote.CourseId = promote.Submission.CourseId;
 				promote.SlideId = promote.Submission.SlideId;
 			}
+
 			db.SaveChanges();
 		}
 
 		private static async Task SetNewFieldsInReview(UlearnDb db, IServiceProvider serviceProvider)
 		{
-			var reviewsIds = await db.ExerciseCodeReviews.Where(r=> r.CourseId == "").Select(r => r.Id).ToListAsync();
+			var reviewsIds = await db.ExerciseCodeReviews.Where(r => r.CourseId == "").Select(r => r.Id).ToListAsync();
 			Console.WriteLine("Count " + reviewsIds.Count);
 			var i = 0;
 			foreach (var group in reviewsIds.GroupBy(r => r / 2000))
@@ -537,7 +575,486 @@ namespace ManualUtils
 
 					scopedDb.SaveChanges();
 				}
+
 				Console.WriteLine($"{i} / {reviewsIds.Count}");
+			}
+		}
+
+		/*private static async Task UploadCourseVersions(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var versions = await db.CourseVersions.Select(v => v).OrderBy(c => c.Id).ToListAsync();
+				var versionsWithFiles = (await db.CourseVersionFiles.Select(v => v.CourseVersionId).ToListAsync()).ToHashSet();
+				versions = versions.Where(v => !versionsWithFiles.Contains(v.Id)).ToList();
+				Console.WriteLine("Versions without file " + versions.Count);
+
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+				var i = 0;
+				foreach (var version in versions)
+				{
+					var file = courseManager.GetCourseVersionFile(version.Id);
+					if (!file.Exists)
+					{
+						Console.WriteLine($"{version.Id} {version.CourseId} file not found");
+						continue;
+					}
+					db.CourseVersionFiles.Add(new CourseVersionFile
+					{
+						CourseVersionId = version.Id,
+						CourseId = version.CourseId,
+						File = await ReadAllContentAsync(file)
+					});
+					db.SaveChanges();
+					i++;
+				}
+				Console.WriteLine($"Uploaded {i}");
+			}
+		}*/
+
+		private static async Task<byte[]> ReadAllContentAsync(FileInfo file)
+		{
+			byte[] result;
+			using (var stream = File.Open(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+			{
+				result = new byte[stream.Length];
+				await stream.ReadAsync(result, 0, (int)stream.Length);
+			}
+
+			return result;
+		}
+
+		private static async Task RemoveVersionsWithoutFile(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var versionsWithFiles = (await db.CourseVersionFiles.Select(v => v.CourseVersionId).ToListAsync()).ToHashSet();
+				var versionsWithoutFiles = (await db.CourseVersions.Where(v => !versionsWithFiles.Contains(v.Id))
+					.Select(v => v.Id).ToListAsync()).ToHashSet();
+				Console.WriteLine(string.Join("\n", versionsWithoutFiles));
+				foreach (var wf in versionsWithoutFiles)
+				{
+					var cv = await db.CourseVersions.FindAsync(wf);
+					db.CourseVersions.Remove(cv);
+				}
+
+				await db.SaveChangesAsync();
+			}
+		}
+
+		/* private static async Task RemoveDuplicateExerciseManualCheckings(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var doubles = await db!.ManualExerciseCheckings
+					.GroupBy(c => c.SubmissionId)
+					.Select(g => new { SubmissionId = g.Key, Count = g.Count() })
+					.Where(p => p.Count > 1)
+					.ToListAsync();
+				Console.WriteLine($"Doubles count {doubles.Count}");
+				var i = 0;
+				foreach (var d in doubles)
+				{
+					var submissionId = d.SubmissionId;
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.SubmissionId == submissionId)
+						.ToListAsync();
+					var bestChecking = checkings.Any(c => c.IsChecked)
+						? checkings.Where(c => c.IsChecked).MaxBy(c => c.Timestamp)
+						: checkings.MaxBy(c => c.Timestamp);
+					var notBestCheckings = checkings.Where(c => c.Id != bestChecking.Id).ToList();
+					db.ManualExerciseCheckings.RemoveRange(notBestCheckings);
+					db.SaveChanges();
+					i++;
+					Console.WriteLine($"{i}/{doubles.Count}");
+				}
+			}
+		}*/
+
+		/*private static async Task UpdateManualCheckingIds(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var pairs = await db.ManualExerciseCheckings
+					.Where(c => c.Id != c.SubmissionId)
+					.Select(c => new { c.Id, c.SubmissionId })
+					.OrderByDescending(s => s.Id).ToListAsync();
+				Console.WriteLine($"Ids count {pairs.Count}");
+				var i = 0;
+				var rand = new Random();
+				foreach (var pair in pairs)
+				{
+					try
+					{
+						await db.Database.ExecuteSqlRawAsync($@"UPDATE public.""ManualExerciseCheckings"" SET ""Id"" = {pair.SubmissionId} where ""Id"" = {pair.Id};");
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error on id {pair.Id} {pair.SubmissionId}");
+						await db.Database.ExecuteSqlRawAsync($@"UPDATE public.""ManualExerciseCheckings"" SET ""Id"" = {10000000 + rand.Next(0, 10000000)} where ""Id"" = {pair.SubmissionId};");
+					}
+					i++;
+					if (i % 1000 == 0)
+						Console.WriteLine($"{i}/{pairs.Count}");
+				}
+				Console.WriteLine("All");
+				db.SaveChanges();
+			}
+		}*/
+
+		private static async Task RemoveTempCourse(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var tempCourseRemover = scope.ServiceProvider.GetService<TempCourseRemover>();
+				await tempCourseRemover.RemoveTempCourseWithAllData("ulearn-testing", "71eefd72-7972-4a0a-b04e-645f7f04c9a5");
+			}
+		}
+
+		private static async Task AddVersionFilesToCoursesOnDisk(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var tempCoursesRepo = scope.ServiceProvider.GetService<ITempCoursesRepo>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+				var publishedVersions = await coursesRepo.GetPublishedCourseVersions();
+				var tempCourses = await tempCoursesRepo.GetAllTempCourses();
+				var courseAndTokens =
+					publishedVersions.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.Id)))
+						.Concat(tempCourses.Select(v => (CourseId: v.CourseId, Token: new CourseVersionToken(v.LoadingTime)))).ToList();
+				foreach (var (courseId, token) in courseAndTokens)
+				{
+					var dir = courseManager.GetExtractedCourseDirectory(courseId);
+					if (!dir.Exists)
+						continue;
+					var oldToken = CourseVersionToken.Load(dir);
+					if (oldToken.Version != default(Guid))
+						continue;
+					await token.Save(dir);
+				}
+			}
+		}
+
+		private static async Task CreateNewVersionFromZip(IServiceProvider serviceProvider, string courseId, string zipPath)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var usersRepo = scope.ServiceProvider.GetService<IUsersRepo>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var ulearnBotUser = await usersRepo.GetUlearnBotUser();
+				var versionId = Guid.NewGuid();
+				var content = await new FileInfo(zipPath).ReadAllContentAsync();
+				var publishedCourseVersion = await coursesRepo.GetPublishedCourseVersion(courseId);
+				await coursesRepo.AddCourseVersion(courseId, publishedCourseVersion.CourseName, versionId, ulearnBotUser.Id, null, null, null, null, content);
+				await coursesRepo.MarkCourseVersionAsPublished(versionId);
+			}
+		}
+
+		private static async Task SetCourseNamesToVersions(IServiceProvider serviceProvider, bool removeVersionIfCourseError)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var coursesRepo = scope.ServiceProvider.GetService<ICoursesRepo>();
+				var courseManager = scope.ServiceProvider.GetService<ISlaveCourseManager>();
+				var allCourseVersions = await db.CourseVersions.ToListAsync();
+				foreach (var courseVersion in allCourseVersions)
+				{
+					var courseVersionFile = await coursesRepo.GetVersionFile(courseVersion.Id);
+					using (var tempDirectory = await courseManager.ExtractCourseVersionToTemporaryDirectory(courseVersion.CourseId, new CourseVersionToken(courseVersion.Id), courseVersionFile.File))
+					{
+						var (course, exception) = courseManager.LoadCourseFromDirectory(courseVersion.CourseId, tempDirectory.DirectoryInfo);
+						if (exception != null)
+						{
+							if (removeVersionIfCourseError)
+								await coursesRepo.DeleteCourseVersion(courseVersion.CourseId, courseVersion.Id);
+							Console.WriteLine($"Error on {courseVersion.CourseId} {courseVersion.Id}");
+							continue;
+						}
+
+						courseVersion.CourseName = course.Title;
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{courseVersion.CourseId} {courseVersion.Id} {courseVersion.CourseName}");
+					}
+				}
+			}
+		}
+
+		private static async Task UnifyVisits(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var visitsRepo = scope.ServiceProvider.GetService<IVisitsRepo>();
+				var visitsCount = db.Visits.Count();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
+				var dubles = await db.Visits
+					.GroupBy(v => new { v.CourseId, v.SlideId, v.UserId })
+					.Select(g => new { g.Key.CourseId, g.Key.SlideId, g.Key.UserId, Count = g.Count() })
+					.Where(t => t.Count > 1)
+					.ToListAsync();
+				db.Database.SetCommandTimeout(TimeSpan.FromMinutes(0.5));
+				Console.WriteLine($"{dubles.Count} / {visitsCount}");
+				var i = 0;
+				foreach (var duble in dubles)
+				{
+					//Console.WriteLine($"{duble.CourseId} {duble.SlideId} {duble.UserId} {duble.Count}");
+					var actualVisit = await visitsRepo.FindVisit(duble.CourseId, duble.SlideId, duble.UserId);
+					var allVisits = await db.Visits.Where(v => v.CourseId == duble.CourseId && v.SlideId == duble.SlideId && v.UserId == duble.UserId).ToListAsync();
+					var visitsForRemove = allVisits.Where(v => v.Id != actualVisit.Id);
+					db.Visits.RemoveRange(visitsForRemove);
+					i++;
+					if (i % 100 == 0)
+					{
+						await db.SaveChangesAsync();
+						Console.WriteLine($"{i} / {dubles.Count}");
+					}
+				}
+
+				await db.SaveChangesAsync();
+			}
+		}
+
+		private static async Task BuildFavouriteReviewsFromReviews(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var courseRolesRepo = scope.ServiceProvider.GetService<ICourseRolesRepo>();
+				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
+				var courses = courseStorage.GetCourses().ToList();
+
+				var updateDbCounter = 0;
+				var updateDbMaxCount = 1000;
+				var courseCounter = 0;
+
+				foreach (var course in courses)
+				{
+					//using (var transaction = db.Database.BeginTransaction())
+					//{
+						courseCounter++;
+						Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
+						var slides = course.GetSlidesNotSafe().OfType<ExerciseSlide>().ToList();
+						var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
+						var slideCounter = 0;
+						foreach (var slide in slides)
+						{
+							slideCounter++;
+							Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
+
+							var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
+							foreach (var instructorId in instructorIds)
+							{
+								var slideTopReviewsForInstructor = db.ExerciseCodeReviews
+									.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && r.AuthorId == instructorId && !r.HiddenFromTopComments && !r.IsDeleted)
+									.ToList();
+
+								if (!slideTopReviewsForInstructor.Any())
+									continue;
+
+								var userTopReviews = slideTopReviewsForInstructor
+									.GroupBy(r => r.Comment)
+									.OrderByDescending(g => g.Count())
+									.ThenByDescending(g => g.Max(r => r.AddingTime))
+									.Take(5)
+									.Select(g => g.Key)
+									.ToList();
+
+								foreach (var review in userTopReviews)
+								{
+									if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
+									{
+										favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
+										textToFavoriteReview[review] = favouriteReview;
+										db.FavouriteReviews.Add(favouriteReview);
+										updateDbCounter++;
+									}
+
+									var favouriteReviewByUser = new FavouriteReviewByUser
+									{
+										CourseId = course.Id,
+										SlideId = slide.Id,
+										UserId = instructorId,
+										Timestamp = DateTime.Now,
+										FavouriteReview = favouriteReview,
+									};
+									db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+									updateDbCounter++;
+
+									if (updateDbCounter >= updateDbMaxCount)
+									{
+										await db.SaveChangesAsync();
+										updateDbCounter = 0;
+									}
+								}
+							}
+						}
+
+						await db.SaveChangesAsync();
+						//transaction.Commit();
+					//}
+				}
+			}
+		}
+
+		private static async Task FixCheckedManualCheckingsWithoutScoreAndPercent(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var slideCheckingsRepo = scope.ServiceProvider.GetService<ISlideCheckingsRepo>();
+
+				using (var transaction = db.Database.BeginTransaction())
+				{
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.IsChecked && c.Score == null && c.Percent == null)
+						.ToListAsync();
+					Console.WriteLine($"{checkings.Count}");
+
+					foreach (var checking in checkings)
+					{
+						checking.IsChecked = false;
+					}
+
+					await db.SaveChangesAsync();
+
+					foreach (var checking in checkings)
+					{
+						var lastChecking = await db.ManualExerciseCheckings
+							.Where(c => c.UserId == checking.UserId && c.CourseId == checking.CourseId && c.SlideId == checking.SlideId)
+							.OrderByDescending(c => c.Submission.Timestamp)
+							.FirstOrDefaultAsync();
+						await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(lastChecking);
+					}
+
+					await transaction.CommitAsync();
+				}
+			}
+		}
+
+		public record SlideAndBorders(string CourseId, string SlideId, int ScoreWithCodeReview, int PassedTestsScore);
+
+		private static async Task SetPercentByScore(IServiceProvider serviceProvider)
+		{
+			using (var scope = serviceProvider.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetService<UlearnDb>();
+				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
+
+				var tasksWithScore = (await db.ManualExerciseCheckings
+					.Where(c => c.IsChecked && c.Score != null && c.Percent == null)
+					.Select(c => new { c.CourseId, c.SlideId, c.UserId })
+					.Distinct()
+					.ToListAsync())
+					.OrderBy(c => c.CourseId)
+					.ThenBy(c => c.SlideId)
+					.ThenBy(c => c.UserId)
+					.ToList();
+				Console.WriteLine($"tasks to process count {tasksWithScore.Count}");
+
+				var updateDbCounter = 0;
+				var updateDbMaxCount = 1000;
+				var tasksCount = 0;
+
+				foreach (var triple in tasksWithScore)
+				{
+					var courseId = triple.CourseId;
+					var slideId = triple.SlideId;
+					var userId = triple.UserId;
+
+					var others = new List<SlideAndBorders>
+					{
+						new SlideAndBorders("BasicProgramming", "617d8f67-491f-4172-8ed4-e7c230c2120f", 25, 5),
+						new SlideAndBorders("BasicProgramming", "3de364ff-38e9-411e-ac97-b4e4d24cdf26", 50, 10),
+						new SlideAndBorders("BasicProgramming", "616826fa-d344-4292-9ab4-ec5c8ea83e1e", 50, 10),
+						new SlideAndBorders("BasicProgramming", "d91838bd-0b73-4da5-81ec-39ff935ced35", 50, 10),
+						new SlideAndBorders("BasicProgramming", "8e0ccef8-59a4-4bf1-8610-8351c487a339", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "10e4d5e2-6f7e-48c8-8d09-db133cdf0271", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "61d2af1e-c7d8-468f-82e0-e69170998423", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "30c04e83-f962-412e-8866-0ab981e5a71c", 100, 20),
+						new SlideAndBorders("BasicProgramming2", "43d5bcce-7071-4111-87fa-b5887053a6da", 50, 10),
+						new SlideAndBorders("BasicProgramming2", "85d068c7-ab40-4c9f-912a-c1405f5da5a4", 50, 10),
+						new SlideAndBorders("izhtestingcasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 4, 0),
+						new SlideAndBorders("JavaTech", "36f0bbb6-bff5-4049-8dc0-7b7c774a5a6f", 10, 0),
+						new SlideAndBorders("JavaTech", "22775cad-22e5-4034-83ba-8f9f9f2e3195", 5, 0),
+						new SlideAndBorders("JavaTech", "ba0de434-d87d-4c3c-9610-005a1e6aa404", 10, 0),
+						new SlideAndBorders("TestingCasting", "1cc77436-e31f-4e25-a52b-6805f04117e5", 3, 0),
+						new SlideAndBorders("TestingCasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 8, 0),
+					};
+
+					var scoreWithCodeReview = 0;
+					var passedTestsScore = 0;
+					var found = false;
+					foreach (var other in others)
+					{
+						if (string.Equals(courseId, other.CourseId, StringComparison.OrdinalIgnoreCase) && slideId == new Guid(other.SlideId))
+						{
+							scoreWithCodeReview = other.ScoreWithCodeReview;
+							passedTestsScore = other.PassedTestsScore;
+							found = true;
+						}
+					}
+					if (!found)
+					{
+						var course = courseStorage.GetCourse(courseId);
+						if (course == null)
+							continue;
+
+						var slide = course.FindSlideByIdNotSafe(slideId) as ExerciseSlide;
+						if (slide == null)
+							continue;
+
+						scoreWithCodeReview = slide.Scoring.ScoreWithCodeReview;
+						passedTestsScore = slide.Scoring.PassedTestsScore;
+					}
+
+					var checkings = await db.ManualExerciseCheckings
+						.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId && c.IsChecked && (c.Score != null || c.Percent != null))
+						.OrderBy(c => c.Submission.Timestamp)
+						.ToListAsync();
+
+					int ScoreToPercent(int s) => Math.Min(100, (int)Math.Ceiling(s == 0 ? 0 : s * 100m / scoreWithCodeReview));
+					var maxScore = 0;
+					var automaticScore = passedTestsScore;
+					foreach (var checking in checkings)
+					{
+						if (checking.Score != null)
+						{
+							maxScore = Math.Max(maxScore, checking.Score.Value);
+							var finalScoreForNowWithAutomatic = automaticScore + maxScore;
+							var percent = ScoreToPercent(finalScoreForNowWithAutomatic);
+							checking.Percent = percent;
+							updateDbCounter++;
+						}
+						else if (checking.Percent != null)
+						{
+							// До этого были проверки со score, потому что иначе для этой задачи и пользователя бы не запрашивали
+							var finalScoreFromScoreWithAutomatic = automaticScore + maxScore;
+							var percentFromScore = ScoreToPercent(finalScoreFromScoreWithAutomatic);
+							if (percentFromScore > checking.Percent)
+							{
+								checking.Percent = percentFromScore;
+								updateDbCounter++;
+							}
+						}
+					}
+
+					if (updateDbCounter > updateDbMaxCount)
+					{
+						await db.SaveChangesAsync();
+						updateDbCounter = 0;
+					}
+
+					tasksCount++;
+					if (tasksCount % 100 == 0)
+						Console.WriteLine($"{tasksCount}/{tasksWithScore.Count}");
+				}
+				await db.SaveChangesAsync();
 			}
 		}
 	}
