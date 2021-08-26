@@ -92,16 +92,17 @@ namespace Ulearn.Core.Courses.Manager
 			return tempDirectory;
 		}
 
+		private static readonly Random randomGenerator = new Random();
 		private TempDirectory CreateCourseTempDirectory(string courseId, CourseVersionToken versionToken)
 		{
 			// @ — разделитель courseId и остального. используется CourseLoader
-			var directoryName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}";
+			var directoryName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}_{randomGenerator.Next()}";
 			return new TempDirectory(directoryName);
 		}
 
 		public TempFile SaveVersionZipToTemporaryDirectory(string courseId, CourseVersionToken versionToken, Stream stream)
 		{
-			var fileName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}";
+			var fileName = $"{courseId}{CourseLoader.CourseIdDelimiter}{versionToken}_{DateTime.Now.ToSortable()}_{randomGenerator.Next()}.zip";
 			return new TempFile(fileName, stream);
 		}
 
