@@ -531,7 +531,11 @@ class InstructorReview extends React.Component<Props, State> {
 					onToggleChange={ this.prohibitFurtherReview }
 					toggleChecked={ !prohibitFurtherManualChecking }
 				/> }
-				{ currentSubmission.manualChecking === null && currentSubmission.id === studentSubmissions[0].id && <>
+				{ (!currentSubmission.automaticChecking
+					|| currentSubmission.automaticChecking.result === AutomaticExerciseCheckingResult.RightAnswer)
+				&& currentSubmission.manualChecking === null
+				&& currentSubmission.id === studentSubmissions[0].id
+				&& <>
 					<p> { texts.submissionAfterDisablingManualChecking } </p>
 					<Button
 						use={ 'primary' }
