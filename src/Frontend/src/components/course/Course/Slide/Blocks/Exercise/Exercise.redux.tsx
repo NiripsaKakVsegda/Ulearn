@@ -30,8 +30,8 @@ const mapStateToProps = (state: RootState,
 		state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
 		state.submissions.submissionsById,
 		state.submissions.reviewsBySubmissionId
-	)?.filter((s, i, arr) =>
-		(i === arr.length - 1)
+	)?.filter((s, i) =>
+		(i === 0)
 		|| (!s.automaticChecking || s.automaticChecking.result === CheckingResult.RightAnswer));
 
 	//newer is first

@@ -531,6 +531,13 @@ namespace Database.Repos
 			throw new SubmissionCheckingTimeout();
 		}
 
+		public async Task SetExceptionStatusForSubmission(UserExerciseSubmission submission)
+		{
+			submission.AutomaticChecking.Status = AutomaticExerciseCheckingStatus.Error;
+			await db.SaveChangesAsync();
+			UnhandledSubmissionsWaiter.HandledSubmissions.TryAdd(submission.Id, DateTime.Now);
+		}
+
 		public async Task<Dictionary<int, string>> GetSolutionsForSubmissions(IEnumerable<int> submissionsIds)
 		{
 			var solutionsHashes = await db.UserExerciseSubmissions

@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import CommentsList, { Props } from "./CommentsList";
 import { SlideType } from "src/models/slide";
-import {
-	fakeCommentsApi,
-	getMockedComment,
-	policyCommentsPostModeration
-} from "../storiesData";
+import { fakeCommentsApi, getMockedComment, policyCommentsPostModeration } from "../storiesData";
 import { Comment } from "src/models/comments";
 import type { Story } from "@storybook/react";
 import { student } from "src/storiesUtils";
+import { clone } from "src/utils/jsonExtensions";
+import { mockFunc } from "src/utils/storyMock";
 
 const comments: Comment[] = [
 	{
@@ -102,13 +100,19 @@ const Template: Story<Omit<Props, 'headerRef' | 'api'>> = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = {
-	handleTabChange: () => ({}),
-	isSlideContainsComment: (commentId) => comments.find(c => c.id === commentId) !== undefined,
+const args: Omit<Props, 'headerRef' | 'api'> = {
+	commentsCount: comments.length,
+	isSlideReady: true,
+	handleTabChange: mockFunc,
+	isSlideContainsComment: (commentId) => {
+		return true;
+	},
 	slideType: SlideType.Exercise,
-	comments,
+	comments: clone(comments),
 	user: student,
 	courseId: "BasicProgramming",
 	slideId: "90bcb61e-57f0-4baa-8bc9-10c9cfd27f58",
-	commentPolicy: policyCommentsPostModeration,
+	commentPolicy: policyCommentsPostModeration
 };
+
+Default.args = args;

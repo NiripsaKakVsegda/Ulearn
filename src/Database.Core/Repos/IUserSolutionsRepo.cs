@@ -48,5 +48,6 @@ namespace Database.Repos
 		Task<Dictionary<int, string>> GetSolutionsForSubmissions(IEnumerable<int> submissionsIds);
 		Task<UserExerciseSubmission> GetUnhandledSubmission(string agentName, List<string> sandboxes);
 		Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionId(int submissionId);
+		Task SetExceptionStatusForSubmission(UserExerciseSubmission submission);
 	}
 }

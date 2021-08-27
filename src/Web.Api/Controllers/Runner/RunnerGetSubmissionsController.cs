@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Database;
 using Database.Models;
 using Database.Repos;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +15,7 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.RunCheckerJobApi;
-using Ulearn.Web.Api.Utils;
+using Ulearn.Core.Telegram;
 using Ulearn.Web.Api.Utils.Courses;
 using Web.Api.Configuration;
 
@@ -63,9 +62,21 @@ namespace Ulearn.Web.Api.Controllers.Runner
 
 						var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
 						var courseManager = scope.ServiceProvider.GetService<IMasterCourseManager>();
-						var builtSubmissions = new List<RunnerSubmission> { await ToRunnerSubmission(submission, courseStorage, courseManager) };
-						log.Info($"Собрал решения: [{submission.Id}], отдаю их агенту {agent}");
-						return builtSubmissions;
+						try
+						{
+							var builtSubmissions = new List<RunnerSubmission> { await ToRunnerSubmission(submission, courseStorage, courseManager) };
+							log.Info($"Собрал решения: [{submission.Id}], отдаю их агенту {agent}");
+							return builtSubmissions;
+						}
+						catch (Exception ex)
+						{
+							await userSolutionsRepo.SetExceptionStatusForSubmission(submission);
+							log.Error(ex);
+							var errorsBot = scope.ServiceProvider.GetService<ErrorsBot>();
+							var slide = courseStorage.GetCourse(submission.CourseId).GetSlideByIdNotSafe(submission.SlideId);
+							await errorsBot.PostToChannelAsync($"Не смог собрать архив с решением для проверки.\nКурс «{submission.CourseId}», слайд «{slide.Title}» ({submission.SlideId})\n\nhttps://ulearn.me/Sandbox");
+							continue;
+						}
 					}
 				}
 
@@ -74,7 +85,7 @@ namespace Ulearn.Web.Api.Controllers.Runner
 			}
 		}
 
-		private async Task<RunnerSubmission> ToRunnerSubmission(UserExerciseSubmission submission,
+		private static async Task<RunnerSubmission> ToRunnerSubmission(UserExerciseSubmission submission,
 			ICourseStorage courseStorage, IMasterCourseManager courseManager)
 		{
 			log.Info($"Собираю для отправки в RunCsJob решение {submission.Id}");

@@ -42,7 +42,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Common\Common.csproj" />
-		<ProjectReference Include="..\Ulearn.CSharpAttributes\Ulearn.CSharpAttributes.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<HunspellDlls Include="Hunspell*.dll" />

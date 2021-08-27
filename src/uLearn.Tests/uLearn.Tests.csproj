@@ -104,7 +104,6 @@
     <ProjectReference Include="..\CourseTool\CourseTool.csproj" />
     <ProjectReference Include="..\CsSandboxer\CsSandboxer.csproj" />
     <ProjectReference Include="..\RunCsJob\RunCsJob.csproj" />
-    <ProjectReference Include="..\Ulearn.CSharpAttributes\Ulearn.CSharpAttributes.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="toZip\**" />
