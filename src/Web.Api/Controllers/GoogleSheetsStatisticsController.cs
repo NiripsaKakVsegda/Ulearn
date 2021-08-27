@@ -79,7 +79,7 @@ namespace Ulearn.Web.Api.Controllers
 
 		[HttpPost("tasks")]
 		[Authorize]
-		public async Task<ActionResult<GoogleSheetsExportTaskResponse>> AddNewTask([FromBody] GoogleSheetsExportTaskParams param)
+		public async Task<ActionResult<GoogleSheetsExportTaskResponse>> AddNewTask([FromBody] GoogleSheetsCreateTaskParams param)
 		{
 			if (!await HasAccessToGroups(param.CourseId, param.GroupsIds))
 				return Forbid();
@@ -137,7 +137,7 @@ namespace Ulearn.Web.Api.Controllers
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
 			if (task == null)
 				return NotFound();
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, param.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
+			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
 				return Forbid();
 			await googleSheetExportTasksRepo.UpdateTask(task,
 				param.IsVisibleForStudents, param.RefreshStartDate,
@@ -148,12 +148,12 @@ namespace Ulearn.Web.Api.Controllers
 
 		[HttpDelete("tasks/{taskId}")]
 		[Authorize]
-		public async Task<ActionResult> DeleteTask([FromBody] GoogleSheetsDeleteTaskParams param, [FromRoute] int taskId)
+		public async Task<ActionResult> DeleteTask([FromRoute] int taskId)
 		{
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
 			if (task == null)
 				return NotFound();
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, param.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
+			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
 				return Forbid();
 			await googleSheetExportTasksRepo.DeleteTask(task);
 			return NoContent();
