@@ -47,13 +47,13 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly IServiceScopeFactory serviceScopeFactory;
 		private readonly IMasterCourseManager courseManager;
 		private readonly StyleErrorsResultObserver styleErrorsResultObserver;
-		private readonly ErrorsBot errorsBot = new ErrorsBot();
+		private readonly ErrorsBot errorsBot;
 		private static ILog log => LogProvider.Get().ForContext(typeof(ExerciseController));
 
 		public ExerciseController(ICourseStorage courseStorage, IMasterCourseManager courseManager, UlearnDb db, MetricSender metricSender,
 			IUsersRepo usersRepo, IUserSolutionsRepo userSolutionsRepo, ICourseRolesRepo courseRolesRepo, IVisitsRepo visitsRepo,
 			ISlideCheckingsRepo slideCheckingsRepo, IGroupsRepo groupsRepo, StyleErrorsResultObserver styleErrorsResultObserver,
-			IStyleErrorsRepo styleErrorsRepo, IUnitsRepo unitsRepo, IServiceScopeFactory serviceScopeFactory)
+			IStyleErrorsRepo styleErrorsRepo, IUnitsRepo unitsRepo, ErrorsBot errorsBot, IServiceScopeFactory serviceScopeFactory)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.metricSender = metricSender;
@@ -67,6 +67,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			this.styleErrorsResultObserver = styleErrorsResultObserver;
 			this.serviceScopeFactory = serviceScopeFactory;
 			this.courseManager = courseManager;
+			this.errorsBot = errorsBot;
 		}
 
 		[HttpPost("/slides/{courseId}/{slideId}/exercise/submit")]

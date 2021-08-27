@@ -41,7 +41,7 @@ const texts = {
 		};
 	},
 
-	editCommentError: 'При редактировании комментария к ревью произощла ошибка',
+	editCommentError: 'При редактировании комментария к ревью произошла ошибка',
 
 	getLanguageLaunchMarkup: (languageLaunchInfo: LanguageLaunchInfo): React.ReactNode => {
 		function renderLine(name: string, value: string) {

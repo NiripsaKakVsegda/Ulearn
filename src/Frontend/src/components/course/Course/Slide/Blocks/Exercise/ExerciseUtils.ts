@@ -80,10 +80,6 @@ function isFirstRightAnswer(submissions: SubmissionInfo[], successSubmission: Su
 	return successSubmissions.length > 0 && successSubmissions[successSubmissions.length - 1] === successSubmission;
 }
 
-function isSubmissionShouldBeEditable(submission: SubmissionInfo): boolean {
-	return submission.automaticChecking?.result !== AutomaticExerciseCheckingResult.RightAnswer && submission.automaticChecking?.result !== AutomaticExerciseCheckingResult.NotChecked;
-}
-
 function getReviewsWithoutDeleted(reviews: ReviewInfoWithMarker[]): ReviewInfoWithMarker[] {
 	return reviews.map(r => ({
 		...r, comments: r.comments.filter(c => {
@@ -430,7 +426,6 @@ export {
 	submissionIsLast,
 	getLastSuccessSubmission,
 	isFirstRightAnswer,
-	isSubmissionShouldBeEditable,
 	getReviewsWithoutDeleted,
 	getAllReviewsFromSubmission,
 	createTextMarker,
