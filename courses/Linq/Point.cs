@@ -1,3 +1,0 @@
-namespace uLearn.Courses.Linq
-{
-}

@@ -26,8 +26,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XQueueWatcher", "XQueueWatc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XQueue", "XQueue\XQueue.csproj", "{4B227920-6EB6-476F-95C7-1CDBE02DAE3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ulearn.CSharpAttributes", "Ulearn.CSharpAttributes\Ulearn.CSharpAttributes.csproj", "{74BEA97A-21EB-4FD2-B58A-1341C8BA3124}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stepik.Api.Tests", "Stepik.Api.Tests\Stepik.Api.Tests.csproj", "{BCDCD865-9A16-4F1A-97F9-C5CD1A2FE51C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GiftsGranter", "GiftsGranter\GiftsGranter.csproj", "{0722E8E2-8A5C-4153-AD61-AEA9474970CE}"
@@ -122,10 +120,6 @@ Global
 		{6BF55402-68F0-4BA3-9F03-E42C3912C9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BF55402-68F0-4BA3-9F03-E42C3912C9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BF55402-68F0-4BA3-9F03-E42C3912C9CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74BEA97A-21EB-4FD2-B58A-1341C8BA3124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74BEA97A-21EB-4FD2-B58A-1341C8BA3124}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74BEA97A-21EB-4FD2-B58A-1341C8BA3124}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74BEA97A-21EB-4FD2-B58A-1341C8BA3124}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BCDCD865-9A16-4F1A-97F9-C5CD1A2FE51C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BCDCD865-9A16-4F1A-97F9-C5CD1A2FE51C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCDCD865-9A16-4F1A-97F9-C5CD1A2FE51C}.Release|Any CPU.ActiveCfg = Release|Any CPU
