@@ -1,16 +1,16 @@
-from .result_encoder import encode
-from .runner import run
 from pprint import pprint
 from sys import argv
 
+from app.runner import run
 
-def main(code, input_data=''):
+
+def get_trace(code, input_data=''):
     return run(code, input_data)
 
 
 if __name__ == '__main__':
     try:
-        pprint(main(open(argv[1]).read(), argv[2] if len(argv) > 2 else ''))
+        pprint(get_trace(open(argv[1]).read(), argv[2] if len(argv) > 2 else ''))
     except IndexError:
         print('Pass execution params.')
     except OSError:

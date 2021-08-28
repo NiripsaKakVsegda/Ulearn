@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from visualizer.main import main
+from app.visualizer import get_trace
 
 app = FastAPI()
 
@@ -23,5 +23,5 @@ async def index() -> dict:
 @app.post("/run")
 async def run(submit: Submit) -> dict:
     return {
-        "message": main(submit.code, submit.input_data)
+        "message": get_trace(submit.code, submit.input_data)
     }

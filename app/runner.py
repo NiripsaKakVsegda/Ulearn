@@ -5,8 +5,8 @@ from io import StringIO
 from traceback import print_exc
 from typing import List
 
-from .result_encoder import encode
-from .helpers import _filter_variables, _filter_trace
+from app.helpers import _filter_variables, _filter_trace
+from app.result_encoder import encode
 
 # upper-bound on the number of executed lines, in order to guard against
 # infinite loops
