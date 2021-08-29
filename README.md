@@ -14,6 +14,6 @@ E-learning platform and courses
 Запуск и документация разработчика
 ------------
 
-Документация тут: https://docs.google.com/document/d/1J-jkxhgtW7GqgOXCapSyFt3zWsN6nSY0cpn1zgNYgyQ/edit
+Документация тут: https://drive.google.com/drive/folders/1WWHQkTsY09mlVHhUMGClC_XQRZMd8DH2?usp=sharing
 
 
