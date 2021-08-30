@@ -234,7 +234,7 @@
 				</div>
 				<div>
 					<div class="hidden antiplagiarism__data" data-original-submission-id="@submission.Id-@plagiarismSubmission.Id" data-plagiarism-submission-id="@plagiarismSubmission.Id">
-						@(new { analyzed_code_units = researchedSubmission.AnalyzedCodeUnits, tokens_positions = researchedSubmission.TokensPositions, plagiarism = plagiarism }.JsonSerialize())
+						@(new { analyzedCodeUnits = researchedSubmission.AnalyzedCodeUnits, tokensPositions = researchedSubmission.TokensPositions, plagiarism = plagiarism }.JsonSerialize())
 					</div>
 				</div>
 			}
