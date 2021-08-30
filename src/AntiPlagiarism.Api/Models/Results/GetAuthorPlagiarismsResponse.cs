@@ -11,7 +11,7 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "submissions")]
 		public List<ResearchedSubmission> ResearchedSubmissions { get; set; }
 
-		[DataMember(Name = "suspicion_levels")]
+		[DataMember(Name = "suspicionLevels")]
 		public SuspicionLevels SuspicionLevels { get; set; }
 
 		public GetAuthorPlagiarismsResponse()

@@ -299,10 +299,10 @@ namespace uLearn.Web.Controllers
 		[DataMember(Name = "status")]
 		public string Status { get; set; }
 
-		[DataMember(Name = "suspicion_level")]
+		[DataMember(Name = "suspicionLevel")]
 		public SuspicionLevel SuspicionLevel { get; set; }
 
-		[DataMember(Name = "suspicious_authors_count")]
+		[DataMember(Name = "suspiciousAuthorsCount")]
 		public int SuspiciousAuthorsCount { get; set; }
 	}
 

@@ -9,7 +9,7 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class RecalculateTaskStatisticsResponse : SuccessResponse
 	{
-		[DataMember(Name = "task_ids")]
+		[DataMember(Name = "taskIds")]
 		public List<Guid> TaskIds { get; set; }
 		
 		public Language Language { get; set; }

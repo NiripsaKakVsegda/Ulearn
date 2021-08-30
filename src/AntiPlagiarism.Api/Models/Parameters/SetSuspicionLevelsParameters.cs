@@ -11,16 +11,16 @@ namespace AntiPlagiarism.Api.Models.Parameters
 	[ModelBinder(typeof(JsonModelBinder), Name = "parameters")]
 	public class SetSuspicionLevelsParameters : ApiParameters
 	{
-		[DataMember(Name = "task_id", IsRequired = true)]
+		[DataMember(Name = "taskId", IsRequired = true)]
 		public Guid TaskId { get; set; }
 		
 		[DataMember(Name = "language", IsRequired = true)]
 		public Language Language { get; set; }
 
-		[DataMember(Name = "faint_suspicion")]
+		[DataMember(Name = "faintSuspicion")]
 		public double? FaintSuspicion { get; set; }
 
-		[DataMember(Name = "strong_suspicion")]
+		[DataMember(Name = "strongSuspicion")]
 		public double? StrongSuspicion { get; set; }
 	}
 }

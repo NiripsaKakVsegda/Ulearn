@@ -14,13 +14,13 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "weight")]
 		public double Weight { get; set; }
 
-		[DataMember(Name = "analyzed_code_units")]
+		[DataMember(Name = "analyzedCodeUnits")]
 		public List<AnalyzedCodeUnit> AnalyzedCodeUnits { get; set; }
 
-		[DataMember(Name = "tokens_positions")]
+		[DataMember(Name = "tokensPositions")]
 		public List<TokenPosition> TokensPositions { get; set; }
 
-		[DataMember(Name = "matched_snippets")]
+		[DataMember(Name = "matchedSnippets")]
 		public List<MatchedSnippet> MatchedSnippets { get; set; }
 	}
 
@@ -33,19 +33,19 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "code")]
 		public string Code { get; set; }
 
-		[DataMember(Name = "task_id")]
+		[DataMember(Name = "taskId")]
 		public Guid TaskId { get; set; }
 		
 		[DataMember(Name = "language")]
 		public Language Language { get; set; }
 
-		[DataMember(Name = "author_id")]
+		[DataMember(Name = "authorId")]
 		public Guid AuthorId { get; set; }
 
-		[DataMember(Name = "additional_info")]
+		[DataMember(Name = "additionalInfo")]
 		public string AdditionalInfo { get; set; }
 
-		[DataMember(Name = "client_submission_id")]
+		[DataMember(Name = "clientSubmissionId")]
 		public string ClientSubmissionId { get; set; }
 
 		public SubmissionInfo CloneWithoutCode()
@@ -62,20 +62,20 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "name")]
 		public string Name { get; set; }
 
-		[DataMember(Name = "first_token_index")]
+		[DataMember(Name = "firstTokenIndex")]
 		public int FirstTokenIndex { get; set; }
 
-		[DataMember(Name = "tokens_count")]
+		[DataMember(Name = "tokensCount")]
 		public int TokensCount { get; set; }
 	}
 
 	[DataContract]
 	public class TokenPosition
 	{
-		[DataMember(Name = "token_index")]
+		[DataMember(Name = "tokenIndex")]
 		public int TokenIndex { get; set; }
 
-		[DataMember(Name = "start_position")]
+		[DataMember(Name = "startPosition")]
 		public int StartPosition { get; set; }
 
 		[DataMember(Name = "length")]
@@ -85,41 +85,41 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class MatchedSnippet
 	{
-		[DataMember(Name = "snippet_type")]
+		[DataMember(Name = "snippetType")]
 		public SnippetType SnippetType { get; set; }
 
-		[DataMember(Name = "snippet_tokens_count")]
+		[DataMember(Name = "snippetTokensCount")]
 		public int TokensCount { get; set; }
 
-		[DataMember(Name = "original_submission_first_token_index")]
+		[DataMember(Name = "originalSubmissionFirstTokenIndex")]
 		public int OriginalSubmissionFirstTokenIndex { get; set; }
 
-		[DataMember(Name = "plagiarism_submission_first_token_index")]
+		[DataMember(Name = "plagiarismSubmissionFirstTokenIndex")]
 		public int PlagiarismSubmissionFirstTokenIndex { get; set; }
 
-		[DataMember(Name = "snippet_frequency")]
+		[DataMember(Name = "snippetFrequency")]
 		public double SnippetFrequency { get; set; }
 	}
 
 	[DataContract]
 	public class SuspicionLevels
 	{
-		[DataMember(Name = "faint_suspicion")]
+		[DataMember(Name = "faintSuspicion")]
 		public double FaintSuspicion { get; set; }
 
-		[DataMember(Name = "strong_suspicion")]
+		[DataMember(Name = "strongSuspicion")]
 		public double StrongSuspicion { get; set; }
 
-		[DataMember(Name = "automatic_faint_suspicion")]
+		[DataMember(Name = "automaticFaintSuspicion")]
 		public double? AutomaticFaintSuspicion { get; set; }
 
-		[DataMember(Name = "automatic_strong_suspicion")]
+		[DataMember(Name = "automaticStrongSuspicion")]
 		public double? AutomaticStrongSuspicion { get; set; }
 
-		[DataMember(Name = "manual_faint_suspicion")]
+		[DataMember(Name = "manualFaintSuspicion")]
 		public double? ManualFaintSuspicion { get; set; }
 
-		[DataMember(Name = "manual_strong_suspicion")]
+		[DataMember(Name = "manualStrongSuspicion")]
 		public double? ManualStrongSuspicion { get; set; }
 	}
 }

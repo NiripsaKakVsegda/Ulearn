@@ -7,7 +7,7 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class RebuildSnippetsForTaskResponse : SuccessResponse
 	{
-		[DataMember(Name = "submissions_ids")]
+		[DataMember(Name = "submissionsIds")]
 		public List<int> SubmissionsIds { get; set; }
 	}
 }

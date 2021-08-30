@@ -6,7 +6,7 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class AddSubmissionResponse : SuccessResponse
 	{
-		[DataMember(Name = "submission_id")]
+		[DataMember(Name = "submissionId")]
 		public int SubmissionId { get; set; }
 	}
 }
