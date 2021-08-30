@@ -12,7 +12,7 @@
 	ViewBag.Title = "Проверка на списывание";
 
 	var submission = Model.Submissions[Model.SubmissionId];
-	var submissionsByIds = Model.Submissions.Values.ToDictionary(s => s.Id);
+	var submissionsByIds = Model.Submissions.Values.ToDictionary(s => s.Id.ToString());
 }
 
 @helper PrintUserGroups(string userId)
@@ -124,9 +124,9 @@
 
 				@{
 					var submissionWeights = Model.AntiPlagiarismResponse.ResearchedSubmissions
-						.Where(s => submissionsByIds.ContainsKey(s.SubmissionInfo.SubmissionId))
+						.Where(s => submissionsByIds.ContainsKey(s.SubmissionInfo.ClientSubmissionId))
 						.ToDictionary(
-							s => s.SubmissionInfo.SubmissionId,
+							s => s.SubmissionInfo.ClientSubmissionId,
 							s => s.Plagiarisms.Select(p => p.Weight).DefaultIfEmpty(0).Max()
 						);
 				}
@@ -145,7 +145,7 @@
 			</div>
 		</div>
 
-		var researchedSubmission = Model.AntiPlagiarismResponse.ResearchedSubmissions.FirstOrDefault(s => s.SubmissionInfo.SubmissionId == submission.Id);
+		var researchedSubmission = Model.AntiPlagiarismResponse.ResearchedSubmissions.FirstOrDefault(s => s.SubmissionInfo.ClientSubmissionId == submission.Id.ToString());
 		const int maxPlagiarismsShown = 10;
 		if (researchedSubmission != null && researchedSubmission.Plagiarisms.Count > 0)
 		{
@@ -157,7 +157,7 @@
 			var wasStrongSuspicion = false;
 			foreach (var plagiarism in plagiarisms.Take(maxPlagiarismsShown))
 			{
-				if (!submissionsByIds.ContainsKey(plagiarism.SubmissionInfo.SubmissionId))
+				if (!submissionsByIds.ContainsKey(plagiarism.SubmissionInfo.ClientSubmissionId))
 				{
 					continue;
 				}
@@ -190,7 +190,7 @@
 					</div>
 				}
 
-				var plagiarismSubmission = submissionsByIds[plagiarism.SubmissionInfo.SubmissionId];
+				var plagiarismSubmission = submissionsByIds[plagiarism.SubmissionInfo.ClientSubmissionId];
 				<div class="antiplagiarism row">
 					<div class="original-submission col-xs-6">
 						<div class="antiplagiarism__author">

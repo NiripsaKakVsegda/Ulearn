@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
 using Ulearn.Common;
 
 namespace AntiPlagiarism.Api.Models.Results
@@ -43,21 +42,11 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "author_id")]
 		public Guid AuthorId { get; set; }
 
-		[DataMember(Name = "additional_info")] // Должно включать данные класса AdditionalInfo
+		[DataMember(Name = "additional_info")]
 		public string AdditionalInfo { get; set; }
 
 		[DataMember(Name = "client_submission_id")]
 		public string ClientSubmissionId { get; set; }
-
-		[IgnoreDataMember]
-		public int SubmissionId {
-			get
-			{
-				if (ClientSubmissionId != null && int.TryParse(ClientSubmissionId, out var parsed))
-					return parsed;
-				return JsonConvert.DeserializeObject<AdditionalInfo>(AdditionalInfo).SubmissionId;
-			}
-		}
 
 		public SubmissionInfo CloneWithoutCode()
 		{
@@ -65,13 +54,6 @@ namespace AntiPlagiarism.Api.Models.Results
 			r.Code = null;
 			return r;
 		}
-	}
-
-	[DataContract]
-	public class AdditionalInfo
-	{
-		[DataMember(Name = "SubmissionId")]
-		public int SubmissionId { get; set; }
 	}
 
 	[DataContract]

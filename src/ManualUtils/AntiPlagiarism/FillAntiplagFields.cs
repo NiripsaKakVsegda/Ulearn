@@ -12,7 +12,7 @@ namespace ManualUtils.AntiPlagiarism
 		[DataMember(Name = "SubmissionId")]
 		public int SubmissionId { get; set; }
 	}
-	
+
 	public static class FillAntiplagFields
 	{
 		public static void FillClientSubmissionId(AntiPlagiarismDb adb)
