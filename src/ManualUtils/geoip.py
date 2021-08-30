@@ -3,7 +3,7 @@ import re
 import codecs
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
-ipColumnFromZero = 4
+ipColumnFromZero = 5
 reader = geoip2.database.Reader('GeoLite2-City.mmdb')
 with codecs.open('students.txt', 'r', encoding='utf-8') as f:
     lines = f.readlines()
