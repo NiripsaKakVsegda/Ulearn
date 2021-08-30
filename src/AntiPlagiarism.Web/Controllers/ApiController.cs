@@ -63,6 +63,16 @@ namespace AntiPlagiarism.Web.Controllers
 			this.configuration = configuration.Value;
 		}
 
+		/// <summary>
+		/// Зарегистрировать код студента в антиплагиате. Долгая операция, выполняется не сразу, ставится в очередь
+		/// </summary>
+		/// <remarks>
+		/// token — Для авторизации. Для получения пишите на support@ulearn.me
+		/// 
+		/// additional_info — Json с любой дополнительной информацией, которую хочется сохранять вместе с submission; без изменений возвращается в ответах, см. класс SubmissionInfo
+		///
+		/// client_submission_id — Id посылки кода студентом в терминах клиентского кода. Любая строка
+		/// </remarks>
 		[HttpPost(Api.Urls.AddSubmission)]
 		public async Task<ActionResult<AddSubmissionResponse>> AddSubmission([FromQuery]string token, AddSubmissionParameters parameters)
 		{
