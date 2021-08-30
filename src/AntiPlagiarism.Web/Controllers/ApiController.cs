@@ -21,7 +21,7 @@ using Ulearn.Common.Extensions;
 
 namespace AntiPlagiarism.Web.Controllers
 {
-	[Route("/api")]
+	[Route("/")]
 	public class ApiController : BaseController
 	{
 		private readonly ISubmissionsRepo submissionsRepo;
