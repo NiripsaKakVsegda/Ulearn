@@ -1,0 +1,13 @@
+﻿
+public string Method(int a)
+{
+	return a.ToString("0");
+}
+
+//endregion methods_1_and_2
+
+private string Method(string a)
+{
+	return a;
+}
+

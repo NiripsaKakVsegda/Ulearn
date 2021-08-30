@@ -1,0 +1,54 @@
+@import "../../../../courseVariables";
+
+.header {
+  z-index: 1;
+
+  padding: 12px 16px 20px;
+  margin-bottom: -8px;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+
+  font-size: @mobileFontSize;
+  line-height: 22px;
+
+  border-radius: 8px 8px 0 0;
+  background: @lightGrey;
+}
+
+.successHeader {
+  .header;
+  background: @progressBarGreen;
+  color: @white;
+}
+
+.errorHeader {
+  .header;
+  background: @progressBarRed;
+  color: @white;
+}
+
+.needImprovementsHeader {
+  .header;
+  background: @accentColor;
+  color: @white;
+}
+
+@media (min-width: @minTabletWidth) {
+  .header {
+    font-size: @tabletFontSize;
+  }
+
+  .successHeader {
+    font-size: @tabletFontSize;
+  }
+
+  .errorHeader {
+    font-size: @tabletFontSize;
+  }
+
+  .needImprovementsHeader {
+    font-size: @tabletFontSize;
+  }
+}

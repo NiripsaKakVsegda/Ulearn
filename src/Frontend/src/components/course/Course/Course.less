@@ -1,0 +1,311 @@
+@import "./courseVariables";
+
+.root {
+  background-color: @backgroundGray;
+  min-height: calc(100vh - @headerHeight);
+}
+
+.errors {
+  background-color: @negativeColor;
+  padding: 20px;
+  color: #fff;
+  margin: 20px 200px;
+}
+
+.withoutMinHeight {
+  min-height: 0;
+}
+
+.rootWrapper {
+  width: 100%;
+  min-height: calc(100vh - @headerHeight - @headerDividerHeight);
+  z-index: 0;
+
+  padding: 16px 0 @laptopSlidePadding 0;
+
+  background-color: @backgroundGray;
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  word-break: break-word;
+
+  text-align: center;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.slide {
+  margin-bottom: 15px;
+  overflow: hidden;
+  background-color: @white;
+}
+
+.forStudents {
+  :global { //we're hiding all hidden blocks and statistics in legacy page using styles
+    .student-submissions { //exercise solutions table
+      display: none;
+    }
+
+    .quiz__statistics { //quiz statistics
+      display: none ! important; //overriding bootstrap behaviour
+    }
+
+    .revealed { //hidden block
+      display: none;
+    }
+  }
+}
+
+.navigationButtonsWrapper {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.commentsWrapper {
+  background-color: @white;
+  margin-bottom: 32px;
+}
+
+.rootWrapper.lti {
+  position: relative;
+
+  width: 100%;
+  max-width: 100vw;
+  min-height: 0;
+
+  margin: -@headerHeight auto auto;
+  padding: 0;
+
+  .slide {
+    border-radius: 0;
+  }
+
+  .commentsWrapper {
+    border-radius: 0;
+  }
+}
+
+.rootWrapper.review {
+  position: relative;
+
+  width: 100%;
+  max-width: 100vw;
+  min-height: calc(100vh - @headerHeight - @headerDividerHeight);
+
+  padding: 0;
+  margin: auto;
+
+  .slide {
+    border-radius: 0;
+  }
+
+  .commentsWrapper {
+    border-radius: 0;
+  }
+}
+
+.slideButton {
+  padding: 4px 16px;
+
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 32px;
+
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.disabledSlideButton {
+  background-color: @whiteSmoke;
+  color: @disabledColor;
+}
+
+.previousSlideButton {
+  background-color: @white;
+  color: @black;
+}
+
+.previousSlideButton:hover, .previousSlideButton:focus {
+  text-decoration: none;
+  color: @black;
+  background-color: @whiteSmoke;
+}
+
+.previousSlideButton:active {
+  text-decoration: none;
+  color: @black;
+  background-color: @lightGrey;
+}
+
+.nextSlideButton {
+  border: 1px solid @blueSmoke;
+  color: @white;
+  background-color: @blueSmoke;
+}
+
+.nextSlideButton:hover, .nextSlideButton:focus {
+  color: @white;
+  background-color: @grayBlue;
+  text-decoration: none;
+}
+
+.nextSlideButton:active {
+  color: @white;
+  background-color: @darkBlue;
+  text-decoration: none;
+}
+
+.reviewButtonsWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.reviewButton {
+  margin-bottom: 16px;
+}
+
+.reviewQueueNumberLabel {
+  color: @additionalColor;
+  margin-bottom: 72px;
+}
+
+.footer {
+  text-align: center;
+  font-size: 12px;
+  line-height: 12px;
+  color: @dimgray;
+
+  & :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.footer :hover {
+  color: @black;
+}
+
+.footer a:hover {
+  color: @blue;
+}
+
+.gitEditLink {
+  margin-left: 10px;
+}
+
+.reviewReturnToQueueLink {
+  font-family: @defaultFonts;
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: @minTabletWidth) {
+  .rootWrapper {
+    width: @tabletSlideWidth;
+    max-width: @tabletSlideWidth;
+    margin: auto;
+
+    padding: @tabletSlidePadding 0 calc(@tabletSlidePadding * 2 + @additionalFooterMargins) 0;
+
+    z-index: unset;
+  }
+
+  .rootWrapper.review {
+    max-width: calc(100vw - 48px);
+
+    .slide {
+      border-radius: 24px;
+    }
+  }
+
+  .title {
+    font-size: 40px;
+    line-height: 48px;
+    margin-bottom: @tabletSlidePadding;
+  }
+
+  .slide {
+    border-radius: @tabletSlidePadding;
+    margin-bottom: @tabletSlidePadding;
+  }
+
+  .navigationButtonsWrapper {
+    margin-bottom: @tabletSlidePadding;
+    justify-content: space-between;
+  }
+
+  .slideButton {
+    padding: 10px 20px;
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .commentsWrapper {
+    margin-bottom: @tabletSlidePadding * 2;
+    border-radius: @tabletSlidePadding;
+  }
+
+  .withPaddings {
+    padding-left: @tabletSlidePadding;
+    padding-right: @tabletSlidePadding;
+    padding-bottom: @tabletSlidePadding;
+  }
+
+  .reviewReturnToQueueLink {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .rootWrapper {
+    width: @laptopSlideWidth;
+    max-width: @laptopSlideWidth;
+    margin-left: calc(@maxNavigationMenuWidth + (100vw - @maxNavigationMenuWidth - @laptopSlideWidth) / 2);
+    padding: @laptopSlidePadding 0 calc(@desktopSlidePadding + @additionalFooterMargins) 0;
+  }
+
+  .rootWrapper.review {
+    max-width: 1254px;
+  }
+
+  .title {
+    margin-bottom: @laptopSlidePadding;
+  }
+
+  .slide {
+    margin-bottom: @laptopSlidePadding;
+  }
+
+  .navigationButtonsWrapper {
+    margin-bottom: @laptopSlidePadding;
+  }
+
+  .commentsWrapper {
+    margin-bottom: @desktopSlidePadding;
+  }
+
+  .reviewReturnToQueueLink {
+    font-size: 16px;
+    line-height: 22px;
+  }
+}
+
+@media (min-width: @minDesktopWidth) {
+  .rootWrapper {
+    width: @desktopSlideWidth;
+    max-width: @desktopSlideWidth;
+
+    margin-left: calc(@maxNavigationMenuWidth + (100vw - @maxNavigationMenuWidth - @desktopSlideWidth) / 2);
+  }
+}

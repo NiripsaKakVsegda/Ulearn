@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Kontur.Ulearn.ManualUtils</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>SKB Kontur</authors>
+    <owners>SKB Kontur</owners>
+    <licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+    <projectUrl>https://ulearn.me</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ManualUtils service for ulearn mooc platform</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2020 SKB Kontur</copyright>
+    <tags>ulearn education mooc</tags>
+  </metadata>
+  <files>
+    <file src="bin\*\*\*.config"/>
+  </files>
+</package>

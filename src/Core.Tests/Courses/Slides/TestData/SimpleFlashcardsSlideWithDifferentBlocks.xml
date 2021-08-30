@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<slide.flashcards xmlns="https://ulearn.me/schema/v2" id="a7a73125-2434-4b5d-9f31-4ef687fc8bcc">
+	<flashcard id="e84081e3-2991-4f68-9650-b65829d4a384">
+		<question>
+			<markdown>
+				I am markdown!
+			</markdown>
+			<tex>
+				<line>
+					formula!
+				</line>
+			</tex>
+			<code>
+				some code{
+					here
+				}
+			</code>
+		</question>
+		<answer>
+			<markdown>
+				<code>double.Parse </code> или
+				<code>Convert.ToDouble</code> или
+				<code>double.TryParse</code>
+			</markdown>
+		</answer>
+	</flashcard>
+
+</slide.flashcards>

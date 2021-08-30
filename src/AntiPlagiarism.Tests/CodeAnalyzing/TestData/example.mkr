@@ -1,0 +1,11 @@
+﻿# Напишите терм `not`:
+:ski on
+S = λa.λb.λc.(a c) (b c)
+K = λa.λb.a
+I = λa.a
+fact 2
+    ->>β  F fact 2
+       =  (λf.λn.ifelse (iszero n) (1) (mult n (f (pred n)))) fact 2
+    ->>β  ?
+fact = Y (λf.λn.ifelse (iszero n) (1) (mult n (f (pred n))))
+	 = (λf. (λx.f x x) (λx.f x x)) (λf.λn.ifelse (iszero n) (1) (mult n (f (pred n))))

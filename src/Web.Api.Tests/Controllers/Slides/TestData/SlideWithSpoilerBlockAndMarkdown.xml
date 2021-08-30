@@ -1,0 +1,24 @@
+﻿<slide xmlns="https://ulearn.me/schema/v2" id="F9E51373-CDD6-4741-A789-615CACD583A3" title="Slide With Spoiler">
+	<spoiler text="Spoiler">
+		<code language="csharp">
+			public static void Main()
+			{
+			Console.WriteLine("Hello world");
+			}
+		</code>
+		<youtube>videoId</youtube>
+		<markdown>
+			Внутрь маркдаун-блоков можно вставлять код:
+			<code>
+				public static void Main()
+				{
+				var x = 0.5;
+				Console.WriteLine(x);
+				}
+			</code>
+			<note>
+				и заметки преподавателей.
+			</note>
+		</markdown>
+	</spoiler>
+</slide>

@@ -1,0 +1,1 @@
+docker build -t algorithms-sandbox .

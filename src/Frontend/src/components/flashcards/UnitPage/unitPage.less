@@ -1,0 +1,43 @@
+@import "./../../../variables";
+
+.progressBarContainer {
+  margin-bottom: 30px;
+}
+
+.progressBarTitle {
+  margin-bottom: 13px;
+
+  color: @additionalColor;
+  font-family: @defaultFonts;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: lighter;
+}
+
+.guidesContainer {
+  max-width: 720px;
+  margin-left: 28px;
+}
+
+.footer {
+  max-width: 720px;
+}
+
+@media (max-width: @maxPhoneWidth) {
+  .progressBarTitle {
+    margin-top: 5px;
+  }
+
+  .title {
+    margin-top: 5px;
+    margin-bottom: 0;
+    font-size: 25px;
+    line-height: 30px;
+  }
+
+  .guidesContainer {
+    margin-left: 0;
+  }
+}

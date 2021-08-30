@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference Include="Vostok.Datacenters.Kontur" Version="1.0.36" />
+		<PackageReference Include="Vostok.Telemetry.Kontur" Version="1.0.52" />
+		<PackageReference Include="Vostok.Tracing.Kontur" Version="1.0.14" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Common.Api\Common.Api.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj">
+			<Project>{3CC038A1-6AA0-49B0-9485-DB9589626BC3}</Project>
+			<Name>Common</Name>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
+	<PropertyGroup>
+		<!-- Temporary workaround for getting Microsoft.AspNetCore.Mvc.Code.dll in the output folder
+         (for Ulearn.Web, which is .NET Framework project, not .NET Core) -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+</Project>

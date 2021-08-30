@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AntiPlagiarism.Web": {
+      "commandName": "Project",
+      "launchBrowser": false
+    }
+  }
+}

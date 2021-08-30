@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<slide.flashcards xmlns="https://ulearn.me/schema/v2" id="a7a73125-2434-4b5d-9f31-4ef687fc8bcc">
+	<flashcard id="flashcardId">
+		<question>
+			<markdown>
+				I am question markdown block!
+			</markdown>
+		</question>
+		<answer>
+			<markdown>
+				I am answer markdown block!
+			</markdown>
+		</answer>
+	</flashcard>
+
+</slide.flashcards>

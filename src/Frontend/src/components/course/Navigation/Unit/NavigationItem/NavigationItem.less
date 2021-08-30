@@ -1,0 +1,208 @@
+@import "../../../../../variables.less";
+
+.root {
+  display: block;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.itemLink {
+  position: relative;
+  display: block;
+  padding: 8px 8px 8px 51px;
+  color: @black;
+  text-decoration: none;
+  font-weight: 300;
+
+  &:hover, &:active {
+    color: @white;
+    background-color: @linkColor;
+    text-decoration: none;
+
+    & .questionIcon {
+      color: @linkColor;
+    }
+  }
+}
+
+.active {
+  background-color: @backgroundGray;
+
+  & .questionIcon {
+    color: @backgroundGray;
+  }
+}
+
+.firstLine {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+.text {
+  font-family: @defaultFonts;
+  font-size: 14px;
+  line-height: 20px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.progressWrapper {
+  box-sizing: content-box;
+  width: 47px;
+  flex-shrink: 0;
+  padding-top: 8px;
+  padding-left: 5px;
+}
+
+.score {
+  float: right;
+  color: @additionalColor;
+
+  margin-left: 4px;
+  padding-top: 3px;
+
+  font-family: @defaultFonts;
+  font-size: 12px;
+  line-height: 16px;
+  font-style: normal;
+  font-weight: 400;
+
+  .itemLink:hover &, .itemLink:active & {
+    color: #ffffff;
+    text-decoration: none;
+  }
+}
+
+.metroWrapper {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+
+  &:before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 1px;
+    top: 0;
+    left: 0;
+    bottom: calc(100% - 19.5px);
+    background-color: @metroDefault;
+  }
+
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 1px;
+    top: 19.5px;
+    left: 0;
+    bottom: 0;
+    background-color: @metroDefault;
+  }
+}
+
+.pointer {
+  display: block;
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  top: 14px;
+  left: -4.5px;
+  border-radius: 50%;
+  background-color: @metroDefault;
+  z-index: 2;
+}
+
+.noTopLine:before {
+  display: none;
+}
+
+.withoutBottomLine:after {
+  display: none;
+}
+
+.completeTop:before {
+  background-color: @progressBarGreen;
+}
+
+.completeBottom:after {
+  background-color: @progressBarGreen;
+}
+
+.icon {
+  position: absolute;
+
+  left: -18px;
+  line-height: 22px;
+
+  text-align: center;
+  color: @disabledColor;
+}
+
+.svg {
+  height: 11px;
+  width: 11px;
+}
+
+.questionIcon {
+  color: @white;
+  stroke: @disabledColor;
+  stroke-width: 1px;
+}
+
+.exerciseIcon {
+  top: 7px;
+}
+
+.canBeImproved {
+  background-color: @accentColor;
+}
+
+.complete {
+  background-color: @progressBarGreen;
+  color: #ffffff;
+}
+
+.isHiddenIcon {
+  margin-left: 5px;
+}
+
+@media (min-width: @navigationGrowthWidth) {
+  .itemLink {
+    padding: 16px 16px 16px 63px;
+  }
+
+  .metroWrapper {
+    left: 24px;
+
+    &:after {
+      top: 23px + 9px;
+    }
+
+    &:before {
+      bottom: calc(100% - 24px);
+    }
+  }
+
+  .pointer {
+    top: 23.5px;
+  }
+
+  .score {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .text {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .icon {
+    line-height: 23px;
+  }
+}

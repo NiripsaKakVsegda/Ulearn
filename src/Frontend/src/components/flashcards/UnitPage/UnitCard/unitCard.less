@@ -1,0 +1,97 @@
+@import "../../../../variables.less";
+
+@cardsContainerMaxWidth: @maxContentWidth;
+@cardsContainerHeight: 355px;
+@cardWidth: 100%;
+@cardHeight: @cardsContainerHeight - 17px;
+
+@secondCardWidthDecrease: 22px;
+@secondCardHeightDecrease: 8px;
+@thirdCardWidthDecrease: 46px;
+@thirdCardHeightDecrease: 17px;
+
+.unitCardContainer {
+  width: 100%;
+  z-index: 0;
+  max-width: @cardsContainerMaxWidth;
+  height: @cardsContainerHeight;
+
+  margin-bottom: 25px;
+
+  font-family: @defaultFonts;
+  color: @whiteSmoke;
+
+  position: relative;
+}
+
+.unitCard {
+  width: @cardWidth;
+  height: @cardHeight;
+
+  transform: translateY(@thirdCardHeightDecrease);
+
+  position: absolute;
+
+  border-radius: 10px;
+  padding: 35px 28px 22px;
+  background: @flashcardUnitBackgroundBlue;
+}
+
+.unitCardNext {
+  width: calc(@cardWidth - @secondCardWidthDecrease * 2);
+  height: calc(@cardHeight - @secondCardHeightDecrease * 2);
+
+  transform: translate(@secondCardWidthDecrease, @secondCardHeightDecrease);
+  z-index: -2;
+
+  background: darken(@flashcardUnitBackgroundBlue, 10%);
+}
+
+.unitCardLast {
+  width: calc(@cardWidth - @thirdCardWidthDecrease * 2);
+  height: calc(@cardHeight - @thirdCardHeightDecrease * 2);
+
+  transform: translate(@thirdCardWidthDecrease, 0);
+  z-index: -3;
+
+  background: darken(@flashcardUnitBackgroundBlue, 15%);
+}
+
+.successColor {
+  background: @flashcardUnitBackgroundGreen;
+}
+
+.successColor.unitCardNext {
+  background: darken(@flashcardUnitBackgroundGreen, 10%);
+}
+
+.successColor.unitCardLast {
+  background: darken(@flashcardUnitBackgroundGreen, 15%);
+}
+
+.unitCardTitle {
+  max-height: @cardHeight - 140px;
+
+  margin: 0 0 17px;
+
+  font-size: 40px;
+  line-height: 42px;
+  font-weight: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unitCardBody {
+  margin-bottom: 0;
+
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.startButtonContainer {
+  background-color: @white;
+  border-radius: 8px;
+  position: absolute;
+  bottom: 30px;
+  left: 28px;
+}

@@ -1,0 +1,30 @@
+declare global {
+	interface Window {
+		config: {
+			api: {
+				endpoint: string
+			}
+		},
+		legacy: {
+			//legacy scripts
+			documentReadyFunctions: (() => void)[],
+
+			//scripts used by cshtml scripts
+			loginForContinue: () => void,
+			likeSolution: () => void,
+			ToggleSystemRoleOrAccess: () => void,
+			ToggleButtonClass: () => void,
+			ToggleDropDownClass: () => void,
+			openPopup: () => void,
+			submitQuiz: () => void,
+			ShowPanel: () => void,
+
+			//hack to use react history on back
+			reactHistory: unknown,
+			//Yandex metrika used in registration pages on reachGoal
+			ym: unknown,
+		},
+	}
+}
+
+export {};

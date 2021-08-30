@@ -1,0 +1,249 @@
+@import "../../../courseVariables";
+
+@modalZIndex: 10;
+@congratsModalWidth: 443px;
+
+.wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.editor {
+  z-index: 1;
+  height: auto;
+  width: auto;
+  border: 1px solid @lightGrey;
+  border-radius: 8px;
+  background-color: @white;
+
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 14px;
+
+  overflow: hidden;
+}
+
+.editorNotEditable {
+  max-height: 200px;
+}
+
+.editorInReview {
+  flex: 2;
+  border-left: unset;
+  border-top: unset;
+  border-bottom: unset;
+  border-right: 1px solid @lightGrey;
+}
+
+.editorLineGutters {
+  border: unset;
+}
+
+.launchInfoHelpIcon {
+  color: @grey;
+}
+
+.launchInfoHelpIcon:hover {
+  cursor: pointer;
+}
+
+.reviewCode {
+  background: @lightYellow;
+}
+
+.selectedReviewCode {
+  background: @accentColor;
+}
+
+.editButton {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  width: fit-content;
+
+  cursor: pointer;
+
+  z-index: @asideZIndex - 1;
+
+  padding: 5px 16px;
+
+  background: @accentColor;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  border-radius: 24px;
+
+  color: @white;
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.editButtonWithReviews {
+  left: calc((100% - 260px) / 2);
+}
+
+.showAllCodeButton {
+  border: none;
+  .editButton;
+}
+
+.copyCodeButtonSingleLine {
+  .copyCodeButton;
+  top: 2px;
+}
+
+.copyCodeButton {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 6;
+  transform: translateX(-50%);
+  width: fit-content;
+
+  cursor: pointer;
+}
+
+.lastLinesFading:after {
+  background: linear-gradient(180deg, hsla(0, 0%, 100%, 0), #e7f1ff);
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 60px;
+  z-index: 4;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.editorWithoutBorder {
+  border: unset;
+}
+
+.exercise {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.exerciseControlsContainerMargin {
+  margin-bottom: 35px;
+}
+
+.reviewWrapper {
+  position: relative;
+  display: flex;
+
+  border: 1px solid @lightGrey;
+  border-top-left-radius: 9px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+
+  overflow: hidden;
+}
+
+.select {
+  max-width: 100%;
+  min-width: 100px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.overview {
+  padding: 16px;
+  margin-bottom: 16px;
+
+  list-style: none;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: 400;
+
+  background: @white;
+
+  border: 1px solid @accentColor;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.overview li:last-child {
+  margin-bottom: 0;
+}
+
+.overviewLine {
+  margin-bottom: 16px;
+}
+
+.overview h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  line-height: 22px;
+
+  font-weight: 600;
+}
+
+.overviewComment {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.overviewSelfCheckList {
+  list-style: none;
+
+  padding: 0;
+}
+
+.overviewSelfCheckList li {
+  display: flex;
+
+  margin-bottom: 16px;
+}
+
+.overviewSelfCheckList li .selfCheckText {
+  margin-left: 8px;
+  word-break: break-word;
+}
+
+.overviewSelfCheckComment {
+  .overviewComment;
+  position: relative;
+  top: -8px;
+  color: @additionalColor;
+}
+
+:global {
+  //removing border from line gutters
+  .CodeMirror-gutters {
+    border: unset;
+  }
+
+  //next 2 classes are overriding styles for autocompletion in code mirror to default. Darcula is theme we're using, its adding background color and coloring text.
+  ul.CodeMirror-hints.darcula {
+    background-color: @white !important;
+  }
+
+  ul.CodeMirror-hints.darcula .CodeMirror-hint-active {
+    background-color: @blue !important;
+    color: @white !important;
+  }
+}
+
+@media (min-width: @minTabletWidth) {
+  .editor {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .overview {
+    padding: 24px 40px;
+  }
+
+  .overview h3 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+}

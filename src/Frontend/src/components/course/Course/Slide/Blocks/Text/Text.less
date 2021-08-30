@@ -1,0 +1,212 @@
+@import "../../../courseVariables";
+
+.text {
+  max-width: @maxTextWidth;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+:global {
+  div.tex {
+    font-size: 1.2em;
+    padding-bottom: 1em;
+  }
+}
+
+.text p {
+  margin: 0 0 10px;
+}
+
+.text h1 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 26px;
+}
+
+.text h2 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.text h3 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 25px;
+}
+
+.text h4 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  line-height: 24px;
+
+  font-weight: 500;
+}
+
+.text img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+.text ol, .text ul {
+  margin-bottom: 1em;
+  padding: 0;
+  list-style: none;
+}
+
+.text li {
+  margin-bottom: 0.5em;
+  position: relative;
+  padding-left: 1.5em;
+
+  &:first-child {
+    margin-top: 8px;
+  }
+}
+
+.text ul > li:before {
+  content: '—';
+  position: absolute;
+  left: 0;
+}
+
+.text ol {
+  counter-reset: orderedList;
+}
+
+.text ol > li:before {
+  counter-increment: orderedList;
+  content: counter(orderedList) '.';
+  position: absolute;
+  left: 0;
+}
+
+.text li img {
+  margin: 0.5em 0;
+}
+
+.text table {
+  width: auto;
+  border: 1px solid #ddd;
+}
+
+.text table > thead > tr > th,
+.text table > tbody > tr > td {
+  padding: 8px;
+  line-height: 1.42857143;
+  vertical-align: top;
+  border: 1px solid #ddd;
+}
+
+.text code, kbd, pre, samp {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.text > pre {
+  display: block;
+
+  padding: 9.5px;
+  margin: 0 0 10px;
+
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+  word-break: break-all;
+  word-wrap: break-word;
+
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+
+  overflow: auto;
+}
+
+.text pre code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  white-space: pre-wrap;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.text code {
+  padding: 2px 4px;
+  color: #c7254e;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
+
+.text blockquote {
+  padding: 10px 20px;
+  margin: 0 0 20px;
+
+  font-size: inherit;
+
+  border-left: 5px solid #eee;
+}
+
+.text blockquote ol:last-child, blockquote p:last-child, blockquote ul:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: @minTabletWidth) {
+  .text {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .text img {
+    margin-bottom: 16px;
+    margin-top: 16px;
+  }
+
+  .text h1 {
+    margin-top: 32px;
+    margin-bottom: 24px;
+
+    font-size: 36px;
+    line-height: 44px;
+  }
+
+  .text h2 {
+    margin-top: 32px;
+    margin-bottom: 24px;
+
+    font-size: 32px;
+    line-height: 40px;
+  }
+
+  .text h3 {
+    margin-top: 32px;
+    margin-bottom: 16px;
+
+    font-size: 27px;
+    line-height: 35px;
+  }
+
+  .text h4 {
+    margin-top: 24px;
+    margin-bottom: 8px;
+
+    font-size: 20px;
+    line-height: 28px;
+  }
+}

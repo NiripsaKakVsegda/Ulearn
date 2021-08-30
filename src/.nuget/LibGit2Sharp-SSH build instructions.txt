@@ -1,0 +1,15 @@
+Инструкция по сборке https://github.com/alex-weaver/libgit2sharp на коммит 2ab9fdd1
+
+Клонируем https://github.com/vorkulsky/libgit2sharp и https://github.com/vorkulsky/libgit2sharp.nativebinaries
+Идем в libgit2sharp.nativebinaries
+Можем обновить сабмодули независимо, открыв гит а них.
+Нужна VS 2019 c пакетом разработки под C++.
+Нужен cmake: https://cmake.org/download/ прописываем cmake в path. Хотя, может быть, подойдет cmake, идущий с VS.
+В повершелл под администратором выполняем Set-ExecutionPolicy unrestricted, чтобы резрешить запускать повершелл-скрипты
+В папке с репозиторием libgit2sharp.nativebinaries выполняем .\build.libgit2.ps1
+Запускаем .\buildpackage.ps1 1.0.251.x, где x - больше, чем у предыдущей сборки. Появится собранный .nupkg в корне репозитория
+Публикуем пакет локально копирование в папку .nuget в репе ulearn
+В провекте libgit2sharp указываеи source для Nuget и меняем библиотеку nativebinaries на нешу.
+Проверям, что билдится (тесты не билдятся, но и ладно)
+Выполняем dotnet pack -c Release это соберет nuget-пакет
+Работает только 64-бит версия. Так что нужен iis express 64 bit.

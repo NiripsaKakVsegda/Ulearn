@@ -1,0 +1,66 @@
+@import "../../../../../variables.less";
+
+.root {
+  display: block;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.itemLink {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 32px 12px 16px;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    color: #ffffff;
+    background-color: @linkColor;
+    text-decoration: none;
+  }
+}
+
+.active {
+  background-color: @backgroundGray;
+}
+
+.text {
+  font-size: 16px;
+  line-height: 22px;
+
+  .active & {
+    font-weight: 600;
+  }
+}
+
+.progressWrapper {
+  position: absolute;
+  box-sizing: content-box;
+  width: 16px;
+  padding-top: 4px;
+  flex-shrink: 0;
+  right: 8px;
+}
+
+.isNotPublishedIcon {
+  margin-left: 4px;
+}
+
+@media (min-width: @navigationGrowthWidth) {
+  .itemLink {
+    padding: 16px 40px 16px 24px;
+  }
+
+  .text {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .progressWrapper {
+    right: 16px;
+  }
+}

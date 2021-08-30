@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>Ulearn.Common</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="DotNetZip" Version="1.15.0" />
+		<PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.1.3" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+		<PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
+		<PackageReference Include="UnidecodeSharpCore" Version="2.0.1" />
+		<PackageReference Include="Vostok.Logging.Console" Version="1.0.5" />
+		<PackageReference Include="Vostok.Logging.Formatting" Version="1.0.5" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
+</Project>

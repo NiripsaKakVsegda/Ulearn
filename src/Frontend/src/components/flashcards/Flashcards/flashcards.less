@@ -1,0 +1,215 @@
+@import "./../../../variables";
+
+@modalMaxWidth: @maxPhoneWidth;
+@modalMaxHeight: 504px;
+@moveAnimationDuration: 0.7s;
+@textAppearAnimationDuration: 0.3s;
+@modalBackgroundColor: #fff;
+@modalZIndex: 10;
+@overlayZIndex: @flashcardsOverlayZIndex;
+@progressBarHeight: 30px;
+
+.overlay {
+  position: fixed;
+  overflow: auto;
+  z-index: @overlayZIndex - 2;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+
+  animation: appear 250ms;
+
+  background-color: rgba(51, 51, 51, 0.8);
+}
+
+.overflow {
+  overflow: hidden;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1.0;
+  }
+}
+
+.modal {
+  width: 100vw;
+  height: calc(100vh - @headerHeight - @progressBarHeight);
+
+  max-width: 100vw;
+  max-height: 100%;
+
+  display: flex;
+
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: @modalZIndex;
+  transform: translate(-50%, @headerHeight + @progressBarHeight);
+
+  background-color: @modalBackgroundColor;
+  padding: 26px 10px;
+  border-radius: 0;
+  margin-top: -30px;
+}
+
+.secondModal {
+  transform: translate(-50%, @headerHeight + @progressBarHeight) scale(0.95);
+  z-index: @modalZIndex - 1;
+  background: darken(@modalBackgroundColor, 10%);
+
+  &.move {
+    animation-duration: @moveAnimationDuration;
+    animation-name: moveFromSecondToFirst;
+  }
+}
+
+@keyframes moveFromSecondToFirst {
+  from {
+    transform: translate(-50%, @headerHeight + @progressBarHeight) scale(0.95);
+    z-index: @modalZIndex - 1;
+    background: darken(@modalBackgroundColor, 10%);
+  }
+  to {
+    transform: translate(-50%, @headerHeight + @progressBarHeight);
+    z-index: @modalZIndex;
+    background: @modalBackgroundColor;
+  }
+}
+
+.thirdModal {
+  display: none;
+  z-index: @modalZIndex - 2;
+  background: darken(@modalBackgroundColor, 15%);
+
+  &.move {
+    animation-duration: @moveAnimationDuration;
+    animation-name: moveFromThirdToSecond;
+  }
+}
+
+@keyframes moveFromThirdToSecond {
+  from {
+    transform: translate(-50%, -12%) scale(0.90);
+    z-index: @modalZIndex - 2;
+    background: darken(@modalBackgroundColor, 15%);
+  }
+  to {
+    transform: translate(-50%, -6%) scale(0.95);
+    z-index: @modalZIndex - 1;
+    background: darken(@modalBackgroundColor, 10%);
+  }
+}
+
+.fourthModal {
+  display: none;
+  z-index: @modalZIndex - 3;
+  background: darken(@modalBackgroundColor, 18%);
+
+  &.move {
+    animation-duration: @moveAnimationDuration;
+    animation-name: moveFromFourthToThird;
+  }
+}
+
+@keyframes moveFromFourthToThird {
+  from {
+    transform: translate(-50%, -18%) scale(0.85);
+    z-index: @modalZIndex - 3;
+    background: darken(@modalBackgroundColor, 18%);
+  }
+  to {
+    transform: translate(-50%, -12%) scale(0.90);
+    z-index: @modalZIndex - 2;
+    background: darken(@modalBackgroundColor, 15%);
+  }
+}
+
+.controlGuideContainer {
+  display: none;
+
+  width: 100%;
+
+  position: absolute;
+  top: 24%;
+  transform: translate(0, calc(@modalMaxHeight + 10px));
+  padding-bottom: 50px;
+
+  margin: 0;
+
+  color: @lightYellow;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: lighter;
+
+  & > span {
+    padding: 3px 9px;
+    margin: 5px;
+    border-radius: 2px;
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid @lightYellow;
+    text-transform: uppercase;
+  }
+}
+
+.progressBarContainer {
+  position: fixed;
+  z-index: @modalZIndex;
+  height: @progressBarHeight;
+  bottom: 0;
+  width: 100%;
+}
+
+@media (min-width: @minLaptopWidth) {
+  .modal {
+    width: @modalMaxWidth;
+    height: @modalMaxHeight;
+    max-width: 100%;
+    top: 24%;
+    transform: translate(-50%, 0);
+    padding: 37px 57px 48px;
+    border-radius: 10px;
+  }
+
+  .overlay {
+    z-index: @overlayZIndex;
+  }
+
+  .secondModal {
+    transform: translate(-50%, -6%) scale(0.95);
+  }
+
+  .thirdModal {
+    display: initial;
+    transform: translate(-50%, -12%) scale(0.90);
+  }
+
+  .fourthModal {
+    display: initial;
+    transform: translate(-50%, -18%) scale(0.85);
+  }
+
+  .controlGuideContainer {
+    display: initial;
+  }
+
+  @keyframes moveFromSecondToFirst {
+    from {
+      transform: translate(-50%, -6%) scale(0.95);
+      z-index: @modalZIndex - 1;
+      background: darken(@modalBackgroundColor, 10%);
+    }
+    to {
+      z-index: @modalZIndex;
+      transform: translate(-50%, 0);
+      background: @modalBackgroundColor;
+    }
+  }
+}

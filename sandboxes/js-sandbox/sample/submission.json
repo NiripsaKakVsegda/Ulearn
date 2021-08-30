@@ -1,0 +1,4 @@
+{
+	"language": "javascript",
+	"runCommand": "node docker-test-runner.js"
+}

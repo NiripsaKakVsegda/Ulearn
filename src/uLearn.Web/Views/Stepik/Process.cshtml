@@ -1,0 +1,44 @@
+﻿@model uLearn.Web.Controllers.ProcessModel
+
+@{
+	ViewBag.Title = "Копирование курса " + Model.Course.Title;
+}
+
+<div class="container">
+	<h2>Копирование курса @Model.Course.Title на&nbsp;Степик</h2>
+
+	<p class="help-block">
+		@Model.Course.Title → <a href="https://stepik.org/course/@Model.Process.StepikCourseId" target="_blank">@Model.Process.StepikCourseTitle</a>
+	</p>
+
+	<p>
+		Начат <b>@Model.Process.StartTime</b><!--
+		-->
+		@if (!Model.Process.IsFinished)
+		{
+			<text>, <b>не закончен</b></text>
+		}
+	</p>
+
+	@if (Model.Process.IsFinished)
+	{
+		<p>
+			Закончен <b>@Model.Process.FinishTime</b>
+		</p>
+
+		if (Model.Process.IsSuccess)
+		{
+			<p class="text-success">Копирование прошло успешно</p>
+		}
+		else
+		{
+			<p class="text-danger">Копирование завершилось с&nbsp;ошибкой</p>
+		}
+
+		if (!string.IsNullOrEmpty(Model.Process.Log))
+		{
+			<h3>Лог</h3>
+			<pre>@Model.Process.Log</pre>
+		}
+	}
+</div>

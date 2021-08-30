@@ -1,0 +1,19 @@
+﻿<Config>
+  <Organization>UrFU</Organization>
+  <LtiId>edx</LtiId>
+  <ULearnCourseId>BasicProgramming</ULearnCourseId>
+  <Profiles>
+    <Profile name="default">
+      <UlearnBaseUrlWeb>https://ulearn.me</UlearnBaseUrlWeb>
+      <UlearnBaseUrlApi>https://api.ulearn.me</UlearnBaseUrlApi>
+    </Profile>
+    <Profile name="dev">
+      <UlearnBaseUrlWeb>http://localhost:3000</UlearnBaseUrlWeb>
+      <UlearnBaseUrlApi>http://localhost:8000</UlearnBaseUrlApi>
+    </Profile>
+  </Profiles>
+  <IgnoredUlearnSlides>
+    <SlideId>1</SlideId>
+    <SlideId>2</SlideId>
+  </IgnoredUlearnSlides>
+</Config>

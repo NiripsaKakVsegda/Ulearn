@@ -1,0 +1,141 @@
+@import "../Exercise.less";
+
+.overlay {
+  position: fixed;
+  z-index: @flashcardsOverlayZIndex - 2;
+
+  overflow: auto;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+
+  background-color: rgba(51, 51, 51, 0.8);
+}
+
+.overlay:focus {
+  outline: none;
+}
+
+.modal {
+  position: absolute;
+  width: 100%;
+
+  top: 0;
+  left: 50%;
+  z-index: @modalZIndex;
+  transform: translate(-50%, @headerHeight);
+
+  background: @white;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+
+  font-size: 16px;
+  line-height: 22px;
+
+  text-align: center;
+}
+
+.bodyOverflow {
+  overflow: hidden;
+}
+
+.modalCloseButton {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+
+  padding: 0;
+
+  font-size: 26px;
+  line-height: 26px;
+  opacity: 0.54;
+
+  border: none;
+  background: initial;
+}
+
+.modalCloseButton:hover,
+.modalCloseButton:focus {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.modalCloseButton:focus {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, .5);
+}
+
+.iconWrapper {
+  position: relative;
+  width: fit-content;
+  margin: 34px auto 40px;
+}
+
+.title {
+  width: fit-content;
+  margin: 0 auto 8px;
+}
+
+.text {
+  max-width: 400px;
+
+  margin: auto auto 32px;
+}
+
+.scoreTextWrapper {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+
+  bottom: -5px;
+  right: -5px;
+
+  text-align: center;
+  line-height: 40px;
+
+  background-color: @accentColor;
+  color: @white;
+  border-radius: 50%;
+}
+
+.delimiter {
+  content: '';
+  height: 1px;
+  width: 100%;
+  background: @lightGrey;
+  margin-bottom: 24px;
+}
+
+.closeButtonWrapper {
+  margin-bottom: 49px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.closeButton {
+  padding: 7px 16px;
+
+  background: #FFCA43;
+  border: 1px solid #FFCA43;
+  border-radius: 24px;
+
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+@media (min-width: @minTabletWidth) {
+  .overlay {
+    z-index: @flashcardsOverlayZIndex;
+  }
+
+  .modal {
+    width: @congratsModalWidth;
+
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+    border-radius: 24px;
+  }
+}

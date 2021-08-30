@@ -1,0 +1,117 @@
+@import "../../../../variables.less";
+
+@unitCardHeight: 148px;
+@unitCardWidth: 230px;
+
+.cardsContainer {
+  display: grid;
+  max-width: @maxContentWidth;
+  grid-template-columns: repeat(auto-fit, @unitCardWidth);
+  grid-gap: 15px 15px;
+
+  margin-bottom: 15px;
+}
+
+.unitCard {
+  width: @unitCardWidth;
+  height: @unitCardHeight;
+
+  border-radius: 10px;
+  padding: 12px 18px;
+  background: @flashcardUnitBackgroundBlue;
+
+  font-family: @defaultFonts;
+  text-decoration: none;
+  color: @whiteSmoke;
+}
+
+.unitCard:hover, .unitCard:focus {
+  cursor: pointer;
+  color: @whiteSmoke;
+  text-decoration: none;
+
+  box-shadow: 0 8px 15px rgba(97, 114, 157, 0.3);
+}
+
+.emptyUnitCard {
+  border: 1px dashed rgba(0, 0, 0, 0.3);
+  padding: 32px;
+
+  text-align: center;
+  background: none;
+  font-family: @defaultFonts;
+  color: @additionalColor;
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.emptyUnitCard:hover {
+  color: @additionalColor;
+  cursor: default;
+  box-shadow: none;
+}
+
+.unitCardLocked {
+  position: relative;
+
+  background: @lightGrey;
+  color: @disabledColor;
+}
+
+.unitCardLocked:hover {
+  color: @disabledColor;
+}
+
+.unitCardLockerIcon {
+  color: @disabledColor;
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+}
+
+.unitCardTitle {
+  max-height: 84px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: normal;
+  margin: 0;
+}
+
+.unitCardBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.unitCardButton {
+  display: none;
+
+  position: absolute;
+  bottom: 20px;
+  left: 22px;
+
+  pointer-events: none;
+}
+
+.unitCard:hover .unitCardButton {
+  display: block;
+}
+
+@media (max-width: @maxPhoneWidth) {
+  .cardsContainer {
+    grid-template: none;
+    grid-gap: 20px;
+  }
+
+  .unitCard {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .emptyUnitCard {
+    font-size: 20px;
+  }
+}

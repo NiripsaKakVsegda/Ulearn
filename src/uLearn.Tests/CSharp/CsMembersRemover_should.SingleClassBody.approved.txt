@@ -1,0 +1,16 @@
+﻿//region all
+
+namespace uLearn.tests
+{
+	internal class OverloadedMethods : IRunnable
+	{
+	}
+}
+
+/*
+region Region
+Not method
+endregion Region 
+ */
+
+//endregion all

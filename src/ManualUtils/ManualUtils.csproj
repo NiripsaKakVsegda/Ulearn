@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net5.0</TargetFramework>
+		<GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+		<AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<AssemblyTitle>ManualUtils</AssemblyTitle>
+		<Product>Ulearn</Product>
+		<Description>Run custom manual scripts for ulearn mooc platform</Description>
+		<Copyright>Copyright 2020 SKB Kontur</Copyright>
+		<Version>1.0.0.0</Version>
+		<Authors>SKB Kontur</Authors>
+		<PackageId>Kontur.Ulearn.ManualUtils</PackageId>
+		<PackageLicenseUrl>https://ulearn.me/Home/Terms</PackageLicenseUrl>
+		<PackageProjectUrl>https://ulearn.me</PackageProjectUrl>
+		<PackageTags>ulearn education mooc</PackageTags>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<LangVersion>default</LangVersion>
+		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>full</DebugType>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AntiPlagiarism.Web\AntiPlagiarism.Web.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Database.Core\Database.Core.csproj" />
+		<ProjectReference Include="..\Web.Api\Web.Api.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="appsettings.json">
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+	  <PackageReference Include="OctoPack" Version="3.6.5">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
+</Project>

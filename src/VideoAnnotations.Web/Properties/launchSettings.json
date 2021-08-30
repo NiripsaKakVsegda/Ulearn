@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VideoAnnotations.Web": {
+      "commandName": "Project",
+      "launchBrowser": false
+    }
+  }
+}

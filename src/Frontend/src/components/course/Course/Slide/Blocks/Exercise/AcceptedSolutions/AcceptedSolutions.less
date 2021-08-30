@@ -1,0 +1,65 @@
+﻿@import "../../../../courseVariables";
+
+.tabs {
+  margin-bottom: 15px;
+}
+
+.solutions {
+  margin-top: 20px;
+
+  &:not(:last-child) {
+    margin-bottom: 25px;
+  }
+}
+
+.code {
+  width: 100%;
+  vertical-align: top;
+  padding-bottom: 5px;
+}
+
+.controlsWrapper {
+  position: relative;
+  float: right;
+  width: 0;
+}
+
+.controls {
+  width: 100px;
+  position: relative;
+  right: 103px;
+  top: -40px;
+  z-index: 5;
+}
+
+.button {
+  cursor: pointer;
+  user-select: none;
+  text-align: right;
+  float: right;
+
+  &:hover:not(.disabled) {
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, .04);
+  }
+}
+
+.buttonContent {
+  padding: 0 5px;
+}
+
+.disabled {
+  cursor: default;
+}
+
+.disabled .icon {
+  color: @disabledColor !important;
+}
+
+.liked .icon {
+  color: @likeColor;
+}
+
+.promoted .icon {
+  color: @goldenStar;
+}

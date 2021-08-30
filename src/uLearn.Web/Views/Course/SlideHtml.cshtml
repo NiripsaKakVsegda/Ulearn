@@ -1,0 +1,747 @@
+@* Generator: MvcHelper GeneratePrettyNames: true DisableLinePragmas: true *@
+@using System.Linq
+@using Database.Models
+@using Ulearn.Common
+@using uLearn.Web.Clients
+@using uLearn.Web.Controllers
+@using uLearn.Web.Extensions
+@* ReSharper disable RedundantUsingDirective *@
+@using uLearn.Web.Models
+@using Ulearn.Common.Api
+@using Ulearn.Common.Extensions
+@using Ulearn.Core
+@using Ulearn.Core.Courses.Slides
+@using Ulearn.Core.Courses.Slides.Blocks
+@using Ulearn.Core.Courses.Slides.Exercises
+@using Ulearn.Core.Courses.Slides.Exercises.Blocks
+@using Ulearn.Core.Courses.Slides.Quizzes
+@using Ulearn.Core.Courses.Slides.Quizzes.Blocks
+@using Ulearn.Core.Markdown
+@using Ulearn.VideoAnnotations.Api.Models.Parameters.Annotations
+@using Ulearn.VideoAnnotations.Api.Models.Responses.Annotations
+@using HtmlHelper = System.Web.Mvc.HtmlHelper
+@* ReSharper restore RedundantUsingDirective *@
+
+
+@functions
+{
+
+	private static bool IsBlockCorrect(QuizBlockData model, AbstractQuestionBlock block)
+	{
+		int blockScore;
+		var isBlockCorrect = model.QuizModel != null && model.QuizModel.UserScores != null &&
+							model.QuizModel.UserScores.TryGetValue(block.Id, out blockScore) && blockScore == block.MaxScore;
+		return isBlockCorrect;
+	}
+
+}
+
+@helper Slide(BlockRenderContext context, HtmlHelper Html, int currentScore = 0)
+{
+	<div class="slide">
+		<h1>
+			<span class="slide__title">
+				@context.Slide.Title
+			</span>
+			<span class="score">@ShowScoreWithWords(currentScore, context.Slide.MaxScore)</span>
+		</h1>
+		@Blocks(context, Html)
+	</div>
+}
+
+@helper Blocks(BlockRenderContext context, HtmlHelper Html)
+{
+	var shouldSpoilerBlocksBeforeExercise = context.ManualChecking != null && context.Slide.Blocks.OfType<AbstractExerciseBlock>().Any();
+	var ranges = context.Slide.GetBlockRangesWithSameVisibility(shouldSpoilerBlocksBeforeExercise).ToList();
+	var countHiddenBlocks = ranges.Count(b => b[0].Hide);
+	var rangesInSpoilerCount = 0;
+	var firstHiddenBlock = true;
+	if (shouldSpoilerBlocksBeforeExercise)
+	{
+		<button id="exerciseTaskSpoilerButton" class="btn" type="button" data-toggle="collapse" data-target="#exerciseTaskSpoiler" aria-expanded="false" aria-controls="exerciseTaskSpoiler">
+			Показать формулировку
+		</button>
+		<div id="exerciseTaskSpoiler" class="collapse">
+			@foreach (var blockRange in ranges.TakeWhile(blockRange => !(blockRange[0] is AbstractExerciseBlock)))
+			{
+				rangesInSpoilerCount++;
+				@Range(blockRange, countHiddenBlocks, firstHiddenBlock, context, Html)
+				if (firstHiddenBlock && blockRange[0].Hide)
+				{
+					firstHiddenBlock = false;
+				}
+			}
+		</div>
+	}
+	foreach (var blockRange in ranges.Skip(rangesInSpoilerCount))
+	{
+		@Range(blockRange, countHiddenBlocks, firstHiddenBlock, context, Html)
+		if (firstHiddenBlock && blockRange[0].Hide)
+		{
+			firstHiddenBlock = false;
+		}
+	}
+}
+
+@helper Range(SlideBlock[] blockRange, int countHiddenBlocks, bool firstHiddenBlock, BlockRenderContext context, HtmlHelper Html)
+{
+	if (!blockRange[0].Hide)
+	{
+		foreach (var block in blockRange)
+		{
+			@Block((dynamic)block, context, Html)
+		}
+	}
+	else if (context.RevealHidden)
+	{
+		<div class="revealed">
+			@if (firstHiddenBlock)
+			{
+				<div class="revealed__description">Студенты не&nbsp;видят @( countHiddenBlocks > 1 ? "желтые блоки" : "этот блок")</div>
+			}
+			@foreach (var block in blockRange)
+			{
+				@Block((dynamic)block, context, Html)
+			}
+		</div>
+	}
+}
+
+@helper Block(AbstractQuestionBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	var mark = "";
+	var style = "";
+	var blockScore = -1;
+	QuizBlockData model = context.GetBlockData(block);
+	if (model.QuizState.Status == QuizStatus.Sent)
+	{
+		if (model.QuizModel.UserScores != null)
+		{
+			model.QuizModel.UserScores.TryGetValue(block.Id, out blockScore);
+		}
+
+		var isBlockCorrect = IsBlockCorrect(model, block);
+		mark = "glyphicon " + (isBlockCorrect ? "glyphicon-ok" : "glyphicon-remove");
+		style = "color: " + (isBlockCorrect ? "green" : "red");
+	}
+	<div class="quiz-block__is-question">
+		<h4 class="quiz-block__is-question__title @( string.IsNullOrEmpty(mark) || model.DebugView ? "" : "with-mark")">
+			@if (!model.DebugView)
+			{
+				<i class="@mark" style="@style"></i>
+			}
+			<span class="quiz-block__text">
+				@block.QuestionIndex. @block.Text.RenderTex().ToLegacyHtmlString()
+			</span>
+			<span class="quiz-block__score">
+				@if (blockScore >= 0)
+				{
+					<nobr>@blockScore из @block.MaxScore балл@( block.MaxScore == 1 ? "а" : "ов")</nobr>
+				}
+				else
+				{
+					<nobr>@block.MaxScore.PluralizeInRussian(RussianPluralizationOptions.Score)</nobr>
+				}
+			</span>
+		</h4>
+
+		@QuizBlock((dynamic)block, context)
+
+		@if (context.ManualChecking != null)
+		{
+			<h4>Оцените от 0 до @block.MaxScore</h4>
+			<div>
+				<input type="number" class="form-control" min="0" max="@block.MaxScore" name="quiz__score__@( block.Id)"
+						value="@( context.ManualChecking.IsChecked ? context.UserScores.GetOrDefault(block.Id).ToString() : "")"/>
+			</div>
+		}
+	</div>
+}
+
+
+@helper ShowScore(int currentScore, int maxScore)
+{ @( maxScore == 0 ? "" : string.Format("{0}/{1}", currentScore, maxScore)) }
+
+@helper ShowScoreWithWords(int currentScore, int maxScore)
+{ @( maxScore == 0 ? "" : string.Format("{0} из {1}", currentScore.PluralizeInRussian(RussianPluralizationOptions.Score), maxScore)) }
+
+@helper Block(MarkdownBlock block, BlockRenderContext context, HtmlHelper Html)
+{ @MvcHtmlString.Create(block.RenderMarkdown(context.Slide, new MarkdownRenderContext(context.BaseUrlApi, context.BaseUrlWeb, context.Course.Id, context.Slide.Unit.UnitDirectoryRelativeToCourse))) }
+
+@helper Block(CodeBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	if (block.Hide)
+	{
+		@ExpandableCodeBlock(block, context, Html)
+	}
+	else
+	{
+		<textarea class="code code-sample" data-lang="@( block.Language.GetName())">@block.Code</textarea>
+	}
+}
+
+@helper ExpandableCodeBlock(CodeBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	var linesCount = block.Code.SplitToLines().Length;
+	var linesCountToShow = linesCount <= 20 ? linesCount : 5;
+	var visibleLines = block.Code.SplitToLinesWithEoln().Take(linesCountToShow).Join("");
+	<div class="expandable-code @( linesCount > linesCountToShow ? "collapsed" : "expanded")">
+		<textarea class="code code-sample" data-lang="@block.Language.GetName()" data-code="@block.Code">@visibleLines</textarea>
+		@if (linesCount > linesCountToShow)
+		{
+			<div class="expandable-code__button-wrapper">
+				<button class="expandable-code__button">Показать код полностью</button>
+			</div>
+		}
+	</div>
+}
+
+@helper Block(TexBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	foreach (var texLine in block.TexLines)
+	{
+		<div class="tex">\displaystyle @texLine.Trim()</div>
+	}
+}
+
+@helper Block(YoutubeBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	<div class="video-container">
+		<div class="youtube-video" data-width="864" data-height="480" data-video-id="@block.VideoId" data-autoplay="@context.Autoplay.ToString().ToLower()"></div>
+	</div>
+	<div>
+		<a href="javascript://" class="popover-trigger pull-right"
+			title="Как ускорить видео?"
+			data-content="Выберите скорость в иконке с шестеренкой или используйте горячие клавиши Shift+> и Shift+<"
+			data-placement="bottom">
+			<span class="glyphicon glyphicon-question-sign"></span>
+			Ускорить видео?
+		</a>
+	</div>
+
+	if (!string.IsNullOrEmpty(context.Course.Settings.VideoAnnotationsGoogleDoc))
+	{
+		var client = UlearnVideoAnnotationsClient.Instance;
+		if (client != null)
+		{
+			try
+			{
+				var annotationsResponse = client.GetAnnotationsAsync(new AnnotationsParameters
+				{
+					GoogleDocId = context.Course.Settings.VideoAnnotationsGoogleDoc,
+					VideoId = block.VideoId
+				}).GetAwaiter().GetResult();
+
+				if (annotationsResponse.Annotation != null)
+				{
+					@ShowVideoAnnotations(annotationsResponse.Annotation, context, Html)
+				}
+				else
+				{
+					@SuggestAnnotations(context, Html)
+				}
+			}
+			catch (ApiClientException e)
+			{
+				@SuggestAnnotations(context, Html)
+			}
+		}
+	}
+}
+
+@helper ShowVideoAnnotations(Annotation annotation, BlockRenderContext context, HtmlHelper Html)
+{
+	<h2>
+		Содержание видео
+	</h2>
+	@annotation.Text
+	<div class="video-annotations">
+		@foreach (var fragment in annotation.Fragments)
+		{
+			<div class="fragment">
+				<span class="offset">@fragment.Offset.ToString(@"mm\:ss")</span> — @fragment.Text
+			</div>
+		}
+	</div>
+
+	var googleDocLink = context.Course.Settings.VideoAnnotationsGoogleDoc;
+	if (!string.IsNullOrEmpty(googleDocLink))
+	{
+		<div class="suggest-video-annotations">Ошибка в содержании? <a href="https://docs.google.com/document/d/@googleDocLink" target="_blank">Предложите исправление</a><span class="link-text">!</span></div>
+	}
+}
+
+@helper SuggestAnnotations(BlockRenderContext context, HtmlHelper Html)
+{
+	<h2>
+		Содержание видео
+	</h2>
+	var googleDocLink = context.Course.Settings.VideoAnnotationsGoogleDoc;
+	if (!string.IsNullOrEmpty(googleDocLink))
+	{
+		<div class="suggest-video-annotations">Помогите написать <a href="https://docs.google.com/document/d/@googleDocLink" target="_blank">текстовое содержание</a> этого видео.</div>
+	}
+}
+
+@helper Block(ImageGalleryBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	<div class="flexslider">
+		<ul class="slides">
+			@foreach (var imageUrl in block.GetAbsoluteImageUrls(context.BaseUrlApi, context.Course.Id, context.Slide.Unit.UnitDirectoryRelativeToCourse))
+			{
+				<li>
+					<img src="@imageUrl" alt="@imageUrl"/>
+				</li>
+			}
+		</ul>
+	</div>
+}
+
+@helper Block(HtmlBlock block, BlockRenderContext context, HtmlHelper Html)
+{ @(new HtmlString(block.GetContent(context.BaseUrlApi))) }
+
+@helper Block(SpoilerBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	<div class="spoiler-block" data-hide-quiz-button="@block.HideQuizButton.ToString().ToLower()">
+		<div class="spoiler-block__button">
+			<button class="btn btn-success">@block.Text</button>
+		</div>
+		<div class="spoiler-block__content" style="display: none">
+			@foreach (var innerBlock in block.Blocks)
+			{
+				@Block((dynamic)innerBlock, context, Html)
+			}
+		</div>
+	</div>
+}
+
+@helper Block(AbstractExerciseBlock block, BlockRenderContext context, HtmlHelper Html)
+{
+	<div class="exercise">
+		@{
+			@Html.Action("LastReviewComments", "Exercise", new { courseId = context.Course.Id, slideId = context.Slide.Id, userId = context.ManualChecking.UserId })
+			ExerciseBlockData data = context.GetBlockData(block);
+			var manualCheckingId = context.ManualChecking.Id;
+			@Html.Action("Submission", "Exercise", new { courseId = context.Course.Id, slideId = context.Slide.Id, submissionId = context.VersionId, manualCheckingId = manualCheckingId, isLti = data.IsLti, instructorView = true })
+			@Html.Action("ExerciseScoreForm", "Exercise", new { context = context })
+		}
+	</div>
+}
+
+@helper QuizBlock(ChoiceBlock block, BlockRenderContext context)
+{
+	var items = block.ShuffledItems();
+	var isMultiply = block.Multiple;
+	var inputType = isMultiply ? "checkbox" : "radio";
+	QuizBlockData model = context.GetBlockData(block);
+
+	var mistakesCount = new MistakesCount();
+	<div class="quiz-block-mark @inputType @inputType-default" id='@( block.Id + "_quizBlock")'>
+		@for (var itemIndex = 0; itemIndex < items.Length; itemIndex++)
+		{
+			var item = items[itemIndex];
+			var id = isMultiply ? itemIndex + "noMult" : model.BlockIndex.ToString();
+			var itemChecked = model.ShowUserAnswers && model.QuizModel.AnswersToQuizzes != null && model.QuizModel.AnswersToQuizzes[block.Id].Select(x => x.ItemId).Contains(item.Id);
+			var ans = itemChecked ? "checked" : "";
+			var itemClass = "";
+			var title = "";
+			var readonlyAttr = context.CanUserFillQuiz ? "" : "disabled";
+
+			var isItemCorrect = item.IsCorrect == ChoiceItemCorrectness.True || item.IsCorrect == ChoiceItemCorrectness.Maybe && itemChecked;
+			var isUserAnswerCorrect = (itemChecked && isItemCorrect) || (!itemChecked && !isItemCorrect) || model.DebugView;
+			mistakesCount.CheckedUnnecessary += itemChecked && !isItemCorrect ? 1 : 0;
+			mistakesCount.NotCheckedNecessary += !itemChecked && isItemCorrect ? 1 : 0;
+			if (model.ShowCorrectAnswers)
+			{
+				itemClass = isItemCorrect ? "right-quiz" : itemChecked ? "wrong-quiz" : "";
+				title = (isItemCorrect ? "Правильный" : "Неправильный") + " вариант";
+			}
+			<div class="quiz">
+				@if (model.ShowQuestionStatistics)
+				{
+					var className = item.IsCorrect.IsTrueOrMaybe() ? "quiz__statistics__correct" : "quiz__statistics__incorrect";
+					if ((context.Slide as QuizSlide).ManualChecking)
+					{
+						className = "";
+					}
+					<div class="quiz__statistics @className" title="Этот вариант выбирают в @( model.QuestionAnswersFrequency[item.Id])% случаев">@( model.QuestionAnswersFrequency[item.Id])%</div>
+				}
+				<input @ans autocomplete="off" id='@( block.Id + "quizBlock" + item.Id)' name=@( "group" + id) type="@inputType" @GetGuestDisable(context.IsGuest) @readonlyAttr>
+				<label class="@itemClass" title="@title" for="@( block.Id + "quizBlock" + item.Id)" @GetGuestOnclick(context.IsGuest)>
+					@item.Description.Trim().RenderTex().ToLegacyHtmlString()
+				</label>
+				@if (model.ShowCorrectAnswers || model.ShowExplanations)
+				{
+					@ShowCorrectAnswerAndExplanationForChoiceItem(block, model, item, isUserAnswerCorrect)
+				}
+			</div>
+		}
+		@{
+			var isBlockCorrect = IsBlockCorrect(model, block);
+			if (model.ShowCorrectAnswers && isBlockCorrect && mistakesCount.HasAtLeastOneMistake())
+			{
+				@ShowMistakesExplanation(mistakesCount)
+			}
+		}
+
+	</div>
+}
+
+@helper ShowMistakesExplanation(MistakesCount mistakesCount)
+{
+	var text = "";
+	if (mistakesCount.CheckedUnnecessary > 0)
+	{
+		var unnecessaryItemsText = mistakesCount.CheckedUnnecessary.PluralizeInRussian(new RussianPluralizationOptions
+		{
+			One = "лишний вариант",
+			Two = "лишних варианта",
+			Five = "лишних вариантов",
+			hideNumberOne = false,
+			smallNumbersAreWords = false,
+		});
+		text = "Вы выбрали " + unnecessaryItemsText;
+	}
+	if (mistakesCount.NotCheckedNecessary > 0)
+	{
+		var necessaryItemsText = mistakesCount.NotCheckedNecessary.PluralizeInRussian(new RussianPluralizationOptions
+		{
+			One = "правильный вариант",
+			Two = "правильных варианта",
+			Five = "правильных вариантов",
+			hideNumberOne = false,
+			smallNumbersAreWords = false,
+		});
+		text += text == "" ? "Вы " : " и ";
+		text += "не выбрали " + necessaryItemsText;
+	}
+	<div class="quiz-mistakes-explanation">
+		<strong>@text.</strong>
+		Нестрашно, в этом вопросе это допустимо. Вы все равно получаете полный балл!
+	</div>
+}
+
+@helper QuizBlock(FillInBlock block, BlockRenderContext context)
+{
+	var value = "";
+	QuizBlockData model = context.GetBlockData(block);
+	if (model.ShowUserAnswers && model.QuizModel.AnswersToQuizzes != null && model.QuizModel.AnswersToQuizzes[block.Id].FirstOrDefault() != null)
+	{
+		var answers = model.QuizModel.AnswersToQuizzes[block.Id];
+		var userAnswer = answers.FirstOrDefault();
+		value = userAnswer != null ? userAnswer.Text : "";
+	}
+	var sample = block.Sample;
+	var readonlyAttr = context.CanUserFillQuiz ? "" : "readonly";
+	<div class="quiz quiz-block-input">
+		<label @GetGuestOnclick(context.IsGuest)>
+			@if (block.Multiline)
+			{
+				<textarea class="form-control" id='@( block.Id + "quizBlock")' maxlength="@QuizController.MaxFillInBlockSize" @GetGuestDisable(context.IsGuest) @readonlyAttr cols="110" rows="5">@value</textarea>
+			}
+			else
+			{
+				<input
+					autocomplete="off"
+					class="form-control"
+					value="@value"
+					id='@( block.Id + "quizBlock")'
+					maxlength="@QuizController.MaxFillInBlockSize"
+					size="68"
+					@GetGuestDisable(context.IsGuest)
+					@readonlyAttr/>
+			}
+		</label>
+	</div>
+	if (model.ShowCorrectAnswers)
+	{
+		<div>Правильный ответ: @sample</div>
+	}
+	if (model.ShowExplanations && !string.IsNullOrEmpty(block.Explanation))
+	{
+		<p class="quiz__explanation">@block.Explanation</p>
+	}
+}
+
+@helper QuizBlock(IsTrueBlock block, BlockRenderContext context)
+{
+	var trueChecked = "";
+	var falseChecked = "";
+	var trueItemClass = "";
+	var falseItemClass = "";
+	var trueTitle = "";
+	var falseTitle = "";
+	var isUserAnswerCorrect = false;
+	QuizBlockData model = context.GetBlockData(block);
+	if (model.ShowUserAnswers && model.QuizModel.AnswersToQuizzes != null && model.QuizModel.AnswersToQuizzes[block.Id].FirstOrDefault() != null)
+	{
+		var userAnswer = model.QuizModel.AnswersToQuizzes[block.Id].Select(x => x.Text).FirstOrDefault() == "True";
+		isUserAnswerCorrect = userAnswer == block.Answer;
+		trueChecked = userAnswer ? "checked" : "";
+		falseChecked = userAnswer ? "" : "checked";
+		if (model.QuizState.Status == QuizStatus.Sent)
+		{
+			trueItemClass = block.Answer ? "right-quiz" : userAnswer ? "wrong-quiz" : "";
+			falseItemClass = !block.Answer ? "right-quiz" : !userAnswer ? "wrong-quiz" : "";
+		}
+	}
+	if (model.QuizState.Status == QuizStatus.Sent)
+	{
+		trueTitle = (block.Answer ? "Правильный" : "Неправильный") + " вариант";
+		falseTitle = (!block.Answer ? "Правильный" : "Неправильный") + " вариант";
+	}
+	var readonlyAttr = context.CanUserFillQuiz ? "" : "disabled";
+	<div class="radio quiz-block-mark" id="@( block.Id + "_quizBlock")">
+		<div class="quiz">
+			<input autocomplete="off" @trueChecked id='@( block.Id + "quizBlock" + "True")' name='@( block.Id + "group")' type="radio" @GetGuestDisable(context.IsGuest) @readonlyAttr>
+			<label class="@trueItemClass" title="@trueTitle" for="@( block.Id + "quizBlock" + "True")" @GetGuestOnclick(context.IsGuest)>Верно</label>
+		</div>
+		<div class="quiz">
+			<input autocomplete="off" @falseChecked id='@( block.Id + "quizBlock" + "False")' name='@( block.Id + "group")' type="radio" @GetGuestDisable(context.IsGuest) @readonlyAttr>
+			<label class="@falseItemClass" title="@falseTitle" for="@( block.Id + "quizBlock" + "False")" @GetGuestOnclick(context.IsGuest)>Неверно</label>
+		</div>
+	</div>
+	if (model.DebugView)
+	{
+		<p class="quiz__explanation">
+			<span class="quiz__explanation__correct">Правильный ответ:</span> @( block.Answer ? "Верно" : "Неверно")
+		</p>
+	}
+	if (model.ShowExplanations && !string.IsNullOrEmpty(block.Explanation))
+	{
+		var className = "";
+		if (model.ShowCorrectAnswers)
+		{
+			className = isUserAnswerCorrect ? "quiz__explanation__correct" : "quiz__explanation__incorrect";
+		}
+		<p class="quiz__explanation @className">@block.Explanation</p>
+	}
+}
+
+@helper QuizBlock(OrderingBlock block, BlockRenderContext context)
+{
+	var items = block.ShuffledItems();
+	var correctItems = block.Items;
+	QuizBlockData model = context.GetBlockData(block);
+	if (model.ShowUserAnswers && model.QuizModel.AnswersToQuizzes != null && model.QuizModel.AnswersToQuizzes[block.Id].FirstOrDefault() != null)
+	{
+		var userAnswers = model.QuizModel.AnswersToQuizzes[block.Id].Select(x => x.ItemId).ToList();
+		items = items.OrderBy(item => userAnswers.IndexOf(item.GetHash())).ToArray();
+	}
+	<div class="quiz-block-ordering @( context.CanUserFillQuiz ? "" : "not-movable")" id='@( block.Id + "_quizBlock")' @GetGuestOnclick(context.IsGuest)>
+		@if (model.ShowCorrectAnswers)
+		{
+			<div class="quiz-block-ordering__correct-description row">
+				<div class="text-success col-sm-5 col-sm-offset-6">Правильный ответ</div>
+			</div>
+		}
+		<div class="ul">
+			@for (var itemIndex = 0; itemIndex < items.Length; itemIndex++)
+			{
+				var item = items[itemIndex];
+				<div class="li row">
+					<div class="quiz quiz-block-ordering__item col-xs-12 col-sm-5" data-item-id="@item.GetHash()">
+						@if (context.CanUserFillQuiz)
+						{
+							<div class="quiz-block-ordering__item__icons">
+								<span class="glyphicon glyphicon-arrow-up"></span>
+								<span class="glyphicon glyphicon-arrow-down"></span>
+							</div>
+						}
+						<input autocomplete="off" id='@( block.Id + "quizBlock" + item.GetHash())' type="hidden">
+						<div class="text">@item.Text.RenderTex().ToLegacyHtmlString()</div>
+					</div>
+					@if (model.ShowCorrectAnswers)
+					{
+						var correctItem = correctItems[itemIndex];
+						<div class="quiz-block-ordering__item correct col-xs-12 col-sm-offset-1 col-sm-5">
+							@correctItem.Text.RenderTex().ToLegacyHtmlString()
+						</div>
+					}
+				</div>
+			}
+		</div>
+	</div>
+	if (model.ShowExplanations && !string.IsNullOrEmpty(block.Explanation))
+	{
+		<p class="quiz__explanation">@block.Explanation</p>
+	}
+}
+
+@helper QuizBlock(MatchingBlock block, BlockRenderContext context)
+{
+	var fixedItems = block.GetMatches(block.ShuffleFixed);
+	var movableItems = block.GetMatches(true);
+
+	QuizBlockData model = context.GetBlockData(block);
+	if (model.ShowUserAnswers && model.QuizModel.AnswersToQuizzes != null && model.QuizModel.AnswersToQuizzes[block.Id].FirstOrDefault() != null)
+	{
+		var userAnswers = model.QuizModel.AnswersToQuizzes[block.Id];
+		fixedItems = GetFixedItemsAccordingToUserAnswers(userAnswers, fixedItems)
+			.OrderBy(item => userAnswers.FindIndex(answer => item.GetHashForFixedItem() == answer.ItemId)).ToList();
+		movableItems = GetMovableItemsAccordingToUserAnswers(userAnswers, fixedItems);
+	}
+	<div class="quiz-block-matching @( context.CanUserFillQuiz ? "" : "not-movable")" id='@( block.Id + "_quizBlock")' @GetGuestOnclick(context.IsGuest)>
+		@if (model.QuizState.Status == QuizStatus.ReadyToSend)
+		{
+			<div class="quiz-block-matching__description text-muted">
+				<span class="visible-xs">
+					Нажмите сначала на&nbsp;блоке из&nbsp;правого столбца, а&nbsp;затем на&nbsp;свободном месте в&nbsp;левом.
+				</span>
+				<span class="hidden-xs">
+					Перетащите блоки из&nbsp;правого столбца на&nbsp;свободные места.
+				</span>
+			</div>
+		}
+		@if (model.QuizState.Status == QuizStatus.Sent)
+		{
+			<div class="quiz-block-matching__correct-description row">
+				@if (!model.DebugView)
+				{
+					<div class="text-muted col-sm-3 col-sm-offset-3">Ваш вариант</div>
+				}
+				@if (model.ShowCorrectAnswers)
+				{
+					<div class="text-success col-sm-3 @( model.DebugView ? "col-xs-offset-4" : "col-xs-offset-1")">Правильный вариант</div>
+				}
+			</div>
+		}
+		<div class="ul">
+			@for (var itemIndex = 0; itemIndex < fixedItems.Count; itemIndex++)
+			{
+				var fixedItem = fixedItems[itemIndex];
+				var movableItem = movableItems[itemIndex];
+				var isRightClass = "";
+				if (model.ShowCorrectAnswers)
+				{
+					isRightClass = fixedItem.Id == movableItem.Id || model.DebugView ? "right" : "wrong";
+				}
+				<div class="li">
+					<div class="quiz quiz-block-matching__item @isRightClass row">
+						<input autocomplete="off" id='@( block.Id + "quizBlock" + fixedItem.GetHashForFixedItem())' type="hidden">
+						<div class="quiz-block-matching__fixed-item col-xs-3" data-item-id="@fixedItem.GetHashForFixedItem()">@fixedItem.FixedItem.RenderTex().ToLegacyHtmlString()</div>
+						@if (model.QuizState.Status == QuizStatus.ReadyToSend && !model.ShowUserAnswers)
+						{
+							<div class="quiz-block-matching__droppable col-xs-3" data-block-id="@block.Id" data-item-id="@fixedItem.GetHashForFixedItem()"></div>
+							<div class="quiz-block-matching__source__droppable col-xs-3 col-xs-offset-1 added" data-block-id="@block.Id" data-movable-item-id="@movableItem.GetHashForMovableItem()">
+								<div class="quiz-block-matching__movable-item" data-block-id="@block.Id" data-item-id="@movableItem.GetHashForMovableItem()">@movableItem.MovableItem.RenderTex().ToLegacyHtmlString()</div>
+							</div>
+						}
+						else
+						{
+							if (!model.DebugView)
+							{
+								<div class="quiz-block-matching__droppable col-xs-3 added" data-block-id="@block.Id" data-item-id="@fixedItem.GetHashForFixedItem()" data-movable-item-id="@movableItem.GetHashForMovableItem()">
+									<div class="quiz-block-matching__movable-item" data-block-id="@block.Id" data-item-id="@movableItem.GetHashForMovableItem()">@movableItem.MovableItem.RenderTex().ToLegacyHtmlString()</div>
+								</div>
+							}
+							if (model.ShowCorrectAnswers)
+							{
+								<div class="quiz-block-matching__fixed-item correct col-xs-3 col-xs-offset-1">
+									@fixedItem.MovableItem.RenderTex().ToLegacyHtmlString()
+								</div>
+							}
+							if (context.CanUserFillQuiz)
+							{
+								<div class="quiz-block-matching__source__droppable col-xs-3 col-xs-offset-1" data-block-id="@block.Id">
+								</div>
+							}
+						}
+
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+	if (model.ShowExplanations && !string.IsNullOrEmpty(block.Explanation))
+	{
+		<p class="quiz__explanation">@block.Explanation</p>
+	}
+}
+
+@helper ShowCorrectAnswerAndExplanationForChoiceItem(ChoiceBlock block, QuizBlockData model, ChoiceItem item, bool isUserAnswerCorrect)
+{
+	var hasExplanation = model.ShowExplanations && !string.IsNullOrEmpty(item.Explanation);
+	<p class="quiz__explanation">
+		@if (model.ShowCorrectAnswers)
+		{
+			var dotIfHasExplanation = hasExplanation ? ". " : "";
+			if (item.IsCorrect == ChoiceItemCorrectness.Maybe)
+			{
+				<span class="quiz__explanation__correct" title="Этот вариант можно было как выбрать, так и не выбирать">
+					@( model.DebugView ? "Допустимый ответ" : "Допустимо")@dotIfHasExplanation
+				</span>
+			}
+			else if (isUserAnswerCorrect && item.IsCorrect == ChoiceItemCorrectness.True)
+			{
+				<span class="quiz__explanation__correct">
+					@( model.DebugView ? ("Правильный ответ" + dotIfHasExplanation) : "Правильно!")
+				</span>
+			}
+			else if (!isUserAnswerCorrect)
+			{
+				if (!block.Multiple && item.IsCorrect == ChoiceItemCorrectness.True)
+				{
+					<span class="quiz__explanation__correct">Этот ответ был правильным@( dotIfHasExplanation)</span>
+				}
+				else if (!hasExplanation && block.Multiple && item.IsCorrect == ChoiceItemCorrectness.True)
+				{
+					<span class="quiz__explanation__incorrect">Вы ошиблись.</span>
+					<span>Этот ответ надо было выбрать</span>
+				}
+				else if (block.Multiple)
+				{
+					<span class="quiz__explanation__incorrect">Вы ошиблись@( dotIfHasExplanation)</span>
+				}
+				else
+				{
+					<span class="quiz__explanation__incorrect">Неправильно@( dotIfHasExplanation)</span>
+				}
+			}
+		}
+
+		@if (hasExplanation)
+		{
+			<span>@item.Explanation</span>
+		}
+	</p>
+}
+
+@functions
+{
+
+	public static string GetGuestOnclick(bool isGuest)
+	{
+		return isGuest ? "onclick=window.legacy.loginForContinue()" : "";
+	}
+
+	public static string GetGuestDisable(bool isGuest)
+	{
+		return isGuest ? "disabled" : null;
+	}
+
+	private static List<MatchingMatch> GetFixedItemsAccordingToUserAnswers(List<UserQuizAnswer> userAnswers, List<MatchingMatch> fixedItems)
+	{
+		var filteredFixedItems = new List<MatchingMatch>();
+		foreach (var fixedItem in fixedItems)
+		{
+			var userAnswered = userAnswers.Any(answer => answer.ItemId == fixedItem.GetHashForFixedItem());
+			if (userAnswered)
+				filteredFixedItems.Add(fixedItem);
+		}
+		return filteredFixedItems;
+	}
+
+	private static List<MatchingMatch> GetMovableItemsAccordingToUserAnswers(List<UserQuizAnswer> userAnswers, List<MatchingMatch> fixedItems)
+	{
+		var movableItems = new List<MatchingMatch>();
+		foreach (var fixedItem in fixedItems)
+		{
+			var userAnswer = userAnswers.FirstOrDefault(answer => answer.ItemId == fixedItem.GetHashForFixedItem());
+			if (userAnswer != null)
+				movableItems.Add(fixedItems.FirstOrDefault(item => item.GetHashForMovableItem() == userAnswer.Text));
+		}
+		return movableItems;
+	}
+
+}

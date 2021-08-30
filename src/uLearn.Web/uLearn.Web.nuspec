@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Kontur.Ulearn.Web</id>
+    <version>$version$-beta</version>
+    <title>$title$</title>
+    <authors>SKB Kontur</authors>
+    <owners>SKB Kontur</owners>
+    <licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+    <projectUrl>https://ulearn.me</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Web backend for ulearn mooc platform</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014–2017 SKB Kontur</copyright>
+    <tags>ulearn education mooc</tags>
+  </metadata>
+  <files>
+    <file src="static\**\*.*" target="static\" />
+    <file src="index.html" target="" />
+    <file src="workbox-*.js" target="" />
+    <file src="sw.js" target="" />
+    <file src="manifest.json" target="" />
+    <file src="asset-manifest.json" target="" />
+    <file src="favicon.ico" target="" />
+  </files>
+</package>

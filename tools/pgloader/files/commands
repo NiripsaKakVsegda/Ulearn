@@ -1,0 +1,18 @@
+load database
+	from mssql://ulearn:ulearn@host.docker.internal/ulearn
+	into postgresql://ulearn:ulearn@host.docker.internal:5432/ulearn
+
+set work_mem to '64MB', maintenance_work_mem to '512 MB'
+
+with include no drop, no truncate, reset no sequences, create no schemas, create no tables, create no indexes, no foreign keys, quote identifiers, data only
+
+cast
+	type datetime2 to timestamp,
+	type datetime to timestamp,
+	type int to integer,
+	type varchar when (<= precision 4000) to varchar keep typemod,
+	type nvarchar when (<= precision 4000) to varchar keep typemod
+
+alter schema 'dbo' rename to 'public'
+
+;

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>Ulearn.Common.Api</RootNamespace>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+	  <PackageReference Include="Vostok.Context" Version="0.1.4" />
+	  <PackageReference Include="Vostok.Datacenters.Kontur" Version="1.0.36" />
+	  <PackageReference Include="Vostok.Telemetry.Kontur" Version="1.0.52" />
+	  <PackageReference Include="Vostok.Tracing.Abstractions" Version="0.1.4" />
+	  <PackageReference Include="Vostok.Tracing.Kontur" Version="1.0.14" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
+
+	<!-- See https://docs.microsoft.com/ru-ru/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-2.1&tabs=visual-studio%2Cvisual-studio-xml -->
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
+
+</Project>

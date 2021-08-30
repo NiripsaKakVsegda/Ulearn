@@ -1,0 +1,149 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net48;net5.0</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.10.0" />
+		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Core\Core.csproj" />
+		<None Include="DockerConfig\*.*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.local.json">
+		  <DependentUpon>appsettings.json</DependentUpon>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="deploy\**">
+			<Link>deploy\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>None</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="..\..\sandboxes\**">
+			<Link>sandboxes\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>None</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\build.bat">
+		  <Link>sandboxes\algorithms-sandbox\container\build.bat</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\build.sh">
+		  <Link>sandboxes\algorithms-sandbox\container\build.sh</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\Dockerfile">
+		  <Link>sandboxes\algorithms-sandbox\container\Dockerfile</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\testlib.h">
+		  <Link>sandboxes\algorithms-sandbox\container\app\testlib.h</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\Dockerfile">
+		  <Link>sandboxes\algorithms-sandbox\container\Dockerfile</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\main.py">
+		  <Link>sandboxes\algorithms-sandbox\container\app\main.py</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\testlib.h">
+		  <Link>sandboxes\algorithms-sandbox\container\app\testlib.h</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\CppRunInfo.py">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\CppRunInfo.py</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\ISourceCodeRunInfo.py">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\ISourceCodeRunInfo.py</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\PythonRunInfo.py">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\PythonRunInfo.py</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__init__.py">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__init__.py</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\CppRunInfo.cpython-39.pyc">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\CppRunInfo.cpython-39.pyc</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\ISourceCodeRunInfo.cpython-39.pyc">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\ISourceCodeRunInfo.cpython-39.pyc</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\PythonRunInfo.cpython-39.pyc">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\PythonRunInfo.cpython-39.pyc</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\__init__.cpython-39.pyc">
+		  <Link>sandboxes\algorithms-sandbox\container\app\SourceCodeRunInfo\__pycache__\__init__.cpython-39.pyc</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\submission.json">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\submission.json</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\1">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\1</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\1.a">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\1.a</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\2">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\2</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\2.a">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\2.a</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\3">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\3</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Update="..\..\sandboxes\algorithms-sandbox\sample\src\Tests\3.a">
+		  <Link>sandboxes\algorithms-sandbox\sample\src\Tests\3.a</Link>
+		  <CopyToOutputDirectory>None</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+</Project>

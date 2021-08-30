@@ -1,0 +1,108 @@
+@import "../../../../variables.less";
+
+@borderRadius: 4px;
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: @backgroundGray;
+  overflow: hidden;
+  border-radius: @borderRadius;
+}
+
+.small {
+  height: 5px;
+}
+
+.value {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  background-color: @progressBarGreen;
+  will-change: width;
+  transition: 0.1s ease-in-out;
+  border-radius: @borderRadius;
+}
+
+.valueWithoutBorders {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.inProgressValue {
+  .value;
+  background-color: @accentColor;
+  z-index: 0;
+  will-change: width, left;
+}
+
+.inProgressValueWithoutBorders {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.circleFull {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+  width: 16px;
+  height: 16px;
+
+  background: @successColor;
+  border-radius: 50%;
+  color: @white;
+  font-size: 10px;
+
+  &.big {
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.circleSvgWrapper {
+  position: relative;
+  width: 16px;
+  height: 16px;
+
+  &.big {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.circleProgressValue {
+  stroke-width: 8px;
+  fill: none;
+
+  &.big {
+    stroke-width: 10px;
+  }
+
+  &.success {
+    stroke: @successColor;
+  }
+
+  &.inProgress {
+    stroke: @accentColor;
+  }
+}
+
+.circleProgressCircle {
+  stroke-width: 8px;
+  stroke: @whiteSmoke;
+  fill: none;
+
+  &.big {
+    stroke-width: 10px;
+  }
+
+  &.active {
+    stroke: @white;
+  }
+}

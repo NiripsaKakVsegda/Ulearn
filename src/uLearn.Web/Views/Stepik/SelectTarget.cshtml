@@ -1,0 +1,47 @@
+﻿@using Ulearn.Core.Extensions
+@using FormMethod = System.Web.Mvc.FormMethod
+@model uLearn.Web.Controllers.SelectTargetModel
+
+@{
+	ViewBag.Title = "Выберите курс";
+}
+
+<div class="container">
+	@if (Model.StepikCourses.Count == 0)
+	{
+		<h2>Скопировать можно только в&nbsp;существующий курс на&nbsp;Степике</h2>
+		<p>У вас нет курсов на&nbsp;Степике. Создайте курс, а затем вернитесь на эту страницу.</p>
+		<a class="btn btn-large btn-success" href="javascript:back()">&larr; Назад</a>
+	}
+	else
+	{
+		using (Html.BeginForm("", "", FormMethod.Get))
+		{
+			@Html.Hidden("courseId", Model.UlearnCourse.Id)
+			@Html.Hidden("stepikCourseId", "")
+
+			<h2>Выберите один из&nbsp;ваших курсов на&nbsp;Степике</h2>
+			<p>
+				Если у&nbsp;вас ещё нет нужного курса на&nbsp;Степике, создайте его, а&nbsp;затем обновите эту страницу.
+			</p>
+			<ul class="stepik__course-export__select-course">
+				@foreach (var stepikCourse in Model.StepikCourses)
+				{
+					<li data-course-id="@stepikCourse.Id">
+						<div class="title">
+							@stepikCourse.Title
+						</div>
+						<div class="summary">
+							@stepikCourse.Summary.TruncateWithEllipsis(100)
+						</div>
+					</li>
+				}
+			</ul>
+
+			<div class="stepik__course-export__select-course__buttons" style="display: none">
+				<button class="btn btn-large btn-success" data-url="@Url.Action("InitialExportOptions", "Stepik")">Скопировать в&nbsp;первый раз</button>
+				<button class="btn btn-large btn-success" data-url="@Url.Action("UpdateOptions", "Stepik")">Обновить курс на&nbsp;Степике</button>
+			</div>
+		}
+	}
+</div>

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<NoWarn>NU1701</NoWarn>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.9" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+		<PackageReference Include="Moq" Version="4.16.0" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
+		<DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+		<PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference Include="Vostok.Logging.Microsoft" Version="2.0.11" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Database.Core\Database.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>

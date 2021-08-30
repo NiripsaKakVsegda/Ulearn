@@ -1,0 +1,114 @@
+@import "../../courseVariables";
+
+.wrapper {
+  position: relative;
+
+  &:first-child {
+    padding-top: 40px;
+  }
+
+  &:last-child {
+    padding-bottom: 40px;
+  }
+}
+
+.eyeClosedWrapper {
+  position: absolute;
+  right: calc((@phoneSlidePadding - 14px) / 2);
+
+  font-size: 14px;
+  color: @orange;
+}
+
+.hiddenSlide {
+  &.showed {
+    background-color: @white;
+    border-right: 1px solid @lightOrange;
+    border-left: 1px solid @lightOrange;
+    border-bottom: 1px solid @lightOrange;
+  }
+}
+
+.hiddenBackgroundColor {
+  background-color: @lightYellow;
+}
+
+.withPaddings {
+  padding: 16px @phoneSlidePadding;
+
+  &.withoutTopPaddings:not(:first-child) {
+    padding-top: 0;
+  }
+
+  &.withoutBottomPaddigns:not(:last-child) {
+    padding-bottom: 0;
+  }
+}
+
+@media (min-width: @minTabletWidth) {
+  .withPaddings {
+    padding: @phoneSlidePadding;
+
+    &.withoutTopPaddings:not(:first-child) {
+      padding-top: 0;
+    }
+
+    .withoutBottomPaddigns:not(:last-child) {
+      padding-bottom: 0;
+    }
+  }
+
+  .eyeClosedWrapper {
+    font-size: 16px;
+    right: calc((@phoneSlidePadding - 16px) / 2);
+  }
+
+  .hiddenSlide {
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .eyeClosedWrapper {
+    font-size: 20px;
+    right: calc((@laptopSlidePadding - 20px) / 2);
+  }
+
+  .withPaddings {
+    padding-left: @desktopSlidePadding;
+    padding-right: @laptopSlidePadding;
+
+    &:last-child {
+      padding-bottom: @laptopSlidePadding;
+    }
+
+    &.withoutTopPaddings:not(:first-child) {
+      padding-top: 0;
+    }
+
+    &.withoutBottomPaddigns:not(:last-child) {
+      padding-bottom: 0;
+    }
+  }
+}
+
+@media (min-width: @minDesktopWidth) {
+  .eyeClosedWrapper {
+    font-size: 22px;
+    right: calc((@desktopSlidePadding - 22px) / 2);
+  }
+
+  .withPaddings {
+    padding-left: @desktopSlidePadding;
+    padding-right: @desktopSlidePadding;
+
+    &.withoutTopPaddings:not(:first-child) {
+      padding-top: 0;
+    }
+
+    &.withoutBottomPaddigns:not(:last-child) {
+      padding-bottom: 0;
+    }
+  }
+}

@@ -1,0 +1,40 @@
+@import "../../../../courseVariables";
+
+@hintsLeftPadding: 16px;
+@maxHintsWrapperWidthMultiplier: 0.66;
+
+.exerciseControlsContainer {
+  display: inline-flex;
+  align-items: baseline;
+  width: 100%;
+}
+
+.exerciseControls {
+  font-size: @mobileFontSize;
+  line-height: 22px;
+  color: @linkColor;
+  user-select: none;
+}
+
+.exerciseControls:hover {
+  cursor: pointer;
+}
+
+.sendButton {
+  order: -1;
+}
+
+.exerciseControlsIcon {
+  font-size: @tabletFontSize;
+  margin-right: 4px;
+}
+
+@media (min-width: @minDesktopWidth) {
+  .hintsWrapper {
+    max-width: @desktopSlideWidth * @maxHintsWrapperWidthMultiplier;
+  }
+
+  .exerciseControls {
+    font-size: @tabletFontSize;
+  }
+}

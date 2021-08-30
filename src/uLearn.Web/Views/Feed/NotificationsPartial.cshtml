@@ -1,0 +1,71 @@
+﻿@using Database.Extensions
+@using Database.Models
+@using uLearn.Web.Views.Shared
+
+@model uLearn.Web.Controllers.FeedNotificationsModel
+
+@helper ShowNotifications(List<Notification> notifications, DateTime? lastViewTimestamp)
+{
+	foreach (var notification in notifications)
+	{
+		<li class="notifications__notification @( notification.CreateTime >= lastViewTimestamp ? "unread" : "")">
+
+			@try
+			{
+				@Notifications.Notification((dynamic)notification, Model.CourseStorage.FindCourse(notification.CourseId), Html, Url)
+			}
+			catch (Exception)
+			{
+				/* Sometimes slide or course can be deleted already. It's not the reason for throwing an error */
+			}
+		</li>
+	}
+}
+
+@helper UnreadCountLabel(List<Notification> notifications, DateTime? lastViewTimestamp)
+{
+	var unreadCount = notifications.Count(n => n.CreateTime >= lastViewTimestamp);
+	if (unreadCount > 0)
+	{
+		<span class="label label-as-badge label-primary label-xs">@unreadCount</span>
+	}
+}
+
+
+@if (Model.ImportantNotifications.Count > 0 || Model.CommentsNotifications.Count > 0)
+{
+	<div class="notifications__feed-switcher">
+		<a href="#important" data-feed="important" class="active">
+			Уведомления
+			@UnreadCountLabel(Model.ImportantNotifications, Model.ImportantLastViewTimestamp)
+		</a>
+		<a href="#comments" data-feed="comments" data-update-timestamp-url="@Url.Action("UpdateLastViewTimestamp", new { transportId = Model.CommentsNotificationsTransportId, timestamp = DateTime.Now })">
+			Комментарии
+			@UnreadCountLabel(Model.CommentsNotifications, Model.CommentsLastViewTimestamp)
+		</a>
+	</div>
+	<div class="notifications__notifications-wrapper notifications__feed active" data-feed="important">
+		@ShowNotifications(Model.ImportantNotifications, Model.ImportantLastViewTimestamp)
+		@if (Model.ImportantNotifications.Count == 0)
+		{
+			<li class="notifications__info">Здесь будут появляться ответы на&nbsp;ваши комментарии, сообщения от&nbsp;преподавателей и системы.</li>
+		}
+	</div>
+	<div class="notifications__notifications-wrapper notifications__feed" data-feed="comments">
+		@ShowNotifications(Model.CommentsNotifications, Model.CommentsLastViewTimestamp)
+		@if (Model.CommentsNotifications.Count == 0)
+		{
+			<li class="notifications__info">Здесь будут появляться комментарии пользователей во&nbsp;всех курсах, в&nbsp;которых вы занимаетесь.</li>
+		}
+	</div>
+
+	<div class="notifications__all-notifications-link">
+		<a href="@Url.Action("Index", "Feed")">Показать все</a>
+	</div>
+}
+else
+{
+	<li class="notifications__info">
+		Здесь появятся уведомления из&nbsp;курсов, в&nbsp;которых вы обучаетесь@(User.HasAccess(CourseRole.Instructor) ? " и преподаёте" : "")
+	</li>
+}

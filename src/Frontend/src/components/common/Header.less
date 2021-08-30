@@ -1,0 +1,186 @@
+@import "../../variables.less";
+
+@defaultColor: #f2f2f2;
+
+.header {
+  display: inline-flex;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: @headerHeight;
+  z-index: @headerZIndex;
+
+  align-items: center;
+
+  background-color: white;
+  font-family: @defaultFonts;
+  font-size: 14px;
+  color: #333;
+}
+
+.header a:hover, .header a:active, .header a:focus {
+  color: #666;
+  text-decoration: none;
+}
+
+.header:after {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100vw;
+  content: '';
+  display: block;
+  height: @headerDividerHeight;
+  background-color: @backgroundGray;
+}
+
+.controlsWrapper {
+  display: inline-flex;
+  padding-left: 8px;
+}
+
+.accountWrapper {
+  display: inline-flex;
+  padding-right: 8px;
+}
+
+.headerElement {
+  height: @headerHeight;
+  line-height: 50px;
+  padding: 0 8px;
+}
+
+.headerElement:hover, .headerElement:active, .headerElement:focus {
+  background-color: rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+.separator {
+  @margin: 10px;
+  width: 0;
+  height: (@headerHeight - 2 * @margin);
+  border-left: 2px solid #eee;
+  margin-top: @margin;
+  margin-bottom: @margin;
+}
+
+.logo {
+  font-size: 14px;
+}
+
+a.logo:hover, a.logo:active, a.logo:focus {
+  text-decoration: none;
+  background-color: unset;
+  color: #23527c;
+}
+
+.button {
+  border: none;
+  background: initial;
+  color: #666;
+}
+
+.button:focus, .button:active, .button.focus {
+  outline: none;
+}
+
+
+.profileLink {
+  display: flex;
+}
+
+.username {
+  max-width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon:not(:last-child) {
+  margin-right: 5px;
+}
+
+.opened {
+  background-color: @whiteSmoke;
+}
+
+.notificationsWithCounter {
+  padding: 0 10px;
+  position: relative;
+}
+
+.notificationsContainer {
+  background-color: white;
+  border: 1px solid #d5d5d5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  min-width: 400px;
+  min-height: 90px;
+  max-width: 600px;
+
+  @media (max-width: @maxPhoneWidth) {
+    min-width: 300px;
+    width: 100%;
+  }
+}
+
+.notificationsDropdown {
+  width: 100%;
+  list-style: none;
+}
+
+.notificationsCounter {
+  background-color: #F69C00;
+  color: white;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  text-align: center;
+  border-radius: 9px;
+  font-size: 11px;
+  position: absolute;
+  top: 9px;
+  left: 17px;
+  padding-top: 1px;
+  line-height: 1.42;
+}
+
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+@media (min-width: @minTabletWidth) {
+  .controlsWrapper > :first-child {
+    padding-left: 16px;
+  }
+
+  .accountWrapper > :last-child {
+    padding-right: 16px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .username {
+    max-width: unset;
+  }
+
+  .headerElement {
+    padding: 0 15px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .notificationsCounter {
+    left: 22px; //base 17 + 5 added by enlarged paddings
+  }
+}

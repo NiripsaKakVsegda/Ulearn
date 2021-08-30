@@ -1,0 +1,160 @@
+﻿@import "../../../../courseVariables";
+
+.output {
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid @lightGrey;
+}
+
+.outputWithMargin {
+  margin-top: 25px;
+}
+
+.wrongAnswerOutput {
+  .output;
+  border-color: @likeColor;
+}
+
+.needImprovementsOutput {
+  .output;
+  border-color: @accentColor;
+}
+
+.maxResultOutput {
+  .output;
+  border-color: @progressBarGreen;
+}
+
+.outputHeader {
+  display: block;
+  padding: 7px 16px;
+  background-color: @lightGrey;
+  color: @black;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+  font-size: @mobileFontSize;
+  line-height: 22px;
+}
+
+.outputIcon {
+  margin-right: 8px;
+}
+
+.wrongAnswerOutput .outputHeader {
+  background-color: @likeColor;
+  color: @white;
+}
+
+.needImprovementsOutput .outputHeader {
+  background-color: @accentColor;
+  color: @white;
+}
+
+.maxResultOutput .outputHeader {
+  background-color: @progressBarGreen;
+  color: @white;
+}
+
+
+.outputTextWrapper {
+  padding: 8px 15px;
+}
+
+.outputParagraph {
+  font-size: 12px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+  font-family: @monoFonts;
+  margin: 0;
+}
+
+.outputTable {
+  width: 100%;
+  border-collapse: collapse;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+}
+
+.outputTable > thead > tr > th,
+.outputTable > tbody > tr > td {
+  padding: 7px 16px;
+  vertical-align: top;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border: 1px solid @lightGrey;
+}
+
+.outputTable {
+  th, td {
+    width: 50%;
+  }
+
+  th:first-child, td:first-child {
+    width: auto;
+    white-space: nowrap;
+  }
+}
+
+.outputTable > tbody > tr > td:first-of-type {
+  padding: 7px;
+}
+
+.outputTable > thead > tr > th {
+  border-top: none;
+  text-align: left;
+}
+
+.outputTable > tbody > tr:last-of-type > td {
+  border-bottom: none;
+}
+
+.outputTable > thead > tr > th {
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+
+  font-size: 12px;
+  line-height: 22px;
+}
+
+.outputTable > tbody > tr > td {
+  font-family: @monoFonts;
+  font-size: 10px;
+  line-height: 1.42;
+}
+
+.outputTable > tbody > tr > td > span {
+  opacity: 1;
+}
+
+.outputMatchColor {
+  background-color: @lightGreen
+}
+
+.outputNotMatchColor {
+  background-color: @lightRed
+}
+
+@media (min-width: @minTabletWidth) {
+  .outputHeader {
+    font-size: @tabletFontSize;
+  }
+
+  .outputParagraph {
+    font-size: @mobileFontSize;
+  }
+
+  .outputTable > thead > tr > th {
+    font-size: @tabletFontSize;
+  }
+
+  .outputTable > tbody > tr > td {
+    font-size: @mobileFontSize;
+  }
+}

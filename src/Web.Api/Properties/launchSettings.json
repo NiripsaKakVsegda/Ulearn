@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Web.Api": {
+      "commandName": "Project",
+      "launchBrowser": false
+    }
+  }
+}

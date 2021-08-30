@@ -1,0 +1,33 @@
+@import "../../../variables";
+
+.wrapper {
+  width: 100%;
+  background: #fff;
+}
+
+.image {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 40px auto;
+  max-width: 1000px;
+
+  @media (max-width: @maxLaptopWidth) {
+    margin: 20px auto;
+    max-width: @maxPhoneWidth;
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    margin: 0 auto;
+    max-width: 100%;
+  }
+}
+
+.text {
+  width: 50%;
+  margin: 0 auto;
+
+  @media (max-width: @maxPhoneWidth) {
+    width: 100%;
+  }
+}

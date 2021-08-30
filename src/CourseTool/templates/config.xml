@@ -1,0 +1,28 @@
+<!-- Replace default values in config with your values -->
+<Config>
+	<!-- Name of the organization that you used when creating a course -->
+	<Organization>UrFU</Organization>
+	<!-- Lti Id used to access Exercise slides -->
+	<LtiId>edx</LtiId>
+	<!-- Id of corresponding uLearn course -->
+	<ULearnCourseId>BasicProgramming</ULearnCourseId>
+	<IgnoredUlearnSlides>
+		<!-- ULearn slides to skip during conversion and patching	-->
+		<!--
+		<SlideId>1</SlideId>
+		<SlideId>2</SlideId>
+		-->
+	</IgnoredUlearnSlides>
+	<!-- Here you can set up your profiles -->
+	<Profiles>
+		<!-- the 'default' profile will be used when patching/converting if not specified -->
+		<Profile name="default">
+			<UlearnBaseUrlWeb>https://ulearn.me</UlearnBaseUrlWeb>
+			<UlearnBaseUrlApi>https://api.ulearn.me</UlearnBaseUrlApi>
+		</Profile>
+		<Profile name="dev">
+			<UlearnBaseUrlWeb>http://localhost:3000</UlearnBaseUrlWeb>
+			<UlearnBaseUrlApi>http://localhost:8000</UlearnBaseUrlApi>
+		</Profile>
+	</Profiles>
+</Config>

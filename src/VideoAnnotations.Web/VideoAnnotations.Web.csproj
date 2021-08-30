@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<RootNamespace>Ulearn.VideoAnnotations.Web</RootNamespace>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Collections.Immutable">
+		  <Version>5.0.0</Version>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="deploy\VideoAnnotations.Web.Task.xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToPublishDirectory>Newer</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="appsettings.json">
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Properties" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common.Api.Application\Common.Api.Application.csproj" />
+		<ProjectReference Include="..\VideoAnnotations.Api\VideoAnnotations.Api.csproj" />
+	</ItemGroup>
+
+</Project>

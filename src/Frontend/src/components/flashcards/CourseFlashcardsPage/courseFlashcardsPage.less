@@ -1,0 +1,25 @@
+@import "./../../../variables";
+
+.header {
+  display: flex;
+  max-width: @maxContentWidth;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+
+  font-family: @defaultFonts;
+}
+
+.description {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 25px;
+}
+
+@media (max-width: @maxPhoneWidth) {
+  .header {
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+}

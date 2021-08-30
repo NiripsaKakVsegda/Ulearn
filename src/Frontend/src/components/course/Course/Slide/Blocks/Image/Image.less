@@ -1,0 +1,57 @@
+@import "../../../../../../variables";
+
+.wrapper {
+  max-width: 100%;
+  width: fit-content;
+  height: fit-content;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.loading {
+    opacity: 0;
+    height: 0;
+  }
+}
+
+.error {
+  border-radius: 0;
+}
+
+.img {
+  cursor: default; //overriding cursor behaviour inside of imageGallery module
+  outline: none; // no outline on mouse click
+}
+
+.wrapper .imageWrapper {
+  &.open {
+    z-index: 9999; // do not let elements overlap image in fullscreen mode
+
+    > :first-child {
+      max-width: 100vw;
+      width: fit-content; // do not let image to be bigger then real size in fullscreen mode
+      margin: auto;
+    }
+  }
+}
+
+:global { //overriding styles in imageGallery
+  :local(.wrapper) {
+    .image-gallery-bullets .image-gallery-bullets-container .image-gallery-bullet {
+      box-shadow: 0 0 4px 0 #1a1a1a;
+
+      &.active {
+        background: @powerBlue;
+        transform: scale(1.1);
+      }
+    }
+
+    .image-gallery-fullscreen-button:focus {
+      outline: none;
+    }
+
+    .image-gallery-icon.image-gallery-right-nav, .image-gallery-icon.image-gallery-left-nav {
+      outline-offset: -10px;
+    }
+  }
+}

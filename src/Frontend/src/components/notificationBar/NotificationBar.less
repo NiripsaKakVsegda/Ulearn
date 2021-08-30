@@ -1,0 +1,30 @@
+@import "/src/variables";
+
+.wrapper {
+  position: sticky;
+  top: @headerHeight;
+  width: 100%;
+  z-index: @headerZIndex;
+
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 14px;
+  font-family: @defaultFonts;
+  color: @white;
+
+  padding: 8px 16px;
+
+  background: @lightBlue;
+}
+
+.closeButton:hover {
+  cursor: pointer;
+}
+
+@media (min-width: @minTabletWidth) {
+  .wrapper{
+    font-size: 16px;
+    padding: 10px 22px;
+  }
+}

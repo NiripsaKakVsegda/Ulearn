@@ -1,0 +1,59 @@
+﻿@using uLearn.Web.Extensions
+@using FormMethod = System.Web.Mvc.FormMethod
+@model uLearn.Web.Controllers.UnitsListViewModel
+
+@{
+	ViewBag.Title = "Модули";
+}
+
+<div class="container">
+	<h1>Модули</h1>
+
+	<table class="table table-autowidth">
+		<tr>
+			<th>Модуль</th>
+			<th>Время публикации</th>
+			<th>Кем опубликовано</th>
+			<th>Измененить время публикации</th>
+			<th>Скрыть</th>
+		</tr>
+		@foreach (var unit in Model.Units)
+		{
+			<tr>
+				<td>@unit.Item1.Title</td>
+				<td>
+					@(unit.Item2 == null ? "Не опубликован" : unit.Item2.PublishTime.ToPrettyString())
+				</td>
+				<td>
+					@(unit.Item2 == null ? "" : unit.Item2.UserName)
+				</td>
+				<td>
+					@using (Html.BeginForm("SetPublishTime", "Admin", new { courseId = Model.CourseId, unitId = unit.Item1.Id }, FormMethod.Post))
+					{
+						<div class="input-group">
+							<input type="text" name="publishTime" value="@Model.CurrentDateTime.ToString("s")" class="form-control ib"/>
+							<span class="input-group-btn">
+								<button type="submit" class="btn btn-info" title="Установить новое время публикации">
+									<i class="glyphicon glyphicon-edit"></i>
+								</button>
+							</span>
+						</div>
+					}
+				</td>
+				<td>
+					@if (unit.Item2 != null)
+					{
+						using (Html.BeginForm("RemovePublishTime", "Admin", new { courseId = Model.CourseId, unitId = unit.Item1.Id }, FormMethod.Post))
+						{
+							<button type="submit" class="btn btn-danger" title="Отменить публикацию">
+								<i class="glyphicon glyphicon-remove"></i>
+							</button>
+						}
+					}
+				</td>
+
+
+			</tr>
+		}
+	</table>
+</div>

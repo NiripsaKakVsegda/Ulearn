@@ -1,0 +1,24 @@
+@import "../../../../variables.less";
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  width: inherit;
+  align-items: baseline;
+
+  > a {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+}
+
+.author {
+  height: 23px;
+  font-size: 16px;
+  margin: 0 5px 0 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

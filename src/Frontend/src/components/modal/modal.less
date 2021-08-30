@@ -1,0 +1,134 @@
+@import "../../variables";
+
+@modalZIndex: 10;
+
+.overlay {
+  position: fixed;
+  z-index: @flashcardsOverlayZIndex - 2;
+
+  overflow: auto;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+
+  background-color: rgba(51, 51, 51, 0.8);
+}
+
+.modal {
+  position: absolute;
+  width: 100%;
+
+  top: 40%;
+  left: 50%;
+  z-index: @modalZIndex;
+  transform: translate(-50%, -50%);
+
+  background: @white;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: normal;
+
+  font-size: 16px;
+  line-height: 22px;
+
+  text-align: left;
+}
+
+.header {
+  padding: 24px 110px 11px 30px;
+
+  text-align: left;
+  font: @defaultFonts;
+  font-size: 22px;
+  line-height: 30px;
+
+  overflow-wrap: break-word;
+}
+
+.body {
+  padding: 0 35px 25px 30px;
+  text-align: left;
+}
+
+.bodyOverflow {
+  overflow: hidden;
+}
+
+.closeButtonWrapper {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.closeButton {
+  width: 76px;
+  height: 65px;
+
+  padding: 0;
+  margin: 2px 2px 0 0;
+
+  box-sizing: content-box;
+
+  outline: none;
+  border: none;
+  overflow: visible;
+  appearance: none;
+  background: none;
+  float: right;
+  cursor: pointer;
+}
+
+.closeButton::after, .closeButton::before {
+  content: "";
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  height: 18px;
+  width: 2px;
+  background: rgb(128, 128, 128);
+}
+
+.closeButton::after {
+  transform: rotate(-45deg);
+}
+
+.closeButton::before {
+  transform: rotate(45deg);
+}
+
+.closeButton:hover::after,
+.closeButton:hover::before,
+.closeButton:focus::after,
+.closeButton:focus::before {
+  cursor: pointer;
+  background: rgb(51, 51, 51);
+}
+
+.closeButton:focus .closeButtonCross {
+  display: block;
+
+  position: absolute;
+
+  width: 26px;
+  height: 26px;
+
+  top: 24px;
+  right: 26px;
+
+  border: 2px solid rgb(81, 153, 219);
+  box-sizing: content-box;
+}
+
+@media (min-width: @minTabletWidth) {
+  .overlay {
+    z-index: @flashcardsOverlayZIndex;
+  }
+
+  .modal {
+    width: 600px;
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+    border-radius: 24px;
+  }
+}

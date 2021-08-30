@@ -1,0 +1,45 @@
+@import "../../../variables";
+
+.progressBarContainer {
+  width: 100%;
+  max-height: 32px;
+
+  display: flex;
+
+  margin: 0;
+  padding: 0;
+}
+
+.progressBarElement {
+  color: #fff;
+  overflow: hidden;
+  font-family: @defaultFonts;
+  text-align: center;
+  font-size: 14px;
+  line-height: 30px;
+}
+
+.notRated {
+  order: 1;
+  background: @statusUnseenColor;
+}
+
+.rate1 {
+  background: @statusVeryBadColor;
+}
+
+.rate2 {
+  background: @statusBadColor
+}
+
+.rate3 {
+  background: @statusAverageColor
+}
+
+.rate4 {
+  background: @statusGoodColor
+}
+
+.rate5 {
+  background: @statusExcellentColor
+}

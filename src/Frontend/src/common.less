@@ -1,0 +1,46 @@
+@import "variables.less";
+
+:global {
+  .inline-pre { //styles for inline code, used in comments and review, class is added in backend render
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.42857143;
+    color: #333;
+    word-wrap: break-word;
+    background-color: #fee;
+    border-radius: 4px;
+    display: inline;
+    margin: 0;
+    border: 0 solid #ccc;
+    padding: 0 5px;
+    overflow: visible;
+  }
+
+  a {
+    color: #337ab7;
+    text-decoration: none;
+  }
+
+  code {
+    padding: 2px 4px;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+  }
+}
+
+body {
+  font-family: @defaultFonts;
+}
+
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-top: 4px solid \9;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}

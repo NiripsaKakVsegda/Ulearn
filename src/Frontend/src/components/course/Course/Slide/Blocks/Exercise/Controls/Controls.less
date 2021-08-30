@@ -1,0 +1,120 @@
+@import "../../../../courseVariables";
+
+@hintsLeftPadding: 16px;
+@maxHintsWrapperWidthMultiplier: 0.66;
+@controlsMargin: 12px;
+
+.exerciseControlsContainer {
+  display: inline-flex;
+  align-items: baseline;
+  width: 100%;
+}
+
+.exerciseControlsButtonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: -@controlsMargin;
+}
+
+.exerciseControls {
+  font-size: @mobileFontSize;
+  line-height: 22px;
+  color: @linkColor;
+  user-select: none;
+
+  margin-right: 24px;
+  margin-bottom: @controlsMargin;
+}
+
+.exerciseControls:hover {
+  cursor: pointer;
+}
+
+.sendButton {
+  order: -1;
+}
+
+.exerciseControlsIcon {
+  font-size: @tabletFontSize;
+  margin-right: 4px;
+}
+
+.hintsWrapper {
+  max-width: calc(100vw - 130px); //130px is distance from left edge to hints left border
+  font-size: 16px;
+  line-height: 24px;
+
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: @hintsLeftPadding;
+}
+
+.hintsWrapper li {
+  position: relative;
+
+  list-style-type: none;
+
+  font-size: @mobileFontSize;
+}
+
+.hintsWrapper li:not(:last-child) {
+  margin-bottom: 6px;
+}
+
+.hintBulb {
+  position: absolute;
+  left: -@hintsLeftPadding - 2px;
+
+  font-size: @tabletFontSize;
+  line-height: 20px;
+  color: @accentColor;
+}
+
+.noHintsLeft {
+  color: @disabledColor;
+}
+
+.noHintsLeft:focus, .noHintsLeft:hover {
+  color: @disabledColor;
+  text-decoration: none;
+}
+
+.statistics {
+  float: right;
+  color: @additionalColor;
+  margin-right: 0;
+  margin-left: auto;
+  order: 1;
+  flex-shrink: 0;
+}
+
+@media (min-width: @minTabletWidth) {
+  .hintsWrapper li {
+    font-size: @tabletFontSize;
+  }
+
+  .hintsWrapper {
+    max-width: @tabletSlideWidth * @maxHintsWrapperWidthMultiplier;
+    padding-left: @hintsLeftPadding + 2px;
+  }
+
+  .hintBulb {
+    left: -@hintsLeftPadding - 4px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .hintsWrapper {
+    max-width: @laptopSlideWidth * @maxHintsWrapperWidthMultiplier;
+  }
+}
+
+@media (min-width: @minDesktopWidth) {
+  .hintsWrapper {
+    max-width: @desktopSlideWidth * @maxHintsWrapperWidthMultiplier;
+  }
+
+  .exerciseControls {
+    font-size: @tabletFontSize;
+  }
+}

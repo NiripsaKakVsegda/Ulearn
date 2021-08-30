@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Kontur.Ulearn.RunCsJob</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>SKB Kontur</authors>
+    <owners>SKB Kontur</owners>
+    <licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+    <projectUrl>https://ulearn.me</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Run-C# Service for ulearn mooc platform</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014–2018 SKB Kontur</copyright>
+    <tags>ulearn education mooc</tags>
+  </metadata>
+  <files>
+    <file src="bin\*\*\*.config"/>
+    <file src="..\..\deploy\CreateScheduledTask.ps1" target="deploy\CreateScheduledTask.ps1"/>
+    <file src="deploy\*" target="deploy\"/>
+  </files>
+</package>

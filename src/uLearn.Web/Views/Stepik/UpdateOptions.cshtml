@@ -1,0 +1,122 @@
+﻿@using System.Linq
+@using Stepik.Api
+@using Ulearn.Common.Extensions
+@using FormMethod = System.Web.Mvc.FormMethod
+
+
+@model uLearn.Web.Controllers.UpdateOptionsModel
+
+@{
+	ViewBag.Title = "Обновление курса на Степике";
+}
+
+<div class="container">
+	<h2>Обновление курса на&nbsp;Степике</h2>
+	<p class="help-block">
+		Выберите слайды для&nbsp;обновления. <br/>@Model.Course.Title → @Model.StepikCourse.Title.
+	</p>
+
+	@{
+		var allStepikStepsIds = Model.StepikLessons.Values.SelectMany(l => l.StepsIds).ToList();
+		var stepikStepsBySlide = Model.SlideStepMaps
+			.Where(m => allStepikStepsIds.Contains(m.StepId))
+			.GroupBy(m => m.SlideId)
+			.ToDictionary(g => g.Key, g => g.ToList())
+			.ToDefaultDictionary();
+		var lastStepId = -1;
+	}
+
+	<div class="stepik__course-update">
+		@using (Html.BeginForm("UpdateCourse", "Stepik", FormMethod.Post))
+		{
+			@Html.AntiForgeryToken()
+			@Html.Hidden("courseId", Model.Course.Id)
+			@Html.Hidden("stepikCourseId", Model.StepikCourse.Id)
+			@Html.Hidden("updateSlidesIds", "")
+
+			<table>
+				@foreach (var unit in Model.Course.GetUnitsNotSafe())
+				{
+					<tr>
+						<td colspan="3">
+							<div class="stepik__course-update__unit-title">
+								@unit.Title
+							</div>
+						</td>
+					</tr>
+					foreach (var slide in unit.GetSlides(true))
+					{
+						var slideStepMaps = stepikStepsBySlide[slide.Id];
+						var isExported = slideStepMaps.Count > 0;
+						var isChanged = slideStepMaps.Count > 0 && slideStepMaps[0].SlideXml != Model.SlidesXmls[slide.Id];
+
+						var stepikStepsIds = slideStepMaps.Select(m => m.StepId).ToList();
+						var stepikLessons = Model.StepikLessons.Values.Where(l => l.StepsIds.Intersect(stepikStepsIds).Any()).DistinctBy(l => l.Id);
+						<tr class="stepik__course-update__slide @(isExported ? "is-exported" : "not-exported") @(isChanged ? "is-changed selected" : "not-changed")"
+							data-slide-id="@slide.Id">
+							<td>
+								<div class="checkbox checkbox-default">
+									@Html.CheckBox("stepik__course-update__export-slide-checkbox__" + slide.NormalizedGuid, isChanged)
+									<label for="stepik__course-update__export-slide-checkbox__@slide.NormalizedGuid"></label>
+								</div>
+							</td>
+							<td>
+								@Html.Hidden(
+									"stepik__course-update__export-slide-after__" + slide.NormalizedGuid,
+									isExported ? (lastStepId = slideStepMaps[0].StepId) : lastStepId
+									)
+								@slide.Title
+								@if (isChanged)
+								{
+									<div class="status">слайд изменился</div>
+								}
+								else if (!isExported)
+								{
+									<div class="status">слайда нет на&nbsp;Степике</div>
+								}
+							</td>
+							<td>
+								@if (isExported)
+								{
+									var isFirstLesson = true;
+									foreach (var lesson in stepikLessons)
+									{
+										if (!isFirstLesson)
+										{
+											<text>,</text>
+										}
+										<text>«@lesson.Title»</text>
+										isFirstLesson = false;
+									}
+								}
+							</td>
+						</tr>
+					}
+				}
+			</table>
+
+			<div class="stepik__course-export__parameters">
+				<h3>Настройки</h3>
+				<div class="form-group">
+					<label for="xQueueName">Название xQueue-очереди</label>
+					@Html.TextBox("xQueueName", Model.DefaultXQueueName, new { @class = "form-control" })
+				</div>
+				<div class="form-group">
+					<label>Как вставлять видео со&nbsp;слайдов</label>
+					<div class="radio radio-default">
+						@Html.RadioButton("uploadVideo", UploadVideoToStepikOption.Iframe, true, new { id = "upload-video__iframe" })
+						<label for="upload-video__iframe">Через iframe</label>
+					</div>
+					<div class="radio radio-default">
+						@Html.RadioButton("uploadVideo", UploadVideoToStepikOption.NativeVideo, new { id = "upload-video__native" })
+						<label for="upload-video__native">Заливать видео на&nbsp;Степик</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="stepik__course-update__buttons">
+				<button role="button" class="btn btn-large btn-success">Обновить выбранные слайды</button>
+			</div>
+		}
+	</div>
+</div>

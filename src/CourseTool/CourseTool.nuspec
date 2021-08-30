@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<package>
+	<metadata>
+		<id>Kontur.Ulearn.CourseTool</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>SKB Kontur</authors>
+		<owners>SKB Kontur</owners>
+		<licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+		<projectUrl>https://ulearn.me</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>Course.exe tool for developing, testing and debugging courses for ulearn.me</description>
+		<releaseNotes></releaseNotes>
+		<copyright>Copyright 2014–2018 SKB Kontur</copyright>
+		<tags>ulearn education mooc</tags>
+	</metadata>
+	<files>
+		<file src="bin\*\*\CourseTool.zip" />
+	</files>
+</package>

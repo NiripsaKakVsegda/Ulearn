@@ -1,0 +1,17 @@
+.CodeMirror {
+	height: auto;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	line-height: 1.3em;
+}
+
+.CodeMirror-scroll {
+	overflow-y: hidden;
+	overflow-x: auto;
+	height: auto;
+}
+
+.cm-s-cobalt .CodeMirror-matchingbracket {
+	outline-color: rgb(0, 100, 100) !important;
+	outline-color: rgba(0, 200, 200, 0.5) !important;
+}

@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNet.Identity
+@using uLearn.Web.Extensions
+@using Ulearn.Common
+@using Ulearn.Common.Extensions
+
+@model uLearn.Web.Controllers.UserCertificatesViewModel
+
+@{
+	ViewBag.Title = "Сертификаты пользователя " + Model.User.VisibleName;
+}
+
+<div class="container">
+	<h1 class="breathing-page-header">Сертификаты пользователя @Model.User.VisibleName</h1>
+
+	@if (!Model.Certificates.Any())
+	{
+		if (Model.User.Id == User.Identity.GetUserId())
+		{
+			<div class="certificates-list__info">
+				<p>
+					Вы пока не&nbsp;получили ни&nbsp;одного сертификата за&nbsp;прохождение курсов.
+				</p>
+				<p>
+					Преподаватели выдают сертификаты отличившимся студентам.
+				</p>
+			</div>
+		}
+		else
+		{
+			<div class="certificates-list__info">
+				@Model.User.VisibleName
+				<span>пока не&nbsp;получил@(Model.User.Gender.ChooseEnding()) ни&nbsp;одного сертификата за&nbsp;прохождение курсов.</span>
+			</div>
+		}
+	}
+	else
+	{
+		<div class="certificates-list__info">
+			<div>
+				Поделитесь ссылкой на&nbsp;эту страницу или отдельный сертификат с&nbsp;друзьями. Это поможет другим людям находить курсы по&nbsp;программированию.
+			</div>
+			<div class="likely">
+				<div class="vkontakte">Поделиться</div>
+				<div class="telegram">Отправить</div>
+				<div class="twitter">Твитнуть</div>
+				<div class="facebook">Поделиться</div>
+			</div>
+		</div>
+	}
+
+	@{ var certificateIndex = 1; }
+	@foreach (var certificate in Model.Certificates)
+	{
+		<h4>
+			@certificateIndex. @Html.RouteLink(
+				                   "Сертификат за курс «" + Model.CoursesTitles.GetOrDefault(certificate.Template.CourseId.ToLower(), "") + "»",
+				                   "Certificate",
+				                   new { certificateId = certificate.Id }
+				                   )
+		</h4>
+		<div>
+			Сертификат выдан
+			<span class="text-muted" title="@certificate.Timestamp.ToPrettyString()">@certificate.Timestamp.ToLongDateString()</span>
+		</div>
+		certificateIndex++;
+	}
+</div>
