@@ -11,7 +11,7 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "submissions")]
 		public List<ResearchedSubmission> ResearchedSubmissions { get; set; }
 
-		[DataMember(Name = "suspicion_levels")]
+		[DataMember(Name = "suspicionLevels")]
 		public SuspicionLevels SuspicionLevels { get; set; }
 
 		public GetAuthorPlagiarismsResponse()
@@ -49,10 +49,10 @@ namespace AntiPlagiarism.Api.Models.Results
 		[DataMember(Name = "plagiarisms")]
 		public List<Plagiarism> Plagiarisms { get; set; }
 
-		[DataMember(Name = "tokens_positions")]
+		[DataMember(Name = "tokensPositions")]
 		public List<TokenPosition> TokensPositions { get; set; }
 
-		[DataMember(Name = "analyzed_code_units")]
+		[DataMember(Name = "analyzedCodeUnits")]
 		public List<AnalyzedCodeUnit> AnalyzedCodeUnits { get; set; }
 	}
 }

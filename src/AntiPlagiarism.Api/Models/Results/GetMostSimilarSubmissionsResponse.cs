@@ -7,17 +7,17 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class GetMostSimilarSubmissionsResponse : SuccessResponse
 	{
-		[DataMember(Name = "most_similar_submissions")]
+		[DataMember(Name = "mostSimilarSubmissions")]
 		public List<MostSimilarSubmissions> MostSimilarSubmissions { get; set; }
 	}
 
 	[DataContract]
 	public class MostSimilarSubmissions
 	{
-		[DataMember(Name = "submission_ids")]
+		[DataMember(Name = "submissionIds")]
 		public string SubmissionId  { get; set; }
 
-		[DataMember(Name = "similar_submission_id")]
+		[DataMember(Name = "similarSubmissionId")]
 		public string SimilarSubmissionId { get; set; }
 
 		[DataMember(Name = "weight")]

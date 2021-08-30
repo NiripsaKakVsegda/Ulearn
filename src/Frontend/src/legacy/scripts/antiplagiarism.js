@@ -24,11 +24,11 @@ export function fetchAntiPlagiarismStatus($plagiarismStatus) {
 			return;
 		}
 
-		const className = 'found-level' + data.suspicion_level;
+		const className = 'found-level' + data.suspicionLevel;
 		$plagiarismStatus.addClass(className);
 		$plagiarismStatusFixedCopy.addClass(className);
 		let message = '';
-		switch (data.suspicion_level) {
+		switch (data.suspicionLevel) {
 			case 0:
 				message = 'похожих решений не найдено';
 				break;
@@ -36,18 +36,18 @@ export function fetchAntiPlagiarismStatus($plagiarismStatus) {
 			case 2:
 				const singleNumberMessage = 'у {count} другого студента найдено {very} похожее решение. {details_link} и {shame_link}.';
 				const pluralNumberMessage = 'у {count} других студентов найдены {very} похожие решения. {details_link} и {shame_link}.';
-				message = data.suspicious_authors_count === 1 ? singleNumberMessage : pluralNumberMessage;
+				message = data.suspiciousAuthorsCount === 1 ? singleNumberMessage : pluralNumberMessage;
 				break;
 		}
-		message = message.replace('{count}', data.suspicious_authors_count);
-		message = message.replace('{very}', data.suspicion_level === 2 ? '<b>очень</b>' : '');
+		message = message.replace('{count}', data.suspiciousAuthorsCount);
+		message = message.replace('{very}', data.suspicionLevel === 2 ? '<b>очень</b>' : '');
 		message = message.replace('{details_link}', 'Посмотрите <a href="' + $plagiarismStatus.data('antiplagiarismDetailsUrl') + '" target="_blank">подробности</a>');
 		message = message.replace('{shame_link}', '<a class="internal-page-link antiplagiarism-shame-button" href="#">поставьте 0 баллов</a>');
 
 		$plagiarismStatus.html('Проверка на списывание: ' + message);
 		$plagiarismStatusFixedCopy.html($plagiarismStatus.html());
 
-		if(data.suspicion_level !== 0) {
+		if(data.suspicionLevel !== 0) {
 			const $shameButton = $('.antiplagiarism-shame-button');
 			$shameButton.tooltip({
 				title: '<div class="text-left">Нажмите, если тоже думаете, что решение списано: мы поставим за него 0 баллов и оставим студенту комментарий. Все действия обратимы.</div>',
@@ -133,12 +133,12 @@ export function antiplagiarism() {
 		const antiplagiarismData = JSON.parse($self[0].innerHTML);
 		const plagiarismData = antiplagiarismData.plagiarism;
 
-		const originalTokens = getTokensDictionaryByIndex(antiplagiarismData.tokens_positions);
-		const plagiarismTokens = getTokensDictionaryByIndex(plagiarismData.tokens_positions);
+		const originalTokens = getTokensDictionaryByIndex(antiplagiarismData.tokensPositions);
+		const plagiarismTokens = getTokensDictionaryByIndex(plagiarismData.tokensPositions);
 
-		const originalTokensByLines = getTokensByLines($originalSubmission.text(), antiplagiarismData.tokens_positions);
-		const plagiarismTokensByLines = getTokensByLines($plagiarismSubmission.text(), plagiarismData.tokens_positions);
-		const bestMatchedLines = findBestMatchedLines(originalTokensByLines, plagiarismTokensByLines, plagiarismData.matched_snippets);
+		const originalTokensByLines = getTokensByLines($originalSubmission.text(), antiplagiarismData.tokensPositions);
+		const plagiarismTokensByLines = getTokensByLines($plagiarismSubmission.text(), plagiarismData.tokensPositions);
+		const bestMatchedLines = findBestMatchedLines(originalTokensByLines, plagiarismTokensByLines, plagiarismData.matchedSnippets);
 
 		const originalSubmissionLines = $originalSubmission.text().split('\n');
 		const plagiarismSubmissionLines = $plagiarismSubmission.text().split('\n');
@@ -188,10 +188,10 @@ export function antiplagiarism() {
 		/* Batch all operations as one: see https://codemirror.net/doc/manual.html for details. It's much faster because
 		 * doesn't need to fully relayout and redraw DOM tree */
 		originalCodeMirror.operation(function () {
-			highlightNotAnalyzedParts(originalCodeMirror, antiplagiarismData.analyzed_code_units, originalTokens);
+			highlightNotAnalyzedParts(originalCodeMirror, antiplagiarismData.analyzedCodeUnits, originalTokens);
 		});
 		plagiarismCodeMirror.operation(function () {
-			highlightNotAnalyzedParts(plagiarismCodeMirror, plagiarismData.analyzed_code_units, plagiarismTokens);
+			highlightNotAnalyzedParts(plagiarismCodeMirror, plagiarismData.analyzedCodeUnits, plagiarismTokens);
 		});
 
 	});
@@ -235,17 +235,17 @@ export function antiplagiarism() {
 				continue;
 
 			/* Go to next token if current is finished */
-			if(charIndex >= tokens[currentTokenIndex].finish_position)
+			if(charIndex >= tokens[currentTokenIndex].finishPosition)
 				currentTokenIndex++;
 
 			/* No more tokens in input array */
 			if(currentTokenIndex >= tokens.length)
 				break;
 
-			if(charIndex >= tokens[currentTokenIndex].start_position && charIndex < tokens[currentTokenIndex].finish_position) {
-				/* Don't add the same token_index again */
-				if(result[lineIndex][result[lineIndex].length - 1] !== tokens[currentTokenIndex].token_index)
-					result[lineIndex].push(tokens[currentTokenIndex].token_index)
+			if(charIndex >= tokens[currentTokenIndex].startPosition && charIndex < tokens[currentTokenIndex].finishPosition) {
+				/* Don't add the same tokenIndex again */
+				if(result[lineIndex][result[lineIndex].length - 1] !== tokens[currentTokenIndex].tokenIndex)
+					result[lineIndex].push(tokens[currentTokenIndex].tokenIndex)
 			}
 		}
 		return result;
@@ -268,10 +268,10 @@ export function antiplagiarism() {
 		const plagiarismLineByTokens = invertArray(plagiarismTokensByLines);
 
 		$.each(matchedSnippets, function (idx, matchedSnippet) {
-			for (let tokenIndex = 0; tokenIndex < matchedSnippet.snippet_tokens_count; ++tokenIndex) {
+			for (let tokenIndex = 0; tokenIndex < matchedSnippet.snippetTokensCount; ++tokenIndex) {
 				try {
-					const originalTokenIndex = matchedSnippet.original_submission_first_token_index + tokenIndex;
-					const plagiarismTokenIndex = matchedSnippet.plagiarism_submission_first_token_index + tokenIndex;
+					const originalTokenIndex = matchedSnippet.originalSubmissionFirstTokenIndex + tokenIndex;
+					const plagiarismTokenIndex = matchedSnippet.plagiarismSubmissionFirstTokenIndex + tokenIndex;
 					const originalLine = originalLineByTokens[originalTokenIndex][0];
 					const plagiarismLine = plagiarismLineByTokens[plagiarismTokenIndex][0];
 
@@ -538,8 +538,8 @@ export function antiplagiarism() {
 	function getTokensDictionaryByIndex(tokensPositionsArray) {
 		const result = {};
 		$.each(tokensPositionsArray, function (idx, tokenInfo) {
-			result[tokenInfo.token_index] = tokenInfo;
-			result[tokenInfo.token_index].finish_position = tokenInfo.start_position + tokenInfo.length;
+			result[tokenInfo.tokenIndex] = tokenInfo;
+			result[tokenInfo.tokenIndex].finishPosition = tokenInfo.startPosition + tokenInfo.length;
 		});
 		return result;
 	}
@@ -549,8 +549,8 @@ export function antiplagiarism() {
 
 		const highlightedTokes = [];
 		$.each(analyzedCodeUnits, function (idx, codeUnit) {
-			const firstTokenIndex = codeUnit.first_token_index;
-			const lastTokenIndex = codeUnit.first_token_index + codeUnit.tokens_count - 1;
+			const firstTokenIndex = codeUnit.firstTokenIndex;
+			const lastTokenIndex = codeUnit.firstTokenIndex + codeUnit.tokensCount - 1;
 			for (let tokenIndex = firstTokenIndex; tokenIndex <= lastTokenIndex; tokenIndex++)
 				highlightedTokes.push(tokenIndex);
 		});
@@ -566,7 +566,7 @@ export function antiplagiarism() {
 		let currentHighlightStart = 0;
 		for (let idx = 0; idx < highlightedTokes.length; idx++) {
 			if(idx === 0 || highlightedTokes[idx - 1] < highlightedTokes[idx] - 1) {
-				const currentHighlightFinish = tokens[highlightedTokes[idx]].start_position;
+				const currentHighlightFinish = tokens[highlightedTokes[idx]].startPosition;
 				if(currentHighlightStart !== currentHighlightFinish) {
 					document.markText(
 						document.posFromIndex(currentHighlightStart),
@@ -575,7 +575,7 @@ export function antiplagiarism() {
 					);
 				}
 			}
-			currentHighlightStart = tokens[highlightedTokes[idx]].finish_position;
+			currentHighlightStart = tokens[highlightedTokes[idx]].finishPosition;
 		}
 
 		document.markText(document.posFromIndex(currentHighlightStart), document.posFromIndex(1e10), textMarkerOptions);
