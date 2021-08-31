@@ -10,7 +10,7 @@ app = FastAPI()
 
 class Submit(BaseModel):
     code: str
-    input_data: Optional[str] = ''
+    inputData: Optional[str] = ''
 
 
 @app.get("/")
@@ -23,5 +23,5 @@ async def index() -> dict:
 @app.post("/run")
 async def run(submit: Submit) -> dict:
     return {
-        "message": get_trace(submit.code, submit.input_data)
+        "message": get_trace(submit.code, submit.inputData)
     }

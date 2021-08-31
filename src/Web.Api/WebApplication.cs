@@ -41,6 +41,7 @@ using Ulearn.Core.RunCheckerJobApi;
 using Ulearn.Core.Telegram;
 using Ulearn.Web.Api.Authorization;
 using Ulearn.Web.Api.Clients;
+using Ulearn.Web.Api.Controllers;
 using Ulearn.Web.Api.Controllers.Notifications;
 using Ulearn.Web.Api.Controllers.Runner;
 using Ulearn.Web.Api.Controllers.Slides;
@@ -301,6 +302,11 @@ namespace Ulearn.Web.Api
 			{
 				var antiplagiarismClientConfiguration = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.AntiplagiarismClient;
 				return new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
+			});
+			services.AddSingleton<IPythonVisualizerClient>(sp=>
+			{
+				var pythonVisualizerEndpoint = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.PythonVisualizerEndpoint;
+				return new PythonVisualizerClient(pythonVisualizerEndpoint);
 			});
 
 			services.AddDatabaseServices(false);
