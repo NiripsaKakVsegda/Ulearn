@@ -124,8 +124,7 @@ namespace uLearn.Web.Controllers
 			var submissionsIds = antiPlagiarismSubmissionInfos.Concat(plagiarismsSubmissionInfos)
 				.Select(si => si.ClientSubmissionId)
 				.Distinct()
-				.Select(s => int.TryParse(s, out var n) ? n : -1)
-				.Where(n => n != -1)
+				.Select(int.Parse)
 				.ToList();
 
 			var submissions = userSolutionsRepo.FindSubmissionsByIds(submissionsIds)
