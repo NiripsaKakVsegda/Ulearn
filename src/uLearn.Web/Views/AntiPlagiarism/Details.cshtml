@@ -12,7 +12,7 @@
 	ViewBag.Title = "Проверка на списывание";
 
 	var submission = Model.Submissions[Model.SubmissionId];
-	var submissionsByIds = Model.Submissions.Values.ToDictionary(s => s.Id.ToString());
+	var submissionsByIds = Model.Submissions.Values.ToDictionary(s => s.Id);
 }
 
 @helper PrintUserGroups(string userId)
@@ -124,9 +124,9 @@
 
 				@{
 					var submissionWeights = Model.AntiPlagiarismResponse.ResearchedSubmissions
-						.Where(s => submissionsByIds.ContainsKey(s.SubmissionInfo.ClientSubmissionId))
+						.Where(s => submissionsByIds.ContainsKey(int.Parse(s.SubmissionInfo.ClientSubmissionId)))
 						.ToDictionary(
-							s => s.SubmissionInfo.ClientSubmissionId,
+							s => int.Parse(s.SubmissionInfo.ClientSubmissionId),
 							s => s.Plagiarisms.Select(p => p.Weight).DefaultIfEmpty(0).Max()
 						);
 				}
@@ -157,7 +157,8 @@
 			var wasStrongSuspicion = false;
 			foreach (var plagiarism in plagiarisms.Take(maxPlagiarismsShown))
 			{
-				if (!submissionsByIds.ContainsKey(plagiarism.SubmissionInfo.ClientSubmissionId))
+				var clientSubmissionId = int.Parse(plagiarism.SubmissionInfo.ClientSubmissionId);
+				if (!submissionsByIds.ContainsKey(clientSubmissionId))
 				{
 					continue;
 				}
@@ -190,7 +191,7 @@
 					</div>
 				}
 
-				var plagiarismSubmission = submissionsByIds[plagiarism.SubmissionInfo.ClientSubmissionId];
+				var plagiarismSubmission = submissionsByIds[clientSubmissionId];
 				<div class="antiplagiarism row">
 					<div class="original-submission col-xs-6">
 						<div class="antiplagiarism__author">
@@ -234,7 +235,7 @@
 				</div>
 				<div>
 					<div class="hidden antiplagiarism__data" data-original-submission-id="@submission.Id-@plagiarismSubmission.Id" data-plagiarism-submission-id="@plagiarismSubmission.Id">
-						@(new { analyzed_code_units = researchedSubmission.AnalyzedCodeUnits, tokens_positions = researchedSubmission.TokensPositions, plagiarism = plagiarism }.JsonSerialize())
+						@(new { analyzedCodeUnits = researchedSubmission.AnalyzedCodeUnits, tokensPositions = researchedSubmission.TokensPositions, plagiarism = plagiarism }.JsonSerialize())
 					</div>
 				</div>
 			}
