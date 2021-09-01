@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ionic.Zip;
 using Ulearn.Common;
+using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Vostok.Logging.Abstractions;
 
@@ -107,6 +108,9 @@ namespace Ulearn.Web.Api.Utils.Courses
 				zip.ExtractAll(unpackDirectory.FullName, ExtractExistingFileAction.OverwriteSilently);
 				foreach (var f in unpackDirectory.GetFiles("*", SearchOption.AllDirectories).Cast<FileSystemInfo>().Concat(unpackDirectory.GetDirectories("*", SearchOption.AllDirectories)))
 					f.Attributes &= ~FileAttributes.ReadOnly;
+				var deletedTxt = unpackDirectory.GetFile("deleted.txt");
+				if (deletedTxt.Exists)
+					deletedTxt.Delete();
 				log.Info($"Архив {zipFile.FullName} распакован");
 			}
 		}
