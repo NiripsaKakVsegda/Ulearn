@@ -18,6 +18,7 @@ import { Controls } from "./Controls";
 // @ts-ignore
 import JSONView from './react-json-view/src/js/index';
 import { VisualizerStatus } from "./VusualizerStatus";
+import { run as pythonVisualizerRun } from "src/api/pythonVisualizer";
 
 import { getVariables, VisualizerStep } from './helpers/parseTrace';
 
@@ -70,26 +71,10 @@ interface RunData {
 }
 
 class Visualizer extends React.Component<VisualizerProps, State> {
-	private visualizerApiUrl = 'https://python-visualizer-api.vercel.app/run';
-
 	private getRuntimeData = (): void => {
 		this.setState({ status: VisualizerStatus.Loading });
 
-		fetch(this.visualizerApiUrl,
-			{
-				method: "POST",
-				body: JSON.stringify({
-					code: this.state.code,
-					input_data: this.state.input
-				})
-			}
-		)
-			.then(r =>  {
-				if (r.ok) {
-					return r.json();
-				}
-				return null;
-			})
+		pythonVisualizerRun(this.state.code, this.state.input)
 			.then(r => this.run(r));
 	};
 
