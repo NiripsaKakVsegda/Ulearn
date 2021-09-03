@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -8,7 +9,9 @@ using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
+using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.GoogleSheet;
@@ -42,12 +45,63 @@ namespace Ulearn.Web.Api.Controllers
 			configuration = options.Value;
 		}
 
+		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+		{
+			if (context.ActionArguments.TryGetValue("courseId", out var courseIdObj))
+			{
+				var courseId = (string)courseIdObj;
+
+				if (!courseStorage.HasCourse(courseId))
+				{
+					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+					context.Result = new JsonResult(new ErrorResponse($"Course {courseId} not found"));
+					return;
+				}
+				
+				if (!await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor))
+				{
+					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+					context.Result = new JsonResult(new ErrorResponse($"You don't have access to course {courseId}"));
+					return;
+				}
+			}
+			
+			if (context.ActionArguments.TryGetValue("taskId", out var taskIdObj))
+			{
+				var taskId = (int)taskIdObj;
+				var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
+				if (task == null)
+				{
+					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+					context.Result = new JsonResult(new ErrorResponse($"Task with id {taskId} not found"));
+					return;
+				}
+
+				if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.Instructor))
+				{
+					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+					context.Result = new JsonResult(new ErrorResponse($"You don't have access to course {task.CourseId}"));
+					return;
+				}
+				
+				var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin);
+
+				if (!isCourseAdmin || task.AuthorId != UserId)
+				{
+					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+					context.Result = new JsonResult(new ErrorResponse("You don't have a permission to view this task"));
+					return;
+				}
+			}
+
+			await base.OnActionExecutionAsync(context, next);
+		}
+
+
 		[HttpGet("tasks")]
 		[Authorize(Policy = "Instructors")]
 		public async Task<ActionResult<GoogleSheetsExportTaskListResponse>> GetAllCourseTasks([FromQuery] string courseId)
 		{
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor))
-				return Forbid();
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin);
 
 			var exportTasks = await googleSheetExportTasksRepo.GetTasks(courseId, isCourseAdmin ? null : UserId);
@@ -56,7 +110,7 @@ namespace Ulearn.Web.Api.Controllers
 				.ThenByDescending(t => t.RefreshEndDate)
 				.ThenByDescending(t => t.Groups.Count)
 				.ToList();
-			
+
 			var responses = sortedTasks
 				.Select(task => new GoogleSheetsExportTaskResponse
 				{
@@ -77,30 +131,51 @@ namespace Ulearn.Web.Api.Controllers
 			};
 		}
 
+		[HttpGet("tasks/{taskId}")]
+		[Authorize]
+		public async Task<ActionResult<GoogleSheetsExportTaskResponse>> GetTaskById([FromRoute] int taskId)
+		{
+			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
+
+			var result = new GoogleSheetsExportTaskResponse
+			{
+				Id = task.Id,
+				AuthorInfo = BuildShortUserInfo(task.Author),
+				Groups = task.Groups.Select(e => BuildShortGroupInfo(e.Group)).ToList(),
+				IsVisibleForStudents = task.IsVisibleForStudents,
+				RefreshStartDate = task.RefreshStartDate,
+				RefreshEndDate = task.RefreshEndDate,
+				RefreshTimeInMinutes = task.RefreshTimeInMinutes,
+				SpreadsheetId = task.SpreadsheetId,
+				ListId = task.ListId
+			};
+			return result;
+		}
+
 		[HttpPost("tasks")]
 		[Authorize]
 		public async Task<ActionResult<GoogleSheetsExportTaskResponse>> AddNewTask([FromBody] GoogleSheetsCreateTaskParams param)
 		{
 			if (!await HasAccessToGroups(param.CourseId, param.GroupsIds))
-				return Forbid();
+				return Forbid($"You don't have access to selected groups");
 
 			var id = await googleSheetExportTasksRepo.AddTask(param.CourseId, UserId, param.IsVisibleForStudents,
 				param.RefreshStartDate, param.RefreshEndDate, param.RefreshTimeInMinutes, param.GroupsIds,
 				param.SpreadsheetId, param.ListId);
 
-			var exportTask = await googleSheetExportTasksRepo.GetTaskById(id);
+			var task = await googleSheetExportTasksRepo.GetTaskById(id);
 
 			var result = new GoogleSheetsExportTaskResponse
 			{
-				Id = exportTask.Id,
-				AuthorInfo = BuildShortUserInfo(exportTask.Author),
-				Groups = exportTask.Groups.Select(e => BuildShortGroupInfo(e.Group)).ToList(),
-				IsVisibleForStudents = exportTask.IsVisibleForStudents,
-				RefreshStartDate = exportTask.RefreshStartDate,
-				RefreshEndDate = exportTask.RefreshEndDate,
-				RefreshTimeInMinutes = exportTask.RefreshTimeInMinutes,
-				SpreadsheetId = exportTask.SpreadsheetId,
-				ListId = exportTask.ListId
+				Id = task.Id,
+				AuthorInfo = BuildShortUserInfo(task.Author),
+				Groups = task.Groups.Select(e => BuildShortGroupInfo(e.Group)).ToList(),
+				IsVisibleForStudents = task.IsVisibleForStudents,
+				RefreshStartDate = task.RefreshStartDate,
+				RefreshEndDate = task.RefreshEndDate,
+				RefreshTimeInMinutes = task.RefreshTimeInMinutes,
+				SpreadsheetId = task.SpreadsheetId,
+				ListId = task.ListId
 			};
 			return result;
 		}
@@ -110,10 +185,6 @@ namespace Ulearn.Web.Api.Controllers
 		public async Task<ActionResult> ExportTaskNow([FromRoute] int taskId)
 		{
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
-			if (task == null)
-				return NotFound();
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
-				return Forbid();
 
 			var courseStatisticsParams = new CourseStatisticsParams
 			{
@@ -123,27 +194,26 @@ namespace Ulearn.Web.Api.Controllers
 				SpreadsheetId = task.SpreadsheetId,
 			};
 			var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId);
-			
+
 			var credentialsJson = configuration.GoogleAccessCredentials;
 			var client = new GoogleApiClient(credentialsJson);
 			client.FillSpreadSheet(courseStatisticsParams.SpreadsheetId, sheet);
-			return Ok();
+			
+			return Ok($"Task with id {taskId} successfully exported to google sheet");
 		}
-		
+
 		[HttpPatch("tasks/{taskId}")]
 		[Authorize]
 		public async Task<ActionResult> UpdateTask([FromBody] GoogleSheetsExportTaskUpdateParams param, [FromRoute] int taskId)
 		{
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
-			if (task == null)
-				return NotFound();
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
-				return Forbid();
+
 			await googleSheetExportTasksRepo.UpdateTask(task,
 				param.IsVisibleForStudents, param.RefreshStartDate,
 				param.RefreshEndDate, param.RefreshTimeInMinutes,
 				param.SpreadsheetId, param.ListId);
-			return Ok();
+			
+			return Ok($"Task {taskId} successfully updated");
 		}
 
 		[HttpDelete("tasks/{taskId}")]
@@ -151,11 +221,9 @@ namespace Ulearn.Web.Api.Controllers
 		public async Task<ActionResult> DeleteTask([FromRoute] int taskId)
 		{
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
-			if (task == null)
-				return NotFound();
-			if (!await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin) && task.AuthorId != UserId)
-				return Forbid();
+
 			await googleSheetExportTasksRepo.DeleteTask(task);
+			
 			return NoContent();
 		}
 
@@ -165,7 +233,7 @@ namespace Ulearn.Web.Api.Controllers
 				return false;
 			if (await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin))
 				return true;
-			var accessibleGroupsIds = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, true, true,true))
+			var accessibleGroupsIds = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, true, true, true))
 				.Select(g => g.Id).ToHashSet();
 			return groupsIds.TrueForAll(id => accessibleGroupsIds.Contains(id));
 		}
