@@ -73,6 +73,10 @@ function Text(props: Props): React.ReactElement {
 	}
 
 	function scrollToHashAnchor(hash: string): void {
+		if(hash.length === 0) {
+			return;
+		}
+
 		window.history.pushState(null, '', hash);
 
 		const anchors = document.querySelectorAll(`a[name=${ hash.replace('#', '') }]`);
