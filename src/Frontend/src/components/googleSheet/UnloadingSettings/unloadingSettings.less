@@ -1,0 +1,52 @@
+﻿@import '/src/variables';
+
+.linkInput {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.error {
+  color: @negativeColor;
+}
+
+.groupHeader {
+  width: 100%;
+  margin: -50px auto 0;
+
+  @media (max-width: @maxTabletWidth) {
+    margin-top: 0;
+  }
+}
+
+.linkToPrevPageBlock {
+  margin: 20px auto 0 -20px;
+
+  @media (max-width: @maxTabletWidth) {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+
+.linkToPrevPage {
+  font-size: 18px;
+  width: fit-content;
+}
+
+.groupsName {
+  margin: 15px auto 15px;
+  font-weight: 500;
+  text-align: left;
+  font-size: 32px;
+  line-height: 35px;
+  border: none;
+
+  @media (max-width: @maxTabletWidth) {
+    padding: 0;
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 22px;
+    line-height: 22px;
+    margin: 10px 0;
+  }
+}
