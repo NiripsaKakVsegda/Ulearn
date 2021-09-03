@@ -13,13 +13,16 @@ export interface GoogleSheetsExportTaskResponse {
 	listId: number;
 }
 
-export interface GoogleSheetsExportTaskParams {
+export interface GoogleSheetsCreateTaskParams extends GoogleSheetsExportTaskUpdateParams {
 	courseId: string;
-	groupsIds?: number[];
+	groupsIds: number[];
+}
+
+export interface GoogleSheetsExportTaskUpdateParams {
 	isVisibleForStudents: boolean;
 	refreshStartDate?: string;
 	refreshEndDate?: string;
-	refreshTimeInMinutes?: number;
+	refreshTimeInMinutes: number;
 	spreadsheetId: string;
 	listId: number;
 }

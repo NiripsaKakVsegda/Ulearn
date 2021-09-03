@@ -1,7 +1,6 @@
 import React from "react";
 import CreateGroupModal from "./CreateGroupModal.js";
 
-import "./createGroupModal.less";
 import { ViewportWrapper } from "../../../course/Navigation/stroies.data";
 import { mockFunc } from "../../../../utils/storyMock";
 

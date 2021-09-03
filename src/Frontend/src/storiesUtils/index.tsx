@@ -1,8 +1,10 @@
 import React from "react";
 import { CourseAccessType, CourseRoleType, SystemAccessType } from "../consts/accessType";
 import { UserInfo } from "../utils/courseRoles";
-import { getMockedUser } from "../components/comments/storiesData";
 import configureStore from "../configureStore";
+import { ShortUserInfo } from "../models/users";
+import { GroupInfo } from "../models/groups";
+import { ShortGroupInfo } from "../models/comments";
 
 export const mock = (): unknown => ({});
 
@@ -95,6 +97,67 @@ export class StoryUpdater<T> extends React.Component<Props<T>, State<T>> {
 		return childrenBuilder({ ...args, } as unknown as T);
 	}
 }
+
+export const getMockedShortUser = (user?: Partial<ShortUserInfo>): ShortUserInfo => {
+	return {
+		id: user?.id || '100',
+		email: user?.email || "mock@email.mocked",
+		login: user?.login || 'mockedLogin',
+		lastName: user?.lastName || 'mockedLastName',
+		visibleName: user?.visibleName || 'mocked visible name',
+		firstName: user?.firstName || 'mockedFirstname',
+		avatarUrl: user?.avatarUrl || '',
+		gender: user?.gender,
+	};
+};
+
+export const getMockedUser = (user?: Partial<UserInfo>): UserInfo => {
+	return {
+		id: user?.id || '1',
+		email: user?.email,
+		login: user?.login,
+		lastName: user?.lastName || 'Иванов',
+		visibleName: user?.visibleName || 'Иван Иванов',
+		firstName: user?.firstName || 'Иван',
+		avatarUrl: user?.avatarUrl || null,
+		gender: user?.gender,
+		isSystemAdministrator: user?.isSystemAdministrator || false,
+		courseRole: user?.courseRole || CourseRoleType.student,
+		isAuthenticated: user?.isAuthenticated || false,
+		systemAccesses: user?.systemAccesses || [],
+		courseAccesses: user?.courseAccesses || [],
+	};
+};
+
+export const getMockedGroup = (group?: Partial<GroupInfo>): GroupInfo => {
+	return {
+		name: group?.name || 'Group Name-08',
+		id: group?.id || 1,
+		apiUrl: group?.apiUrl || '/ulearn/api/group',
+		accesses: group?.accesses || [],
+		areYouStudent: group?.areYouStudent || false,
+		canStudentsSeeGroupProgress: group?.canStudentsSeeGroupProgress || false,
+		createTime: group?.createTime || new Date().toDateString(),
+		defaultProhibitFurtherReview: group?.defaultProhibitFurtherReview || false,
+		inviteHash: group?.inviteHash || '/hash-invite/1234-5678-abcd',
+		isArchived: group?.isArchived || false,
+		isInviteLinkEnabled: group?.isInviteLinkEnabled || false,
+		isManualCheckingEnabled: group?.isManualCheckingEnabled || false,
+		isManualCheckingEnabledForOldSolutions: group?.isManualCheckingEnabledForOldSolutions || false,
+		studentsCount: group?.studentsCount || 10,
+		owner: group?.owner || getMockedUser(),
+	};
+};
+
+export const getMockedShortGroup = (group?: Partial<ShortGroupInfo>): ShortGroupInfo => {
+	return {
+		name: group?.name || 'Group Name-08',
+		id: group?.id || 1,
+		apiUrl: group?.apiUrl || '/ulearn/api/group',
+		courseId: 'basicprogramming',
+		isArchived: group?.isArchived || false,
+	};
+};
 
 export const student: UserInfo = getMockedUser({
 	isAuthenticated: true,

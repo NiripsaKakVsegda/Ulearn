@@ -12,7 +12,7 @@ import {
 import { mockFunc, returnPromiseAfterDelay } from "../../../../../../../utils/storyMock";
 import { AcceptedSolutionsApi } from "../../../../../../../api/acceptedSolutions";
 import { Language } from "../../../../../../../consts/languages";
-import { getMockedShortUser } from "../../../../../../comments/storiesData";
+import {getMockedShortUser} from "../../../../../../../storiesUtils";
 
 const Template: Story<AcceptedSolutionsProps> = (args: AcceptedSolutionsProps) => {
 	return <ViewportWrapper>

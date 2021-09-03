@@ -4,8 +4,8 @@ import { ReviewProps } from "./Review.types";
 
 import type { Story } from "@storybook/react";
 import { UserInfo } from "src/utils/courseRoles";
-import { getMockedUser } from "../../../../../../comments/storiesData";
 import { InstructorReviewInfoWithAnchor } from "../../../InstructorReview/InstructorReview.types";
+import {getMockedUser} from "../../../../../../../storiesUtils";
 
 const addingTime = "2020-12-03T20:03:29.9725057+05:00";
 

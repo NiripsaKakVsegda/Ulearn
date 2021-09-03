@@ -3,4 +3,5 @@ export interface MatchParams {
 	slideSlugOrAction?: string;
 	groupId?: string;
 	groupPage?: string; // if not undefined => groupId is not undefined
+	taskId: string;
 }

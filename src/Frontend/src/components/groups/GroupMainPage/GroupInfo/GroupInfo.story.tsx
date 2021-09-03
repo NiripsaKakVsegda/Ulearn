@@ -2,7 +2,7 @@ import React from "react";
 import GroupInfo from "./GroupInfo";
 
 import "./groupInfo.less";
-import { getMockedUser } from "../../../comments/storiesData";
+import { getMockedUser } from "../../../../storiesUtils";
 
 export default {
 	title: "Group/GroupInfo",

@@ -2,7 +2,7 @@ import React from "react";
 import GroupList from "./GroupList";
 
 import "./groupList.less";
-import { getMockedUser } from "../../../comments/storiesData";
+import {getMockedUser} from "../../../../storiesUtils";
 
 export default {
 	title: "Group/GroupList",

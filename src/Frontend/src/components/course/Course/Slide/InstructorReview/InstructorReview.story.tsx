@@ -10,8 +10,7 @@ import {
 	SubmissionInfo,
 } from "src/models/exercise";
 import { returnPromiseAfterDelay } from "src/utils/storyMock";
-import { getMockedShortUser, getMockedUser } from "../../../../comments/storiesData";
-import { instructor, reduxStore, renderMd } from "src/storiesUtils";
+import {getMockedShortUser, getMockedUser, instructor, reduxStore, renderMd} from "src/storiesUtils";
 import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview, } from "src/models/instructor";
 import { GroupInfo, } from "src/models/groups";
 import { buildUserInfo, UserInfo } from "src/utils/courseRoles";
