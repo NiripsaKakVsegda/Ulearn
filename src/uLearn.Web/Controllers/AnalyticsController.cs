@@ -58,7 +58,7 @@ namespace uLearn.Web.Controllers
 			usersRepo = new UsersRepo(db);
 			visitsRepo = new VisitsRepo(db);
 			unitsRepo = new UnitsRepo(db);
-			googleSheetExportTasksRepo = new GoogleSheetExportTasksRepo(db,courseStorage);
+			googleSheetExportTasksRepo = new GoogleSheetExportTasksRepo(db, courseStorage);
 			systemAccessesRepo = new SystemAccessesRepo(db);
 			configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		}
@@ -416,15 +416,16 @@ namespace uLearn.Web.Controllers
 			var xlsxExportUrl = uriBuilder.BuildExportXlsxUrl();
 
 			var visibleGoogleSheetTasks = googleSheetExportTasksRepo
-				.GetVisibleGoogleSheetTask(courseId, groups, User);
-			
-			var groupNamesToGoogleSheetLink = new List<(string, string)>();
+				.GetVisibleGoogleSheetTask(courseId, groups.Where(g => groupsIds.Contains(g.Id.ToString())).ToList(), User);
+
+			var groupNamesToGoogleSheetLink = new List<(string, string, bool)>();
 
 			if (visibleGoogleSheetTasks != null)
 				groupNamesToGoogleSheetLink = visibleGoogleSheetTasks
-					.Select(t => (string.Join(", ",t.Groups
-						.Select(g => g.Group.Name)),
-						$"https://docs.google.com/spreadsheets/d/{t.SpreadsheetId}/edit#gid={t.ListId}"))
+					.Select(t => (string.Join(", ", t.Groups
+							.Select(g => g.Group.Name)),
+						$"https://docs.google.com/spreadsheets/d/{t.SpreadsheetId}/edit#gid={t.ListId}",
+						t.IsVisibleForStudents))
 					.ToList();
 
 			var model = new CourseStatisticPageModel
@@ -876,13 +877,13 @@ namespace uLearn.Web.Controllers
 
 		public ExportUriBuilder(string baseUri, string courseId)
 		{
-			this.baseUri = new Uri(new Uri(baseUri) , $"/course-statistics/export/");
+			this.baseUri = new Uri(new Uri(baseUri), $"/course-statistics/export/");
 			this.courseId = courseId;
 		}
 
 		public string BuildExportJsonUrl() => BuildUri($"{courseId}.json");
 
-		public string BuildExportXmlUrl() => BuildUri( $"{courseId}.xml");
+		public string BuildExportXmlUrl() => BuildUri($"{courseId}.xml");
 
 		public string BuildExportXlsxUrl() => BuildUri($"{courseId}.xlsx");
 

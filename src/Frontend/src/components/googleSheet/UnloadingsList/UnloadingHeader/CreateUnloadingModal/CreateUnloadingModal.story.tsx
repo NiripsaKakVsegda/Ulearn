@@ -21,7 +21,6 @@ export const Default = (): React.ReactNode => (
 				exportTaskNow: api.googleSheet.exportTaskNow,
 				getTaskById: api.googleSheet.getTaskById,
 			} }
-			onSubmit={ mockFunc }
 			onCloseModal={ mockFunc }
 			courseId={ 'basicprogramming2' }
 		/>

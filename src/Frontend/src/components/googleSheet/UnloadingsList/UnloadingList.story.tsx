@@ -9,7 +9,6 @@ export default {
 export const Default = (): React.ReactNode =>
 	<UnloadingList
 		userId={ '1' }
-		courseId={ 'basicprogramming2' }
 		api={ {
 			getAllCourseTasks: api.googleSheet.getAllCourseTasks,
 			deleteTask: api.googleSheet.deleteTask,

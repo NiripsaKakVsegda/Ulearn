@@ -145,7 +145,7 @@ function UnloadingSettings({
 
 	function renderButtonsInEditMode(task: GoogleSheetsExportTaskResponse) {
 		return (
-			<Gapped gap={ 12 }>
+			<Gapped gap={ 12 } className={ styles.buttonsWrapper }>
 				<Button use={ 'primary' }
 						disabled={ isTasksEqual(task, state) || !isLinkMatchRegexp(state.link) }
 						onClick={ saveTask }>

@@ -18,17 +18,17 @@ namespace Database.Repos
 		private static ILog log => LogProvider.Get().ForContext(typeof(GoogleSheetExportTasksRepo));
 		private readonly GroupsRepo groupsRepo;
 		private readonly ICourseStorage courseStorage;
+
 		public GoogleSheetExportTasksRepo()
 			: this(new ULearnDb(), WebCourseManager.CourseStorageInstance)
 		{
 		}
-		
+
 		public GoogleSheetExportTasksRepo(ULearnDb db, ICourseStorage courseStorage)
 		{
 			this.db = db;
 			this.courseStorage = courseStorage;
 			groupsRepo = new GroupsRepo(db, courseStorage);
-
 		}
 
 		public List<GoogleSheetExportTask> GetVisibleGoogleSheetTask(string courseId, List<Group> groups, IPrincipal user)
@@ -40,15 +40,15 @@ namespace Database.Repos
 
 			var accessibleAsMemberGroupsIds = db.GroupMembers.Where(a => a.UserId == userId)
 				.Select(g => g.GroupId).ToHashSet();
-			var accessibleCourseGroupsIds = user.HasAccessFor(courseId, CourseRole.Instructor) 
-				? groupsRepo.GetAvailableForUserGroups(courseId,user).Select(g => g.Id)
+			var accessibleCourseGroupsIds = user.HasAccessFor(courseId, CourseRole.Instructor)
+				? groupsRepo.GetAvailableForUserGroups(courseId, user).Select(g => g.Id)
 				: new int[0];
 
 			accessibleAsMemberGroupsIds.UnionWith(accessibleCourseGroupsIds);
 			accessibleAsMemberGroupsIds.IntersectWith(groupsIds);
 			if (accessibleAsMemberGroupsIds.Count == 0)
 				return null;
-			
+
 			var tasksIds = db.GoogleSheetExportTaskGroups
 				.Where(g => accessibleAsMemberGroupsIds.Contains(g.GroupId))
 				.Select(g => g.TaskId).ToHashSet();
@@ -58,8 +58,11 @@ namespace Database.Repos
 				.Include(t => t.Author)
 				.Include(t => t.Groups.Select(g => g.Group))
 				.Where(t => tasksIds.Contains(t.Id))
-				.Where(t => t.IsVisibleForStudents)
 				.Where(t => t.RefreshStartDate <= currentUtcTime)
+				.GroupBy(t => t.Author.Id)
+				.OrderBy(t => t.Key == userId)
+				.SelectMany(t => t)
+				.OrderBy(t => t.RefreshEndDate)
 				.ToList();
 		}
 	}

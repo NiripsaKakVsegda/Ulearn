@@ -251,14 +251,17 @@ class CreateUnloadingModal extends Component<Props, State> {
 					value={ moment(refreshEndDate).format('DD.MM.yyyy') }/>
 				{ texts.refreshEndDate }
 			</Gapped>,
-			<Input
-				className={ styles.linkInput }
-				selectAllOnFocus
-				error={ link.length > 0 && !this.isLinkMatchRegexp(link) }
-				value={ link }
-				onValueChange={ this.changeLink }
-				placeholder={ linkExample }
-			/>
+			<Gapped gap={ 8 } vertical>
+				<Input
+					className={ styles.linkInput }
+					selectAllOnFocus
+					error={ link.length > 0 && !this.isLinkMatchRegexp(link) }
+					value={ link }
+					onValueChange={ this.changeLink }
+					placeholder={ linkExample }
+				/>
+				<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span>
+			</Gapped>
 		];
 	};
 

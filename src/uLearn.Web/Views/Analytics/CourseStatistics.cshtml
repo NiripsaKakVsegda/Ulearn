@@ -90,29 +90,32 @@
 }
 
 <div class="row">
-	@if (!Model.IsAdmin && Model.ScoringGroups.Count > 1) 
+	@if (Model.GroupNamesToGoogleSheetLink.Count > 0)
 	{
-		if (Model.GroupNamesToGoogleSheetLink.Count > 0)
-		{
-			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-				<div class="scoring-groups-filters">
-					<h3>Ведомость в Google Sheets</h3>
-					@foreach (var tuple in Model.GroupNamesToGoogleSheetLink)
-					{
-						<a target="_blank" rel="noopener noreferrer nofollower" href=@tuple.Link>@tuple.GroupsNames</a> <br>
-					}
-				</div>
+		<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+			<div class="scoring-groups-filters">
+				<h3>Ведомость в Google Sheets</h3>
+				@foreach (var cortege in Model.GroupNamesToGoogleSheetLink.Take(3))
+				{
+					<p>
+						<a target="_blank" rel="noopener noreferrer nofollower" href=@cortege.Link>@cortege.GroupsNames</a>
+						@if (Model.IsInstructor)
+						{
+							<span> @(cortege.IsVisibleForStudents ? "(видна студентам)" : "(не видна студентам)")</span>
+						}
+					</p>
+				}
 			</div>
-			<br>
-		}
+		</div>
+		<br>
 	}
-	@if (Model.IsAdmin)
+	@if (Model.IsInstructor)
 	{
 		<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 			<div class="scoring-groups-filters">
 				<h3>Настройки экспорта в Google Sheets</h3>
-				<a target="_blank" rel="noopener noreferrer nofollower" href="https://wiki.skbkontur.ru/display/UL">Ссылка на стрницу</a>
-					<br>
+				<a href="/@Model.CourseId/google-sheet-tasks">Настроить выгрузки в Google Sheets</a>
+				<br>
 			</div>
 		</div>
 		<br>

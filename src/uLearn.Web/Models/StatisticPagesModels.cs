@@ -61,7 +61,7 @@ namespace uLearn.Web.Models
 		
 		public string XlsxExportUrl { get; set; }
 
-		public List<(string GroupsNames,string Link)> GroupNamesToGoogleSheetLink { get; set; }
+		public List<(string GroupsNames,string Link, bool IsVisibleForStudents)> GroupNamesToGoogleSheetLink { get; set; }
 
 		public SortedDictionary<string, ScoringGroup> GetUsingUnitScoringGroups(Unit unit, SortedDictionary<string, ScoringGroup> courseScoringGroups)
 		{
