@@ -73,7 +73,6 @@ class CreateUnloadingModal extends Component<Props, State> {
 			link: '',
 			selectedGroups: [],
 			groups: {},
-			groupsIds: [],
 			loading: false,
 			refreshTimeInMinutes: 60,
 			refreshEndDate: new Date(endDate.setMonth(endDate.getMonth() + 6)).toDateString(),
@@ -274,7 +273,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 				loading={ loading }
 				use={ 'primary' }
 				onClick={ this.onSubmit }
-				disabled={ this.areFieldsNotEmpty() || !this.isLinkMatchRegexp(link) }>
+				disabled={ this.anyFieldsIsEmpty() || !this.isLinkMatchRegexp(link) }>
 				{ texts.button.create }
 			</Button>
 		);
@@ -293,7 +292,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 		);
 	};
 
-	areFieldsNotEmpty = (): boolean => {
+	anyFieldsIsEmpty = (): boolean => {
 		const {
 			isVisibleForStudents,
 			refreshStartDate,
@@ -301,14 +300,16 @@ class CreateUnloadingModal extends Component<Props, State> {
 			refreshTimeInMinutes,
 			spreadsheetId,
 			listId,
+			selectedGroups,
 		} = this.state;
 
-		return !!(isVisibleForStudents &&
-			refreshStartDate &&
-			refreshEndDate &&
-			refreshTimeInMinutes &&
-			spreadsheetId &&
-			listId);
+		return isVisibleForStudents === undefined ||
+			selectedGroups.length == 0 ||
+			refreshStartDate === undefined ||
+			refreshEndDate === undefined ||
+			refreshTimeInMinutes === undefined ||
+			spreadsheetId === undefined &&
+			listId === undefined;
 	};
 
 	changeVisibility = (): void => {

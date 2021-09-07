@@ -20,7 +20,7 @@ import { texts as toastTexts } from '../utils';
 
 import styles from "./unloadingList.less";
 import texts from "./UnloadingList.texts";
-import { UrlError } from "../../common/Error/NotFoundErrorBoundary";
+import Error404 from "../../common/Error/Error404";
 
 export interface GoogleSheetApiInObject {
 	api: GoogleSheetApi;
@@ -47,6 +47,7 @@ interface State {
 	courseId: string;
 	loading?: boolean;
 	tasks?: GoogleSheetsExportTaskResponse[];
+	error?: string;
 }
 
 function UnloadingList({
@@ -55,7 +56,7 @@ function UnloadingList({
 	api = apiWithRealServer,
 }: Props): React.ReactElement {
 	const { courseId, } = match.params;
-	const [{ loading, tasks, ...state }, setState] = useState<State>({ courseId });
+	const [{ loading, tasks, error, ...state }, setState] = useState<State>({ courseId });
 	const apiToProvide: GoogleSheetApi = {
 		...api,
 		createTask: addTask,
@@ -63,7 +64,7 @@ function UnloadingList({
 		updateTask: updateTask,
 	};
 
-	if(!loading && (!tasks || state.courseId !== courseId)) {
+	if(!loading && !error && (!tasks || state.courseId !== courseId)) {
 		setState({
 			courseId,
 			loading: true,
@@ -80,6 +81,14 @@ function UnloadingList({
 					tasks,
 				});
 			})
+			.catch(error => setState({
+				courseId,
+				error,
+			}));
+	}
+
+	if(error) {
+		return <Error404/>;
 	}
 
 	return (

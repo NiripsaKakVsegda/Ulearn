@@ -15,6 +15,7 @@ import { apiWithRealServer } from "../storyUtils";
 
 import styles from './unloadingSettings.less';
 import texts from './UnloadingSettings.texts';
+import Error404 from "../../common/Error/Error404";
 
 export type Props = GoogleSheetApiInObject & RouteComponentProps<MatchParams>;
 
@@ -22,6 +23,7 @@ export interface State extends PartialBy<GoogleSheetsExportTaskUpdateParams, 'sp
 	link: string;
 	task?: GoogleSheetsExportTaskResponse;
 	taskId?: string;
+	error?: string;
 }
 
 function UnloadingSettings({
@@ -39,7 +41,7 @@ function UnloadingSettings({
 	});
 	const { courseId, taskId, } = match.params;
 
-	if(!state.taskId || taskId !== state.taskId) {
+	if(!state.error && (!state.taskId || taskId !== state.taskId)) {
 		const taskIdNumber = parseInt(taskId);
 		api.getTaskById(taskIdNumber)
 			.then(t => setState({
@@ -48,7 +50,15 @@ function UnloadingSettings({
 				link: buildLink(t.spreadsheetId, t.listId),
 				task: t,
 				taskId: taskId,
+			}))
+			.catch(error => setState({
+				...state,
+				error,
 			}));
+	}
+
+	if(state.error) {
+		return <Error404/>;
 	}
 
 	if(!state.task) {
