@@ -46,11 +46,13 @@ export const mapStateToProps = (
 		);
 	const submissionToReview = studentSubmissions && studentSubmissions
 		.find(s =>
-			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			(!s.automaticChecking ||
+				s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			&& s.manualChecking);
 	const lastReviewedSubmission = studentSubmissions && studentSubmissions
 		.find(s =>
-			s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer
+			(!s.automaticChecking ||
+				s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			&& s.manualChecking
 			&& s.manualChecking.percent !== null);
 	const curScore = submissionToReview?.manualChecking?.percent || null;
