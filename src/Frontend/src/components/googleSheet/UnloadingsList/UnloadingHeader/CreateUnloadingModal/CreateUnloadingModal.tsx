@@ -9,7 +9,12 @@ import { ShortGroupInfo } from "src/models/comments";
 import { GroupInfo } from "src/models/groups";
 
 import { TokenColors } from "@skbkontur/react-ui/cjs/components/Token/Token";
-import { isLinkMatchRegexp, renderEditableFields, renderRefreshPeriodSwitcher, texts as baseTexts } from "../../../utils";
+import {
+	isLinkMatchRegexp,
+	renderEditableFields,
+	renderRefreshPeriodSwitcher,
+	texts as baseTexts
+} from "../../../utils";
 
 import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
 
@@ -142,8 +147,10 @@ class CreateUnloadingModal extends Component<Props, State> {
 			onCloseModal,
 		} = this.props;
 
+		const modalWidth: number | undefined = window.innerWidth > 880 ? 880 : undefined;
+
 		return (
-			<Modal onClose={ onCloseModal } width={ "800px" } alignTop>
+			<Modal onClose={ onCloseModal } width={ modalWidth } alignTop>
 				<Modal.Header>{ texts.modalHeader }</Modal.Header>
 				<Modal.Body>
 					{ this.renderModalBody() }

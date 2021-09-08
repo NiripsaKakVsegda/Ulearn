@@ -159,6 +159,12 @@ export const getMockedShortGroup = (group?: Partial<ShortGroupInfo>): ShortGroup
 	};
 };
 
+export const shortGroupExample = getMockedShortGroup({ name: 'РТФ 158, КТ-05' });
+export const shortGroupWithLongNameExample = getMockedShortGroup(
+	{ name: 'Группа для распределения МатМех ФИИТ, АСУПТА, ГНН Москва' });
+export const shortGroupWithLongNameExample2 = getMockedShortGroup(
+	{ name: 'АКТ-22, ЖК-09, Испания мат группа с углубленным C#, ООПТ-022219' });
+
 export const student: UserInfo = getMockedUser({
 	isAuthenticated: true,
 	id: "1",

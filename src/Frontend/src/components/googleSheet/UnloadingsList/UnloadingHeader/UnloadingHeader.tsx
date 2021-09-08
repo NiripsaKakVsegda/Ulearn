@@ -36,18 +36,16 @@ function UnloadingHeader({ api, courseId, }: Props): React.ReactElement {
 					<h2 className={ styles.headerName }>
 						{ texts.header }
 					</h2>
-					<div className={ styles.buttonsContainer }>
-						<Mobile>
-							<Button use={ "primary" } size={ "small" } onClick={ openCreateGroupModal }>
-								{ texts.createUnloading }
-							</Button>
-						</Mobile>
-						<NotMobile>
-							<Button use={ "primary" } size={ "medium" } onClick={ openCreateGroupModal }>
-								{ texts.createUnloading }
-							</Button>
-						</NotMobile>
-					</div>
+					<Mobile>
+						<Button use={ "primary" } size={ "small" } onClick={ openCreateGroupModal }>
+							{ texts.createUnloading }
+						</Button>
+					</Mobile>
+					<NotMobile>
+						<Button use={ "primary" } size={ "medium" } onClick={ openCreateGroupModal }>
+							{ texts.createUnloading }
+						</Button>
+					</NotMobile>
 				</div>
 			</header>
 		);

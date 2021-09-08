@@ -42,5 +42,7 @@ export const getMockedTask = (task?: Partial<GoogleSheetsExportTaskResponse>): G
 		spreadsheetId: task?.spreadsheetId || '1',
 		isVisibleForStudents: task?.isVisibleForStudents || false,
 		refreshTimeInMinutes: task?.refreshTimeInMinutes || 60,
+		refreshEndDate: task?.refreshEndDate || new Date(2020, 11, 10).toDateString(),
+		refreshStartDate: task?.refreshStartDate || new Date(2020, 5, 10).toDateString(),
 	};
 };

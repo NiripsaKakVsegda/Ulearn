@@ -4,7 +4,7 @@ import React from "react";
 import moment from "moment";
 import styles from "./utils.less";
 
-export const sheetRegex = /^https:\/\/docs.google.com\/spreadsheets\/d\/(.)+\/edit#gid=(\d)+$/;
+export const sheetRegex = /^https:\/\/docs.google.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)\/edit#gid=(\d)+$/;
 export const linkExample = 'https://docs.google.com/spreadsheets/d/{spreadsheet-id}/edit#gid={list-id}';
 
 export const texts = {
@@ -101,9 +101,10 @@ export const renderEditableFields = (
 	showLinkHint?: boolean,
 ): React.ReactElement[] => {
 	return [
-		<Gapped gap={ 8 }>
-			<Checkbox checked={ isVisibleForStudents } onClick={ changeVisibility }/>
-			{ texts.task.isVisibleForStudents }
+		<Gapped gap={ 8 } wrap>
+			<Checkbox checked={ isVisibleForStudents } onValueChange={ changeVisibility }>
+				{ texts.task.isVisibleForStudents }
+			</Checkbox>
 		</Gapped>,
 		<Gapped gap={ 8 }>
 			<DatePicker

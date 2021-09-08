@@ -1,23 +1,19 @@
 import React from "react";
 import UnloadingHeader from "./UnloadingHeader";
-
-import api from "src/api";
-import { mockFunc } from "src/utils/storyMock";
+import { apiMocked } from "../../storyUtils";
+import { Story } from "@storybook/react";
 
 export default {
 	title: "GoogleSheet/UnloadingList/Header",
 };
 
-export const Default = (): React.ReactNode => (
+export const Default: Story<void> = (): React.ReactElement => (
 	<UnloadingHeader
 		courseId={ 'basicprogramming' }
-		api={ {
-			getAllCourseGroups: api.groups.getCourseGroups,
-			getAllCourseTasks: api.googleSheet.getAllCourseTasks,
-			createTask: api.googleSheet.addNewTask,
-			updateTask: api.googleSheet.updateCourseTask,
-			deleteTask: api.googleSheet.deleteTask,
-			exportTaskNow: api.googleSheet.exportTaskNow,
-			getTaskById: api.googleSheet.getTaskById,
-		} }/>
+		api={ apiMocked }/>
 );
+
+Default.parameters = {
+	//No useful data in this story
+	loki: { skip: true },
+};
