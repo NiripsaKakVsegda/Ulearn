@@ -9,6 +9,8 @@ import { GoogleSheetsExportTaskResponse } from "src/models/googleSheet";
 import { GoogleSheetApiInObject } from "../UnloadingList";
 import { Mobile, NotMobile } from "src/utils/responsive";
 
+import { texts as baseTexts } from "../../utils";
+
 import styles from "./unloadingListItem.less";
 import texts from "./UnloadingListItem.texts";
 
@@ -22,7 +24,7 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 	return (
 		<div className={ styles.wrapper }>
 			<div className={ styles.contentWrapper }>
-				<Link className={ styles.linkToGroupPage }
+				<Link className={ styles.linkToTasksPage }
 					  to={ `/${ courseId }/google-sheet-tasks/${ task.id }` }/>
 				<div className={ styles.contentBlock }>
 					<header className={ styles.content }>
@@ -33,16 +35,20 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 							</h3>
 						</Link>
 						<p>
-							{ texts.buildAuthor(task.authorInfo.visibleName) }
+							{ baseTexts.task.buildAuthor(task.authorInfo.visibleName) }
 						</p>
 						<p>
 							{ texts.buildUploadTimeRange(task) }
 						</p>
 					</header>
-					<div className={ styles.groupSettings }>
-						{ renderSetting(task.isVisibleForStudents, 'Видна студентам', 'Не видна студентам') }
-						{ renderSetting(moment().diff(moment(task.refreshEndDate)) <= 0, 'Выгрузка активна',
-							'Выгрузка неактивна') }
+					<div className={ styles.taskSettings }>
+						{ renderSetting(
+							task.isVisibleForStudents,
+							texts.isVisibleForStudents,
+							texts.isInvisibleForStudents) }
+						{ renderSetting(moment().diff(moment(task.refreshEndDate)) <= 0,
+							texts.unloadingActive,
+							texts.unloadingInactive) }
 					</div>
 				</div>
 			</div>
@@ -72,7 +78,7 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 		];
 
 		return (
-			<div className={ styles.groupAction }>
+			<div className={ styles.taskAction }>
 				<Mobile>
 					<Kebab size={ "medium" } positions={ ["left top"] } disableAnimations>
 						{ menuItems }

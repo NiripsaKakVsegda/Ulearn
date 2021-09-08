@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import moment from "moment";
 
-import { Button, Checkbox, DatePicker, Gapped, Input, Modal, Switcher, Token, TokenInput, TokenProps } from 'ui';
+import { Button, Gapped, Modal, Token, TokenInput, TokenProps } from 'ui';
 import { GoogleSheetApiInObject } from "../../UnloadingList";
 
 import { GoogleSheetsCreateTaskParams } from "src/models/googleSheet";
@@ -9,7 +9,7 @@ import { ShortGroupInfo } from "src/models/comments";
 import { GroupInfo } from "src/models/groups";
 
 import { TokenColors } from "@skbkontur/react-ui/cjs/components/Token/Token";
-import { linkExample, refreshPeriods, sheetRegex } from "../../../utils";
+import { isLinkMatchRegexp, renderEditableFields, renderRefreshPeriodSwitcher, texts as baseTexts } from "../../../utils";
 
 import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
 
@@ -144,7 +144,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 		return (
 			<Modal onClose={ onCloseModal } width={ "800px" } alignTop>
-				<Modal.Header>Создание выгрузки</Modal.Header>
+				<Modal.Header>{ texts.modalHeader }</Modal.Header>
 				<Modal.Body>
 					{ this.renderModalBody() }
 					{ this.renderSubmitButton() }
@@ -154,13 +154,28 @@ class CreateUnloadingModal extends Component<Props, State> {
 	};
 
 	renderModalBody(): React.ReactElement {
-		const { refreshTimeInMinutes, } = this.state;
+		const {
+			refreshTimeInMinutes,
+			isVisibleForStudents,
+			refreshStartDate,
+			refreshEndDate,
+			link,
+		} = this.state;
 
 		return (
 			<Gapped gap={ 12 } vertical className={ styles.modalContent }>
 				{ this.renderGroupsSelection() }
-				{ this.renderRefreshPeriodSwitcher(refreshTimeInMinutes) }
-				{ this.renderEditableFields() }
+				{ renderRefreshPeriodSwitcher(refreshTimeInMinutes, this.changeRefreshInterval) }
+				{ renderEditableFields(
+					isVisibleForStudents,
+					this.changeVisibility,
+					refreshStartDate,
+					this.changeRefreshStartDate,
+					refreshEndDate,
+					this.changeRefreshEndDate,
+					link,
+					this.changeLink,
+				) }
 			</Gapped>
 		);
 	}
@@ -199,71 +214,6 @@ class CreateUnloadingModal extends Component<Props, State> {
 		this.setState({ selectedGroups: groups });
 	};
 
-	renderRefreshPeriodSwitcher = (refreshTimeInMinutes = 60): React.ReactElement => {
-		let items = [...refreshPeriods];
-
-		for (let i = 0; i < items.length; i++) {
-			const value = parseInt(items[i].value);
-			if(refreshTimeInMinutes === value) {
-				break;
-			}
-			if(i === items.length - 1 || refreshTimeInMinutes < parseInt(items[i + 1].value)) {
-				items = items.slice(0, i + 1);
-				items.push({
-					label: `${ refreshTimeInMinutes } минут`,
-					value: refreshTimeInMinutes.toString(),
-				});
-				items = items.concat(refreshPeriods.slice(i + 1, refreshPeriods.length - i));
-				break;
-			}
-		}
-
-		return (
-			<Gapped gap={ 8 }>
-				<Switcher
-					items={ items }
-					value={ refreshTimeInMinutes.toString() }
-					onValueChange={ this.changeRefreshInterval }/>
-				{ texts.refreshTime }
-			</Gapped>
-		);
-	};
-
-	renderEditableFields = (): React.ReactElement[] => {
-		const { isVisibleForStudents, refreshStartDate, refreshEndDate, link, } = this.state;
-
-		return [
-			<Gapped gap={ 8 }>
-				<Checkbox checked={ isVisibleForStudents } onClick={ this.changeVisibility }/>
-				{ texts.isVisibleForStudents }
-			</Gapped>,
-			<Gapped gap={ 8 }>
-				<DatePicker
-					onValueChange={ this.changeRefreshStartDate }
-					value={ moment(refreshStartDate).format('DD.MM.yyyy') }/>
-				{ texts.refreshStartDate }
-			</Gapped>,
-			<Gapped gap={ 8 }>
-				<DatePicker
-					minDate={ moment(refreshStartDate).format('DD.MM.yyyy') }
-					onValueChange={ this.changeRefreshEndDate }
-					value={ moment(refreshEndDate).format('DD.MM.yyyy') }/>
-				{ texts.refreshEndDate }
-			</Gapped>,
-			<Gapped gap={ 8 } vertical>
-				<Input
-					className={ styles.linkInput }
-					selectAllOnFocus
-					error={ link.length > 0 && !this.isLinkMatchRegexp(link) }
-					value={ link }
-					onValueChange={ this.changeLink }
-					placeholder={ linkExample }
-				/>
-				<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span>
-			</Gapped>
-		];
-	};
-
 	renderSubmitButton = (): React.ReactElement => {
 		const { link, loading, } = this.state;
 
@@ -273,8 +223,8 @@ class CreateUnloadingModal extends Component<Props, State> {
 				loading={ loading }
 				use={ 'primary' }
 				onClick={ this.onSubmit }
-				disabled={ this.anyFieldsIsEmpty() || !this.isLinkMatchRegexp(link) }>
-				{ texts.button.create }
+				disabled={ this.anyFieldsIsEmpty() || !isLinkMatchRegexp(link) }>
+				{ baseTexts.button.create }
 			</Button>
 		);
 	};
@@ -354,10 +304,6 @@ class CreateUnloadingModal extends Component<Props, State> {
 			spreadsheetId,
 			listId: listId ? parseInt(listId) : undefined,
 		});
-	};
-
-	isLinkMatchRegexp = (value: string): boolean => {
-		return sheetRegex.test(value);
 	};
 
 	onSubmit = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {

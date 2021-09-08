@@ -5,6 +5,7 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { Loader, Toast } from "ui";
 import UnloadingHeader from "./UnloadingHeader";
 import UnloadingListItem from "./UnloadingListItem";
+import Error404 from "../../common/Error/Error404";
 import Page from "src/pages";
 
 import {
@@ -14,13 +15,11 @@ import {
 	GoogleSheetsExportTaskUpdateParams,
 } from "src/models/googleSheet";
 import { GroupInfo } from "src/models/groups";
-import { apiWithRealServer } from "../storyUtils";
 import { MatchParams } from "src/models/router";
-import { texts as toastTexts } from '../utils';
+import { Api, texts as toastTexts } from '../utils';
 
 import styles from "./unloadingList.less";
 import texts from "./UnloadingList.texts";
-import Error404 from "../../common/Error/Error404";
 
 export interface GoogleSheetApiInObject {
 	api: GoogleSheetApi;
@@ -53,7 +52,7 @@ interface State {
 function UnloadingList({
 	userId,
 	match,
-	api = apiWithRealServer,
+	api = Api,
 }: Props): React.ReactElement {
 	const { courseId, } = match.params;
 	const [{ loading, tasks, error, ...state }, setState] = useState<State>({ courseId });

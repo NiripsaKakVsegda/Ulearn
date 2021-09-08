@@ -4,7 +4,7 @@ import React from "react";
 import { Route, RouteComponentProps, Router } from "react-router-dom";
 import { createMemoryHistory } from 'history';
 import { MatchParams } from "src/models/router";
-import { apiMocked, apiWithRealServer } from "../storyUtils";
+import { apiMocked, } from "../storyUtils";
 
 export default {
 	title: 'GoogleSheet/Settings',
@@ -38,19 +38,4 @@ Default.args = {
 			header: 'Default',
 		}
 	]
-};
-
-export const RealServer = ListTemplate.bind({});
-RealServer.args = {
-	items: [
-		{
-			props: {
-				api: apiWithRealServer,
-			},
-			header: 'Default',
-		}
-	]
-};
-RealServer.parameters = {
-	loki: { skip: true },
 };

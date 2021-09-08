@@ -41,7 +41,7 @@
   width: 100%;
 }
 
-.linkToGroupPage {
+.linkToTasksPage {
   position: absolute;
   top: 0;
   right: 0;
@@ -100,12 +100,7 @@
   }
 }
 
-.linkToGroupMembers {
-  opacity: 0.99;
-  z-index: 1;
-}
-
-.groupSettings {
+.taskSettings {
   width: 35%;
   align-self: flex-end;
 
@@ -127,30 +122,11 @@
   color: @accentColor;
 }
 
-.groupAction {
+.taskAction {
   justify-self: flex-end;
   margin-right: 5px;
   height: 30px;
   cursor: pointer;
   align-self: baseline;
   z-index: 1;
-}
-
-
-.groupName {
-  font-size: 18px;
-  font-weight: 500;
-  color: @linkColor;
-  margin-top: 12px;
-  margin-bottom: 7px;
-  opacity: 0.99;
-  z-index: 1;
-
-  &:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: @maxPhoneWidth) {
-    font-size: 16px;
-  }
 }

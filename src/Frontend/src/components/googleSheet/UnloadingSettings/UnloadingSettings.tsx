@@ -2,20 +2,25 @@
 import moment from "moment";
 
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
-import { Button, Checkbox, DatePicker, Gapped, Input, Loader, Switcher, Toast, } from "ui";
+import { Button, Gapped, Loader, Toast, } from "ui";
 import Page from "src/pages";
+import Error404 from "../../common/Error/Error404";
 
 import { GoogleSheetApiInObject } from "../UnloadingsList/UnloadingList";
 import { GoogleSheetsExportTaskResponse, GoogleSheetsExportTaskUpdateParams } from "src/models/googleSheet";
 import { MatchParams } from "src/models/router";
 
 import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
-import { linkExample, refreshPeriods, sheetRegex, texts as toastTexts } from "../utils";
-import { apiWithRealServer } from "../storyUtils";
+import {
+	Api,
+	isLinkMatchRegexp,
+	renderEditableFields,
+	renderRefreshPeriodSwitcher,
+	texts as baseTexts
+} from "../utils";
 
 import styles from './unloadingSettings.less';
 import texts from './UnloadingSettings.texts';
-import Error404 from "../../common/Error/Error404";
 
 export type Props = GoogleSheetApiInObject & RouteComponentProps<MatchParams>;
 
@@ -27,7 +32,7 @@ export interface State extends PartialBy<GoogleSheetsExportTaskUpdateParams, 'sp
 }
 
 function UnloadingSettings({
-	api = apiWithRealServer,
+	api = Api,
 	match,
 	history,
 }: Props): React.ReactElement {
@@ -70,9 +75,17 @@ function UnloadingSettings({
 			<Gapped gap={ 8 } vertical>
 				{ renderInfoInEditMode(state.task) }
 				<h3>{ texts.settings }</h3>
-				{ renderRefreshPeriodSwitcher(state.refreshTimeInMinutes) }
-				{ renderEditableFields() }
-
+				{ renderRefreshPeriodSwitcher(state.refreshTimeInMinutes, changeRefreshInterval) }
+				{ renderEditableFields(
+					state.isVisibleForStudents,
+					changeVisibility,
+					state.refreshStartDate,
+					changeRefreshStartDate,
+					state.refreshEndDate,
+					changeRefreshEndDate,
+					state.link,
+					changeLink,
+				) }
 				{ renderButtonsInEditMode(state.task) }
 			</Gapped>
 		</Page>
@@ -90,67 +103,8 @@ function UnloadingSettings({
 					.map(g => g.name)
 					.join(', ') }
 			</h2>
-			<p> { texts.task.buildAuthor(task.authorInfo.visibleName) }</p>
+			<p> { baseTexts.task.buildAuthor(task.authorInfo.visibleName) }</p>
 		</header>;
-	}
-
-	function renderRefreshPeriodSwitcher(refreshTimeInMinutes = 60) {
-		let items = [...refreshPeriods];
-
-		for (let i = 0; i < items.length; i++) {
-			const value = parseInt(items[i].value);
-			if(refreshTimeInMinutes === value) {
-				break;
-			}
-			if(i === items.length - 1 || refreshTimeInMinutes < parseInt(items[i + 1].value)) {
-				items = items.slice(0, i + 1);
-				items.push({
-					label: `${ refreshTimeInMinutes } минут`,
-					value: refreshTimeInMinutes.toString(),
-				});
-				items = items.concat(refreshPeriods.slice(i + 1, refreshPeriods.length - i));
-				break;
-			}
-		}
-
-		return (
-			<Gapped gap={ 8 }>
-				<Switcher
-					items={ items }
-					value={ refreshTimeInMinutes.toString() }
-					onValueChange={ changeRefreshInterval }/>
-				{ texts.task.refreshTime }
-			</Gapped>
-		);
-	}
-
-	function renderEditableFields() {
-		return [
-			<Gapped gap={ 8 }>
-				<Checkbox checked={ state.isVisibleForStudents } onClick={ changeVisibility }/>
-				{ texts.task.isVisibleForStudents }
-			</Gapped>,
-			<Gapped gap={ 8 }>
-				<DatePicker
-					onValueChange={ changeRefreshStartDate }
-					value={ moment(state.refreshStartDate).format('DD.MM.yyyy') }/>
-				{ texts.task.refreshStartDate }
-			</Gapped>,
-			<Gapped gap={ 8 }>
-				<DatePicker
-					onValueChange={ changeRefreshEndDate }
-					value={ moment(state.refreshEndDate).format('DD.MM.yyyy') }/>
-				{ texts.task.refreshEndDate }
-			</Gapped>,
-			<Input
-				className={ styles.linkInput }
-				selectAllOnFocus
-				error={ state.link.length > 0 && !isLinkMatchRegexp(state.link) }
-				value={ state.link }
-				onValueChange={ changeLink }
-				placeholder={ linkExample }
-			/>
-		];
 	}
 
 	function renderButtonsInEditMode(task: GoogleSheetsExportTaskResponse) {
@@ -159,17 +113,17 @@ function UnloadingSettings({
 				<Button use={ 'primary' }
 						disabled={ isTasksEqual(task, state) || !isLinkMatchRegexp(state.link) }
 						onClick={ saveTask }>
-					{ texts.button.save }
+					{ baseTexts.button.save }
 				</Button>
 
 				<Button use={ 'default' }
 						onClick={ exportTask }>
-					{ texts.button.export }
+					{ baseTexts.button.export }
 				</Button>
 
 				<Button use={ 'danger' }
 						onClick={ deleteTask }>
-					{ texts.button.delete }
+					{ baseTexts.button.delete }
 				</Button>
 			</Gapped>
 		);
@@ -227,10 +181,6 @@ function UnloadingSettings({
 		});
 	}
 
-	function isLinkMatchRegexp(value: string): boolean {
-		return sheetRegex.test(value);
-	}
-
 	function buildLink(spreadsheetId: string | undefined, listId: number | undefined): string {
 		return `https://docs.google.com/spreadsheets/d/${ spreadsheetId !== undefined ? spreadsheetId : '' }/edit#gid=${ listId !== undefined ? listId : '' }`;
 	}
@@ -260,7 +210,7 @@ function UnloadingSettings({
 
 			api.updateTask(state.task.id, fields)
 				.then(() => {
-					Toast.push(toastTexts.toast.save);
+					Toast.push(baseTexts.toast.save);
 					setState({
 						...state,
 						task: state.task && {
@@ -269,15 +219,15 @@ function UnloadingSettings({
 						},
 					});
 				})
-				.catch(() => Toast.push(toastTexts.toast.saveFail));
+				.catch(() => Toast.push(baseTexts.toast.saveFail));
 		}
 	}
 
 	function exportTask(): void {
 		if(state.task) {
 			api.exportTaskNow(state.task.id)
-				.then(() => Toast.push(toastTexts.toast.export))
-				.catch(() => Toast.push(toastTexts.toast.exportFail));
+				.then(() => Toast.push(baseTexts.toast.export))
+				.catch(() => Toast.push(baseTexts.toast.exportFail));
 		}
 	}
 
@@ -285,10 +235,10 @@ function UnloadingSettings({
 		if(state.task) {
 			api.deleteTask(state.task.id)
 				.then(() => {
-					Toast.push(toastTexts.toast.delete);
+					Toast.push(baseTexts.toast.delete);
 					history.push(`/${ courseId }/google-sheet-tasks`);
 				})
-				.catch(() => Toast.push(toastTexts.toast.deleteFail));
+				.catch(() => Toast.push(baseTexts.toast.deleteFail));
 		}
 	}
 }
