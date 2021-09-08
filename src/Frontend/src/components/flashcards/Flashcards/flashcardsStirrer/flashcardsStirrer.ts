@@ -1,6 +1,7 @@
 import { RateTypes } from "src/consts/rateTypes";
+import Flashcard from "./flashcardsStirres.test.base";
 
-export function sortFlashcardsInAuthorsOrderWithRate(flashcards) {
+export function sortFlashcardsInAuthorsOrderWithRate(flashcards: Flashcard[]): Flashcard[] {
 	const copy = [...flashcards];
 	return copy.sort((left, right) => {
 		return mapRateTypeToSortingCoefficient[right.rate] - mapRateTypeToSortingCoefficient[left.rate];
@@ -16,7 +17,7 @@ const mapRateTypeToSortingCoefficient = {
 	[RateTypes.rate5]: 1,
 };
 
-export function getNextFlashcardRandomly(sequence, maxLastRateIndex) {
+export function getNextFlashcardRandomly(sequence: Flashcard[], maxLastRateIndex: number): Flashcard | string {
 	const probabilities = sequence
 		.map(calculateProbability)
 		.sort((a, b) => b.probability - a.probability);
@@ -31,14 +32,14 @@ export function getNextFlashcardRandomly(sequence, maxLastRateIndex) {
 	for (const { probability, flashcard } of probabilities) {
 		currentProbability += probability;
 
-		if (currentProbability > probabilityThreshold) {
+		if(currentProbability > probabilityThreshold) {
 			return flashcard;
 		}
 	}
 
 	return '';
 
-	function calculateProbability(flashcard) {
+	function calculateProbability(flashcard: Flashcard) {
 		const ratingCoefficient = mapRateTypeToProbabilityCoefficient[flashcard.rate];
 		const timeCoefficient = maxLastRateIndex - flashcard.lastRateIndex;
 
@@ -53,7 +54,7 @@ export function getNextFlashcardRandomly(sequence, maxLastRateIndex) {
 	}
 }
 
-const mapRateTypeToProbabilityCoefficient = {
+const mapRateTypeToProbabilityCoefficient: { [rate: string]: number } = {
 	[RateTypes.rate1]: 16,
 	[RateTypes.rate2]: 8,
 	[RateTypes.rate3]: 4,

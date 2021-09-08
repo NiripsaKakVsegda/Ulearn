@@ -1,4 +1,4 @@
-import { sortFlashcardsInAuthorsOrderWithRate, getNextFlashcardRandomly } from "./flashcardsStirrer";
+import { getNextFlashcardRandomly, sortFlashcardsInAuthorsOrderWithRate } from "./flashcardsStirrer";
 import { RateTypes } from "src/consts/rateTypes";
 
 import Flashcard from "./flashcardsStirres.test.base";
@@ -47,7 +47,8 @@ describe('flashcardsStirrer unit sorting should', () => {
 
 		const result = sortFlashcardsInAuthorsOrderWithRate(sequence);
 
-		const resultRates = result.reduce((rates, flashcard) => [...rates, flashcard.rate], []);
+		const resultRates = result.reduce(
+			(rates, flashcard) => [...rates, flashcard.rate], [] as RateTypes[]);
 		expect(resultRates).toEqual(answer);
 	});
 
@@ -92,7 +93,7 @@ describe('flashcardsStirrer course flashcards getter should', () => {
 		];
 
 		const first = getNextFlashcardRandomly(sequence, 5);
-		first.lastRateIndex = 6;
+		(first as Flashcard).lastRateIndex = 6;
 		const second = getNextFlashcardRandomly(sequence, 6);
 
 		expect(first).not.toBe(second);
@@ -107,14 +108,14 @@ describe('flashcardsStirrer course flashcards getter should', () => {
 			new Flashcard(rate4, 3),
 		];
 
-		let meetedIds = new Set(),
-			maxTLast = 5;
+		const meetedIds = new Set<number>();
+		let maxTLast = 5;
 
 		for (let i = 0; i < 100; i++) {
 			const flashcard = getNextFlashcardRandomly(sequence, maxTLast);
-			meetedIds.add(flashcard.id);
+			meetedIds.add((flashcard as Flashcard).id);
 			maxTLast++;
-			sequence.find(fc => fc.id === flashcard.id).lastRateIndex = maxTLast;
+			(sequence.find(fc => fc.id === (flashcard as Flashcard).id) as Flashcard).lastRateIndex = maxTLast;
 		}
 
 		expect(meetedIds.size).toBe(sequence.length);
@@ -132,7 +133,7 @@ describe('flashcardsStirrer course flashcards getter should', () => {
 		];
 
 		const first = getNextFlashcardRandomly(sequence, 2);
-		first.lastRateIndex = 3;
+		(first as Flashcard).lastRateIndex = 3;
 		const second = getNextFlashcardRandomly(sequence, 3);
 
 		expect(first).toBe(sequence[0]);
@@ -146,7 +147,7 @@ describe('flashcardsStirrer course flashcards getter should', () => {
 		];
 
 		const first = getNextFlashcardRandomly(sequence, 2);
-		first.lastRateIndex = 3;
+		(first as Flashcard).lastRateIndex = 3;
 		const second = getNextFlashcardRandomly(sequence, 3);
 
 		expect(first).not.toBe(second);

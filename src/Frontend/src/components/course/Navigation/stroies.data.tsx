@@ -95,13 +95,14 @@ export const deviceTypeToViewportStyle = (dt: DeviceType): CSSProperties => {
 
 export const ViewportWrapper = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<ViewportChangeHandlerRedux
-			render={ (dt) =>
-				<div style={ deviceTypeToViewportStyle(dt) }>
-					{ children }
-				</div>
-			}/>
+		<ViewportChangeHandlerRedux render={ render }/>
 	);
+
+	function render(dt: DeviceType) {
+		return <div style={ deviceTypeToViewportStyle(dt) }>
+			{ children }
+		</div>;
+	}
 };
 
 export const disableViewport = {
