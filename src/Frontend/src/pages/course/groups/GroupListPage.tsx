@@ -111,7 +111,7 @@ class GroupListPage extends Component<Props, State> {
 
 		api.groups.getCourseArchivedGroups(courseId)
 			.then(json => {
-				const archiveGroups = json.groups;
+				const archiveGroups = json.groups.filter(g => g.isArchived);
 				this.setState({
 					loadedArchived: true,
 					archiveGroups,
