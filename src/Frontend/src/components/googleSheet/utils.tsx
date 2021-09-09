@@ -114,6 +114,7 @@ export const renderEditableFields = (
 		</div>,
 		<div className={ styles.inputWrapper }>
 			<DatePicker
+				minDate={ moment(refreshStartDate).format('DD.MM.yyyy') }
 				onValueChange={ changeRefreshEndDate }
 				value={ moment(refreshEndDate).format('DD.MM.yyyy') }/>
 			{ texts.task.refreshEndDate }

@@ -156,10 +156,20 @@ function UnloadingSettings({
 	}
 
 	function changeRefreshStartDate(value: string): void {
+		const { refreshEndDate } = state;
+
+		const curMoment = convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format());
+		const date = curMoment.format();
 		setState({
 			...state,
-			refreshStartDate: convertDefaultTimezoneToLocal(moment(value, 'DD.MM.yyyy').format()).format()
+			refreshStartDate: date,
 		});
+		if(curMoment.diff(refreshEndDate) > 0) {
+			setState({
+				...state,
+				refreshEndDate: date,
+			});
+		}
 	}
 
 	function changeRefreshEndDate(value: string): void {
