@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AnyPage from "src/pages/AnyPage";
 import GroupListPage from "src/pages/course/groups/GroupListPage";
@@ -8,6 +8,8 @@ import Course from 'src/pages/course/CoursePage';
 
 import { getQueryStringParameter } from "src/utils";
 import { AccountState } from "src/redux/account";
+import UnloadingList from "src/components/googleSheet/UnloadingsList";
+import UnloadingSettings from "src/components/googleSheet/UnloadingSettings";
 
 interface Props {
 	account: AccountState;
@@ -26,6 +28,10 @@ function Router({ account }: Props): React.ReactElement {
 				...routes,
 				<Route key={ 'groupsList' } path="/:courseId/groups/" component={ GroupListPage } exact/>,
 				<Route key={ 'groupPage' } path="/:courseId/groups/:groupId/" component={ GroupPage } exact/>,
+				<Route key={ 'googleSheetList' } path="/:courseId/google-sheet-tasks/" component={ UnloadingList }
+					   exact/>,
+				<Route key={ 'googleSheetPage' } path="/:courseId/google-sheet-tasks/:taskId"
+					   component={ UnloadingSettings } exact/>,
 				<Route key={ 'groupPageSettings' } path="/:courseId/groups/:groupId/:groupPage" component={ GroupPage }
 					   exact/>,
 			];

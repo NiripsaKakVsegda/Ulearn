@@ -6,15 +6,17 @@ namespace Ulearn.Core.GoogleSheet
 {
 	public static class RequestCreator
 	{
-		public static List<Request> GetRequests(GoogleSheet googleSheet)
+		public static List<Request> GetRequests(GoogleSheetModel googleSheetModel)
 		{
 			var requests = new List<Request>();
-			for (var i = 0; i < googleSheet.Height; i++)
+			var rowNumber = 0;
+			foreach (var row in googleSheetModel.Cells)
 			{
 				var values = new List<CellData>();
-				for (var j = 0; j < googleSheet.Width; j++)
-					values.Add(CreateCellData(googleSheet.Cells[i, j]));
-				requests.Add(CreateRowUpdateRequest(googleSheet.ListId, values, i));
+				foreach (var cell in row)
+					values.Add(CreateCellData(cell));
+				requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, values, rowNumber));
+				rowNumber++;
 			}
 			return requests;
 		}

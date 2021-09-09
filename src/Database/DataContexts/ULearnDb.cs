@@ -248,6 +248,10 @@ namespace Database.DataContexts
 
 		public DbSet<AcceptedSolutionsPromote> AcceptedSolutionsPromotes { get; set; }
 
+		public DbSet<GoogleSheetExportTask> GoogleSheetExportTasks { get; set; }
+
+		public DbSet<GoogleSheetExportTaskGroup> GoogleSheetExportTaskGroups { get; set; }
+
 		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
 		public DbSet<FavouriteReviewByUser> FavouriteReviewByUsers { get; set; }
 	}

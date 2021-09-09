@@ -1017,6 +1017,73 @@ namespace Database.Migrations
                     b.ToTable("FeedViewTimestamps");
                 });
 
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsVisibleForStudents")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ListId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RefreshEndDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("RefreshStartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("RefreshTimeInMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SpreadsheetId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("CourseId", "AuthorId");
+
+                    b.ToTable("GoogleSheetExportTasks");
+                });
+
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTaskGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("GoogleSheetExportTaskGroups");
+                });
+
             modelBuilder.Entity("Database.Models.GraderClient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3156,6 +3223,36 @@ namespace Database.Migrations
                     b.Navigation("Transport");
                 });
 
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTask", b =>
+                {
+                    b.HasOne("Database.Models.ApplicationUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTaskGroup", b =>
+                {
+                    b.HasOne("Database.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Database.Models.GoogleSheetExportTask", "Task")
+                        .WithMany("Groups")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Task");
+                });
+
             modelBuilder.Entity("Database.Models.GraderClient", b =>
                 {
                     b.HasOne("Database.Models.ApplicationUser", "User")
@@ -3878,11 +3975,16 @@ namespace Database.Migrations
                 {
                     b.Navigation("Comments");
                 });
+			
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTask", b =>
+                {
+                    b.Navigation("Groups");
+				});
 
             modelBuilder.Entity("Database.Models.FavouriteReview", b =>
                 {
                     b.Navigation("FavouriteReviewsByUser");
-                });
+				});
 
             modelBuilder.Entity("Database.Models.Group", b =>
                 {

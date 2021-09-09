@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using OfficeOpenXml.Style;
 using Ulearn.Core.GoogleSheet;
-using Ulearn.Web.Api.Utils.LTI;
 
 namespace Ulearn.Web.Api.Utils
 {
 	public class GoogleSheetBuilder : ISheetBuilder
 	{
-		private readonly GoogleSheet googleSheet;
+		private readonly GoogleSheetModel googleSheetModel;
 		private int currentRow;
 		private int currentColumn;
 		// private readonly List<Action<ExcelStyle>> styleRules = new List<Action<ExcelStyle>>();
@@ -16,9 +14,9 @@ namespace Ulearn.Web.Api.Utils
 
 		public int ColumnsCount;
 
-		public GoogleSheetBuilder(GoogleSheet googleSheet)
+		public GoogleSheetBuilder(GoogleSheetModel googleSheetModel)
 		{
-			this.googleSheet = googleSheet;
+			this.googleSheetModel = googleSheetModel;
 			currentRow = 0;
 			currentColumn = 0;
 			ColumnsCount = 0;
@@ -28,10 +26,10 @@ namespace Ulearn.Web.Api.Utils
 		{
 			if (colspan < 1)
 				return;
-			googleSheet.AddCell(currentRow, currentColumn, value); 
+			googleSheetModel.AddCell(currentRow, value); 
 			for (var i = 1; i < colspan; i++)
 			{
-				googleSheet.AddCell(currentRow, currentColumn + i, "");
+				googleSheetModel.AddCell(currentRow,"");
 			}
 			
 			currentColumn += colspan;
@@ -42,10 +40,10 @@ namespace Ulearn.Web.Api.Utils
 		{
 			if (colspan < 1)
 				return;
-			googleSheet.AddCell(currentRow, currentColumn, value);
+			googleSheetModel.AddCell(currentRow, value);
 			for (var i = 1; i < colspan; i++)
 			{
-				googleSheet.AddCell(currentRow, currentColumn + i, "");
+				googleSheetModel.AddCell(currentRow, "");
 			}
 			
 			currentColumn += colspan;
@@ -54,6 +52,7 @@ namespace Ulearn.Web.Api.Utils
 
 		public void GoToNewLine()
 		{
+			googleSheetModel.GoToNewLine();
 			currentRow += 1;
 			currentColumn = 0;
 		}
@@ -69,5 +68,7 @@ namespace Ulearn.Web.Api.Utils
 		public void AddStyleRuleForOneCell(Action<ExcelStyle> styleFunction)
 		{
 		}
+
+		public GoogleSheetModel Build() => googleSheetModel;
 	}
 }

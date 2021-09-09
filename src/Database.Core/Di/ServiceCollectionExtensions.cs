@@ -91,6 +91,7 @@ namespace Database.Di
 			services.AddScoped<IRestoreRequestRepo, RestoreRequestRepo>();
 			services.AddScoped<IStepikRepo, StepikRepo>();
 			services.AddScoped<IAcceptedSolutionsRepo, AcceptedSolutionsRepo>();
+			services.AddScoped<IGoogleSheetExportTasksRepo, GoogleSheetExportTasksRepo>();
 			services.AddScoped<IFavouriteReviewsRepo, FavouriteReviewsRepo>();
 
 			return services;

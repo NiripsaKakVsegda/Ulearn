@@ -21,15 +21,16 @@ namespace Ulearn.Core.GoogleSheet
 			});
 		}
 
-		public void FillSpreadSheet(string spreadsheetId, GoogleSheet googleSheet)
+		public void FillSpreadSheet(string spreadsheetId, GoogleSheetModel googleSheetModel)
 		{
-			WhiteWashSheet(spreadsheetId, googleSheet.ListId, googleSheet.Width);
-			var requests = RequestCreator.GetRequests(googleSheet);
+			var width = googleSheetModel.Cells.Max(r => r.Count);
+			WhiteWashSheet(spreadsheetId, googleSheetModel.ListId, width);
+			var requests = RequestCreator.GetRequests(googleSheetModel);
 			service.Spreadsheets.BatchUpdate(new BatchUpdateSpreadsheetRequest { Requests = requests },
 				spreadsheetId).Execute();
 		}
 
-		private void WhiteWashSheet(string spreadsheetId, int listId, int length)
+		private void WhiteWashSheet(string spreadsheetId, int listId, int width)
 		{
 			var spreadsheet = service.Spreadsheets.Get(spreadsheetId).Execute();
 			var requests = new List<Request>
@@ -55,7 +56,7 @@ namespace Ulearn.Core.GoogleSheet
 						{
 							Dimension = "COLUMNS",
 							StartIndex = 0,
-							EndIndex = length,
+							EndIndex = width,
 							SheetId = listId
 						}
 					}

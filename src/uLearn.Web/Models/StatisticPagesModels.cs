@@ -34,6 +34,8 @@ namespace uLearn.Web.Models
 	public class CourseStatisticPageModel : StatisticPageModel
 	{
 		public bool IsInstructor { get; set; }
+		
+		public bool IsAdmin { get; set; }
 
 		public bool CanViewProfiles { get; set; }
 
@@ -58,6 +60,8 @@ namespace uLearn.Web.Models
 		public string XmlExportUrl { get; set; }
 		
 		public string XlsxExportUrl { get; set; }
+
+		public List<(string GroupsNames,string Link, bool IsVisibleForStudents)> GroupNamesToGoogleSheetLink { get; set; }
 
 		public SortedDictionary<string, ScoringGroup> GetUsingUnitScoringGroups(Unit unit, SortedDictionary<string, ScoringGroup> courseScoringGroups)
 		{

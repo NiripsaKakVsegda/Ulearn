@@ -385,6 +385,8 @@ namespace Database
 
 			AddIndex<UserFlashcardsVisit>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId, c.FlashcardId }, false);
 			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
+			
+			AddIndex<GoogleSheetExportTask>(modelBuilder, c => new { c.CourseId, c.AuthorId });
 
 			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
 			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Text }, true);
@@ -517,6 +519,11 @@ namespace Database
 
 		public DbSet<ExerciseAttemptedUsersCount> ExerciseAttemptedUsersCounts { get; set; }
 		public DbSet<ExerciseUsersWithRightAnswerCount> ExerciseUsersWithRightAnswerCounts { get; set; }
+
+		public DbSet<GoogleSheetExportTask> GoogleSheetExportTasks { get; set; }
+
+		public DbSet<GoogleSheetExportTaskGroup> GoogleSheetExportTaskGroups { get; set; }
+
 		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
 		public DbSet<FavouriteReviewByUser> FavouriteReviewsByUsers { get; set; }
 	}

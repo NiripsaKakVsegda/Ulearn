@@ -8,7 +8,6 @@ using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Units;
-using Ulearn.Web.Api.Models.Common;
 
 namespace Ulearn.Web.Api.Models.Internal
 {

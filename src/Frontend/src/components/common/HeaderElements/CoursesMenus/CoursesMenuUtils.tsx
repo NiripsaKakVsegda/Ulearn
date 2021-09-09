@@ -85,6 +85,11 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 			Ведомость курса
 		</MenuItem>,
 
+		<MenuItem href={`/${courseId}/google-sheet-tasks` } key="GoogleSheetTasks"
+				  component={ LinkComponent }>
+			Ведомости в Google Sheets
+		</MenuItem>,
+
 		<MenuItem href={ "/Analytics/UnitSheet?courseId=" + courseId } key="UnitStatistics"
 				  component={ LinkComponent }>
 			Ведомость модуля

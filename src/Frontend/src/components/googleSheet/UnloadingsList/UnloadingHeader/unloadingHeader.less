@@ -1,0 +1,32 @@
+@import "/src/variables.less";
+
+.header {
+  width: 100%;
+  margin: 0 auto 20px;
+  background: #fff;
+
+  @media (max-width: @maxPhoneWidth) {
+    display: block;
+  }
+}
+
+.headerContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+}
+
+.headerName {
+  font-weight: 500;
+  text-align: left;
+  font-size: 32px;
+  line-height: 30px;
+  border: none;
+  margin: 0;
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 22px;
+    padding: 0;
+  }
+}
