@@ -86,7 +86,7 @@ namespace Ulearn.Web.Api.Controllers
 				
 				var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin);
 
-				if (!isCourseAdmin || task.AuthorId != UserId)
+				if (!isCourseAdmin && task.AuthorId != UserId)
 				{
 					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 					context.Result = new JsonResult(new ErrorResponse("You don't have a permission to view this task"));
