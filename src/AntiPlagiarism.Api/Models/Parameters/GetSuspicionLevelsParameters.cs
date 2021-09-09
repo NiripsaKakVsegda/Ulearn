@@ -8,7 +8,7 @@ namespace AntiPlagiarism.Api.Models.Parameters
 	public class GetSuspicionLevelsParameters : AntiPlagiarismApiParameters
 	{
 		[BindRequired]
-		[FromQuery(Name = "task_id")]
+		[FromQuery(Name = "taskId")]
 		public Guid TaskId { get; set; }
 
 		[BindRequired]

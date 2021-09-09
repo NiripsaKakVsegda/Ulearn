@@ -6,7 +6,7 @@ namespace AntiPlagiarism.Api.Models.Results
 	[DataContract]
 	public class GetSuspicionLevelsResponse : SuccessResponse
 	{
-		[DataMember(Name = "suspicion_levels")]
+		[DataMember(Name = "suspicionLevels")]
 		public SuspicionLevels SuspicionLevels { get; set; }
 	}
 }

@@ -6,7 +6,7 @@ namespace AntiPlagiarism.Api.Models.Parameters
 	public class GetSubmissionPlagiarismsParameters : AntiPlagiarismApiParameters
 	{
 		[BindRequired]
-		[FromQuery(Name = "submission_id")]
+		[FromQuery(Name = "submissionId")]
 		public int SubmissionId { get; set; }
 	}
 }

@@ -14,7 +14,7 @@ export default class extends React.PureComponent {
 
         return active ? (
             <div
-                class="validation-failure"
+                className="validation-failure"
                 {...Theme(theme, 'validation-failure')}
                 onClick={() => {
                     dispatcher.dispatch({

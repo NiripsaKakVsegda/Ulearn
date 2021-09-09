@@ -1539,7 +1539,7 @@ namespace uLearn.Web.Controllers
 		public async Task<ActionResult> SetSuspicionLevels(string courseId, Guid slideId, Language language, string faintSuspicion = null, string strongSuspicion = null)
 		{
 			var course = courseStorage.GetCourse(courseId);
-			if (course.FindSlideByIdNotSafe(slideId) != null)
+			if (course.FindSlideByIdNotSafe(slideId) == null)
 				return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Course does not contain a slide");
 
 			if (!TryParseNullableDouble(faintSuspicion, out var faintSuspicionParsed)

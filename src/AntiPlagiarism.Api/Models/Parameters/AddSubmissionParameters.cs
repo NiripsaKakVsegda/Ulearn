@@ -11,10 +11,10 @@ namespace AntiPlagiarism.Api.Models.Parameters
 	[ModelBinder(typeof(JsonModelBinder), Name = "parameters")]
 	public class AddSubmissionParameters : ApiParameters
 	{
-		[DataMember(Name = "task_id", IsRequired = true)]
+		[DataMember(Name = "taskId", IsRequired = true)]
 		public Guid TaskId { get; set; }
 
-		[DataMember(Name = "author_id", IsRequired = true)]
+		[DataMember(Name = "authorId", IsRequired = true)]
 		public Guid AuthorId { get; set; }
 
 		[DataMember(Name = "code", IsRequired = true)]
@@ -23,10 +23,10 @@ namespace AntiPlagiarism.Api.Models.Parameters
 		[DataMember(Name = "language", IsRequired = true)]
 		public Language Language { get; set; }
 
-		[DataMember(Name = "additional_info")]
+		[DataMember(Name = "additionalInfo")]
 		public string AdditionalInfo { get; set; } = "";
 
-		[DataMember(Name = "client_submission_id")]
+		[DataMember(Name = "clientSubmissionId")]
 		public string ClientSubmissionId { get; set; }
 
 		public override string ToString()

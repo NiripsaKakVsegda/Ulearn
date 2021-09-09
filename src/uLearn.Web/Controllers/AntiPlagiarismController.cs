@@ -122,8 +122,9 @@ namespace uLearn.Web.Controllers
 				.SelectMany(s => s.Plagiarisms).Select(p => p.SubmissionInfo);
 
 			var submissionsIds = antiPlagiarismSubmissionInfos.Concat(plagiarismsSubmissionInfos)
-				.Select(si => si.SubmissionId)
+				.Select(si => si.ClientSubmissionId)
 				.Distinct()
+				.Select(int.Parse)
 				.ToList();
 
 			var submissions = userSolutionsRepo.FindSubmissionsByIds(submissionsIds)
@@ -297,10 +298,10 @@ namespace uLearn.Web.Controllers
 		[DataMember(Name = "status")]
 		public string Status { get; set; }
 
-		[DataMember(Name = "suspicion_level")]
+		[DataMember(Name = "suspicionLevel")]
 		public SuspicionLevel SuspicionLevel { get; set; }
 
-		[DataMember(Name = "suspicious_authors_count")]
+		[DataMember(Name = "suspiciousAuthorsCount")]
 		public int SuspiciousAuthorsCount { get; set; }
 	}
 

@@ -140,6 +140,8 @@ namespace Ulearn.Core.Configuration
 		public string GoogleAccessCredentials { get; set; } // Авторизация в гугл, чтобы синхронизировать ведомость курса с гугл-документом
 
 		public string TempDirectory { get; set; } // Папка со временными файлами, которые можно безопасно удалять, по умолчанию системный temp пользователя
+
+		[CanBeNull] public string PythonVisualizerEndpoint { get; set; } // Url сервиса PythonVisualizerApi
 	}
 
 	public class VideoAnnotationsClientConfiguration

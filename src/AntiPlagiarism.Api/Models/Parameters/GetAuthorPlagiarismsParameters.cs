@@ -9,18 +9,18 @@ namespace AntiPlagiarism.Api.Models.Parameters
 	public class GetAuthorPlagiarismsParameters : AntiPlagiarismApiParameters
 	{
 		[BindRequired]
-		[FromQuery(Name = "author_id")]
+		[FromQuery(Name = "authorId")]
 		public Guid AuthorId { get; set; }
 
 		[BindRequired]
-		[FromQuery(Name = "task_id")]
+		[FromQuery(Name = "taskId")]
 		public Guid TaskId { get; set; }
 		
 		[BindRequired]
 		[FromQuery(Name = "language")]
 		public Language Language { get; set; }
 
-		[FromQuery(Name = "last_submissions_count")]
+		[FromQuery(Name = "lastSubmissionsCount")]
 		public int LastSubmissionsCount { get; set; } = GetAuthorPlagiarismsDefaults.LastSubmissionsCount;
 	}
 }

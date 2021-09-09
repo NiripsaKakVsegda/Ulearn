@@ -6,6 +6,7 @@ using AntiPlagiarism.Web.Workers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Ulearn.Common.Api;
 using Ulearn.Core.Configuration;
@@ -74,5 +75,20 @@ namespace AntiPlagiarism.Web
 			builder.AddHostedServiceFromApplication<AddNewSubmissionWorker>();
 			builder.AddHostedServiceFromApplication<UpdateOldSubmissionsFromStatisticsWorker>();
 		}
+
+		protected override OpenApiInfo GetApiNameAndDescription()
+		{
+			return new OpenApiInfo 
+			{
+				Title = "Ulearn antiplagiarism API",
+				Version = "v1",
+				Contact = new OpenApiContact
+				{
+					Name = "Ulearn support",
+					Email = "support@ulearn.me"
+				}
+			};
+		}
+
 	}
 }

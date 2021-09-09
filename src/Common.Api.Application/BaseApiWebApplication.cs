@@ -142,50 +142,12 @@ namespace Ulearn.Common.Api
 			/* Swagger API documentation generator. See https://github.com/domaindrivendev/Swashbuckle.AspNetCore for details */
 			services.AddSwaggerGen(c =>
 			{
-				c.SwaggerDoc("v1", new OpenApiInfo 
-				{
-					Title = "Ulearn API",
-					Version = "v1",
-					Description = "An API for ulearn.me",
-					Contact = new OpenApiContact
-					{
-						Name = "Ulearn support",
-						Email = "support@ulearn.me"
-					}
-				});
+				c.SwaggerDoc("v1", GetApiNameAndDescription());
 
 				/* See https://github.com/mattfrear/Swashbuckle.AspNetCore.Filters#installation for manual about swagger request and response examples */
 				c.ExampleFilters();
 
 				c.OperationFilter<BadRequestResponseOperationFilter>();
-				c.OperationFilter<AuthResponsesOperationFilter>();
-
-				c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
-
-				c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-				{
-					In = ParameterLocation.Header,
-					Description = "Please insert JWT with Bearer into field. Example: \"Bearer {token}\"",
-					Name = "Authorization",
-					Type = SecuritySchemeType.ApiKey
-				});
-				c.AddSecurityRequirement(new OpenApiSecurityRequirement
-				{
-					{
-						new OpenApiSecurityScheme
-						{
-							Reference = new OpenApiReference
-							{
-								Type = ReferenceType.SecurityScheme,
-								Id = "Bearer"
-							},
-							Scheme = "oauth2",
-							Name = "Bearer",
-							In = ParameterLocation.Header,
-						},
-						new List<string>()
-					}
-				});
 
 				/* See https://docs.microsoft.com/ru-ru/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-2.1&tabs=visual-studio%2Cvisual-studio-xml for details */
 				var xmlFile = $"{Assembly.GetEntryAssembly().GetName().Name}.xml";
@@ -195,6 +157,20 @@ namespace Ulearn.Common.Api
 
 				ConfigureSwaggerDocumentationGeneration(c);
 			}).AddSwaggerGenNewtonsoftSupport();
+		}
+
+		protected virtual OpenApiInfo GetApiNameAndDescription()
+		{
+			return new OpenApiInfo 
+			{
+				Title = "Ulearn API",
+				Version = "v1",
+				Contact = new OpenApiContact
+				{
+					Name = "Ulearn support",
+					Email = "support@ulearn.me"
+				}
+			};
 		}
 
 		protected virtual void ConfigureSwaggerDocumentationGeneration(SwaggerGenOptions c)

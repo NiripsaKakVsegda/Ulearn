@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Exercises;
@@ -24,29 +25,33 @@ namespace Database.Repos
 
 		public async Task<Visit> AddVisit(string courseId, Guid slideId, string userId, string ipAddress)
 		{
-			await SetLastVisit(courseId, slideId, userId);
-			var visit = await FindVisit(courseId, slideId, userId);
-			if (visit == null)
+			var executionStrategy = new NpgsqlRetryingExecutionStrategy(db, 3);
+			return await executionStrategy.ExecuteAsync(async () =>
 			{
-				db.Visits.Add(new Visit
+				await SetLastVisit(courseId, slideId, userId);
+				var visit = await FindVisit(courseId, slideId, userId);
+				if (visit == null)
 				{
-					UserId = userId,
-					CourseId = courseId,
-					SlideId = slideId,
-					Timestamp = DateTime.Now,
-					IpAddress = ipAddress,
-				});
+					db.Visits.Add(new Visit
+					{
+						UserId = userId,
+						CourseId = courseId,
+						SlideId = slideId,
+						Timestamp = DateTime.Now,
+						IpAddress = ipAddress,
+					});
+					await db.SaveChangesAsync();
+					return await FindVisit(courseId, slideId, userId);
+				}
+
+				if (visit.IpAddress != ipAddress)
+				{
+					visit.IpAddress = ipAddress;
+				}
+
 				await db.SaveChangesAsync();
-				return await FindVisit(courseId, slideId, userId);
-			}
-
-			if (visit.IpAddress != ipAddress)
-			{
-				visit.IpAddress = ipAddress;
-			}
-
-			await db.SaveChangesAsync();
-			return visit;
+				return visit;
+			});
 		}
 
 		private async Task SetLastVisit(string courseId, Guid slideId, string userId)

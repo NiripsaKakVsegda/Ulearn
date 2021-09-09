@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -40,6 +41,7 @@ using Ulearn.Core.RunCheckerJobApi;
 using Ulearn.Core.Telegram;
 using Ulearn.Web.Api.Authorization;
 using Ulearn.Web.Api.Clients;
+using Ulearn.Web.Api.Controllers;
 using Ulearn.Web.Api.Controllers.Notifications;
 using Ulearn.Web.Api.Controllers.Runner;
 using Ulearn.Web.Api.Controllers.Slides;
@@ -215,12 +217,56 @@ namespace Ulearn.Web.Api
 
 		protected override void ConfigureSwaggerDocumentationGeneration(SwaggerGenOptions c)
 		{
+			c.OperationFilter<AuthResponsesOperationFilter>();
+
+			c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
+
+			c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+			{
+				In = ParameterLocation.Header,
+				Description = "Please insert JWT with Bearer into field. Example: \"Bearer {token}\"",
+				Name = "Authorization",
+				Type = SecuritySchemeType.ApiKey
+			});
+			c.AddSecurityRequirement(new OpenApiSecurityRequirement
+			{
+				{
+					new OpenApiSecurityScheme
+					{
+						Reference = new OpenApiReference
+						{
+							Type = ReferenceType.SecurityScheme,
+							Id = "Bearer"
+						},
+						Scheme = "oauth2",
+						Name = "Bearer",
+						In = ParameterLocation.Header,
+					},
+					new List<string>()
+				}
+			});
+
 			c.OperationFilter<RemoveCourseParameterOperationFilter>();
 			foreach (var polymorphismBaseType in polymorphismBaseTypes)
 			{
 				c.DocumentFilterDescriptors.Add(new FilterDescriptor { Type = typeof(PolymorphismDocumentFilter<>).MakeGenericType(polymorphismBaseType), Arguments = new object[0] });
 				c.SchemaFilterDescriptors.Add(new FilterDescriptor { Type = typeof(PolymorphismSchemaFilter<>).MakeGenericType(polymorphismBaseType), Arguments = new object[0] });
 			}
+		}
+
+		protected override OpenApiInfo GetApiNameAndDescription()
+		{
+			return new OpenApiInfo 
+			{
+				Title = "Ulearn API",
+				Version = "v1",
+				Description = "An API for ulearn.me",
+				Contact = new OpenApiContact
+				{
+					Name = "Ulearn support",
+					Email = "support@ulearn.me"
+				}
+			};
 		}
 
 		public override void ConfigureDi(IServiceCollection services)
@@ -258,6 +304,11 @@ namespace Ulearn.Web.Api
 			{
 				var antiplagiarismClientConfiguration = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.AntiplagiarismClient;
 				return new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
+			});
+			services.AddSingleton<IPythonVisualizerClient>(sp=>
+			{
+				var pythonVisualizerEndpoint = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.PythonVisualizerEndpoint;
+				return new PythonVisualizerClient(pythonVisualizerEndpoint);
 			});
 
 			services.AddDatabaseServices(false);
