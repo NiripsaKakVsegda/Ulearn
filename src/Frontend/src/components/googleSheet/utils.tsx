@@ -75,13 +75,13 @@ export const renderRefreshPeriodSwitcher = (
 	}
 
 	return (
-		<Gapped gap={ 8 }>
+		<div className={ styles.inputWrapper }>
 			<Switcher
 				items={ items }
 				value={ refreshTimeInMinutes.toString() }
 				onValueChange={ changeRefreshInterval }/>
 			{ texts.task.refreshTime }
-		</Gapped>
+		</div>
 	);
 };
 
@@ -106,18 +106,18 @@ export const renderEditableFields = (
 				{ texts.task.isVisibleForStudents }
 			</Checkbox>
 		</Gapped>,
-		<Gapped gap={ 8 }>
+		<div className={ styles.inputWrapper }>
 			<DatePicker
 				onValueChange={ changeRefreshStartDate }
 				value={ moment(refreshStartDate).format('DD.MM.yyyy') }/>
 			{ texts.task.refreshStartDate }
-		</Gapped>,
-		<Gapped gap={ 8 }>
+		</div>,
+		<div className={ styles.inputWrapper }>
 			<DatePicker
 				onValueChange={ changeRefreshEndDate }
 				value={ moment(refreshEndDate).format('DD.MM.yyyy') }/>
 			{ texts.task.refreshEndDate }
-		</Gapped>,
+		</div>,
 		<Gapped gap={ 8 } vertical>
 			<Input
 				className={ styles.linkInput }

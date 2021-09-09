@@ -8,3 +8,15 @@
 .aboutAccessAccount {
   color: @additionalColor;
 }
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+
+  @media (min-width: @minTabletWidth) {
+    flex-direction: row;
+    gap: 8px;
+    align-items: baseline;
+  }
+}
