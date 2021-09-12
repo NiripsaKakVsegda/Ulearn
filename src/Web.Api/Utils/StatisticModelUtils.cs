@@ -189,6 +189,8 @@ namespace Ulearn.Web.Api.Utils
 			var slidesIds = visibleUnits.SelectMany(u => u.GetSlides(isInstructor).Select(s => s.Id)).ToHashSet();
 
 			var filterOptions = await controllerUtils.GetFilterOptionsByGroup<VisitsFilterOptions>(userId, courseId, groupsIds, allowSeeGroupForAnyMember: true);
+			filterOptions.PeriodStart = DateTime.MinValue;
+			filterOptions.PeriodFinish = DateTime.MaxValue.Subtract(TimeSpan.FromDays(1));
 
 			List<string> usersIds;
 			/* If we filtered out users from one or several groups show them all */
