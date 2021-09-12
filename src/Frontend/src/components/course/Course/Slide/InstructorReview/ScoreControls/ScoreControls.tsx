@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Switcher, Toggle, Gapped, } from "ui";
+import { Button, Gapped, Switcher, Toggle, } from "ui";
 
 import styles from './ScoreControls.less';
 import texts from './ScoreControls.texts';
@@ -200,8 +200,15 @@ class ScoreControls extends React.Component<Props, State> {
 	};
 
 	onValueChange = (score: string): void => {
+		const { toggleChecked } = this.state;
+		const scoreAsNumber = parseInt(score);
+
+		if(toggleChecked && (scoreAsNumber === 0 || scoreAsNumber === 100)) {
+			this.onToggleValueChange(false);
+		}
+
 		this.setState({
-			curScore: parseInt(score),
+			curScore: scoreAsNumber,
 		});
 	};
 
