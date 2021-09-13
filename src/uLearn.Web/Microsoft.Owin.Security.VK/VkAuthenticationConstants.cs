@@ -1,7 +1,7 @@
-﻿namespace uLearn.Web.Microsoft.Owin.Security.VK
+﻿namespace uLearn.Web.Owin.VkontakteMiddleware
 {
-	public static class VkAuthenticationConstants
+	public static class Constants
 	{
-		public const string AuthenticationType = "ВКонтакте";
+		public const string DefaultAuthenticationType = "Vkontakte";
 	}
 }

@@ -15,9 +15,9 @@ using Microsoft.Owin.Security.Interop;
 using Owin;
 using uLearn.Web.Kontur.Passport;
 using uLearn.Web.LTI;
-using uLearn.Web.Microsoft.Owin.Security.VK;
 using Ulearn.Core;
 using Ulearn.Core.Configuration;
+using uLearn.Web.Owin;
 using uLearn.Web.SameSite;
 using Web.Api.Configuration;
 
@@ -78,7 +78,33 @@ namespace uLearn.Web
 
 			var vkAppId = WebConfigurationManager.AppSettings["owin.vk.appId"];
 			var vkAppSecret = WebConfigurationManager.AppSettings["owin.vk.appSecret"];
-			app.UseVkAuthentication(vkAppId, vkAppSecret);
+
+			// UseVkontakteAuthentication middleware is copy-paste from https://github.com/DukeNuken/Duke.Owin.VkontakteMiddleware version 558e3fa on 10 Oct 2018
+			// we manually added some lines to it
+			/* touched files are
+			 
+			 VkAuthenticationOptions -> changed to CallbackPath = new PathString("/signin-vk"); from CallbackPath = new PathString("/signin-vkontakte"); 
+			 the reason is legacy secret (@rozentor didn't find a reason for this, sry)
+			 
+			 VkAuthenticationHandler -> 
+			 Added to AuthenticateCoreAsync
+			 	if (!string.IsNullOrEmpty(context.Name))
+					context.Identity.AddClaim(new Claim(ClaimTypes.GivenName, context.Name));
+
+				if (!string.IsNullOrEmpty(context.LastName))
+					context.Identity.AddClaim(new Claim(ClaimTypes.Surname, context.LastName));
+
+				if (!string.IsNullOrEmpty(context.AvatarUrl))
+					context.Identity.AddClaim(new Claim("AvatarUrl", context.AvatarUrl));
+
+				context.Identity.AddClaim(new Claim(ClaimTypes.Gender, context.Sex.ToString()));
+				the reason is to get name/lastName/avatar on vkontakte registration from claims
+				
+				VkAuthenticatedContext ->
+				Added context.Name/LastName/AvatarUrl 
+				its usage is above
+			 */
+			app.UseVkontakteAuthentication(vkAppId, vkAppSecret, "{}");
 			//app.UseFacebookAuthentication(
 			//   appId: "",
 			//   appSecret: "");

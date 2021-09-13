@@ -1,35 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Provider;
 using Newtonsoft.Json.Linq;
 using Ulearn.Common;
 
-namespace uLearn.Web.Microsoft.Owin.Security.VK.Provider
+namespace uLearn.Web.Owin.VkontakteMiddleware.Provider
 {
+	/// <summary>
+	/// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
+	/// </summary>
 	public class VkAuthenticatedContext : BaseContext
 	{
-		private readonly Regex VkIdRegex = new Regex(@"^id\d+$", RegexOptions.Compiled);
-
-		public VkAuthenticatedContext(IOwinContext context, JObject user, string accessToken)
+		/// <summary>
+		/// Initializes a <see cref="VkAuthenticatedContext"/>
+		/// </summary>
+		/// <param name="context">The OWIN environment</param>
+		/// <param name="userxml">The XML document with user info</param>
+		/// <param name="accessToken">Access token</param>
+		/// <param name="expires">Seconds until expiration</param>
+		public VkAuthenticatedContext(IOwinContext context, dynamic data, string accessToken, string expires)
 			: base(context)
 		{
-			User = user;
 			AccessToken = accessToken;
 
-			Id = TryGetValue(user, "id");
-			FirstName = TryGetValue(user, "first_name");
-			LastName = TryGetValue(user, "last_name");
+			if (int.TryParse(expires, NumberStyles.Integer, CultureInfo.InvariantCulture, out int expiresValue))
+			{
+				ExpiresIn = TimeSpan.FromSeconds(expiresValue);
+			}
 
-			var screenName = TryGetValue(user, "screen_name");
-			UserName = screenName;
-			/* By default username is screenName but in case of idXXXXX we will use string "FirstName LastName" */
-			if (VkIdRegex.IsMatch(screenName) && (FirstName + LastName).Trim() != "")
-				UserName = (FirstName + " " + LastName).Trim();
-
-			AvatarUrl = TryGetValue(user, "photo_100");
-			var sex = TryGetValue(user, "sex");
+			User = data;
+			Id = data["id"];
+			Name = data["first_name"];
+			LastName = data["last_name"];
+			UserName = data["screen_name"];
+			Nickname = data["nickname"];
+			Email = data["email"];
+			Link = data["photo_50"];
+			AvatarUrl = data["photo_100"];
+			var sex = data["sex"];
 			if (sex == "1")
 				Sex = Gender.Female;
 			else if (sex == "2")
@@ -37,23 +53,89 @@ namespace uLearn.Web.Microsoft.Owin.Security.VK.Provider
 		}
 
 		public JObject User { get; private set; }
+
+		/// <summary>
+		/// Gets the access token
+		/// </summary>
 		public string AccessToken { get; private set; }
 
-		public string Id { get; private set; }
-		public string UserName { get; private set; }
+		/// <summary>
+		/// Gets the access token expiration time
+		/// </summary>
+		public TimeSpan? ExpiresIn { get; set; }
 
-		public string FirstName { get; private set; }
+		/// <summary>
+		/// Gets the user ID
+		/// </summary>
+		public string Id { get; private set; }
+
+		/// <summary>
+		/// Gets the user's name
+		/// </summary>
+		public string Name { get; private set; }
+
+		/// <summary>
+		/// Gets the user's last name
+		/// </summary>
 		public string LastName { get; private set; }
+
 		public string AvatarUrl { get; private set; }
 		public Gender? Sex { get; private set; }
 
-		public ClaimsIdentity Identity { get; set; }
-		public AuthenticationProperties Properties { get; set; }
-
-		private static string TryGetValue(JObject user, string propertyName)
+		/// <summary>
+		/// Gets the user's full name
+		/// </summary>
+		public string FullName
 		{
-			JToken value;
-			return user.TryGetValue(propertyName, out value) ? value.ToString() : string.Empty;
+			get { return Name + " " + LastName; }
 		}
+
+
+		/// <summary>
+		/// Gets the user's DefaultName
+		/// </summary>
+		public string DefaultName
+		{
+			get
+			{
+				if (!String.IsNullOrEmpty(UserName))
+					return UserName;
+
+				if (!String.IsNullOrEmpty(Nickname))
+					return Nickname;
+
+				return FullName;
+			}
+		}
+
+		/// <summary>
+		/// Get's the user's Email
+		/// </summary>
+		public string Email { get; private set; }
+
+		/// <summary>
+		/// Gets the user's picture link
+		/// </summary>
+		public string Link { get; private set; }
+
+		/// <summary>
+		/// Gets the username
+		/// </summary>
+		public string UserName { get; private set; }
+
+		/// <summary>
+		/// Gets the Nickname
+		/// </summary>
+		public string Nickname { get; private set; }
+
+		/// <summary>
+		/// Gets the <see cref="ClaimsIdentity"/> representing the user
+		/// </summary>
+		public ClaimsIdentity Identity { get; set; }
+
+		/// <summary>
+		/// Gets or sets a property bag for common authentication properties
+		/// </summary>
+		public AuthenticationProperties Properties { get; set; }
 	}
 }

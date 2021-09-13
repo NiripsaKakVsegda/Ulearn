@@ -10,7 +10,6 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using uLearn.Web.FilterAttributes;
 using uLearn.Web.Kontur.Passport;
-using uLearn.Web.Microsoft.Owin.Security.VK;
 using uLearn.Web.Models;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -106,7 +105,7 @@ namespace uLearn.Web.Controllers
 				return Redirect(this.FixRedirectUrl(returnUrl));
 			}
 
-			if (loginInfo.ExternalIdentity.AuthenticationType == VkAuthenticationConstants.AuthenticationType)
+			if (loginInfo.ExternalIdentity.AuthenticationType == Constants.DefaultSecurityStampClaimType)
 				metricSender.SendCount("registration.via_vk.try");
 			else if (loginInfo.ExternalIdentity.AuthenticationType == KonturPassportConstants.AuthenticationType)
 				metricSender.SendCount("registration.via_kontur_passport.try");
@@ -180,7 +179,7 @@ namespace uLearn.Web.Controllers
 						}
 
 						metricSender.SendCount("registration.success");
-						if (info.ExternalIdentity.AuthenticationType == VkAuthenticationConstants.AuthenticationType)
+						if (info.ExternalIdentity.AuthenticationType == Constants.DefaultSecurityStampClaimType)
 							metricSender.SendCount("registration.via_vk.success");
 						else if (info.ExternalIdentity.AuthenticationType == KonturPassportConstants.AuthenticationType)
 							metricSender.SendCount("registration.via_kontur_passport.success");

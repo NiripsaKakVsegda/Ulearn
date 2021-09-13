@@ -2,9 +2,9 @@
 @using Database.Extensions
 @using uLearn.Web.Extensions
 @using uLearn.Web.Kontur.Passport
-@using uLearn.Web.Microsoft.Owin.Security.VK
 @using uLearn.Web.Views.Shared
 @using Ulearn.Common
+@using uLearn.Web.Owin.VkontakteMiddleware
 @using FormMethod = System.Web.Mvc.FormMethod
 @model uLearn.Web.Controllers.ProfileModel
 
@@ -22,7 +22,7 @@
 		<div>
 			<div>@Model.User.UserName, <a href="mailto:@Model.User.Email">@Model.User.Email</a><i>@(!Model.User.EmailConfirmed ? " (почта не подтверждена)" : "")</i></div>
 			@{
-				var vkLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == VkAuthenticationConstants.AuthenticationType);
+				var vkLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == Constants.DefaultAuthenticationType);
 				if (vkLogin != null)
 				{
 					<div>
