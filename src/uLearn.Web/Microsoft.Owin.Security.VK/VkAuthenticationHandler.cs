@@ -185,7 +185,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 					return new AuthenticationTicket(null, properties);
 				}
 
-				string requestPrefix = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
+				string requestPrefix = "https" + Uri.SchemeDelimiter + Request.Host;
 				string redirectUri = requestPrefix + Request.PathBase + Options.CallbackPath;
 
 				//https://oauth.vk.com/access_token?client_id=APP_ID&client_secret=APP_SECRET&code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a&redirect_uri=REDIRECT_URI
