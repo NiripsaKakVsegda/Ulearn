@@ -189,7 +189,7 @@ export function findUnitIdBySlideId(slideId ?: string, courseInfo ?: CourseInfo)
 	return null;
 }
 
-export const guidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+export const guidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 export const slideActionsRegex = {
 	ltiSlide: /ltislide/i,
 	flashcardsPreview: /flashcards\/preview/i,
@@ -219,7 +219,6 @@ export default function getSlideInfo(
 			? SlideType.CourseFlashcards
 			: SlideType.NotFound;
 	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo);
-
 	return {
 		slideType: navigationInfo?.current.type || slideType,
 		slideId,
