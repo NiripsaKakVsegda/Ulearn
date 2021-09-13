@@ -327,8 +327,10 @@ namespace Database.Models
 
 		[NotNull]
 		public abstract string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl);
+
 		[NotNull]
 		public abstract string GetTextMessageForDelivery(NotificationTransport transport, NotificationDelivery notificationDelivery, Course course, string baseUrl);
+
 		[CanBeNull]
 		public abstract NotificationButton GetNotificationButton(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl);
 
@@ -545,6 +547,7 @@ namespace Database.Models
 				var courseRoleUsersFilter = serviceProvider.GetService<ICourseRolesRepo>();
 				return await courseRoleUsersFilter.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, CourseId, includeHighRoles: true);
 			}
+
 			var visitsRepo = serviceProvider.GetService<IVisitsRepo>();
 			return await visitsRepo.GetCourseUsers(CourseId);
 		}
@@ -1044,6 +1047,7 @@ namespace Database.Models
 				if (await courseRolesRepo.HasUserAccessToCourse(authorsId, course.Id, CourseRoleType.Instructor))
 					usersWithAccess.Add(authorsId);
 			}
+
 			return usersWithAccess;
 		}
 
@@ -1057,7 +1061,7 @@ namespace Database.Models
 			var notificationsRepo = serviceProvider.GetService<INotificationsRepo>();
 			var reviewId = Comment.ReviewId;
 			return (await notificationsRepo
-				.FindNotifications<ReceivedCommentToCodeReviewNotification>(n => n.Comment.ReviewId == reviewId, n => n.Comment)
+					.FindNotifications<ReceivedCommentToCodeReviewNotification>(n => n.Comment.ReviewId == reviewId, n => n.Comment)
 				).Cast<Notification>()
 				.Where(n => n.CreateTime < CreateTime && n.CreateTime >= CreateTime - NotificationsRepo.sendNotificationsDelayAfterCreating)
 				.ToList();
@@ -1079,7 +1083,7 @@ namespace Database.Models
 			var isStudent = currentUserId == Comment.Review.SubmissionAuthorId;
 			var url = GetSlideUrl(course, slide, baseUrl);
 			if (!isStudent)
-				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}&SubmissionId={Comment.Review.SubmissionId}&UserId={Comment.Review.SubmissionAuthorId}";
+				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}&SubmissionId={Comment.Review.SubmissionId ?? Comment.Review.ExerciseCheckingId}&UserId={Comment.Review.SubmissionAuthorId}";
 			return url;
 		}
 	}
@@ -1341,8 +1345,8 @@ namespace Database.Models
 			return notifications.OfType<RepliedToYourCommentNotification>().Any(n => n.CommentId == CommentId);
 		}
 	}
-	
-	
+
+
 	[NotificationType(NotificationType.GroupIsArchived)]
 	public class GroupIsArchivedNotification : Notification
 	{
