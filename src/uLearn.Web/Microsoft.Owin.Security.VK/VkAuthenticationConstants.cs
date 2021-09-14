@@ -2,6 +2,6 @@
 {
 	public static class Constants
 	{
-		public const string DefaultAuthenticationType = "Vkontakte";
+		public const string DefaultAuthenticationType = "ВКонтакте";
 	}
 }
