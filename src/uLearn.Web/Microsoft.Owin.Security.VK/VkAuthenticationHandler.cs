@@ -110,6 +110,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 		//if matched - making AuthenticationTicket 
 		private async Task<bool> InvokeReplyPathAsync()
 		{
+			Request.Scheme = "https";
 			if (Options.CallbackPath.HasValue && Options.CallbackPath == Request.Path)
 			{
 				AuthenticationTicket ticket = await AuthenticateAsync(); //call Task<AuthenticationTicket> AuthenticateCoreAsync() step 2.3
