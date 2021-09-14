@@ -100,6 +100,14 @@ namespace uLearn.Web
 				VkAuthenticatedContext ->
 				Added context.Name/LastName/AvatarUrl 
 				its usage is above
+				
+				Also because of dev and prod are working over http (https is being added by nginx) 
+				we changed Request.Scheme='https' to prevent error SameSite=None without Secure flag on 
+				GenerateCorrelationId set-cookie.
+				
+				u can change redirect url (current /signin-vkontakte)
+				prod VK app url https://vk.com/editapp?id=4381546&section=options telegramm of owners: @rozentor @xoposhiy
+				dev/localhost app url https://vk.com/editapp?id=5333292&section=options telegramm of owners: @rozentor @andgein
 			 */
 			app.UseVkontakteAuthentication(vkAppId, vkAppSecret, "{}");
 			//app.UseFacebookAuthentication(
