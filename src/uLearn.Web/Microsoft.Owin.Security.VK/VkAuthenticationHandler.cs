@@ -40,8 +40,6 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 		//</summary
 		protected override Task ApplyResponseChallengeAsync()
 		{
-			Request.Scheme = "https";
-
 			if (Response.StatusCode != 401)
 			{
 				return Task.FromResult<object>(null);
@@ -52,6 +50,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 
 			if (challenge != null)
 			{
+				Request.Scheme = "https";
 				string baseUri =
 					Request.Scheme +
 					Uri.SchemeDelimiter +
@@ -75,6 +74,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 
 				// OAuth2 10.12 CSRF
 				GenerateCorrelationId(properties);
+				Request.Scheme = "http";
 
 				// comma separated
 				string scope = Options.Scope;
@@ -110,7 +110,6 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 		//if matched - making AuthenticationTicket 
 		private async Task<bool> InvokeReplyPathAsync()
 		{
-			Request.Scheme = "https";
 			if (Options.CallbackPath.HasValue && Options.CallbackPath == Request.Path)
 			{
 				AuthenticationTicket ticket = await AuthenticateAsync(); //call Task<AuthenticationTicket> AuthenticateCoreAsync() step 2.3
@@ -154,7 +153,6 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 
 				return context.IsRequestCompleted;
 			}
-
 			return false;
 		}
 
@@ -183,6 +181,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 					return null;
 				}
 
+				Request.Scheme = "https";
 				// OAuth2 10.12 CSRF
 				if (!ValidateCorrelationId(properties, _logger))
 				{
@@ -190,6 +189,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 				}
 
 				string requestPrefix = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
+				Request.Scheme = "http";
 				string redirectUri = requestPrefix + Request.PathBase + Options.CallbackPath;
 
 				//https://oauth.vk.com/access_token?client_id=APP_ID&client_secret=APP_SECRET&code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a&redirect_uri=REDIRECT_URI

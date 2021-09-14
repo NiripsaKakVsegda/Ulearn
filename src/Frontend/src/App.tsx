@@ -123,7 +123,7 @@ class InternalUlearnApp extends Component<Props, State> {
 
 		if(isLti) {
 			// dirty way to remove padding top from body element (default is 50px, declared in legacy legacy ulearn.global.css main section
-			document.body.style.paddingTop = '0';
+			document.body.style.paddingTop = '10px';
 		}
 
 		return (

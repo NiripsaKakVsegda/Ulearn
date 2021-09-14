@@ -1,5 +1,5 @@
 ﻿@using uLearn.Web.Kontur.Passport
-@using uLearn.Web.Microsoft.Owin.Security.VK
+@using uLearn.Web.Owin.VkontakteMiddleware
 @model string
 
 @{
@@ -40,7 +40,7 @@
 					Action = "ExternalLogin",
 					ReturnUrl = ViewBag.ReturnUrl,
 					Type = ExternalLoginListType.Login,
-					AvailableProviders = new List<string> { VkAuthenticationConstants.AuthenticationType }
+					AvailableProviders = new List<string> { Constants.DefaultAuthenticationType }
 				})
 			</section>
 

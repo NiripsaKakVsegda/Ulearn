@@ -47,11 +47,6 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 				Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
 			}
 
-			if (String.IsNullOrEmpty(Options.SignInAsAuthenticationType))
-			{
-				Options.SignInAsAuthenticationType = app.GetDefaultSignInAsAuthenticationType();
-			}
-
 			_httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
 			_httpClient.Timeout = Options.BackchannelTimeout;
 			_httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
