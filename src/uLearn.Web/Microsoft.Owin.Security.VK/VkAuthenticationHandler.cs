@@ -50,7 +50,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 			if (challenge != null)
 			{
 				string baseUri =
-					Request.Scheme +
+					"https" +
 					Uri.SchemeDelimiter +
 					Request.Host +
 					Request.PathBase;
