@@ -24,7 +24,7 @@ namespace uLearn.Web.Owin.VkontakteMiddleware
 			: base(Constants.DefaultAuthenticationType)
 		{
 			Caption = Constants.DefaultAuthenticationType;
-			CallbackPath = new PathString("/signin-vk");
+			CallbackPath = new PathString("/signin-vkontakte");
 			AuthenticationMode = AuthenticationMode.Passive;
 			Scope = "";
 			Version = "5.85";

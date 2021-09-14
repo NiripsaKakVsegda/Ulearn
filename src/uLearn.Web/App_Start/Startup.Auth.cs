@@ -83,9 +83,6 @@ namespace uLearn.Web
 			// we manually added some lines to it
 			/* touched files are
 			 
-			 VkAuthenticationOptions -> changed to CallbackPath = new PathString("/signin-vk"); from CallbackPath = new PathString("/signin-vkontakte"); 
-			 the reason is legacy secret (@rozentor didn't find a reason for this, sry)
-			 
 			 VkAuthenticationHandler -> 
 			 Added to AuthenticateCoreAsync
 			 	if (!string.IsNullOrEmpty(context.Name))
