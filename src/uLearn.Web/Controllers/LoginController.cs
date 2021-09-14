@@ -105,7 +105,7 @@ namespace uLearn.Web.Controllers
 				return Redirect(this.FixRedirectUrl(returnUrl));
 			}
 
-			if (loginInfo.ExternalIdentity.AuthenticationType == Constants.DefaultSecurityStampClaimType)
+			if (loginInfo.ExternalIdentity.AuthenticationType == Owin.VkontakteMiddleware.Constants.DefaultAuthenticationType)
 				metricSender.SendCount("registration.via_vk.try");
 			else if (loginInfo.ExternalIdentity.AuthenticationType == KonturPassportConstants.AuthenticationType)
 				metricSender.SendCount("registration.via_kontur_passport.try");
@@ -179,7 +179,7 @@ namespace uLearn.Web.Controllers
 						}
 
 						metricSender.SendCount("registration.success");
-						if (info.ExternalIdentity.AuthenticationType == Constants.DefaultSecurityStampClaimType)
+						if (info.ExternalIdentity.AuthenticationType == Owin.VkontakteMiddleware.Constants.DefaultAuthenticationType)
 							metricSender.SendCount("registration.via_vk.success");
 						else if (info.ExternalIdentity.AuthenticationType == KonturPassportConstants.AuthenticationType)
 							metricSender.SendCount("registration.via_kontur_passport.success");
