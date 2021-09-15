@@ -764,6 +764,14 @@ namespace uLearn.Web.Controllers
 			var realUserId = string.IsNullOrEmpty(userId) ? User.Identity.GetUserId() : userId;
 			if (string.IsNullOrEmpty(realUserId))
 				return HttpNotFound();
+			
+			var correctSignature = GetEmailConfirmationSignature(email, realUserId);
+			if (signature != correctSignature)
+			{
+				metricSender.SendCount("email_confirmation.attempt_to_hack_account"); //https://yt.skbkontur.ru/issue/WHSIyt-2443
+				log.Warn($"Invalid signature in confirmation email link, expected \"{correctSignature}\", actual \"{signature}\". Email is \"{email}\",");
+				return RedirectToAction("Manage", new { Message = ManageMessageId.ErrorOccured });
+			}
 
 			var user = await userManager.FindByIdAsync(realUserId).ConfigureAwait(false);
 			if (!User.Identity.IsAuthenticated || User.Identity.GetUserId() != realUserId)
@@ -773,13 +781,6 @@ namespace uLearn.Web.Controllers
 
 			if (user.Email != email || user.EmailConfirmed)
 				return RedirectToAction("Manage", new { Message = ManageMessageId.EmailAlreadyConfirmed });
-
-			var correctSignature = GetEmailConfirmationSignature(email);
-			if (signature != correctSignature)
-			{
-				log.Warn($"Invalid signature in confirmation email link, expected \"{correctSignature}\", actual \"{signature}\". Email is \"{email}\",");
-				return RedirectToAction("Manage", new { Message = ManageMessageId.ErrorOccured });
-			}
 
 			/* Is there are exist other users with same confirmed email, then un-confirm their emails */
 			var usersWithSameEmail = usersRepo.FindUsersByEmail(email);

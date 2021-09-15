@@ -61,15 +61,15 @@ namespace uLearn.Web.Controllers
 		{
 		}
 
-		protected string GetEmailConfirmationSignature(string email)
+		protected string GetEmailConfirmationSignature(string email, string userId)
 		{
-			return $"{secretForHashes}email={email}{secretForHashes}".CalculateMd5();
+			return $"{secretForHashes}email={email}userId={userId}{secretForHashes}".CalculateMd5();
 		}
 
 		protected async Task<bool> SendConfirmationEmail(ApplicationUser user)
 		{
 			metricSender.SendCount("email_confirmation.send_confirmation_email.try");
-			var confirmationUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, email = user.Email, signature = GetEmailConfirmationSignature(user.Email) }, "https");
+			var confirmationUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, email = user.Email, signature = GetEmailConfirmationSignature(user.Email,user.Id) }, "https");
 			var subject = "Подтверждение адреса";
 
 			var messageInfo = new MessageSentInfo
