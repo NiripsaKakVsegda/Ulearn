@@ -100,8 +100,9 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			if (submission.ManualChecking != null)
 				Ok($"Manual checking already enabled for submission {submissionId}");
 
-			await slideCheckingsRepo.AddManualExerciseChecking(submission.CourseId, submission.SlideId, submission.UserId, submission.Id);
+			var checking = await slideCheckingsRepo.AddManualExerciseChecking(submission.CourseId, submission.SlideId, submission.UserId, submission.Id);
 			await visitsRepo.MarkVisitsAsWithManualChecking(submission.CourseId, submission.SlideId, submission.UserId);
+			await slideCheckingsRepo.LockManualChecking(checking, UserId);
 
 			return Ok($"Manual checking enabled for submission {submissionId}");
 		}

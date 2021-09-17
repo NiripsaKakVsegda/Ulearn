@@ -90,7 +90,10 @@
 				@if (Model.AlreadyChecked)
 				{
 					<p>
-						Последний раз проверялась преподавателем <b>@checking.LockedBy.VisibleName</b>
+						@if (checking.LockedBy != null)
+						{
+							<span>Последний раз проверялась преподавателем <b>@checking.LockedBy.VisibleName</b></span>
+						}
 						@{
 							var slide = Model.Slides.FirstOrDefault(s => s.Key == checking.SlideId).Value;
 							var score = isQuiz
