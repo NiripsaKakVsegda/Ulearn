@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import api from "src/api";
 
-import { Button } from "ui";
+import { Button, Hint } from "ui";
 import { Link } from "react-router-dom";
 
 import { SlideInfo } from "./CourseUtils";
@@ -19,17 +19,20 @@ import { ReviewQueueResponse } from "src/models/instructor";
 
 import styles from "./Course.less";
 import texts from "./NavigationButtons.texts";
+import { connect } from "react-redux";
+import { RootState } from "../../../redux/reducers";
 
 
 interface Props {
 	slideInfo: SlideInfo;
+	disabled: boolean;
 }
 
 function NavigationButtons({ slideInfo, }: Props): React.ReactElement {
 	const { isNavigationVisible, courseId, isReview, } = slideInfo;
 
 	if(isReview) {
-		return <ReviewNavigationButtons slideInfo={ slideInfo }/>;
+		return <ReduxReviewNavigationButtons slideInfo={ slideInfo }/>;
 	}
 
 	if(isNavigationVisible) {
@@ -90,7 +93,7 @@ interface ReviewNavigationState extends Partial<ReviewQueueResponse> {
 	isLoading: boolean;
 }
 
-function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
+function ReviewNavigationButtons({ slideInfo, disabled, }: Props): React.ReactElement {
 	const [state, setState] = useState<ReviewNavigationState | undefined>();
 	const { query, courseId, navigationInfo, slideId, } = slideInfo;
 
@@ -167,27 +170,37 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 				{
 					check && check.submissionId !== state.checkings[currentCheckIndex]?.submissionId
 						?
-						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
-							  to={ constructPathToSlide(courseId, check.slideId)
-							  + buildQuery({
-								  checkQueueItemId: check.submissionId,
-								  submissionId: check.submissionId,
-								  userId: check.userId,
+						(disabled
+							? <Hint text={ texts.nextSubmissionDisabledHint }>
+								<span className={ classnames(styles.slideButton, styles.nextSlideButton,
+									styles.reviewButton, styles.reviewButtonDisabled) }>
+									{ texts.nextReviewLinkText }
+								</span>
+							</Hint>
+							: <Link
+								className={ classnames(styles.slideButton, styles.nextSlideButton,
+									styles.reviewButton) }
+								to={ disabled ? '' : constructPathToSlide(courseId, check.slideId)
+									+ buildQuery({
+										checkQueueItemId: check.submissionId,
+										submissionId: check.submissionId,
+										userId: check.userId,
 
-								  queueSlideId: query.queueSlideId || undefined,
-								  group: query.group || undefined,
-								  done: query.done,
-							  }) }>
-							{ texts.nextReviewLinkText }
-						</Link>
+										queueSlideId: query.queueSlideId || undefined,
+										group: query.group || undefined,
+										done: query.done,
+									}) }>
+								{ texts.nextReviewLinkText }
+							</Link>)
 						:
-						<Link className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
-							  to={ adminCheckingQueuePath + buildQuery({
-								  courseId,
-								  slideId: query.queueSlideId || undefined,
-								  group: query.group || undefined,
-								  done: query.done,
-							  }) }
+						<Link
+							className={ classnames(styles.slideButton, styles.nextSlideButton, styles.reviewButton) }
+							to={ adminCheckingQueuePath + buildQuery({
+								courseId,
+								slideId: query.queueSlideId || undefined,
+								group: query.group || undefined,
+								done: query.done,
+							}) }
 						>
 							{ texts.returnToCheckingQueuePage }
 						</Link>
@@ -200,10 +213,13 @@ function ReviewNavigationButtons({ slideInfo, }: Props): React.ReactElement {
 		);
 	}
 
-
 	return (
 		<div className={ styles.reviewButtonsWrapper }>
-			<Button loading>Идет загрузка</Button>
+			<Button loading>{ texts.loading }</Button>
 		</div>
 	);
 }
+
+const ReduxReviewNavigationButtons = connect(
+	(state: RootState) => ({ disabled: state.submissions.nextSubmissionButtonDisabled }), () => ({}))(
+	ReviewNavigationButtons);

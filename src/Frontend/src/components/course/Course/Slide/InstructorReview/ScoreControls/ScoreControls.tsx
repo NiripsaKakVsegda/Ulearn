@@ -19,11 +19,13 @@ export interface Props {
 	canChangeScore: boolean;
 
 	onSubmit: (score: number) => void;
+	setNextSubmissionButtonDisabled: (disabled: boolean) => void;
 	onToggleChange: (value: boolean) => void;
 }
 
 interface State {
 	curScore: number | null;
+	lastSubmittedScore: number | null;
 	scoreSaved: boolean;
 	toggleChecked: boolean;
 }
@@ -39,6 +41,7 @@ class ScoreControls extends React.Component<Props, State> {
 		this.state = {
 			curScore: score,
 			scoreSaved: score !== null,
+			lastSubmittedScore: null,
 			toggleChecked: toggleChecked,
 		};
 	}
@@ -51,6 +54,7 @@ class ScoreControls extends React.Component<Props, State> {
 				toggleChecked,
 				curScore: score,
 				scoreSaved: score !== null || !canChangeScore,
+				lastSubmittedScore: null,
 			});
 		}
 
@@ -115,6 +119,16 @@ class ScoreControls extends React.Component<Props, State> {
 				>
 					{ texts.submitButtonText }
 				</Button>
+				{
+					score !== null
+					&& <Button
+						size={ 'medium' }
+						use={ 'default' }
+						onClick={ this.onResetClick }
+					>
+						{ texts.resetScoreButtonText }
+					</Button>
+				}
 			</Gapped>
 		);
 	};
@@ -200,20 +214,25 @@ class ScoreControls extends React.Component<Props, State> {
 	};
 
 	onValueChange = (score: string): void => {
-		const { toggleChecked } = this.state;
+		const {
+			setNextSubmissionButtonDisabled,
+		} = this.props;
+		setNextSubmissionButtonDisabled(true);
+
 		const scoreAsNumber = parseInt(score);
 
-		if(toggleChecked && (scoreAsNumber === 0 || scoreAsNumber === 100)) {
-			this.onToggleValueChange(false);
-		}
-
+		this.setToggleByScore(scoreAsNumber);
 		this.setState({
 			curScore: scoreAsNumber,
 		});
 	};
 
 	onToggleValueChange = (value: boolean): void => {
-		this.props.onToggleChange(value);
+		const {
+			onToggleChange,
+		} = this.props;
+
+		onToggleChange(value);
 		this.setState({
 			toggleChecked: value,
 		});
@@ -229,9 +248,48 @@ class ScoreControls extends React.Component<Props, State> {
 		if(curScore !== null) {
 			onSubmit(curScore);
 		}
+		const {
+			setNextSubmissionButtonDisabled,
+		} = this.props;
+		setNextSubmissionButtonDisabled(false);
 		this.setState({
 			scoreSaved: true,
+			lastSubmittedScore: curScore,
 		});
+	};
+
+	setToggleByScore = (score: number): void => {
+		const {
+			toggleChecked,
+		} = this.state;
+
+		if(toggleChecked && (score === 0 || score === 100)) {
+			this.onToggleValueChange(false);
+		} else if(!toggleChecked && (score !== 0 && score !== 100)) {
+			this.onToggleValueChange(true);
+		}
+	};
+
+	onResetClick = (): void => {
+		const {
+			lastSubmittedScore,
+		} = this.state;
+		const {
+			setNextSubmissionButtonDisabled,
+		} = this.props;
+		setNextSubmissionButtonDisabled(false);
+
+		if(lastSubmittedScore) {
+			this.setToggleByScore(lastSubmittedScore);
+			this.setState({
+				scoreSaved: true,
+			});
+		} else {
+			this.onToggleValueChange(true);
+			this.setState({
+				curScore: null,
+			});
+		}
 	};
 }
 

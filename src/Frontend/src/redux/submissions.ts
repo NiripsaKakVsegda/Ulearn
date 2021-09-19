@@ -45,10 +45,12 @@ import {
 	SUBMISSIONS_LOAD_FAIL,
 	SUBMISSIONS_LOAD_START,
 	SUBMISSIONS_LOAD_SUCCESS,
+	SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED,
 	SubmissionsAction,
 	SubmissionsAddSubmissionAction,
 	SubmissionsEnableManualCheckingFailAction,
 	SubmissionsEnableManualCheckingStartAction,
+	SubmissionSetNextSubmissionButtonDisabled,
 	SubmissionsLoadFailAction,
 	SubmissionsLoadStartAction,
 	SubmissionsLoadSuccessAction,
@@ -59,6 +61,8 @@ import { ReduxData } from "./index";
 import renderSimpleMarkdown from "../utils/simpleMarkdownRender";
 
 export interface SubmissionsState {
+	nextSubmissionButtonDisabled: boolean;
+
 	submissionError: string | null;
 	lastCheckingResponse: RunSolutionResponse | null;
 
@@ -93,10 +97,20 @@ const initialSubmissionsState: SubmissionsState = {
 	submissionsById: {},
 	reviewsBySubmissionId: {},
 	submissionError: null,
+	nextSubmissionButtonDisabled: false,
 };
 
 export default function submissions(state = initialSubmissionsState, action: SubmissionsAction): SubmissionsState {
 	switch (action.type) {
+		case SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED: {
+			const { disabled } = action as SubmissionSetNextSubmissionButtonDisabled;
+
+			return {
+				...state,
+				nextSubmissionButtonDisabled: disabled,
+			};
+		}
+
 		case SUBMISSIONS_ADD_SUBMISSION: {
 			const { courseId, slideId, userId, result } = action as SubmissionsAddSubmissionAction;
 			const { submission } = result;

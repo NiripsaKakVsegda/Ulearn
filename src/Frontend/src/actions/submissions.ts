@@ -60,6 +60,9 @@ import {
 	ReviewsAssignBotStartAction,
 	ReviewsAssignBotSuccessAction,
 	ReviewsAssignBotFailAction,
+
+	SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED,
+	SubmissionSetNextSubmissionButtonDisabled,
 } from "./submissions.types";
 import { SubmissionsResponse } from "../models/instructor";
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse } from "../models/exercise";
@@ -344,5 +347,12 @@ export const reviewsAssignBotReviewFail = (
 	submissionId,
 	botReviewId,
 	error,
+});
+
+export const setNextSubmissionButtonDisabled = (
+	disabled: boolean,
+): SubmissionSetNextSubmissionButtonDisabled => ({
+	type: SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED,
+	disabled,
 });
 

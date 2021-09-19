@@ -1,5 +1,7 @@
 import {
+	ADD,
 	DELETE,
+	EDIT,
 	FAIL,
 	FailAction,
 	loadFail,
@@ -7,8 +9,6 @@ import {
 	loadSuccess,
 	START,
 	SUCCESS,
-	ADD,
-	EDIT,
 } from "src/consts/actions";
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse } from "../models/exercise";
 import { SubmissionsResponse } from "../models/instructor";
@@ -34,6 +34,8 @@ export const SUBMISSIONS_ADD_SUBMISSION = submissions + ADD + "_SUBMISSION";
 export const SUBMISSIONS_LOAD_START = submissions + loadStart;
 export const SUBMISSIONS_LOAD_SUCCESS = submissions + loadSuccess;
 export const SUBMISSIONS_LOAD_FAIL = submissions + loadFail;
+
+export const SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED = submissions + '_SET_NEXT_SUBMISSION_BUTTON_DISABLED';
 
 export const SUBMISSIONS_ENABLE_MANUAL_CHECKING_START = submissions + enableManualChecking + START;
 export const SUBMISSIONS_ENABLE_MANUAL_CHECKING_FAIL = submissions + enableManualChecking + FAIL;
@@ -245,6 +247,11 @@ export interface ReviewsAssignBotFailAction extends FailAction {
 	botReviewId: number;
 }
 
+export interface SubmissionSetNextSubmissionButtonDisabled {
+	type: typeof SUBMISSIONS_SET_NEXT_SUBMISSION_BUTTON_DISABLED;
+	disabled: boolean;
+}
+
 
 export type SubmissionsAction =
 	SubmissionsAddSubmissionAction
@@ -282,5 +289,7 @@ export type SubmissionsAction =
 	| ReviewsAssignBotStartAction
 	| ReviewsAssignBotSuccessAction
 	| ReviewsAssignBotFailAction
+
+	| SubmissionSetNextSubmissionButtonDisabled
 	;
 

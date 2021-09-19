@@ -37,6 +37,7 @@ export interface PropsFromRedux {
 }
 
 export interface ApiFromRedux {
+	setNextSubmissionButtonDisabled: (disabled: boolean) => void;
 	getStudentInfo: (studentId: string,) => Promise<ShortUserInfo | string>;
 	getAntiPlagiarismStatus: (courseId: string,
 		submissionId: number,

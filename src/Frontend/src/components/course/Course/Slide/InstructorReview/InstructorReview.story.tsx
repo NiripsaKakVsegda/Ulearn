@@ -9,13 +9,13 @@ import {
 	ReviewInfo,
 	SubmissionInfo,
 } from "src/models/exercise";
-import { returnPromiseAfterDelay } from "src/utils/storyMock";
-import {getMockedShortUser, getMockedUser, instructor, reduxStore, renderMd} from "src/storiesUtils";
+import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
+import { getMockedShortUser, getMockedUser, instructor, reduxStore, renderMd } from "src/storiesUtils";
 import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview, } from "src/models/instructor";
 import { GroupInfo, } from "src/models/groups";
-import { buildUserInfo, UserInfo } from "src/utils/courseRoles";
+import { UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, Props, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
+import { ApiFromRedux, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
 import { RootState } from "src/redux/reducers";
 import { getDataIfLoaded, ReduxData, } from "src/redux";
@@ -702,6 +702,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return err;
 				});
 		},
+		setNextSubmissionButtonDisabled: mockFunc,
 	};
 };
 
@@ -730,11 +731,11 @@ const mapStateToProps = (
 
 	const submissionToReview = studentSubmissions && studentSubmissions
 		.find(s =>
-			(!s.automaticChecking  || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
+			(!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			&& s.manualChecking);
 	const lastReviewedSubmission = studentSubmissions && studentSubmissions
 		.find(s =>
-			(!s.automaticChecking  || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
+			(!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			&& s.manualChecking
 			&& s.manualChecking.percent !== null);
 	const curScore = submissionToReview?.manualChecking?.percent || null;

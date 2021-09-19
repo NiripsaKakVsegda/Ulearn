@@ -15,6 +15,7 @@ import { SlideContext } from "../Slide.types";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { MatchParams } from "src/models/router";
+import { setNextSubmissionButtonDisabled } from "../../../../../actions/submissions";
 
 interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;
@@ -99,6 +100,8 @@ export const mapStateToProps = (
 
 const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	return {
+		setNextSubmissionButtonDisabled: (disabled: boolean) => dispatch(setNextSubmissionButtonDisabled(disabled)),
+
 		addReview: (
 			submissionId: number,
 			text: string,

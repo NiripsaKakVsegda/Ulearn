@@ -480,6 +480,7 @@ class InstructorReview extends React.Component<Props, State> {
 			favouriteReviews,
 			studentSubmissions,
 			expectedOutput,
+			setNextSubmissionButtonDisabled,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -522,6 +523,7 @@ class InstructorReview extends React.Component<Props, State> {
 				}
 				{ (isEditable || submissionPercent !== null) &&
 				<ScoreControls
+					setNextSubmissionButtonDisabled={ setNextSubmissionButtonDisabled }
 					canChangeScore={ isEditable }
 					date={ !isLastCheckedSubmission ? currentSubmission.timestamp : undefined }
 					score={ submissionPercent }
