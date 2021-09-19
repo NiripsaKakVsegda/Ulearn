@@ -1090,7 +1090,7 @@ namespace Database.Models
 			var isStudent = currentUserId == Comment.Review.ExerciseChecking.UserId;
 			var url = GetSlideUrl(course, slide, baseUrl);
 			if (!isStudent)
-				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}&SubmissionId={Comment.Review.SubmissionId}&UserId={Comment.Review.ExerciseChecking.UserId}";
+				url += $"?CheckQueueItemId={Comment.Review.ExerciseCheckingId}&SubmissionId={Comment.Review.SubmissionId ?? Comment.Review.ExerciseCheckingId}&UserId={Comment.Review.ExerciseChecking.UserId}";
 			return url;
 		}
 	}
