@@ -938,16 +938,16 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Microsoft.Owin.Security.VK\VkAuthenticationConstants.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\Provider\IVkAuthenticationProvider.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\Provider\VkAuthenticatedContext.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\Provider\VkAuthenticationProvider.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\Provider\VkReturnEndpointContext.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\Resources.Designer.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\VkAuthenticationExtensions.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\VkAuthenticationHandler.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\VkAuthenticationMiddleware.cs" />
-    <Compile Include="Microsoft.Owin.Security.VK\VkAuthenticationOptions.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationConstants.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\Provider\IVkAuthenticationProvider.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticatedContext.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticationProvider.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\Provider\VkReturnEndpointContext.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\Resources.Designer.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationExtensions.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationHandler.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationMiddleware.cs" />
+    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -1127,7 +1127,7 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Microsoft.Owin.Security.VK\Resources.resx" />
+    <EmbeddedResource Include="Owin.VkontakteMiddleware\Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AntiPlagiarism.Api\AntiPlagiarism.Api.csproj">
