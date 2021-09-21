@@ -47,15 +47,25 @@ class ScoreControls extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>): void {
-		const { score, toggleChecked, canChangeScore, } = this.props;
+		const {
+			score,
+			toggleChecked,
+			canChangeScore,
+			setNextSubmissionButtonDisabled,
+		} = this.props;
 
 		if(prevProps.score !== score) {
+			const scoreSaved = score !== null || !canChangeScore;
 			this.setState({
 				toggleChecked,
 				curScore: score,
-				scoreSaved: score !== null || !canChangeScore,
+				scoreSaved: scoreSaved,
 				lastSubmittedScore: null,
 			});
+
+			if(scoreSaved) {
+				setNextSubmissionButtonDisabled(false);
+			}
 		}
 
 		if(this.state.toggleChecked !== toggleChecked) {
@@ -63,6 +73,13 @@ class ScoreControls extends React.Component<Props, State> {
 				toggleChecked,
 			});
 		}
+	}
+
+	componentWillUnmount(): void {
+		const {
+			setNextSubmissionButtonDisabled,
+		} = this.props;
+		setNextSubmissionButtonDisabled(false);
 	}
 
 	render(): React.ReactNode {
