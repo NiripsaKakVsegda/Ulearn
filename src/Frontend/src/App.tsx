@@ -118,7 +118,7 @@ class InternalUlearnApp extends Component<Props, State> {
 
 		const pathname = window.location.pathname.toLowerCase();
 		const params = queryString.parse(window.location.search);
-		const isLti = pathname.endsWith('/ltislide') || params.isLti; //TODO remove this flag,that hiding header and nav menu
+		const isLti = pathname.endsWith('/ltislide') || (params.isLti?.toString().toLowerCase() === 'true'); //TODO remove this flag,that hiding header and nav menu
 		const isHeaderVisible = !isLti;
 
 		if(isLti) {

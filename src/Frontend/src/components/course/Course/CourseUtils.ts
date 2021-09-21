@@ -287,7 +287,7 @@ export function parseKnownQueryParams(query: string): UlearnQueryParams {
 	return {
 		//slide id for lti slide
 		slideId: queryInLowerCase.get('slideid'),
-		isLti: !!queryInLowerCase.get('islti'),
+		isLti: queryInLowerCase.get('islti') === 'true',
 		//review parameter
 		submissionId: submissionId ? parseInt(submissionId) : null,
 		//review parameter
