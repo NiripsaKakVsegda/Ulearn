@@ -16,12 +16,16 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 		[DataMember]
 		public List<FavouriteReviewResponse> UserFavouriteReviews { get; set; }
 
-		public static FavouriteReviewsResponse Build(List<FavouriteReview> favouriteReviews, List<FavouriteReview> userFavouriteReviews)
+		[DataMember]
+		public List<string> LastUsedReviews { get; set; }
+
+		public static FavouriteReviewsResponse Build(List<FavouriteReview> favouriteReviews, List<FavouriteReview> userFavouriteReviews, List<string> lastUsedReviews)
 		{
 			return new()
 			{
 				FavouriteReviews = favouriteReviews.Select(FavouriteReviewResponse.Build).ToList(),
 				UserFavouriteReviews = userFavouriteReviews.Select(FavouriteReviewResponse.Build).ToList(),
+				LastUsedReviews = lastUsedReviews,
 			};
 		}
 	}

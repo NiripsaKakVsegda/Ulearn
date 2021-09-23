@@ -67,6 +67,8 @@ export const mapStateToProps = (
 	}
 	const favouriteReviews = getDataIfLoaded(
 		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
+	const lastUsedReviews = getDataIfLoaded(
+		state.favouriteReviews.lastUsedReviewsByCourseIdBySlideId[courseId]?.[slideId]);
 
 	const antiPlagiarismStatus = studentSubmissions &&
 		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
@@ -80,6 +82,7 @@ export const mapStateToProps = (
 	return {
 		user: buildUserInfo(state.account, courseId,),
 		favouriteReviews,
+		lastUsedReviews,
 
 		studentGroups,
 		student,

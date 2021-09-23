@@ -10,7 +10,7 @@ import { ReviewInfoWithMarker, TextMarkersByReviewId } from "../Blocks/Exercise/
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { DiffInfo } from "./utils";
 import CodeMirror, { Editor } from "codemirror";
-import { FavouriteReviewRedux, } from "src/redux/instructor";
+import { FavouriteReviewRedux, LastUsedReview, } from "src/redux/instructor";
 import { SlideContext } from "../Slide.types";
 import { RouteComponentProps } from "react-router-dom";
 import { MatchParams } from "src/models/router";
@@ -19,6 +19,7 @@ export interface PropsFromRedux {
 	user?: UserInfo;
 
 	favouriteReviews?: FavouriteReviewRedux[];
+	lastUsedReviews?: LastUsedReview[];
 
 	student?: ShortUserInfo;
 	studentGroups?: ShortGroupInfo[];

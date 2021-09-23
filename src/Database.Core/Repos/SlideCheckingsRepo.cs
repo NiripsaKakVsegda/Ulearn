@@ -544,6 +544,29 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
+		public async Task<List<string>> GetLastUsedExerciseCodeReviewsTexts(string courseId, Guid slideId, string instructorId, int count, List<string> skipReviews = null)
+		{
+			var query = db.ExerciseCodeReviews
+				.Where(c =>
+					c.CourseId == courseId
+					&& c.SlideId == slideId
+					&& c.AuthorId == instructorId
+					&& !c.IsDeleted);
+			if (skipReviews != null)
+			{
+				query = query.Where(c => !skipReviews.Contains(c.Comment));
+			}
+
+			return (await query
+					.OrderByDescending(c => c.AddingTime)
+					.Take(count + 20)
+					.ToListAsync())
+				.Select(c => c.Comment)
+				.Distinct()
+				.Take(count)
+				.ToList();
+		}
+
 		public async Task DeleteExerciseCodeReviewComment(ExerciseCodeReviewComment comment)
 		{
 			comment.IsDeleted = true;

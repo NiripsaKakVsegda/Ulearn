@@ -1,36 +1,37 @@
 import {
-	FavouriteReviewsAction,
-
-	FAVOURITE_REVIEWS_LOAD_START,
-	FAVOURITE_REVIEWS_LOAD_SUCCESS,
-	FAVOURITE_REVIEWS_LOAD_FAIL,
-	FavouriteReviewsLoadStartAction,
-	FavouriteReviewsLoadSuccessAction,
-	FavouriteReviewsLoadFailAction,
-
+	FAVOURITE_REVIEWS_ADD_FAIL,
 	FAVOURITE_REVIEWS_ADD_START,
 	FAVOURITE_REVIEWS_ADD_SUCCESS,
-	FAVOURITE_REVIEWS_ADD_FAIL,
+	FAVOURITE_REVIEWS_DELETE_FAIL,
+	FAVOURITE_REVIEWS_DELETE_START,
+	FAVOURITE_REVIEWS_LOAD_FAIL,
+	FAVOURITE_REVIEWS_LOAD_START,
+	FAVOURITE_REVIEWS_LOAD_SUCCESS,
+	FavouriteReviewsAction,
+	FavouriteReviewsAddFailAction,
 	FavouriteReviewsAddStartAction,
 	FavouriteReviewsAddSuccessAction,
-	FavouriteReviewsAddFailAction,
-
-	FAVOURITE_REVIEWS_DELETE_START,
-	FAVOURITE_REVIEWS_DELETE_SUCCESS,
-	FAVOURITE_REVIEWS_DELETE_FAIL,
-	FavouriteReviewsDeleteStartAction,
-	FavouriteReviewsDeleteSuccessAction,
 	FavouriteReviewsDeleteFailAction,
+	FavouriteReviewsDeleteStartAction,
+	FavouriteReviewsLoadFailAction,
+	FavouriteReviewsLoadStartAction,
+	FavouriteReviewsLoadSuccessAction,
 } from 'src/actions/favouriteReviews.types';
 import { FavouriteReview } from "src/models/instructor";
 import { ReduxData } from "./index";
 import renderSimpleMarkdown from "../utils/simpleMarkdownRender";
+import { LastUsedReview } from "./instructor";
 
 export interface FavouriteReviewsState {
-
 	favouritesReviewsByCourseIdBySlideId: {
 		[courseId: string]: {
 			[slideId: string]: FavouriteReviewRedux[] | ReduxData;
+		} | undefined;
+	};
+
+	lastUsedReviewsByCourseIdBySlideId: {
+		[courseId: string]: {
+			[slideId: string]: LastUsedReview[] | undefined;
 		} | undefined;
 	};
 }
@@ -41,6 +42,7 @@ export interface FavouriteReviewRedux extends FavouriteReview {
 
 const initialFavouriteReviewsState: FavouriteReviewsState = {
 	favouritesReviewsByCourseIdBySlideId: {},
+	lastUsedReviewsByCourseIdBySlideId: {},
 };
 
 export default function instructor(state = initialFavouriteReviewsState,
@@ -71,8 +73,10 @@ export default function instructor(state = initialFavouriteReviewsState,
 				slideId,
 				favouriteReviews,
 				userFavouriteReviews,
+				lastUsedReviews,
 			} = action as FavouriteReviewsLoadSuccessAction;
 			const favouriteReviewsBySlideIds = state.favouritesReviewsByCourseIdBySlideId[courseId];
+			const lastUsedReviewsBySlideIds = state.lastUsedReviewsByCourseIdBySlideId[courseId];
 
 			return {
 				...state,
@@ -82,10 +86,19 @@ export default function instructor(state = initialFavouriteReviewsState,
 						...favouriteReviewsBySlideIds,
 						[slideId]: [
 							...favouriteReviews,
-							...userFavouriteReviews.map(fr => ({ ...fr, isFavourite: true }))
+							...userFavouriteReviews.map(fr => ({ ...fr, isFavourite: true })),
 						],
 					}
-				}
+				},
+				lastUsedReviewsByCourseIdBySlideId: {
+					...state.lastUsedReviewsByCourseIdBySlideId,
+					[courseId]: {
+						...lastUsedReviewsBySlideIds,
+						[slideId]: [
+							...lastUsedReviews.map(r => ({ text: r, isFavourite: false })),
+						],
+					}
+				},
 			};
 		}
 		case FAVOURITE_REVIEWS_LOAD_FAIL: {

@@ -1,29 +1,25 @@
 import {
-	InstructorAction,
-
-	INSTRUCTOR_STUDENT_MODE_TOGGLE,
-	StudentModeAction,
-
-	INSTRUCTOR_STUDENT_INFO_LOAD_START,
-	INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS,
-	INSTRUCTOR_STUDENT_INFO_LOAD_FAIL,
-	StudentInfoLoadSuccessAction,
-	StudentInfoLoadFailAction,
-	StudentInfoLoadStartAction,
-
+	ANTIPLAGIARISM_STATUS_LOAD_FAIL,
 	ANTIPLAGIARISM_STATUS_LOAD_START,
 	ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
-	ANTIPLAGIARISM_STATUS_LOAD_FAIL,
+	AntiPlagiarismStatusLoadFailAction,
 	AntiPlagiarismStatusLoadStartAction,
 	AntiPlagiarismStatusLoadSuccessAction,
-	AntiPlagiarismStatusLoadFailAction,
-
-	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
+	INSTRUCTOR_STUDENT_INFO_LOAD_FAIL,
+	INSTRUCTOR_STUDENT_INFO_LOAD_START,
+	INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS,
+	INSTRUCTOR_STUDENT_MODE_TOGGLE,
 	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL,
 	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
+	InstructorAction,
+	StudentInfoLoadFailAction,
+	StudentInfoLoadStartAction,
+	StudentInfoLoadSuccessAction,
+	StudentModeAction,
+	StudentProhibitFurtherManualCheckingFailAction,
 	StudentProhibitFurtherManualCheckingLoadAction,
 	StudentProhibitFurtherManualCheckingStartAction,
-	StudentProhibitFurtherManualCheckingFailAction,
 } from 'src/actions/instructor.types';
 import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, FavouriteReview } from "src/models/instructor";
@@ -34,11 +30,11 @@ export interface InstructorState {
 
 	studentsById: {
 		[studentId: string]: ShortUserInfo | ReduxData;
-	}
+	};
 
 	antiPlagiarismStatusBySubmissionId: {
 		[submissionId: number]: AntiPlagiarismStatusResponse | ReduxData;
-	}
+	};
 
 	prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId: {
 		[courseId: string]: {
@@ -46,11 +42,15 @@ export interface InstructorState {
 				[studentId: string]: boolean;
 			} | undefined;
 		} | undefined;
-	}
+	};
 }
 
 export interface FavouriteReviewRedux extends FavouriteReview {
 	isFavourite?: boolean;
+}
+
+export interface LastUsedReview {
+	text: string;
 }
 
 const initialInstructorState: InstructorState = {

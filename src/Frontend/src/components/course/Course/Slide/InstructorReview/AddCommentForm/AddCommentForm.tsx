@@ -15,6 +15,7 @@ import reviewPolicyChecker from "../reviewPolicyChecker";
 
 import texts from './AddCommentForm.texts';
 import styles from './AddCommentForm.less';
+import { LastUsedReview } from "../../../../../../redux/instructor";
 
 export interface FavouriteComment {
 	id: number;
@@ -32,6 +33,7 @@ interface FavouriteCommentWithStyles {
 export interface Props {
 	coordinates: { left: number; top: number; bottom: number };
 	favouriteReviews: FavouriteComment[];
+	lastUsedReviews: LastUsedReview[];
 	value: string;
 	valueCanBeAddedToFavourite: boolean;
 	user?: ShortUserInfo;
@@ -48,6 +50,8 @@ export interface Props {
 interface State {
 	favouriteCommentsIds: FavouriteCommentWithStyles[];
 	otherCommentsIds: FavouriteCommentWithStyles[];
+	lastUsedCommentsIds: FavouriteCommentWithStyles[];
+	lastUsedCommentsById: { [id: number]: LastUsedReview };
 	commentsById: { [id: number]: FavouriteComment };
 }
 
@@ -110,9 +114,14 @@ class AddCommentForm extends React.Component<Props, State> {
 			.filter(c => c.isFavourite);
 
 		this.state = {
-			commentsById: props.favouriteReviews.reduce((pv, cv) => ({ ...pv, [cv.id]: { ...cv } }), {}),
+			commentsById: props.favouriteReviews
+				.reduce((pv, cv) => ({ ...pv, [cv.id]: { ...cv } }), {}),
 			otherCommentsIds: otherComments.map(c => ({ id: c.id, ref: React.createRef(), })),
 			favouriteCommentsIds: favouriteComments.map(c => ({ id: c.id, ref: React.createRef() })),
+
+			lastUsedCommentsById: props.lastUsedReviews
+				.reduce((pv, cv, index) => ({ ...pv, [index]: { ...cv } }), {}),
+			lastUsedCommentsIds: props.lastUsedReviews.map((c, index) => ({ id: index, ref: React.createRef() })),
 		};
 	}
 
@@ -131,10 +140,11 @@ class AddCommentForm extends React.Component<Props, State> {
 	}
 
 	markOverExtendedComments = (): void => {
-		const { otherCommentsIds, favouriteCommentsIds, } = this.state;
+		const { otherCommentsIds, favouriteCommentsIds, lastUsedCommentsIds, } = this.state;
 
 		const overextendedOtherComments = this.markOverextendedComments(otherCommentsIds);
 		const overextendedFavouriteComments = this.markOverextendedComments(favouriteCommentsIds);
+		const overextendedLastUsedComments = this.markOverextendedComments(lastUsedCommentsIds);
 
 		if(overextendedOtherComments) {
 			this.setState({
@@ -144,6 +154,11 @@ class AddCommentForm extends React.Component<Props, State> {
 		if(overextendedFavouriteComments) {
 			this.setState({
 				favouriteCommentsIds: overextendedFavouriteComments,
+			});
+		}
+		if(overextendedLastUsedComments) {
+			this.setState({
+				lastUsedCommentsIds: overextendedLastUsedComments,
 			});
 		}
 	};
@@ -246,7 +261,7 @@ class AddCommentForm extends React.Component<Props, State> {
 
 	render = (): React.ReactElement => {
 		const { coordinates, onClose, value, valueCanBeAddedToFavourite, } = this.props;
-		const { otherCommentsIds, favouriteCommentsIds, } = this.state;
+		const { otherCommentsIds, favouriteCommentsIds, lastUsedCommentsIds, } = this.state;
 
 		const style: CSSProperties = {
 			top: coordinates.bottom,
@@ -258,7 +273,7 @@ class AddCommentForm extends React.Component<Props, State> {
 				<Delete className={ styles.closeFormButton } onClick={ onClose }/>
 				{ this.renderTextareaSection(value, valueCanBeAddedToFavourite,) }
 				<div className={ styles.divider }/>
-				{ this.renderFavouriteReviewsSection(favouriteCommentsIds, otherCommentsIds) }
+				{ this.renderFavouriteReviewsSection(favouriteCommentsIds, otherCommentsIds, lastUsedCommentsIds) }
 			</div>);
 	};
 
@@ -306,8 +321,10 @@ class AddCommentForm extends React.Component<Props, State> {
 		</div>
 	);
 
-	renderFavouriteReviewsSection = (favouriteCommentsIds: FavouriteCommentWithStyles[],
-		otherCommentsIds: FavouriteCommentWithStyles[]
+	renderFavouriteReviewsSection = (
+		favouriteCommentsIds: FavouriteCommentWithStyles[],
+		otherCommentsIds: FavouriteCommentWithStyles[],
+		lastUsedReviewsIds: FavouriteCommentWithStyles[],
 	): React.ReactElement => (
 		<div className={ styles.favouriteSection }>
 			{ this.renderCommentsHeader() }
@@ -315,6 +332,7 @@ class AddCommentForm extends React.Component<Props, State> {
 				<div className={ styles.commentsWrapper }>
 					{ this.renderFavouriteComments(favouriteCommentsIds) }
 					{ this.renderOtherComments(otherCommentsIds) }
+					{ this.renderLastUsedComments(lastUsedReviewsIds) }
 				</div>
 			</ScrollContainer>
 		</div>);
@@ -345,6 +363,17 @@ class AddCommentForm extends React.Component<Props, State> {
 			</header>
 			<ul className={ styles.commentsList }>
 				{ otherCommentsIds.map(this.renderComment) }
+			</ul>
+		</>
+	);
+
+	renderLastUsedComments = (lastUsedReviewsIds: FavouriteCommentWithStyles[]): React.ReactNode => (
+		lastUsedReviewsIds.length > 0 && <>
+			<header className={ styles.header }>
+				{ texts.lastUsedReviewsSectionHeaderText }
+			</header>
+			<ul className={ styles.commentsList }>
+				{ lastUsedReviewsIds.map(this.renderLastUsedComment) }
 			</ul>
 		</>
 	);
@@ -399,6 +428,45 @@ class AddCommentForm extends React.Component<Props, State> {
 			</li>);
 	};
 
+	renderLastUsedComment = (c: FavouriteCommentWithStyles): React.ReactElement => {
+		const { lastUsedCommentsById, } = this.state;
+		const { user, } = this.props;
+		const { text, } = lastUsedCommentsById[c.id];
+		const renderedText = renderSimpleMarkdown(text, { removeBr: true, removePre: true });
+		const id = c.id.toString();
+
+		if(c.overextended) {
+			return (
+				<li key={ id } ref={ c.ref }>
+					<Hint pos={ "right middle" } maxWidth={ this.maxCommentHintWidth }
+						  text={ <span className={ styles.preview }>
+							  <p className={ styles.previewHeader }> Превью </p>
+							  { Review.renderSampleCommentWrapper(<>
+								  { Review.renderHeaderContent(user, new Date().toDateString()) }
+								  { Review.renderCommentContent(renderSimpleMarkdown(text)) }
+							  </>) }
+						  </span> }>
+						<span
+							className={ styles.commentTextElapsed }
+							id={ id }
+							onClick={ this.onCommentClick }
+							dangerouslySetInnerHTML={ { __html: renderedText } }
+						/>
+					</Hint>
+				</li>);
+		}
+
+		return (
+			<li key={ id } ref={ c.ref }>
+				<span
+					className={ styles.commentText }
+					id={ id }
+					onClick={ this.onCommentClick }
+					dangerouslySetInnerHTML={ { __html: renderedText } }
+				/>
+			</li>);
+	};
+
 	onAddComment = (): void => {
 		const { addComment, value, } = this.props;
 
@@ -427,8 +495,10 @@ class AddCommentForm extends React.Component<Props, State> {
 
 	onCommentClick = (event: React.MouseEvent): void => {
 		const { favouriteReviews, onValueChange, } = this.props;
+		const { lastUsedCommentsById, } = this.state;
 		const id = Number.parseInt(event.currentTarget.id);
-		const commentText = favouriteReviews.find(c => c.id === id)?.text;
+		const commentText = favouriteReviews.find(c => c.id === id)?.text
+			|| lastUsedCommentsById[id]?.text;
 
 		onValueChange(commentText || '');
 	};

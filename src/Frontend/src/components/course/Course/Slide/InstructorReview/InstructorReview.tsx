@@ -709,8 +709,7 @@ class InstructorReview extends React.Component<Props, State> {
 			user,
 			favouriteReviews,
 			studentSubmissions,
-			lastManualCheckingSubmissionId,
-			lastCheckedSubmissionId,
+			lastUsedReviews,
 		} = this.props;
 		const {
 			currentSubmission,
@@ -769,6 +768,7 @@ class InstructorReview extends React.Component<Props, State> {
 					onValueChange={ this.onCommentFormValueChange }
 					addComment={ this.onFormAddComment }
 					favouriteReviews={ favouriteReviews }
+					lastUsedReviews={ lastUsedReviews || [] }
 					addFavouriteReview={ this.addFavouriteReview }
 					deleteFavouriteReview={ this.deleteFavouriteReview }
 					coordinates={ addCommentFormCoords }

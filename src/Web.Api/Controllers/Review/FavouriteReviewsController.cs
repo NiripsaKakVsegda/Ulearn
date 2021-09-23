@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Database;
@@ -19,15 +20,18 @@ namespace Ulearn.Web.Api.Controllers.Review
 	public class FavouriteReviewsController : BaseController
 	{
 		private readonly IFavouriteReviewsRepo favouriteReviewsRepo;
+		private readonly ISlideCheckingsRepo slideCheckingsRepo;
 
 		public FavouriteReviewsController(
 			ICourseStorage courseStorage,
 			UlearnDb db,
 			IFavouriteReviewsRepo favouriteReviewsRepo,
+			ISlideCheckingsRepo slideCheckingsRepo,
 			IUsersRepo usersRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.favouriteReviewsRepo = favouriteReviewsRepo;
+			this.slideCheckingsRepo = slideCheckingsRepo;
 		}
 
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -62,8 +66,9 @@ namespace Ulearn.Web.Api.Controllers.Review
 
 			var userFavouriteReviews = await favouriteReviewsRepo.GetFavouriteReviewsForUser(courseId, slideId, UserId);
 			var favouriteReviewsForOthersUsers = await favouriteReviewsRepo.GetFavouriteReviewsForOtherUsers(courseId, slideId, UserId, startDate);
+			var lastReviews = await slideCheckingsRepo.GetLastUsedExerciseCodeReviewsTexts(courseId, slideId, UserId, 5, userFavouriteReviews.Select(fr => fr.Text).ToList());
 
-			return FavouriteReviewsResponse.Build(favouriteReviewsForOthersUsers, userFavouriteReviews);
+			return FavouriteReviewsResponse.Build(favouriteReviewsForOthersUsers, userFavouriteReviews, lastReviews);
 		}
 
 		[HttpPost]

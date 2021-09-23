@@ -62,6 +62,7 @@ const args: Props = {
 	coordinates: { left: 0, top: 0, bottom: 0 },
 	value: '',
 	valueCanBeAddedToFavourite: false,
+	lastUsedReviews: [],
 };
 
 export const Default = Template.bind({});

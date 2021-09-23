@@ -26,6 +26,7 @@ export interface FavouriteReview {
 export interface FavouriteReviewResponse {
 	favouriteReviews: FavouriteReview[];
 	userFavouriteReviews: FavouriteReview[];
+	lastUsedReviews: string[];
 }
 
 export interface ReviewQueueResponse {

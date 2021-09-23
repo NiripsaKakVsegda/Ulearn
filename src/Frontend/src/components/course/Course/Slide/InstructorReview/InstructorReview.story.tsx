@@ -658,7 +658,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				.then(favouriteReviews => {
 					dispatch(favouriteReviewsLoadSuccessAction(courseId, slideId, {
 						favouriteReviews: favouriteReviews.filter(f => !f.isFavourite),
-						userFavouriteReviews: favouriteReviews.filter(f => f.isFavourite)
+						userFavouriteReviews: favouriteReviews.filter(f => f.isFavourite),
+						lastUsedReviews: [],
 					},));
 					return favouriteReviews;
 				})
