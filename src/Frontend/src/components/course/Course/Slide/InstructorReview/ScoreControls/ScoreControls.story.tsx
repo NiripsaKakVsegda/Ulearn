@@ -69,7 +69,9 @@ const args: PropsWithDecorator[] = [
 	score: null,
 	prevReviewScore: c.prevReviewScore || null,
 	onSubmit: mockFunc,
-	onToggleChange: mockFunc, ...c,
+	onToggleChange: mockFunc,
+	setNextSubmissionButtonDisabled: mockFunc,
+	...c,
 	canChangeScore: true,
 	toggleChecked: !!c.toggleChecked,
 }));

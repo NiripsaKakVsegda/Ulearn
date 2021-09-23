@@ -25,7 +25,6 @@ import { RootState } from "../../../redux/reducers";
 
 interface Props {
 	slideInfo: SlideInfo;
-	disabled: boolean;
 }
 
 function NavigationButtons({ slideInfo, }: Props): React.ReactElement {
@@ -93,7 +92,7 @@ interface ReviewNavigationState extends Partial<ReviewQueueResponse> {
 	isLoading: boolean;
 }
 
-function ReviewNavigationButtons({ slideInfo, disabled, }: Props): React.ReactElement {
+function ReviewNavigationButtons({ slideInfo, disabled, }: Props & { disabled: boolean; }): React.ReactElement {
 	const [state, setState] = useState<ReviewNavigationState | undefined>();
 	const { query, courseId, navigationInfo, slideId, } = slideInfo;
 

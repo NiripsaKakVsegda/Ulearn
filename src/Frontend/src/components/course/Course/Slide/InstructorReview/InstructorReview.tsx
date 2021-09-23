@@ -157,6 +157,7 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	hideAddCommentForm = (): void => {
+		document.removeEventListener('keydown', this.onEscPressed);
 		this.setState({
 			addCommentFormCoords: undefined,
 			addCommentFormExtraSpace: undefined,
@@ -178,11 +179,10 @@ class InstructorReview extends React.Component<Props, State> {
 		if(prevProps.slideContext.slideInfo.query.userId !== slideContext.slideInfo.query.userId
 			|| prevProps.slideContext.slideInfo.query.submissionId !== slideContext.slideInfo.query.submissionId) {
 			this.loadData();
+			this.hideAddCommentForm();
 			this.setState({
 				currentSubmission: undefined,
 				selectedReviewId: -1,
-				addCommentFormCoords: undefined,
-				addCommentRanges: undefined,
 			});
 			return;
 		}
@@ -497,8 +497,10 @@ class InstructorReview extends React.Component<Props, State> {
 			isEditable,
 		} = currentSubmissionContext;
 
-		const submissionPercent = currentSubmission.manualChecking?.percent || null;
-		const prevSubmissionPercent = diffInfo && diffInfo.prevReviewedSubmission && diffInfo.prevReviewedSubmission.manualChecking?.percent || null;
+		const submissionPercent = currentSubmission.manualChecking?.percent ?? null;
+		const prevSubmissionPercent = (diffInfo
+			&& diffInfo.prevReviewedSubmission
+			&& diffInfo.prevReviewedSubmission.manualChecking?.percent) ?? null;
 		const outputMessage = currentSubmission.automaticChecking?.output;
 
 		return (
@@ -596,7 +598,7 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		onScoreSubmit(currentSubmission.id, score, currentSubmission.manualChecking?.percent || null);
+		onScoreSubmit(currentSubmission.id, score, currentSubmission.manualChecking?.percent ?? null);
 	};
 
 	onZeroScoreButtonPressed = (): void => {
@@ -613,7 +615,7 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmission,
 		} = this.state;
 
-		if(!student || !currentSubmission || !lastManualCheckingSubmissionId) {
+		if(!student || !currentSubmission || lastManualCheckingSubmissionId === undefined) {
 			return;
 		}
 
@@ -757,6 +759,7 @@ class InstructorReview extends React.Component<Props, State> {
 				{ isEditable && addCommentFormCoords !== undefined &&
 				<AddCommentForm
 					ref={ this.addCommentFormRef }
+					textareaRef={ this.addCommentTextareaRef }
 					user={ this.props.user }
 					value={ addCommentValue }
 					valueCanBeAddedToFavourite={ this.isCommentCanBeAddedToFavourite() }
@@ -1178,9 +1181,7 @@ class InstructorReview extends React.Component<Props, State> {
 	};
 
 	onFormClose = (): void => {
-
 		this.hideAddCommentForm();
-		document.removeEventListener('keydown', this.onEscPressed);
 		this.clearSelectionMarkers();
 	};
 

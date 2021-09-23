@@ -16,7 +16,7 @@ const texts = {
 			waitingForManualChecking: boolean
 		): string => {
 			const { timestamp, manualChecking } = submission;
-			const manualCheckingPassed = (manualChecking?.percent || null) !== null;
+			const manualCheckingPassed = (manualChecking?.percent ?? null) !== null;
 			const timestampCaption = texts.getSubmissionDate(timestamp);
 			if(manualCheckingPassed) {
 				return timestampCaption + ", прошло код-ревью";

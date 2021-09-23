@@ -10,15 +10,15 @@ import {
 	SubmissionInfo,
 } from "src/models/exercise";
 import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
-import { getMockedShortUser, getMockedUser, instructor, reduxStore, renderMd } from "src/storiesUtils";
+import { getMockedShortUser, getMockedUser, instructor, loadUserToRedux, reduxStore, renderMd } from "src/storiesUtils";
 import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview, } from "src/models/instructor";
 import { GroupInfo, } from "src/models/groups";
 import { UserInfo } from "src/utils/courseRoles";
 import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, PropsFromRedux, PropsFromSlide } from "./InstructorReview.types";
+import { ApiFromRedux, PropsFromSlide } from "./InstructorReview.types";
 import { SlideType } from "src/models/slide";
 import { RootState } from "src/redux/reducers";
-import { getDataIfLoaded, ReduxData, } from "src/redux";
+import { getDataIfLoaded, } from "src/redux";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import {
@@ -76,8 +76,7 @@ import { Button } from "ui";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { MatchParams } from "../../../../../models/router";
 import { skipLoki } from "../../../Navigation/stroies.data";
-import { getSubmissionsWithReviews } from "../../CourseUtils";
-import { ShortGroupInfo } from "../../../../../models/comments";
+import { mapStateToProps } from "./InstructorReview.redux";
 
 
 const user: UserInfo = getMockedUser({
@@ -405,22 +404,23 @@ const submissions: SubmissionInfo[] = [
 			]
 		},
 	},
-].map((c, i) => ({
-	...c,
-	id: i,
-	automaticChecking: c.automaticChecking
-		? {
-			...c.automaticChecking,
-			reviews: c.automaticChecking?.reviews.map(addIdToReview) || null,
-		}
-		: null,
-	manualChecking: i > 0
-		? {
-			reviews: c.manualCheckingReviews.map(addIdToReview),
-			percent: i > 0 && i % 2 === 0 ? i * 10 : null,
-		}
-		: null,
-}));
+]
+	.map((c, i) => ({
+		...c,
+		id: i,
+		automaticChecking: c.automaticChecking
+			? {
+				...c.automaticChecking,
+				reviews: c.automaticChecking?.reviews.map(addIdToReview) || null,
+			}
+			: null,
+		manualChecking: i > 0
+			? {
+				reviews: c.manualCheckingReviews.map(addIdToReview),
+				percent: i > 0 && i % 2 === 0 ? i * 10 : null,
+			}
+			: null,
+	}));
 
 const loadingTimes = {
 	student: 100,
@@ -681,7 +681,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		},
 		enableManualChecking: (submissionId: number,) => {
 			dispatch(submissionsEnableManualCheckingStartAction(submissionId));
-			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId };
+			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId, };
 			return returnPromiseAfterDelay(loadingTimes.enableManualChecking, Promise.resolve())
 				.catch(error => {
 					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
@@ -706,104 +706,35 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	};
 };
 
-const mapStateToProps = (
-	state: RootState,
-	{ slideContext: { courseId, slideId, slideInfo, } }: PropsFromSlide
-): PropsFromRedux => {
-	const studentId = slideInfo.query.userId;
-
-	if(!studentId) {
-		throw new Error('User id was not provided');
-	}
-
-	const studentSubmissions: SubmissionInfo[] | undefined =
-		getSubmissionsWithReviews(
-			courseId,
-			slideId,
-			studentId,
-			state.submissions.submissionsIdsByCourseIdBySlideIdByUserId,
-			state.submissions.submissionsById,
-			state.submissions.reviewsBySubmissionId
-		)?.filter((s, index) => index === 0
-			|| !s.automaticChecking
-			|| s.automaticChecking.result === AutomaticExerciseCheckingResult.RightAnswer
-		);
-
-	const submissionToReview = studentSubmissions && studentSubmissions
-		.find(s =>
-			(!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
-			&& s.manualChecking);
-	const lastReviewedSubmission = studentSubmissions && studentSubmissions
-		.find(s =>
-			(!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
-			&& s.manualChecking
-			&& s.manualChecking.percent !== null);
-	const curScore = submissionToReview?.manualChecking?.percent || null;
-	const prevScore = lastReviewedSubmission?.manualChecking?.percent || null;
-
-	let studentGroups: ShortGroupInfo[] | undefined;
-	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
-		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
-	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
-		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
-	}
-	const favouriteReviews = getDataIfLoaded(
-		state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId]);
-
-	const antiPlagiarismStatus = studentSubmissions &&
-		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
-	const antiPlagiarismStatusRedux = antiPlagiarismStatus as ReduxData;
-
-	const prohibitFurtherManualChecking = state.instructor
-		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
-		?.[slideId]
-		?.[studentId] || false;
-
-	return {
-		user,
-		favouriteReviews,
-
-		studentGroups,
-		student,
-
-		studentSubmissions,
-		curScore,
-		prevScore,
-		lastCheckedSubmissionId: lastReviewedSubmission?.id,
-		lastManualCheckingSubmissionId: submissionToReview?.id,
-
-		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
-		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
-		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
-
-		prohibitFurtherManualChecking,
-	};
-};
-
 const Connected = connect(mapStateToProps, mapDispatchToProps)(withRouter(InstructorReview));
 
 const Template: Story<PropsFromSlide & RouteComponentProps<MatchParams>> = (args: PropsFromSlide & RouteComponentProps<MatchParams>) => {
+	if(!reduxStore.getState().account.isAuthenticated) {
+		loadUserToRedux(user, courseId);
+	}
+
 	return (
 		<>
-			<Button use={ 'primary' } onClick={ () => {
-				reduxStore.dispatch(antiplagiarimsStatusLoadSuccessAction(submissions[0].id, getNextAPStatus(),));
-			}
-			}>
+			<Button use={ 'primary' } onClick={ changeAPStatus }>
 				Change antiPlagiat status
 			</Button>
-			<Button use={ 'primary' } onClick={ () => {
-				reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
-					submissions,
-					prohibitFurtherManualChecking: true,
-				}));
-			}
-			}>
+			<Button use={ 'primary' } onClick={ loadSubmissions }>
 				Load submissions
 			</Button>
 			<Connected { ...args }/>
 		</>);
-};
 
+	function changeAPStatus(): void {
+		reduxStore.dispatch(antiplagiarimsStatusLoadSuccessAction(submissions[0].id, getNextAPStatus(),));
+	}
+
+	function loadSubmissions(): void {
+		reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
+			submissions,
+			prohibitFurtherManualChecking: true,
+		}));
+	}
+};
 
 const courseId = 'basic';
 const slideId = 'slide';

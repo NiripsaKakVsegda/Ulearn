@@ -56,8 +56,8 @@ export const mapStateToProps = (
 				s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			&& s.manualChecking
 			&& s.manualChecking.percent !== null);
-	const curScore = submissionToReview?.manualChecking?.percent || null;
-	const prevScore = lastReviewedSubmission?.manualChecking?.percent || null;
+	const curScore = submissionToReview?.manualChecking?.percent ?? null;
+	const prevScore = lastReviewedSubmission?.manualChecking?.percent ?? null;
 
 	let studentGroups: ShortGroupInfo[] | undefined;
 	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])

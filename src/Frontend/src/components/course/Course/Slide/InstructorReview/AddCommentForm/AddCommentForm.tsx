@@ -1,11 +1,11 @@
-import React, { CSSProperties } from "react";
-import { Button, ScrollContainer, Hint, Toast, Gapped, } from "ui";
+import React, { CSSProperties, RefObject } from "react";
+import { Button, Gapped, Hint, ScrollContainer, } from "ui";
 import MarkdownEditor from "src/components/comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
 
 import { MarkdownDescription } from "src/consts/comments";
 
 import Review from "../../Blocks/Exercise/Review";
-import { Star2, Star, Delete, } from "icons";
+import { Delete, Star, Star2, } from "icons";
 import { SvgIconProps } from "@skbkontur/react-icons/icons/internal/SvgIcon";
 import { ShortUserInfo } from "src/models/users";
 

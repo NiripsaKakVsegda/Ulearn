@@ -5,6 +5,7 @@ import configureStore from "../configureStore";
 import { ShortUserInfo } from "../models/users";
 import { GroupInfo } from "../models/groups";
 import { ShortGroupInfo } from "../models/comments";
+import { accountInfoUpdateAction, rolesUpdateAction } from "../actions/account";
 
 export const mock = (): unknown => ({});
 
@@ -202,3 +203,13 @@ export const avatarUrl = 'https://staff.skbkontur.ru/content/images/default-user
 export const accessesToSeeProfiles: SystemAccessType[] = [SystemAccessType.viewAllProfiles];
 export const courseAccessesToEditComments: CourseAccessType[] = [CourseAccessType.editPinAndRemoveComments];
 export const courseAccessesToViewSubmissions: CourseAccessType[] = [CourseAccessType.viewAllStudentsSubmissions];
+
+export const loadUserToRedux = (user: UserInfo, courseId: string): void => {
+	reduxStore.dispatch(accountInfoUpdateAction({ user, isAuthenticated: true, }));
+	reduxStore.dispatch(rolesUpdateAction({
+		courseAccesses: [{ courseId, accesses: user.courseAccesses }],
+		courseRoles: [{ courseId, role: user.courseRole }],
+		groupsAsStudent: [],
+		isSystemAdministrator: user.isSystemAdministrator,
+	}));
+};
