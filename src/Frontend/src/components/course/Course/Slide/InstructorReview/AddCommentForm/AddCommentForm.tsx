@@ -331,8 +331,8 @@ class AddCommentForm extends React.Component<Props, State> {
 			<ScrollContainer className={ styles.commentsScrollWrapper }>
 				<div className={ styles.commentsWrapper }>
 					{ this.renderFavouriteComments(favouriteCommentsIds) }
-					{ this.renderOtherComments(otherCommentsIds) }
 					{ this.renderLastUsedComments(lastUsedReviewsIds) }
+					{ this.renderOtherComments(otherCommentsIds) }
 				</div>
 			</ScrollContainer>
 		</div>);
