@@ -96,6 +96,10 @@ class MarkdownEditor extends Component<Props> {
 		}
 	}
 
+	public get selectionRange(): Range | undefined {
+		return this.textarea.current?.selectionRange;
+	}
+
 	componentDidUpdate(prevProps: Readonly<Props>): void {
 		const { isShowFocus, } = prevProps;
 		const shouldFocus = this.props.isShowFocus && !isShowFocus;
@@ -172,20 +176,17 @@ class MarkdownEditor extends Component<Props> {
 			this.handleChange('');
 			this.props.handleSubmit(e);
 		}
-	}
-	;
+	};
 
 	isKeyFromMarkdownOperation = (event: React.KeyboardEvent, operation: MarkdownOperation): boolean => {
 		return operation.hotkey.key.includes(event.key) &&
 			(event.ctrlKey || event.metaKey) === !!operation.hotkey.ctrl &&
 			event.altKey === !!operation.hotkey.alt;
-	}
-	;
+	};
 
 	handleClick = (operation: MarkdownOperation): void => {
 		this.transformTextToMarkdown(operation);
-	}
-	;
+	};
 
 	transformTextToMarkdown = (operation: MarkdownOperation): void => {
 		const { handleChange, text } = this.props;
@@ -199,19 +200,16 @@ class MarkdownEditor extends Component<Props> {
 				finalSelectionRange.end,
 			);
 		});
-	}
-	;
+	};
 
 	static wrapRangeWithMarkdown(
 		text: string,
 		range: Range | undefined,
 		operation: MarkdownOperation
-	):
-		{
-			finalText: string, finalSelectionRange
-				:
-				Range
-		} {
+	): {
+		finalText: string,
+		finalSelectionRange: Range
+	} {
 		if(!range) {
 			throw new TypeError("range should be an object with `start` and `end` properties of type `number`");
 		}

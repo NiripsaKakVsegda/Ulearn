@@ -12,6 +12,7 @@ import CourseLoader from "../../CourseLoader";
 import AddCommentForm from "./AddCommentForm/AddCommentForm";
 import AntiPlagiarismHeader from "./AntiPlagiarismHeader/AntiPlagiarismHeader";
 import StickyWrapper from "./AntiPlagiarismHeader/StickyWrapper";
+import MarkdownEditor from "../../../../comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
 import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
@@ -54,6 +55,7 @@ class InstructorReview extends React.Component<Props, State> {
 		'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 		'Выполняйте задания самостоятельно.';
 	private addCommentFormRef = React.createRef<AddCommentForm>();
+	private addCommentTextareaRef = React.createRef<MarkdownEditor>();
 
 	constructor(props: Props) {
 		super(props);
@@ -158,6 +160,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	hideAddCommentForm = (): void => {
 		document.removeEventListener('keydown', this.onEscPressed);
+		document.removeEventListener('copy', this.onCopy);
 		this.setState({
 			addCommentFormCoords: undefined,
 			addCommentFormExtraSpace: undefined,
@@ -1081,8 +1084,18 @@ class InstructorReview extends React.Component<Props, State> {
 					}
 				});
 			});
+		document.addEventListener('copy', this.onCopy);
 		document.addEventListener('keydown', this.onEscPressed);
 		document.removeEventListener('mouseup', this.onMouseUp);
+	};
+
+	onCopy = async (): Promise<void> => {
+		const { editor } = this.state;
+		const selection = this.addCommentTextareaRef.current?.selectionRange;
+		if(editor && selection && selection.end - selection.start === 0) {
+			const textInEditor = editor.getSelection();
+			await navigator.clipboard.writeText(textInEditor);
+		}
 	};
 
 	onAddReviewComment = (reviewId: number, comment: string): void => {
