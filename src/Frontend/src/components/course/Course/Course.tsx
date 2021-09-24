@@ -23,22 +23,13 @@ import { Helmet } from "react-helmet";
 import { Edit, } from "icons";
 import CourseLoader from "./CourseLoader";
 
-import {
-	SlideInfo,
-	findNextUnit,
-	findUnitIdBySlideId,
-	getCourseStatistics,
-} from "./CourseUtils";
+import { findNextUnit, findUnitIdBySlideId, getCourseStatistics, SlideInfo, } from "./CourseUtils";
 import { buildQuery } from "src/utils";
 import { UserInfo, UserRoles } from "src/utils/courseRoles";
 import documentReadyFunctions from "src/legacy/legacy";
 import runLegacy from "src/legacy/legacyRunner";
 
-import {
-	adminCheckingQueuePath,
-	constructPathToSlide,
-	signalrWS,
-} from 'src/consts/routes';
+import { adminCheckingQueuePath, constructPathToSlide, signalrWS, } from 'src/consts/routes';
 import { ShortSlideInfo, SlideType, } from 'src/models/slide';
 import Meta from "src/consts/Meta";
 import { CourseInfo, UnitInfo, UnitsInfo } from "src/models/course";
@@ -408,7 +399,13 @@ class Course extends Component<CourseProps, State> {
 				</label> }
 				{ (isNavigationVisible || isReview) && title &&
 				<h1 className={ styles.title }>
-					{ title }
+					{ currentSlideInfo
+					&& isReview
+					&& currentSlideInfo.type === SlideType.Exercise
+						? <Link to={ constructPathToSlide(courseId, currentSlideInfo.id) }>
+							{ title }
+						</Link>
+						: title }
 					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 				</h1> }
 				<div className={ styles.slide }>
