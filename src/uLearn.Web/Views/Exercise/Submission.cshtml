@@ -55,7 +55,7 @@
 						: texts.WaitingForCodeReviewInstructorView;
 					status = string.Format(
 						messageFormat,
-						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id })
+						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id, queueSlideId = Model.Slide.Id })
 						);
 				}
 			}
@@ -75,7 +75,7 @@
 						? "Все тесты пройдены, за&nbsp;<a href=\"{0}\" title=\"Отредактировать код-ревью\">код-ревью</a> {1} +{2}"
 						: texts.CodeReviewPassedInstructorView;
 					status = string.Format(messageFormat,
-						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id, recheck = true }),
+						Url.Action("ExerciseChecking", "Admin", new { courseId = Model.CourseId, id = Model.SubmissionSelectedByUser.ManualChecking.Id, recheck = true, queueSlideId = Model.Slide.Id }),
 						scoreVerb,
 						pluralizedScore);
 				}
