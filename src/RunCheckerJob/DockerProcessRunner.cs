@@ -41,10 +41,10 @@ namespace RunCheckerJob
 
 			log.Info($"Запускаю Docker для решения {submission.Id} в папке {dir.FullName}");
 
-			return RunDocker(settings, dir);
+			return RunDocker(submission, settings, dir);
 		}
 
-		private static RunningResults RunDocker(DockerSandboxRunnerSettings settings, DirectoryInfo dir)
+		private static RunningResults RunDocker(CommandRunnerSubmission submission, DockerSandboxRunnerSettings settings, DirectoryInfo dir)
 		{
 			var name = Guid.NewGuid();
 			var dockerCommand = BuildDockerCommand(settings, dir, name);
@@ -100,6 +100,15 @@ namespace RunCheckerJob
 
 				if (readOutTask.Result == "" && readErrTask.Result == "") // Поддержка старого соглашения
 					return new RunningResults(Verdict.Ok) { Logs = new[] { "Чеккер ничего не вывел" } };
+
+				if (submission.InterpretOutputAsWrongAnswer && readOutTask.Result.Length > 0)
+				{
+					return new RunningResults(Verdict.WrongAnswer)
+					{
+						Error = readErrTask.Result,
+						Output = readOutTask.Result, 
+					};
+				}
 
 				return ResultParser.Parse(readOutTask.Result, readErrTask.Result);
 			}

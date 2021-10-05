@@ -51,6 +51,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		[XmlAttribute("noStudentZip")] // Не отдавать zip студенту
 		public virtual bool NoStudentZip { get; set; }
 
+		[XmlElement("interpretOutputAsWrongAnswer")]
+		public virtual bool InterpretOutputAsWrongAnswer { get; set; }
+		
 		[XmlElement("dockerImageName")] // см. DockerImageNameRegex
 		public virtual string DockerImageName { get; set; }
 
@@ -182,7 +185,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					Language = Language.Value,
 					DockerImageName = DockerImageName,
 					RunCommand = RunCommand,
-					TimeLimit = TimeLimit
+					TimeLimit = TimeLimit,
+					InterpretOutputAsWrongAnswer = InterpretOutputAsWrongAnswer,
 				};
 			}
 		}
