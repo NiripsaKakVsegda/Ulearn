@@ -101,13 +101,20 @@ namespace RunCheckerJob
 				if (readOutTask.Result == "" && readErrTask.Result == "") // Поддержка старого соглашения
 					return new RunningResults(Verdict.Ok) { Logs = new[] { "Чеккер ничего не вывел" } };
 
-				if (submission.InterpretOutputAsWrongAnswer && (readOutTask.Result.Length > 0 || readErrTask.Result.Length > 0))
+				if (submission.InterpretOutputAsWrongAnswer)
 				{
-					return new RunningResults(Verdict.WrongAnswer)
-					{
-						Error = readErrTask.Result,
-						Output = readOutTask.Result,
-					};
+					if (readOutTask.Result.Length > 0)
+						return new RunningResults(Verdict.WrongAnswer)
+						{
+							Error = readErrTask.Result,
+							Output = readOutTask.Result,
+						};
+					if (readErrTask.Result.Length > 0)
+						return new RunningResults(Verdict.CompilationError)
+						{
+							Error = readErrTask.Result,
+							Output = readOutTask.Result,
+						};
 				}
 
 				return ResultParser.Parse(readOutTask.Result, readErrTask.Result);
