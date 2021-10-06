@@ -631,6 +631,13 @@
 							</xs:documentation>
 						</xs:annotation>
 					</xs:element>
+					<xs:element name="interpretOutputAsWrongAnswer" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Нужно ли интерпритировать любой вывод как ошибку теста
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
 					<xs:element name="checkInitialSolution" type="xs:boolean" minOccurs="0" maxOccurs="1">
 						<xs:annotation>
 							<xs:documentation>
