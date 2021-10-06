@@ -55,7 +55,7 @@ const runTests = async () => {
   return new Promise((resolve) => {
     const runner = mocha.run(() => {
       process.stdout.write = write;
-      resolve(JSON.stringify(runner.testResults, null, 2));
+      resolve(runner.testResults);
     });
   });
 };
