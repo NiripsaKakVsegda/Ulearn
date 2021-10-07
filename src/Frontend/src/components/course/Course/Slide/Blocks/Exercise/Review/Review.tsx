@@ -82,7 +82,23 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				renderedReviews: this.addMarginsToReviews(renderedReviews, selectedReviewId),
 			});
 		}
+
+		document.addEventListener('keydown', this.handleCtrlEnter);
 	}
+
+	componentWillUnmount() {
+		document.removeEventListener('keydown', this.handleCtrlEnter);
+	}
+
+	handleCtrlEnter = (event: KeyboardEvent): void => {
+		const { selectedReviewId, } = this.props;
+		const { replies, } = this.state;
+		if(event.ctrlKey && event.keyCode === 13) {
+			if(selectedReviewId && replies[selectedReviewId]) {
+				this.sendComment();
+			}
+		}
+	};
 
 	componentDidUpdate(prevProps: ReviewProps): void {
 		const { reviews, selectedReviewId, } = this.props;
