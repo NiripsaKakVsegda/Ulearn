@@ -112,14 +112,14 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 				serverErrorHandler();
 			}
 
-			throw new RequestError(response.status);
+			throw new RequestError(response);
 		})
 		.catch(err => {
 			const reqError = err as RequestError;
 			if(reqError.showToast) {
 				reqError.showToast();
 			}
-			throw  err;
+			throw err;
 		})
 		.then(value => {
 			const response = value as Response;
@@ -172,22 +172,22 @@ function createRequestParams(body: Record<string, unknown> | string): RequestIni
 }
 
 export class RequestError extends Error {
-	status: number | undefined;
+	response: Response;
 
-	constructor(status: number) {
-		const message = `HTTP response code: ${ status }`;
+	constructor(response: Response) {
+		const message = `HTTP response code: ${ response.status }`;
 
 		super(message);
 
-		this.status = status;
+		this.response = response;
 	}
 
 	showToast(): void {
 		console.error(this);
-		if(this.status === 403) {
+		if(this.response.status === 403) {
 			Toast.push("У вас нет прав для совершения операции");
 		} else {
-			Toast.push(`Ошибка с кодом ${ this.status }`);
+			Toast.push(`Ошибка с кодом ${ this.response.status }`);
 		}
 	}
 }

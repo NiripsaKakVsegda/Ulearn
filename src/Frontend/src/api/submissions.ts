@@ -12,40 +12,32 @@ import {
 import { Dispatch } from "redux";
 import { userProgressUpdateAction } from "../actions/userProgress";
 import {
+	addSubmissionAction,
+	reviewsAddCommentFailAction,
 	reviewsAddCommentStartAction,
 	reviewsAddCommentSuccessAction,
-	reviewsAddCommentFailAction,
-
-	addSubmissionAction,
-
-	reviewsDeleteCommentStart,
-	reviewsDeleteCommentSuccess,
-	reviewsDeleteCommentFail,
-
-	submissionsLoadStartAction,
-	submissionsLoadSuccessAction,
-	submissionsLoadFailAction,
-
+	reviewsAddFailAction,
+	reviewsAddScoreFail,
+	reviewsAddScoreStart,
 	reviewsAddStartAction,
 	reviewsAddSuccessAction,
-	reviewsAddFailAction,
-
+	reviewsAssignBotReviewFail,
+	reviewsAssignBotReviewStart,
+	reviewsAssignBotReviewSuccess,
+	reviewsDeleteCommentFail,
+	reviewsDeleteCommentStart,
+	reviewsDeleteCommentSuccess,
+	reviewsDeleteFailAction,
 	reviewsDeleteStartAction,
 	reviewsDeleteSuccessAction,
-	reviewsDeleteFailAction,
-
+	reviewsEditFailAction,
 	reviewsEditStartAction,
 	reviewsEditSuccessAction,
-	reviewsEditFailAction,
-
-	reviewsAddScoreStart,
-	reviewsAddScoreFail,
-
-	submissionsEnableManualCheckingStartAction,
 	submissionsEnableManualCheckingFailAction,
-	reviewsAssignBotReviewStart,
-	reviewsAssignBotReviewFail,
-	reviewsAssignBotReviewSuccess,
+	submissionsEnableManualCheckingStartAction,
+	submissionsLoadFailAction,
+	submissionsLoadStartAction,
+	submissionsLoadSuccessAction,
 } from "../actions/submissions";
 
 import { reviews, submissions } from "../consts/routes";
@@ -187,7 +179,7 @@ const addReviewRedux = (
 	startLine: number, startPosition: number,
 	finishLine: number, finishPosition: number
 ) => {
-	return (dispatch: Dispatch): Promise<ReviewInfo> => {
+	return (dispatch: Dispatch): Promise<ReviewInfo | void> => {
 		dispatch(reviewsAddStartAction(submissionId, text, startLine, startPosition, finishLine, finishPosition));
 		return addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)
 			.then(review => {
@@ -196,7 +188,7 @@ const addReviewRedux = (
 			})
 			.catch(error => {
 				dispatch(reviewsAddFailAction(submissionId, error,));
-				return error;
+				throw error;
 			});
 	};
 };
@@ -264,7 +256,7 @@ const addReviewCommentRedux = (
 	reviewId: number,
 	text: string,
 ) => {
-	return (dispatch: Dispatch): Promise<ReviewCommentResponse | string> => {
+	return (dispatch: Dispatch): Promise<ReviewCommentResponse | void> => {
 		dispatch(reviewsAddCommentStartAction(submissionId, reviewId, text));
 
 		return addReviewComment(reviewId, text,)
@@ -274,7 +266,7 @@ const addReviewCommentRedux = (
 			})
 			.catch(err => {
 				dispatch(reviewsAddCommentFailAction(submissionId, reviewId, text, err));
-				return err;
+				throw err;
 			});
 	};
 };
@@ -319,12 +311,12 @@ const getUserSubmissionsRedux = (userId: string, courseId: string, slideId: stri
 export function submitReviewScoreRedux(submissionId: number, percent: number,
 	oldScore: number | null,
 ) {
-	return (dispatch: Dispatch): Promise<Response | string> => {
+	return (dispatch: Dispatch): Promise<Response | void> => {
 		dispatch(reviewsAddScoreStart(submissionId, percent));
 		return api.submissions.submitReviewScore(submissionId, percent)
 			.catch(err => {
 				dispatch(reviewsAddScoreFail(submissionId, oldScore, err));
-				return err;
+				throw err;
 			});
 	};
 }

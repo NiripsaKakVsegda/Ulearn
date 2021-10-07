@@ -17,7 +17,7 @@ import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
 import { buildQuery } from "src/utils";
-import { constructLinkWithReturnUrl, login } from "src/consts/routes";
+import { constructLinkWithReturnUrl, constructPathToSlide, login } from "src/consts/routes";
 import { isInstructor } from "src/utils/courseRoles";
 import {
 	areReviewsSame,
@@ -194,11 +194,11 @@ class InstructorReview extends React.Component<Props, State> {
 			getAntiPlagiarismStatus(slideContext.courseId, studentSubmissions[0].id);
 		}
 
-
-		if(!currentSubmission && studentSubmissions && studentSubmissions.length > 0) {
-			const index = Math.max(
-				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
-			this.loadSubmission(studentSubmissions, index);
+		if(studentSubmissions && studentSubmissions.length > 0 && !currentSubmission) {
+			const index = studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId);
+			if(index > -1) {
+				this.loadSubmission(studentSubmissions, index);
+			}
 			return;
 		}
 
@@ -591,9 +591,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onScoreButtonPressed = (score: number): void => {
 		const {
-			onScoreSubmit,
-		} = this.props;
-		const {
 			currentSubmission,
 		} = this.state;
 
@@ -601,14 +598,12 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		onScoreSubmit(currentSubmission.id, score, currentSubmission.manualChecking?.percent ?? null);
+		this.onScoreSubmit(currentSubmission.id, score, currentSubmission.manualChecking?.percent ?? null);
 	};
 
 	onZeroScoreButtonPressed = (): void => {
 		const {
-			onScoreSubmit,
 			prohibitFurtherReview,
-			addReview,
 			slideContext,
 			student,
 			lastManualCheckingSubmissionId,
@@ -622,15 +617,78 @@ class InstructorReview extends React.Component<Props, State> {
 			return;
 		}
 
-		onScoreSubmit(lastManualCheckingSubmissionId, 0, curScore);
-		prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, true);
-		addReview(lastManualCheckingSubmissionId, this.shameComment, 0, 0, 0, 1)
-			.then(r => this.highlightReview(r.id));
-		if(currentSubmission.id !== lastManualCheckingSubmissionId) {
-			Toast.push('Оценка и комментарий были оставлены к решению ожидающему ревью', {
-				label: 'Перейти',
-				handler: this.handleZeroButtonToastClick
+		this.onScoreSubmit(lastManualCheckingSubmissionId, 0, curScore)
+			.then(() => {
+				prohibitFurtherReview(slideContext.courseId, slideContext.slideId, student.id, true);
+				this.addReview(lastManualCheckingSubmissionId, this.shameComment, 0, 0, 0, 1)
+					.then(r => r && this.highlightReview(r.id));
+				if(currentSubmission.id !== lastManualCheckingSubmissionId) {
+					Toast.push('Оценка и комментарий были оставлены к решению ожидающему ревью', {
+						label: 'Перейти',
+						handler: this.handleZeroButtonToastClick
+					});
+				}
 			});
+	};
+
+	onScoreSubmit = (submissionId: number, score: number,
+		oldScore: number | null,
+	): Promise<Response | string | void> => {
+		const {
+			onScoreSubmit,
+		} = this.props;
+
+		return onScoreSubmit(submissionId, score, oldScore)
+			.catch(this.catchNewestSubmission);
+	};
+
+	addReview = (
+		submissionId: number,
+		comment: string,
+		startLine: number,
+		startPosition: number,
+		finishLine: number,
+		finishPosition: number,
+	): Promise<ReviewInfo | void> => {
+		const {
+			addReview,
+		} = this.props;
+
+		return addReview(submissionId, comment, startLine, startPosition, finishLine, finishPosition)
+			.catch(this.catchNewestSubmission);
+	};
+
+	catchNewestSubmission = (err: any): void => {
+		const {
+			history,
+			slideContext,
+		} = this.props;
+		if(err.response) {
+			err.response.json()
+				.then((json: any) => {
+					const errorResponse = json as {
+						error: "has_newest_submission" | string;
+						submissionId: number;
+						submissionDate: string;
+					};
+
+					if(errorResponse.error === "has_newest_submission") {
+						Toast.push('Появилось новое решение', {
+							label: "Загрузить и перейти",
+							handler: () => {
+								history.push(constructPathToSlide(slideContext.courseId, slideContext.slideId)
+									+ buildQuery({
+										queueSlideId: slideContext.slideInfo.query.queueSlideId || undefined,
+										userId: slideContext.slideInfo.query.userId,
+										group: slideContext.slideInfo.query.group || undefined,
+										done: slideContext.slideInfo.query.done,
+										checkQueueItemId: errorResponse.submissionId,
+										submissionId: errorResponse.submissionId,
+									}));
+							}
+						});
+					}
+				});
 		}
 	};
 
@@ -1130,9 +1188,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onFormAddComment = (comment: string): void => {
 		const {
-			addReview,
-		} = this.props;
-		const {
 			currentSubmission,
 			editor,
 			diffInfo,
@@ -1156,21 +1211,21 @@ class InstructorReview extends React.Component<Props, State> {
 			const actualStartLine = diffInfo.diffByBlocks[startRange.line].line - 1;
 			const actualEndLine = diffInfo.diffByBlocks[endRange.line].line - 1;
 
-			addReview(currentSubmission.id,
+			this.addReview(currentSubmission.id,
 				comment,
 				actualStartLine,
 				startRange.ch,
 				actualEndLine,
 				endRange.ch,
-			).then(r => this.highlightReview(r.id));
+			).then(r => r && this.highlightReview(r.id));
 		} else {
-			addReview(currentSubmission.id,
+			this.addReview(currentSubmission.id,
 				comment,
 				startRange.line,
 				startRange.ch,
 				endRange.line,
 				endRange.ch
-			).then(r => this.highlightReview(r.id));
+			).then(r => r && this.highlightReview(r.id));
 		}
 
 		this.clearSelectionMarkers();

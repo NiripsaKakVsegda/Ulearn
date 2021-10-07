@@ -47,9 +47,24 @@ namespace Ulearn.Web.Api.Controllers.Review
 				return;
 			}
 
+			var courseId = submission.CourseId;
+			var slideId = submission.SlideId;
+			var userId = submission.UserId;
+
 			if (submission.ManualChecking == null)
 			{
-				context.Result = NotFound(new ErrorResponse($"Submission {submissionId} doesn't contain manual checking"));
+				var lastAcceptedSubmission = userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).OrderByDescending(s => s.Timestamp).FirstOrDefault();
+				if (lastAcceptedSubmission != null && lastAcceptedSubmission.Id != submission.Id)
+					context.Result = StatusCode((int)HttpStatusCode.BadRequest,
+						new
+						{
+							Status = "error",
+							Error = "has_newest_submission",
+							SubmissionId = lastAcceptedSubmission.Id,
+							SubmissionDate = lastAcceptedSubmission.Timestamp,
+						});
+				else
+					context.Result = BadRequest(new ErrorResponse($"Submission {submissionId} doesn't contain manual checking"));
 				return;
 			}
 

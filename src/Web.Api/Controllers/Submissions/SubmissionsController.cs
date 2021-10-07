@@ -70,8 +70,8 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				.GetAllSubmissionsByUserAllInclude(courseId, slideId, userId)
 				.OrderByDescending(s => s.Timestamp)
 				.ToListAsync();
-			
-			if(!courseStorage.HasCourse(courseId))
+
+			if (!courseStorage.HasCourse(courseId))
 				return NotFound($"Course {courseId} not found");
 
 			if (courseStorage
@@ -112,9 +112,11 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 		public async Task<ActionResult> Score([FromRoute] string submissionId, [FromQuery] int percent)
 		{
 			var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
-			var checking = submission.ManualChecking;
+			var courseId = submission.CourseId;
+			var slideId = submission.SlideId;
+			var userId = submission.UserId;
 
-			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(User.GetUserId(), submission.UserId))
+			if (!await groupAccessesRepo.HasInstructorEditAccessToStudentGroup(User.GetUserId(), userId))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You don't have access to score this submission");
 
 			/* Invalid form: score isn't from range 0..100 */
@@ -123,17 +125,36 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 				return StatusCode((int)HttpStatusCode.BadRequest, $"Неверное количество процентов: {percent}");
 			}
 
-			var course = courseStorage.GetCourse(submission.CourseId);
-			var slide = course.FindSlideByIdNotSafe(submission.SlideId);
+			var course = courseStorage.GetCourse(courseId);
+			var slide = course.FindSlideByIdNotSafe(slideId);
+
+			if (submission.ManualChecking == null)
+			{
+				var lastAcceptedSubmission = await userSolutionsRepo
+					.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId)
+					.OrderByDescending(s => s.Timestamp)
+					.FirstOrDefaultAsync();
+				if (lastAcceptedSubmission != null && lastAcceptedSubmission.Id != submission.Id)
+					return StatusCode((int)HttpStatusCode.BadRequest,
+						new
+						{
+							Status = "error",
+							Error = "has_newest_submission",
+							SubmissionId = lastAcceptedSubmission.Id,
+							SubmissionDate = lastAcceptedSubmission.Timestamp,
+						});
+			}
+
+			var checking = submission.ManualChecking;
 
 			await using (var transaction = await db.Database.BeginTransactionAsync())
 			{
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent);
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking);
-				await visitsRepo.UpdateScoreForVisit(checking.CourseId, slide, checking.UserId);
+				await visitsRepo.UpdateScoreForVisit(courseId, slide, userId);
 
 				var visibleUnits = await unitsRepo.GetPublishedUnitIds(course);
-				if (course.FindSlideById(submission.SlideId, false, visibleUnits) != null)
+				if (course.FindSlideById(slideId, false, visibleUnits) != null)
 					await NotifyAboutManualExerciseChecking(checking);
 
 				await transaction.CommitAsync();

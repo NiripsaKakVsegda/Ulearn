@@ -35,8 +35,10 @@ const SubmissionsLoader: React.FC<SubmissionsLoaderProps> = ({
 	const { slideInfo, } = slideContext;
 	const { slideId, courseId, } = slideInfo;
 
-	if(!submissions && !isSubmissionsLoading && slideId && userId) {
-		loadSubmissions(userId, courseId, slideId);
+	if(userId && slideId && !isSubmissionsLoading) {
+		if(!submissions) {
+			loadSubmissions(userId, courseId, slideId);
+		}
 	}
 
 	return (
@@ -49,7 +51,7 @@ const mapStateToProps = (state: RootState, { slideContext: { slideInfo, } }: Sli
 		? slideInfo.query.userId
 		: state.account.id;
 
-	const submissions: SubmissionInfo[] | undefined =
+	let submissions: SubmissionInfo[] | undefined =
 		getSubmissionsWithReviews(
 			slideInfo.courseId,
 			slideInfo.slideId,
@@ -58,6 +60,13 @@ const mapStateToProps = (state: RootState, { slideContext: { slideInfo, } }: Sli
 			state.submissions.submissionsById,
 			state.submissions.reviewsBySubmissionId
 		);
+
+	if(userId && submissions) {
+		if(slideInfo.isReview && slideInfo.query.submissionId && !submissions.find(
+			s => s.id === slideInfo.query.submissionId)) {
+			submissions = undefined;
+		}
+	}
 
 	return {
 		userId,

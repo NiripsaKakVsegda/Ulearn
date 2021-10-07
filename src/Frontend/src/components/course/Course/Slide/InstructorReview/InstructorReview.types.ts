@@ -46,7 +46,7 @@ export interface ApiFromRedux {
 	getFavouriteReviews: (courseId: string, slideId: string,) => Promise<FavouriteReviewResponse | string>;
 	getStudentGroups: (courseId: string, studentId: string,) => Promise<GroupsInfoResponse | string>;
 
-	onScoreSubmit: (submissionId: number, score: number, oldScore: number | null,) => Promise<Response | string>;
+	onScoreSubmit: (submissionId: number, score: number, oldScore: number | null,) => Promise<Response | void>;
 	prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) => Promise<Response>;
 
 	addFavouriteReview: (courseId: string, slideId: string, text: string) => Promise<FavouriteReview>;
@@ -59,10 +59,10 @@ export interface ApiFromRedux {
 		startPosition: number,
 		finishLine: number,
 		finishPosition: number,
-	) => Promise<ReviewInfo>;
+	) => Promise<ReviewInfo | void>;
 	addReviewComment: (submissionId: number, reviewId: number,
 		comment: string
-	) => Promise<ReviewCommentResponse | string>;
+	) => Promise<ReviewCommentResponse | void>;
 	enableManualChecking: (submissionId: number,) => Promise<Response | string>;
 	deleteReview: (submissionId: number, reviewId: number, isBotReview?: boolean) => Promise<Response>;
 	deleteReviewComment: (submissionId: number, reviewId: number, commentId: number) => Promise<Response>;
