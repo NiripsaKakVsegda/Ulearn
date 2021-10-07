@@ -6,7 +6,7 @@ export default {
 	commentSectionHeaderText: 'Комментарий',
 	favouriteSectionHeaderText: 'Избранные',
 	instructorFavouriteSectionHeaderText: 'Комментарии других преподавателей',
-	lastUsedReviewsSectionHeaderText: 'Недавно оставленные комментарии',
+	lastUsedReviewsSectionHeaderText: 'Ваши последние комментарии',
 	addCommentButtonText: 'Добавить',
 	addToFavouriteButtonText: 'Добавить комментарий в Избранные',
 	noFavouriteCommentsText: (): React.ReactElement => (

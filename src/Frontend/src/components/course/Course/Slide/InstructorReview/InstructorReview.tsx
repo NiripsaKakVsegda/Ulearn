@@ -1096,7 +1096,6 @@ class InstructorReview extends React.Component<Props, State> {
 		const endRange = this.getStartAndEndFromRange(lastSelection)[1];
 		let coords: { left: number, right: number, top: number, bottom: number } | undefined
 			= undefined;
-
 		for (const selection of selections) {
 			const range = selection;
 			const selectedText = doc.getSelection();
@@ -1113,37 +1112,39 @@ class InstructorReview extends React.Component<Props, State> {
 					doc);
 			}
 		}
-		getFavouriteReviews(slideContext.courseId, slideContext.slideId)
-			.then(() => {
-				const wrapperHeight = editor
-					.getScrollerElement()
-					.getBoundingClientRect()
-					.height - 50;
-				const lineHeight = 20;
-				const padding = 16;
-				if(coords) {
-					coords.left = editor
+		if(coords) {
+			const c = coords;
+			getFavouriteReviews(slideContext.courseId, slideContext.slideId)
+				.then(() => {
+					const wrapperHeight = editor
+						.getScrollerElement()
+						.getBoundingClientRect()
+						.height - 50;
+					const lineHeight = 20;
+					const padding = 16;
+					c.left = editor
 						.getGutterElement()
 						.getBoundingClientRect()
 						.width + padding / 2;
-					coords.bottom += padding;
-				}
-				this.setState({
-					addCommentFormCoords: coords,
-					addCommentRanges: { startRange, endRange, },
-				}, () => {
-					//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
-					const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
-					if(addCommentFormHeight) {
-						const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
-						this.setState({
-							addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
-						});
-					}
+					c.bottom += padding;
+					this.setState({
+						addCommentFormCoords: coords,
+						addCommentRanges: { startRange, endRange, },
+					}, () => {
+						document.addEventListener('copy', this.onCopy);
+						document.addEventListener('keydown', this.onEscPressed);
+						//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
+						const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
+						if(addCommentFormHeight) {
+							const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
+							this.setState({
+								addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
+							});
+						}
+					});
 				});
-			});
-		document.addEventListener('copy', this.onCopy);
-		document.addEventListener('keydown', this.onEscPressed);
+		}
+
 		document.removeEventListener('mouseup', this.onMouseUp);
 	};
 

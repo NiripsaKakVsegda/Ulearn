@@ -546,22 +546,24 @@ namespace Database.Repos
 
 		public async Task<List<string>> GetLastUsedExerciseCodeReviewsTexts(string courseId, Guid slideId, string instructorId, int count, List<string> skipReviews = null)
 		{
-			var query = db.ExerciseCodeReviews
+			IEnumerable<string> codeReviews = await db.ExerciseCodeReviews
 				.Where(c =>
 					c.CourseId == courseId
 					&& c.SlideId == slideId
 					&& c.AuthorId == instructorId
-					&& !c.IsDeleted);
+					&& !c.IsDeleted)
+				.OrderByDescending(c => c.AddingTime)
+				.Select(c => c.Comment)
+				.Take(count + 40)
+				.ToListAsync();
+
 			if (skipReviews != null)
 			{
-				query = query.Where(c => !skipReviews.Contains(c.Comment));
+				var skipReviewsHashSet = skipReviews.ToHashSet();
+				codeReviews = codeReviews.Where(c => !skipReviewsHashSet.Contains(c));
 			}
 
-			return (await query
-					.OrderByDescending(c => c.AddingTime)
-					.Take(count + 20)
-					.ToListAsync())
-				.Select(c => c.Comment)
+			return codeReviews
 				.Distinct()
 				.Take(count)
 				.ToList();
