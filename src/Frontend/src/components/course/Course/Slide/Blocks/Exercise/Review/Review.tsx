@@ -558,6 +558,8 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 						data-tid={ id.toString() }
 						onFocus={ this.selectComment }
 						value={ commentReply }
+						extraRow={ false }
+						maxRows={ 9999 }
 						lengthCounter={ reviewPolicyChecker.maxReviewLength }
 						error={ commentReply.length > reviewPolicyChecker.maxReviewLength }
 						showLengthCounter={ commentReply.length > reviewPolicyChecker.maxReviewLength }
