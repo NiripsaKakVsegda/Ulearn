@@ -2,6 +2,7 @@ import React from "react";
 import { Star2 } from "icons";
 
 export default {
+	preview: 'Превью',
 	commentSectionHeaderText: 'Комментарий',
 	favouriteSectionHeaderText: 'Избранные',
 	instructorFavouriteSectionHeaderText: 'Комментарии других преподавателей',

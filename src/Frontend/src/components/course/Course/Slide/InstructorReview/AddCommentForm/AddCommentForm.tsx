@@ -397,7 +397,7 @@ class AddCommentForm extends React.Component<Props, State> {
 						onClick={ this.onToggleFavouriteClick }/>
 					<Hint pos={ "right middle" } maxWidth={ this.maxCommentHintWidth }
 						  text={ <span className={ styles.preview }>
-							  <p className={ styles.previewHeader }> Превью </p>
+							  <p className={ styles.previewHeader }> { texts.preview } </p>
 							  { Review.renderSampleCommentWrapper(<>
 								  { Review.renderHeaderContent(user, new Date().toDateString()) }
 								  { Review.renderCommentContent(renderSimpleMarkdown(text)) }

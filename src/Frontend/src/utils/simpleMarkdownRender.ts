@@ -1,6 +1,8 @@
 export default function renderSimpleMarkdown(text: string,
 	removeOptions?: { removeBr: boolean; removePre: boolean; }
 ): string {
+	text = text.replace(/</g,'&lt;');
+	text = text.replace(/>/g,'&gt;');
 	text = text.replace(/\n/g, `<br/>`);
 	text = text.replace(/\r/g, ``);
 
