@@ -83,7 +83,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			/* Check that no checking solution by this user in last time */
 			var delta = TimeSpan.FromSeconds(30);
 			var halfMinuteAgo = DateTime.Now.Subtract(delta);
-			if (await userSolutionsRepo.IsCheckingSubmissionByUser(courseId, slideId, User.Identity.GetUserId(), halfMinuteAgo, DateTime.MaxValue))
+			if (!course.IsTempCourse() && await userSolutionsRepo.IsCheckingSubmissionByUser(courseId, slideId, User.Identity.GetUserId(), halfMinuteAgo, DateTime.MaxValue))
 			{
 				return Json(new RunSolutionResponse(SolutionRunStatus.Ignored)
 				{
