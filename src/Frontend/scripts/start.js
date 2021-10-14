@@ -17,6 +17,7 @@ const {
 	choosePort,
 	prepareProxy,
 	prepareUrls,
+	createCompiler,
 } = require('react-dev-utils/WebpackDevServerUtils');
 const paths = require('../config/paths');
 const config = require('../config/webpack.config.dev');
@@ -83,14 +84,14 @@ choosePort(HOST, DEFAULT_PORT)
 			open: urls.localUrlForBrowser,
 			setupExitSignals: true,
 		};
-		/*	const compiler = createCompiler({
-				webpack,
-				config,
-				appName,
-				urls,
-				useYarn,
-			});*/ //TODO https://github.com/facebook/create-react-app/pull/10121
-		const devServer = new Server(options, webpack(config));
+		const compiler = createCompiler({
+			webpack,
+			config,
+			appName,
+			urls,
+			useYarn,
+		});
+		const devServer = new Server(options, compiler);
 
 		(async () => {
 			await devServer.start();

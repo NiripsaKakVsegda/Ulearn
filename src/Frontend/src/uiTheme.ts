@@ -15,7 +15,7 @@ const roundSwitcher = {
 };
 
 const darkPopups = {
-	popupTextColor: '#fff',
+	textColorDefault: '#fff',
 	bgDefault: '#333333cc',
 };
 
