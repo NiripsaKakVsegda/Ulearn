@@ -106,14 +106,12 @@ namespace RunCheckerJob
 					if (readOutTask.Result.Length > 0)
 						return new RunningResults(Verdict.WrongAnswer)
 						{
-							Error = readErrTask.Result,
 							Output = readOutTask.Result,
 						};
 					if (readErrTask.Result.Length > 0)
 						return new RunningResults(Verdict.CompilationError)
 						{
-							Error = readErrTask.Result,
-							Output = readOutTask.Result + readErrTask.Result,
+							Output = readErrTask.Result,
 						};
 				}
 
