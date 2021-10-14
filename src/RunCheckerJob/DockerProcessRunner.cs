@@ -113,7 +113,7 @@ namespace RunCheckerJob
 						return new RunningResults(Verdict.CompilationError)
 						{
 							Error = readErrTask.Result,
-							Output = readOutTask.Result,
+							Output = readOutTask.Result + readErrTask.Result,
 						};
 				}
 
