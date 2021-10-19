@@ -546,16 +546,20 @@ namespace Database.Repos
 
 		public async Task<List<string>> GetLastUsedExerciseCodeReviewsTexts(string courseId, Guid slideId, string instructorId, int count, List<string> skipReviews = null)
 		{
-			IEnumerable<string> codeReviews = await db.ExerciseCodeReviews
-				.Where(c =>
-					c.CourseId == courseId
-					&& c.SlideId == slideId
-					&& c.AuthorId == instructorId
-					&& !c.IsDeleted)
-				.OrderByDescending(c => c.AddingTime)
-				.Select(c => c.Comment)
-				.Take(count + 40)
-				.ToListAsync();
+			IEnumerable<string> codeReviews = (await db.ExerciseCodeReviews
+					.Where(c =>
+						c.CourseId == courseId
+						&& c.SlideId == slideId
+						&& c.AuthorId == instructorId
+						&& !c.IsDeleted)
+					.OrderByDescending(c => c.AddingTime)
+					.Select(c => new { c.Comment, c.AddingTime }) // adding time
+					.Take(count + 40)
+					.ToListAsync())
+				.GroupBy(c => c.Comment)
+				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime)))
+				.OrderBy(group => group.Item2.First())
+				.Select(g => g.Key);
 
 			if (skipReviews != null)
 			{
@@ -564,7 +568,6 @@ namespace Database.Repos
 			}
 
 			return codeReviews
-				.Distinct()
 				.Take(count)
 				.ToList();
 		}
