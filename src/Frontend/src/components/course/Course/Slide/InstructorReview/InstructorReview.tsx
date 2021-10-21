@@ -1100,7 +1100,7 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onMouseUp = (): void => {
 		const { editor, addCommentFormCoords, } = this.state;
-		const { getFavouriteReviews, slideContext, } = this.props;
+		const { getFavouriteReviews, slideContext, favouriteReviews, } = this.props;
 
 		if(!editor) {
 			return;
@@ -1144,10 +1144,15 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		if(coords) {
 			const c = coords;
-			getFavouriteReviews(slideContext.courseId, slideContext.slideId)
-				.then(() => {
-					this.openAddCommentForm(c, startRange, endRange, editor, selections);
-				});
+			if(favouriteReviews) {
+				getFavouriteReviews(slideContext.courseId, slideContext.slideId);
+				this.openAddCommentForm(c, startRange, endRange, editor, selections);
+			} else {
+				getFavouriteReviews(slideContext.courseId, slideContext.slideId)
+					.then(() => {
+						this.openAddCommentForm(c, startRange, endRange, editor, selections);
+					});
+			}
 		}
 
 		document.removeEventListener('mouseup', this.onMouseUp);
