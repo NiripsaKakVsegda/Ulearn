@@ -1082,7 +1082,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const { editor, addCommentFormCoords, } = this.state;
 		const { getFavouriteReviews, slideContext, } = this.props;
 
-		if(!editor || addCommentFormCoords) {
+		if(!editor) {
 			return;
 		}
 
@@ -1099,6 +1099,15 @@ class InstructorReview extends React.Component<Props, State> {
 		for (const selection of selections) {
 			const range = selection;
 			const selectedText = doc.getSelection();
+
+			if(selectedText.length == 0) {
+				this.onFormClose();
+				return;
+			}
+
+			if(addCommentFormCoords) {
+				return;
+			}
 
 			if(selectedText.length > 0) {
 				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
