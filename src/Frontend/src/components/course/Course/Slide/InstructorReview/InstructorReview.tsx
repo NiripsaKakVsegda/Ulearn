@@ -165,6 +165,7 @@ class InstructorReview extends React.Component<Props, State> {
 			addCommentFormCoords: undefined,
 			addCommentFormExtraSpace: undefined,
 			addCommentRanges: undefined,
+			addCommentSelections: undefined,
 		});
 	};
 
@@ -177,7 +178,27 @@ class InstructorReview extends React.Component<Props, State> {
 			antiPlagiarismStatusLoading,
 			slideContext,
 		} = this.props;
-		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
+		const { currentSubmission, reviews, diffInfo, showDiff, addCommentSelections, editor, } = this.state;
+
+		if(addCommentSelections && editor) {
+			for (const selection of addCommentSelections) {
+				const range = selection;
+				const doc = editor.getDoc();
+
+				if(doc.getAllMarks().length > 0) {
+					break;
+				}
+
+				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
+				createTextMarker(
+					endRange.line,
+					endRange.ch,
+					startRange.line,
+					startRange.ch,
+					styles.selectionToReviewMarker,
+					doc);
+			}
+		}
 
 		if(prevProps.slideContext.slideInfo.query.userId !== slideContext.slideInfo.query.userId
 			|| prevProps.slideContext.slideInfo.query.submissionId !== slideContext.slideInfo.query.submissionId) {
@@ -457,7 +478,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onTabChange = (value: string): void => {
 		this.setState({ currentTab: value as InstructorReviewTabs });
-		this.hideAddCommentForm();
 	};
 
 	renderCurrentTab(currentTab: InstructorReviewTabs): React.ReactNode {
@@ -1087,13 +1107,14 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 
 		const doc = editor.getDoc();
-
 		const selections = doc.listSelections();
+
 		const firstSelection = selections[0];
 		const startRange = this.getStartAndEndFromRange(firstSelection)[0];
 
 		const lastSelection = selections[selections.length - 1];
 		const endRange = this.getStartAndEndFromRange(lastSelection)[1];
+
 		let coords: { left: number, right: number, top: number, bottom: number } | undefined
 			= undefined;
 		for (const selection of selections) {
@@ -1125,36 +1146,47 @@ class InstructorReview extends React.Component<Props, State> {
 			const c = coords;
 			getFavouriteReviews(slideContext.courseId, slideContext.slideId)
 				.then(() => {
-					const wrapperHeight = editor
-						.getScrollerElement()
-						.getBoundingClientRect()
-						.height - 50;
-					const lineHeight = 20;
-					const padding = 16;
-					c.left = editor
-						.getGutterElement()
-						.getBoundingClientRect()
-						.width + padding / 2;
-					c.bottom += padding;
-					this.setState({
-						addCommentFormCoords: coords,
-						addCommentRanges: { startRange, endRange, },
-					}, () => {
-						document.addEventListener('copy', this.onCopy);
-						document.addEventListener('keydown', this.onEscPressed);
-						//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
-						const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
-						if(addCommentFormHeight) {
-							const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
-							this.setState({
-								addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
-							});
-						}
-					});
+					this.openAddCommentForm(c, startRange, endRange, editor, selections);
 				});
 		}
 
 		document.removeEventListener('mouseup', this.onMouseUp);
+	};
+
+	openAddCommentForm = (
+		coords: { left: number, right: number, top: number, bottom: number },
+		startRange: CodeMirror.Position,
+		endRange: CodeMirror.Position,
+		editor: CodeMirror.Editor,
+		selections: CodeMirror.Range[],
+	) => {
+		const wrapperHeight = editor
+			.getScrollerElement()
+			.getBoundingClientRect()
+			.height - 50;
+		const lineHeight = 20;
+		const padding = 16;
+		coords.left = editor
+			.getGutterElement()
+			.getBoundingClientRect()
+			.width + padding / 2;
+		coords.bottom += padding;
+		this.setState({
+			addCommentFormCoords: coords,
+			addCommentRanges: { startRange, endRange, },
+			addCommentSelections: selections,
+		}, () => {
+			document.addEventListener('copy', this.onCopy);
+			document.addEventListener('keydown', this.onEscPressed);
+			//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
+			const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
+			if(addCommentFormHeight) {
+				const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
+				this.setState({
+					addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
+				});
+			}
+		});
 	};
 
 	onCopy = async (): Promise<void> => {
