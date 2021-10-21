@@ -12,6 +12,7 @@ import {
 	ScrollContainer,
 	Textarea,
 	ThemeContext,
+	Toast,
 } from "ui";
 import { MenuKebab, Send3, } from "icons";
 import { getDataFromReviewToCompareChanges } from "../../../InstructorReview/utils";
@@ -298,8 +299,27 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				&& !outdated
 				&& (authorToRender.id !== this.botUser.id || comments.length > 0)
 				&& this.renderAddReviewComment(replies[id], id) }
+				{ selectedReviewId === id
+				&& outdated
+				&& <Button
+					use={ 'primary' }
+					onClick={ this.copySelectedReviewTextToClipboard }>
+					{ texts.copyButton }
+				</Button>
+				}
 			</li>
 		);
+	};
+
+	copySelectedReviewTextToClipboard = () => {
+		const { renderedReviews, } = this.state;
+		const { selectedReviewId, } = this.props;
+
+		const review = renderedReviews.find(r => r.review.id === selectedReviewId)?.review;
+		if(review) {
+			navigator.clipboard.writeText(review.comment);
+			Toast.push('Текст скопирован');
+		}
 	};
 
 	renderComment(review: InstructorReviewInfo): React.ReactNode;
