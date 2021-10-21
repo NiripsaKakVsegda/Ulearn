@@ -164,19 +164,26 @@ class AddCommentForm extends React.Component<Props, State> {
 	};
 
 	componentDidUpdate(prevProps: Readonly<Props>): void {
-		const { favouriteReviews, } = this.props;
-		const { otherCommentsIds, favouriteCommentsIds, commentsById, } = this.state;
+		const { favouriteReviews,lastUsedReviews, } = this.props;
+		const { otherCommentsIds, favouriteCommentsIds, commentsById, lastUsedCommentsById, } = this.state;
 		const newCommentsById: { [id: number]: FavouriteComment } = favouriteReviews.reduce(
 			(pv, cv) => ({ ...pv, [cv.id]: { ...cv } }), {});
-
+		const newLastUsedCommentsIds= lastUsedReviews
+			.reduce((pv, cv, index) => ({ ...pv, [index]: { ...cv } }), {});
+		if(JSON.stringify(newLastUsedCommentsIds) !== JSON.stringify(lastUsedCommentsById)){
+			this.setState({
+				lastUsedCommentsById: newLastUsedCommentsIds,
+				lastUsedCommentsIds: lastUsedReviews.map((c, index) => ({ id: index, ref: React.createRef() })),
+			});
+		}
 		if(JSON.stringify(newCommentsById) !== JSON.stringify(commentsById)) {
 			this.setState({
 				commentsById: newCommentsById,
 			});
 			if(favouriteReviews.length !== prevProps.favouriteReviews.length) {
 				//new favourite review arrived from transaction button
-				const newOtherCommentsIds = otherCommentsIds.filter(c => newCommentsById[c.id] !== undefined);
-				const newFavouriteCommentsIds = favouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined);
+				const newOtherCommentsIds = [...otherCommentsIds];
+				const newFavouriteCommentsIds = [...favouriteCommentsIds];
 				Object
 					.values(newCommentsById)
 					.filter(comment => !commentsById[comment.id])
@@ -188,13 +195,13 @@ class AddCommentForm extends React.Component<Props, State> {
 						}
 					});
 				this.setState({
-					otherCommentsIds: newOtherCommentsIds,
-					favouriteCommentsIds: newFavouriteCommentsIds,
+					otherCommentsIds: newOtherCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
+					favouriteCommentsIds: newFavouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
 				}, this.markOverExtendedComments);
 			} else {
 				//one of favourite reviews updated
-				const newOtherCommentsIds = otherCommentsIds.filter(c => newCommentsById[c.id] !== undefined);
-				const newFavouriteCommentsIds = favouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined);
+				const newOtherCommentsIds = [...otherCommentsIds];
+				const newFavouriteCommentsIds = [...favouriteCommentsIds];
 				Object
 					.values(newCommentsById)
 					.filter(comment => !commentsById[comment.id])
@@ -212,8 +219,8 @@ class AddCommentForm extends React.Component<Props, State> {
 						}
 					});
 				this.setState({
-					otherCommentsIds: newOtherCommentsIds,
-					favouriteCommentsIds: newFavouriteCommentsIds,
+					otherCommentsIds: newOtherCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
+					favouriteCommentsIds: newFavouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
 				}, this.markOverExtendedComments);
 			}
 		}
