@@ -553,12 +553,12 @@ namespace Database.Repos
 						&& c.AuthorId == instructorId
 						&& !c.IsDeleted)
 					.OrderByDescending(c => c.AddingTime)
-					.Select(c => new { c.Comment, c.AddingTime }) // adding time
+					.Select(c => new { c.Comment, c.AddingTime })
 					.Take(count + 40)
 					.ToListAsync())
 				.GroupBy(c => c.Comment)
-				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime)))
-				.OrderBy(group => group.Item2.First())
+				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime ?? DateTime.MinValue)))
+				.OrderBy(group => group.Item2.First().AddingTime ?? DateTime.MinValue)
 				.Select(g => g.Key);
 
 			if (skipReviews != null)
