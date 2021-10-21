@@ -245,11 +245,11 @@ namespace uLearn.Web.Controllers
 
 				/* Invalid form: percent isn't integer */
 				if (!int.TryParse(exercisePercent, out var percent))
-					return Json(new ScoreExerciseOperationResult { Status = "error", Redirect = errorUrl + "Неверное количество процентов"});
+					return Json(new ScoreExerciseOperationResult { Status = "error", Redirect = errorUrl + "Неверное количество процентов" });
 
 				/* Invalid form: score isn't from range 0..100 */
 				if (percent < 0 || percent > 100)
-					return Json(new ScoreExerciseOperationResult { Status = "error", Redirect = errorUrl + $"Неверное количество процентов: {percent}"});
+					return Json(new ScoreExerciseOperationResult { Status = "error", Redirect = errorUrl + $"Неверное количество процентов: {percent}" });
 
 				checking.ProhibitFurtherManualCheckings = prohibitFurtherReview;
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent).ConfigureAwait(false);
@@ -395,18 +395,25 @@ namespace uLearn.Web.Controllers
 				ReviewState = reviewState,
 				IsGuest = string.IsNullOrEmpty(currentUserId),
 				SubmissionSelectedByUser = submission,
-				Submissions = submissions.ToList(),
+				Submissions = submissions.OrderByDescending(s => s.Timestamp).ToList(),
 				CurrentUser = usersRepo.FindUserById(User.Identity.GetUserId())
 			};
 		}
 
 		private UserExerciseSubmission GetExerciseSubmissionShownByDefault(string courseId, Guid slideId, string userId, bool allowNotAccepted = false)
 		{
-			var submissions = userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).ToList();
-			var lastSubmission = submissions.LastOrDefault(s => s.ManualChecking != null) ??
-								submissions.LastOrDefault(s => s.AutomaticCheckingIsRightAnswer);
+			var submissions = userSolutionsRepo
+				.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId)
+				.OrderByDescending(s => s.Timestamp)
+				.ToList();
+			var lastSubmission = submissions.FirstOrDefault(s => s.ManualChecking != null) ??
+								submissions.FirstOrDefault(s => s.AutomaticCheckingIsRightAnswer);
 			if (lastSubmission == null && allowNotAccepted)
-				lastSubmission = userSolutionsRepo.GetAllSubmissionsByUser(courseId, slideId, userId).ToList().LastOrDefault();
+				lastSubmission = userSolutionsRepo
+					.GetAllSubmissionsByUser(courseId, slideId, userId)
+					.OrderByDescending(s => s.Timestamp)
+					.ToList()
+					.FirstOrDefault();
 			return lastSubmission;
 		}
 
@@ -459,17 +466,18 @@ namespace uLearn.Web.Controllers
 					model.ManualChecking = manualChecking;
 					model.Reviews = submission?.GetAllReviews() ?? new List<ExerciseCodeReview>();
 				}
+
 				model.TopUserReviewComments = slideCheckingsRepo.GetTopUserReviewComments(course.Id, slide.Id, currentUserId, 20);
 				model.TopOtherUsersReviewComments = slideCheckingsRepo.GetTopOtherUsersReviewComments(course.Id, slide.Id, currentUserId, 10, model.TopUserReviewComments);
 			}
 
 			return PartialView(model);
 		}
-		
+
 		public ActionResult LastReviewComments(string courseId, Guid slideId, string userId)
 		{
 			var reviewedSubmission = userSolutionsRepo
-				.GetAllAcceptedSubmissionsByUser(courseId, new []{slideId}, userId)
+				.GetAllAcceptedSubmissionsByUser(courseId, new[] { slideId }, userId)
 				.Where(s => s.ManualChecking != null && s.ManualChecking.IsChecked)
 				.OrderByDescending(s => s.Timestamp)
 				.FirstOrDefault();
@@ -493,7 +501,7 @@ namespace uLearn.Web.Controllers
 				checking.SlideId,
 				checking.UserId,
 				checking.Submission.Timestamp);
-			var model = new ExerciseScoreFormModel (
+			var model = new ExerciseScoreFormModel(
 				context.Course.Id,
 				(ExerciseSlide)context.Slide,
 				checking,
@@ -630,13 +638,13 @@ namespace uLearn.Web.Controllers
 		[DataMember(Name = "status")]
 		public string Status { get; set; }
 	}
-	
+
 	[DataContract]
 	public class ScoreExerciseOperationResult
 	{
 		[DataMember(Name = "status")]
 		public string Status { get; set; }
-		
+
 		[DataMember(Name = "redirect")]
 		public string Redirect { get; set; }
 	}
