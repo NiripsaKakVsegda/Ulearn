@@ -1,6 +1,6 @@
 ﻿using System;
 using AntiPlagiarism.Api;
-using AntiPlagiarism.ConsoleApp.SubmissionsRepository;
+using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common.Extensions;
 
 namespace AntiPlagiarism.ConsoleApp
@@ -8,21 +8,18 @@ namespace AntiPlagiarism.ConsoleApp
 	public class ConsoleClient
 	{
 		private IAntiPlagiarismClient antiPlagiarismClient;
-		private ISubmissionRepository repository;
+		private SubmissionSearcher submissionSearcher;
         
-		public ConsoleClient(IAntiPlagiarismClient antiPlagiarismClient, ISubmissionRepository repository)
+		public ConsoleClient(IAntiPlagiarismClient antiPlagiarismClient, SubmissionSearcher submissionSearcher)
 		{
 			this.antiPlagiarismClient = antiPlagiarismClient;
-			this.repository = repository;
+			this.submissionSearcher = submissionSearcher;
 		}
 
 		public void SendNewSubmissions()
 		{
-			repository.GetSubmissions().ForEach(s =>
+			submissionSearcher.GetSubmissions().ForEach(s =>
 			{
-				var path = repository.GetSubmissionPath(s);
-				Console.WriteLine(path);
-				repository.AddSubmission(s);
 			});
 		}
 
