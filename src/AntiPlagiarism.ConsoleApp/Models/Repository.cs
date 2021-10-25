@@ -29,9 +29,9 @@ namespace AntiPlagiarism.ConsoleApp.Models
 			SaveSubmissionsInfo();
 		}
 		
-		public void AddTask(Task task)
+		public void AddTask(TaskInfo taskInfo)
 		{
-			SubmissionsInfo.Tasks.Add(task);
+			SubmissionsInfo.Tasks.Add(taskInfo);
 			SaveSubmissionsInfo();
 		}
 		

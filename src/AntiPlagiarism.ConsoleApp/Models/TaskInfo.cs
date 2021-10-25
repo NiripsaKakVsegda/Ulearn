@@ -2,12 +2,12 @@
 
 namespace AntiPlagiarism.ConsoleApp.Models
 {
-	public class Task
+	public class TaskInfo
 	{
 		public string Title;
 		public Guid Id;
 		
-		public Task(string title)
+		public TaskInfo(string title)
 		{
 			Title = title;
 			Id = Guid.NewGuid();

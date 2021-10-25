@@ -12,18 +12,18 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 		private readonly CodeExtractor codeExtractor;
 		private readonly Repository repository;
 
-		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor)
+		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor, Repository repository)
 		{
 			this.rootDirectory = rootDirectory;
 			this.codeExtractor = codeExtractor;
-			repository = new Repository(this.rootDirectory);
+			this.repository = repository;
 		}
 
-		public List<Submission> GetSubmissions()
+		public Dictionary<Submission, string> GetSubmissionsWithCode()
 		{
 			ActualizeInfo();
 
-			var submissions = new List<Submission>();
+			var submissions = new Dictionary<Submission, string>();
 
 			foreach (var task in repository.SubmissionsInfo.Tasks)
 			{
@@ -32,7 +32,7 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
 					if (Directory.Exists(path) 
 						&& repository.SubmissionsInfo.Submissions.All(s => s.TaskId != task.Id && s.AuthorId != author.Id))
-						submissions.Add(new Submission { AuthorId = author.Id, TaskId = task.Id }); 
+						submissions[new Submission { AuthorId = author.Id, TaskId = task.Id }] = codeExtractor.ExtractCode(path); 
 				}
 			}
 
