@@ -61,7 +61,10 @@ class BlocksRenderer {
 		const onlyOneBlock = blocksPacks.length === 1;
 		return blocksPacks.map(({ blocksIndexes, hide, fullSize }, i) => {
 			const renderedBlocks: React.ReactElement[] = blocksIndexes.map(
-				blockIndex => BlocksRenderer.renderBlock(blocks, renderContext, blockIndex, slideContext,));
+				(blockIndex, indexInPack, pack) =>
+					BlocksRenderer.renderBlock(blocks, renderContext, blockIndex, slideContext,
+						indexInPack === 0,
+						indexInPack === pack.length - 1));
 			return (
 				fullSize
 					? renderedBlocks
@@ -128,12 +131,14 @@ class BlocksRenderer {
 		renderContexts: BlocksRenderContext,
 		blockIndex: number,
 		slideContext?: SlideContext,
+		isFirst?: boolean,
+		isLast?: boolean,
 	): React.ReactElement => {
 		const block = blocks[blockIndex];
 		const renderContext = renderContexts[blockIndex];
 		const className = cn(
-			{ [styles.firstChild]: !renderContext.previous },
-			{ [styles.lastChild]: !renderContext.next }
+			{ [styles.firstChild]: isFirst },
+			{ [styles.lastChild]: isLast },
 		);
 		const Block = mapTypeToBlock[block.$type];
 
