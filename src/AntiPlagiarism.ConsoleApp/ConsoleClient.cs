@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
@@ -24,17 +25,21 @@ namespace AntiPlagiarism.ConsoleApp
 			this.repository = repository;
 		}
 
-		public async Task SendNewSubmissionsAsync()
+		public Dictionary<Submission, string> GetNewSubmissionsAsync()
 		{
-			var newSubmissions = submissionSearcher.GetSubmissionsWithCode();
-			foreach (var submission in newSubmissions.Keys)
+			return submissionSearcher.GetSubmissionsWithCode();
+		}
+
+		public async Task SendSubmissionsAsync(Dictionary<Submission, string> submissions)
+		{
+			foreach (var submission in submissions.Keys)
 			{
 				// todo: отправлять не все сразу, а по несколько штук
 				var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
 				{
 					TaskId = submission.TaskId,
 					AuthorId = submission.AuthorId,
-					Code = newSubmissions[submission],
+					Code = submissions[submission],
 					Language = Language.CSharp,
 					AdditionalInfo = "some important info",
 					ClientSubmissionId = "client Id (name + task)"
