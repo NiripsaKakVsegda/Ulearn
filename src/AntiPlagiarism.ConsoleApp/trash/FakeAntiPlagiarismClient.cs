@@ -36,5 +36,10 @@ namespace AntiPlagiarism.ConsoleApp.trash
 		{
 			throw new System.NotImplementedException();
 		}
+
+		public Task<GetProcessingStatusResponse> GetProcessingStatusAsync(GetProcessingStatusParameters parameters)
+		{
+			throw new System.NotImplementedException();
+		}
 	}
 }
