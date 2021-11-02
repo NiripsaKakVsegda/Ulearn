@@ -66,6 +66,16 @@ namespace uLearn.Web.Controllers
 		[HandleHttpAntiForgeryException]
 		public async Task<ActionResult> Index(string username)
 		{
+			if (username.Length == 0)
+			{
+				return View(new RestorePasswordModel
+				{
+					Messages = new List<Message>
+					{
+						new ($"Пользователь \"{username}\" не найден")
+					}
+				});
+			}
 			metricSender.SendCount("restore_password.try");
 			var users = await FindUsers(username);
 			var answer = new RestorePasswordModel
