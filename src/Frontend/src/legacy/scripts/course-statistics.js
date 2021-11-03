@@ -50,6 +50,11 @@ export default function () {
 		const $copy = $tbody.clone(true, true);
 		$copy.find('td:not(:first-child)').remove();
 		$copy.find('tr').each(function (rowId, tr) {
+			if(tr.className === 'group-header-row'){
+				//https://yt.skbkontur.ru/issue/ULEARN-965 bug
+				// if this row will have width it will break css-width in cells of sticky header
+				return;
+			}
 			const $originalRow = $tbody.find('tr').eq(rowId);
 			const $originalCells = $originalRow.find('td');
 			$(tr).find('td').each(function (cellId, td) {
