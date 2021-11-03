@@ -187,8 +187,8 @@ namespace Database.Repos
 		{
 			var now = DateTime.Now;
 			return await db.NotificationDeliveries.Where(
-				d => (d.NextTryTime < now || d.NextTryTime == null) &&
-					d.Status == NotificationDeliveryStatus.NotSent &&
+				d => d.Status == NotificationDeliveryStatus.NotSent &&
+					(d.NextTryTime < now || d.NextTryTime == null) &&
 					d.FailsCount < maxNotificationsSendingFails
 			).ToListAsync();
 		}
