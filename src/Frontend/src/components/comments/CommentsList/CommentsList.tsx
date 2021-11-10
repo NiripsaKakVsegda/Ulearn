@@ -16,12 +16,7 @@ import { SlideType } from "src/models/slide";
 import { CommentStatus } from "src/consts/comments";
 
 import styles from "./CommentsList.less";
-import {
-	CommentsApi,
-	findIndexOfComment,
-	getCommentsByCount,
-	parseCommentIdFromHash,
-} from "../utils";
+import { CommentsApi, findIndexOfComment, getCommentsByCount, parseCommentIdFromHash, } from "../utils";
 
 const defaultPaginationOptions = {
 	commentsPerPack: 15,
@@ -121,15 +116,19 @@ class CommentsList extends Component<Props, State> {
 
 	static getDerivedStateFromProps(props: Props, state: State): State | null {
 		const countDiff = props.commentsCount - state.previousCommentsCount;
-		if(Math.abs(countDiff) === 1) {
+		if(Math.abs(countDiff) <= 1) {
 			return {
 				...state,
 				previousCommentsCount: props.commentsCount,
 				commentsToRender: state.commentsToRender + countDiff,
 			};
+		} else {
+			return {
+				...state,
+				previousCommentsCount: props.commentsCount,
+				commentsToRender: 0,
+			};
 		}
-
-		return null;
 	}
 
 	renderPackOfComments(packSize: number): void {
@@ -182,7 +181,7 @@ class CommentsList extends Component<Props, State> {
 
 	render(): React.ReactNode {
 		const { status, commentsToRender, } = this.state;
-		const { user, commentPolicy, key, courseId, slideId, } = this.props;
+		const { user, commentPolicy, key, courseId, slideId, commentsCount, } = this.props;
 		if(status === "error") {
 			return <Error404/>;
 		}
@@ -482,7 +481,7 @@ class CommentsList extends Component<Props, State> {
 	};
 
 	sendData = (method: (commentId: number,
-		updatedFields?: Pick<Partial<Comment>, 'text' | 'isApproved' | 'isCorrectAnswer' | 'isPinnedToTop'>
+			updatedFields?: Pick<Partial<Comment>, 'text' | 'isApproved' | 'isCorrectAnswer' | 'isPinnedToTop'>
 		) =>
 			Promise<unknown>, commentId: number,
 		updatedFields?: Pick<Partial<Comment>, 'text' | 'isApproved' | 'isCorrectAnswer' | 'isPinnedToTop'>
