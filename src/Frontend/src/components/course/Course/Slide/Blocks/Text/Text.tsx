@@ -67,7 +67,7 @@ function Text(props: Props): React.ReactElement {
 			anchor.addEventListener('click', (e) => {
 				e.stopPropagation();
 				e.preventDefault();
-				history.push(anchor.pathname);
+				history.push(anchor.href);
 			});
 		}
 	}
