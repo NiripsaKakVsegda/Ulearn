@@ -31,10 +31,11 @@ import { ReviewCommentResponse, ReviewInfo } from "src/models/exercise";
 import styles from "./Review.less";
 import texts from "./Review.texts";
 import { areReviewsSame } from "../ExerciseUtils";
+import { botId, botName, } from "src/consts/common";
 
 
 class Review extends React.Component<ReviewProps, ReviewState> {
-	private botUser = { visibleName: 'Ulearn bot', id: 'bot', };
+	private botUser = { visibleName: botName, id: botId };
 	private minDistanceBetweenReviews = 5;
 
 	constructor(props: ReviewProps) {
