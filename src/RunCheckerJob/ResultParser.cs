@@ -1,6 +1,7 @@
 ﻿using System;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json;
+using Ulearn.Common;
 using Ulearn.Core.RunCheckerJobApi;
 
 namespace RunCheckerJob
@@ -9,7 +10,7 @@ namespace RunCheckerJob
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(ResultParser));
 
-		public static RunningResults Parse(string stdout, string stderr)
+		public static RunningResults Parse(string stdout, string stderr, InterpretNonJsonOutputType interpretNonJsonOutputAs)
 		{
 			try
 			{
@@ -20,8 +21,22 @@ namespace RunCheckerJob
 			}
 			catch (Exception)
 			{
+				var verdict = Verdict.SandboxError;
+				switch (interpretNonJsonOutputAs)
+				{
+					case InterpretNonJsonOutputType.CompilationError:
+						verdict = Verdict.CompilationError;
+						break;
+					case InterpretNonJsonOutputType.SandboxError:
+						verdict = Verdict.SandboxError;
+						break;
+					case InterpretNonJsonOutputType.WrongAnswer:
+						verdict = Verdict.WrongAnswer;
+						break;
+				}
+
 				log.Warn("Не удалось распарсить результат");
-				return new RunningResults(Verdict.SandboxError)
+				return new RunningResults(verdict)
 				{
 					Logs = new[]
 					{

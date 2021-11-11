@@ -115,7 +115,7 @@ namespace RunCheckerJob
 						};
 				}
 
-				return ResultParser.Parse(readOutTask.Result, readErrTask.Result);
+				return ResultParser.Parse(readOutTask.Result, readErrTask.Result, submission.InterpretNonJsonOutputAs);
 			}
 		}
 

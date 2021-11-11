@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,7 +55,33 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlElement("interpretOutputAsWrongAnswer")]
 		public virtual bool InterpretOutputAsWrongAnswer { get; set; }
-		
+
+		/* .NET XML Serializer doesn't understand nullable fields, so we use this hack to make InterpretNonJsonOutputAs? field */
+		[XmlIgnore]
+		public virtual InterpretNonJsonOutputType? InterpretNonJsonOutputAs { get; set; }
+
+		#region NullableInterpretNonJsonOutputAsHack
+
+		[XmlAttribute("interpretNonJsonOutputAs")]
+		[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+		public InterpretNonJsonOutputType InterpretNonJsonOutputAsSerialized
+		{
+			get
+			{
+				Debug.Assert(InterpretNonJsonOutputAs != null, nameof(InterpretNonJsonOutputAs) + " != null");
+				return InterpretNonJsonOutputAs.Value;
+			}
+			set => InterpretNonJsonOutputAs = value;
+		}
+
+		[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+		public bool ShouldSerializeInterpretNonJsonOutputAsSerialized()
+		{
+			return InterpretNonJsonOutputAs.HasValue;
+		}
+
+		#endregion
+
 		[XmlElement("dockerImageName")] // см. DockerImageNameRegex
 		public virtual string DockerImageName { get; set; }
 
@@ -123,6 +151,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				Language = LanguageHelpers.GuessByExtension(new FileInfo(UserCodeFilePath));
 			Slide = context.Slide;
 			CourseId = context.CourseId;
+			if (!InterpretNonJsonOutputAs.HasValue)
+				InterpretNonJsonOutputAs = InterpretNonJsonOutputType.SandboxError;
 			UnitDirectoryPathRelativeToCourse = context.UnitDirectory.GetRelativePath(context.CourseDirectory);
 			ExpectedOutput = ExpectedOutput ?? "";
 			var fp = GetFilesProvider(context.CourseDirectory.FullName);
@@ -187,6 +217,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					RunCommand = RunCommand,
 					TimeLimit = TimeLimit,
 					InterpretOutputAsWrongAnswer = InterpretOutputAsWrongAnswer,
+					InterpretNonJsonOutputAs = InterpretNonJsonOutputAs.Value,
 				};
 			}
 		}

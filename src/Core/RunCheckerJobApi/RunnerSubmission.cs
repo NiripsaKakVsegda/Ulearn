@@ -70,5 +70,8 @@ namespace Ulearn.Core.RunCheckerJobApi
 		
 		[DataMember]
 		public bool InterpretOutputAsWrongAnswer { get; set; }
+		
+		[DataMember]
+		public InterpretNonJsonOutputType InterpretNonJsonOutputAs { get; set; }
 	}
 }
