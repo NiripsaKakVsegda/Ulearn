@@ -5533,7 +5533,7 @@ label {
 	font-weight: 400;
 }
 
-.legacy-page .btn.btn-primary {
+.legacy-page .course-tile .btn.btn-primary {
 	margin-top: 10px;
 	padding: 6px 39px;
 	font-size: 18px;
