@@ -8,15 +8,12 @@ namespace Ulearn.Common
 	public enum InterpretNonJsonOutputType : short
 	{
 		[XmlEnum("SE")]
-		[Lexer("SE")]
 		SandboxError,
 		
 		[XmlEnum("WA")]
-		[Lexer("WA")]
 		WrongAnswer,
 
 		[XmlEnum("CE")]
-		[Lexer("CE")]
 		CompilationError,
 	}
 }

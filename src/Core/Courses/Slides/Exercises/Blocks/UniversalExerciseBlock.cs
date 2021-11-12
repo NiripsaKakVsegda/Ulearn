@@ -56,31 +56,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		[XmlElement("interpretOutputAsWrongAnswer")]
 		public virtual bool InterpretOutputAsWrongAnswer { get; set; }
 
-		/* .NET XML Serializer doesn't understand nullable fields, so we use this hack to make InterpretNonJsonOutputAs? field */
-		[XmlIgnore]
+		[XmlElement("interpretNonJsonOutputAs")]
 		public virtual InterpretNonJsonOutputType? InterpretNonJsonOutputAs { get; set; }
-
-		#region NullableInterpretNonJsonOutputAsHack
-
-		[XmlAttribute("interpretNonJsonOutputAs")]
-		[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-		public InterpretNonJsonOutputType InterpretNonJsonOutputAsSerialized
-		{
-			get
-			{
-				Debug.Assert(InterpretNonJsonOutputAs != null, nameof(InterpretNonJsonOutputAs) + " != null");
-				return InterpretNonJsonOutputAs.Value;
-			}
-			set => InterpretNonJsonOutputAs = value;
-		}
-
-		[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-		public bool ShouldSerializeInterpretNonJsonOutputAsSerialized()
-		{
-			return InterpretNonJsonOutputAs.HasValue;
-		}
-
-		#endregion
 
 		[XmlElement("dockerImageName")] // см. DockerImageNameRegex
 		public virtual string DockerImageName { get; set; }

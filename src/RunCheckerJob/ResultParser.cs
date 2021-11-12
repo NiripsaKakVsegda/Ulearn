@@ -21,30 +21,13 @@ namespace RunCheckerJob
 			}
 			catch (Exception)
 			{
-				var verdict = Verdict.SandboxError;
-				switch (interpretNonJsonOutputAs)
-				{
-					case InterpretNonJsonOutputType.CompilationError:
-						verdict = Verdict.CompilationError;
-						break;
-					case InterpretNonJsonOutputType.SandboxError:
-						verdict = Verdict.SandboxError;
-						break;
-					case InterpretNonJsonOutputType.WrongAnswer:
-						verdict = Verdict.WrongAnswer;
-						break;
-				}
-
 				log.Warn("Не удалось распарсить результат");
-				return new RunningResults(verdict)
+				return interpretNonJsonOutputAs switch
 				{
-					Logs = new[]
-					{
-						"Не удалось распарсить результат",
-						"Exit code: 0",
-						$"stdout: {stdout}",
-						$"stderr: {stderr}"
-					}
+					InterpretNonJsonOutputType.CompilationError => new RunningResults(Verdict.CompilationError) { CompilationOutput = stderr },
+					InterpretNonJsonOutputType.WrongAnswer => new RunningResults(Verdict.WrongAnswer) { Output = stderr },
+					InterpretNonJsonOutputType.SandboxError => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } },
+					_ => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } }
 				};
 			}
 		}

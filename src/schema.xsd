@@ -638,6 +638,13 @@
 							</xs:documentation>
 						</xs:annotation>
 					</xs:element>
+					<xs:element name="interpretNonJsonOutputAs" type="NonEmptyString" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Как интерпретировать вывод, если не удалось распарсить вывод в JSON
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
 					<xs:element name="checkInitialSolution" type="xs:boolean" minOccurs="0" maxOccurs="1">
 						<xs:annotation>
 							<xs:documentation>
