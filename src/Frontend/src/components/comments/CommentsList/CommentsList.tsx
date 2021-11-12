@@ -196,7 +196,7 @@ class CommentsList extends Component<Props, State> {
 				{ (commentPolicy.areCommentsEnabled && user.id && commentsToRender > 7) &&
 				<button className={ styles.sendButton } onClick={ this.handleShowSendForm }>
 					<CommentLite color="#3072C4"/>
-					Оставить комментарий
+					<span className={ styles.sendButtonText }> Оставить комментарий</span>
 				</button> }
 			</div>
 		);
