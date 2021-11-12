@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json;
 using Ulearn.Common;
@@ -24,8 +25,8 @@ namespace RunCheckerJob
 				log.Warn("Не удалось распарсить результат");
 				return interpretNonJsonOutputAs switch
 				{
-					InterpretNonJsonOutputType.CompilationError => new RunningResults(Verdict.CompilationError) { CompilationOutput = stderr },
-					InterpretNonJsonOutputType.WrongAnswer => new RunningResults(Verdict.WrongAnswer) { Output = stderr },
+					InterpretNonJsonOutputType.CompilationError => new RunningResults(Verdict.CompilationError) { CompilationOutput = string.Join("\n", new[] { stdout, stderr }.Where(s => !string.IsNullOrWhiteSpace(s)))},
+					InterpretNonJsonOutputType.WrongAnswer => new RunningResults(Verdict.WrongAnswer) { Output = stdout, Error = stderr },
 					InterpretNonJsonOutputType.SandboxError => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } },
 					_ => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } }
 				};
