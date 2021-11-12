@@ -94,6 +94,8 @@ const texts = {
 
 	submissionAfterDisablingManualChecking: 'Это решение было послано после отключения код-ревью',
 	enableManualChecking: 'Возобновить код-ревью',
+	saveShowDiff: 'Сделать значением по умолчанию',
+	onSaveShowDiffToastMessage: 'Сохранено',
 };
 
 export default texts;

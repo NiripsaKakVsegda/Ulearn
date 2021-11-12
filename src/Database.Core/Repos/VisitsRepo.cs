@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
@@ -25,33 +26,29 @@ namespace Database.Repos
 
 		public async Task<Visit> AddVisit(string courseId, Guid slideId, string userId, string ipAddress)
 		{
-			var executionStrategy = new NpgsqlRetryingExecutionStrategy(db, 3);
-			return await executionStrategy.ExecuteAsync(async () =>
+			await SetLastVisit(courseId, slideId, userId);
+			var visit = await FindVisit(courseId, slideId, userId);
+			if (visit == null)
 			{
-				await SetLastVisit(courseId, slideId, userId);
-				var visit = await FindVisit(courseId, slideId, userId);
-				if (visit == null)
+				db.Visits.Add(new Visit
 				{
-					db.Visits.Add(new Visit
-					{
-						UserId = userId,
-						CourseId = courseId,
-						SlideId = slideId,
-						Timestamp = DateTime.Now,
-						IpAddress = ipAddress,
-					});
-					await db.SaveChangesAsync();
-					return await FindVisit(courseId, slideId, userId);
-				}
-
-				if (visit.IpAddress != ipAddress)
-				{
-					visit.IpAddress = ipAddress;
-				}
-
+					UserId = userId,
+					CourseId = courseId,
+					SlideId = slideId,
+					Timestamp = DateTime.Now,
+					IpAddress = ipAddress,
+				});
 				await db.SaveChangesAsync();
-				return visit;
-			});
+				return await FindVisit(courseId, slideId, userId);
+			}
+
+			if (visit.IpAddress != ipAddress)
+			{
+				visit.IpAddress = ipAddress;
+			}
+
+			await db.SaveChangesAsync();
+			return visit;
 		}
 
 		private async Task SetLastVisit(string courseId, Guid slideId, string userId)

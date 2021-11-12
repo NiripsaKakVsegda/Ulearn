@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle } from "ui";
+import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle, Tooltip } from "ui";
 import { UnControlled, } from "react-codemirror2";
 import { Redirect } from "react-router-dom";
 import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
@@ -48,6 +48,7 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
+import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "../../../../../utils/localStorageManager";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -85,6 +86,7 @@ class InstructorReview extends React.Component<Props, State> {
 			reviews = allReviews.reviews;
 			outdatedReviews = allReviews.outdatedReviews;
 		}
+		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 
 		this.state = {
 			selectedReviewId: -1,
@@ -96,7 +98,7 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmissionContext,
 			editor: null,
 			addCommentValue: '',
-			showDiff: false,
+			showDiff: toggleInCache || false,
 			diffInfo: diffInfo,
 			favouriteReviewsSet,
 			favouriteByUserSet,
@@ -743,23 +745,51 @@ class InstructorReview extends React.Component<Props, State> {
 			<div className={ styles.topControlsWrapper }>
 				{ this.renderSubmissionsSelect() }
 				{ diffInfo &&
-				<Toggle
-					onValueChange={ this.onDiffToggleValueChanged }
-					checked={ showDiff }>
-					{ texts.getDiffText(
-						diffInfo.addedLinesCount,
-						styles.diffAddedLinesTextColor,
-						diffInfo.removedLinesCount,
-						styles.diffRemovedLinesTextColor,
-						!diffInfo.prevReviewedSubmission)
-					}
-				</Toggle> }
+				<Tooltip render={ this.renderShowDiffTooltip }>
+					<Toggle
+						onValueChange={ this.onDiffToggleValueChanged }
+						checked={ showDiff }>
+						{ texts.getDiffText(
+							diffInfo.addedLinesCount,
+							styles.diffAddedLinesTextColor,
+							diffInfo.removedLinesCount,
+							styles.diffRemovedLinesTextColor,
+							!diffInfo.prevReviewedSubmission)
+						}
+					</Toggle>
+				</Tooltip>
+				}
 				{ commentsEnabled &&
 				<span className={ styles.leaveCommentGuideText }>{ texts.leaveCommentGuideText }</span> }
 			</div>
-
 		);
 	}
+
+	private reviewCacheId = 'previous_review_toggle';
+
+	renderShowDiffTooltip = () => {
+		const { showDiff, } = this.state;
+		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
+
+		if(toggleInCache === showDiff) {
+			return undefined;
+		}
+
+		return (
+			<Button use={ 'link' }
+					onClick={ this.saveShowDiffToCache }>
+				{ texts.saveShowDiff }
+			</Button>
+		);
+	};
+
+	saveShowDiffToCache = () => {
+		const { showDiff, } = this.state;
+
+		saveToCache(reviewPreviousReviewToggle, this.reviewCacheId, showDiff);
+		Toast.push(texts.onSaveShowDiffToastMessage);
+		this.forceUpdate();//nothing is changed in props/state, so we need to rerender to hide tooltip
+	};
 
 	renderHeader = (fixed: boolean,): React.ReactElement => {
 		const {

@@ -37,3 +37,4 @@ export function isCacheBlocked(): boolean {
 }
 
 export const exerciseSolutions = 'exercise_solutions';
+export const reviewPreviousReviewToggle = 'review';
