@@ -52,9 +52,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlAttribute("noStudentZip")] // Не отдавать zip студенту
 		public virtual bool NoStudentZip { get; set; }
-
-		[XmlElement("interpretOutputAsWrongAnswer")]
-		public virtual bool InterpretOutputAsWrongAnswer { get; set; }
+		
 
 		[XmlElement("interpretNonJsonOutputAs")]
 		public virtual InterpretNonJsonOutputType? InterpretNonJsonOutputAs { get; set; }
@@ -193,7 +191,6 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					DockerImageName = DockerImageName,
 					RunCommand = RunCommand,
 					TimeLimit = TimeLimit,
-					InterpretOutputAsWrongAnswer = InterpretOutputAsWrongAnswer,
 					InterpretNonJsonOutputAs = InterpretNonJsonOutputAs.Value,
 				};
 			}
