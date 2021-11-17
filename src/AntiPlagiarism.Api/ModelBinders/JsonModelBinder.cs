@@ -17,7 +17,7 @@ namespace AntiPlagiarism.Api.ModelBinders
 				throw new ArgumentNullException(nameof(bindingContext));
 
 			var request = bindingContext.HttpContext.Request;
-			if (!request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
+			if (request.ContentLength > 0 && !request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
 			{
 				/* If not JSON request */
 				bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, "Content-Type should be application/json");
