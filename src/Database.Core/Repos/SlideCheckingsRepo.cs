@@ -558,7 +558,7 @@ namespace Database.Repos
 					.ToListAsync())
 				.GroupBy(c => c.Comment)
 				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime ?? DateTime.MinValue)))
-				.OrderBy(group => group.Item2.First().AddingTime ?? DateTime.MinValue)
+				.OrderByDescending(group => group.Item2.First().AddingTime ?? DateTime.MinValue)
 				.Select(g => g.Key);
 
 			if (skipReviews != null)
