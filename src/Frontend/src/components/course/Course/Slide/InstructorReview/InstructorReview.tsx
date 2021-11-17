@@ -12,7 +12,6 @@ import CourseLoader from "../../CourseLoader";
 import AddCommentForm from "./AddCommentForm/AddCommentForm";
 import AntiPlagiarismHeader from "./AntiPlagiarismHeader/AntiPlagiarismHeader";
 import StickyWrapper from "./AntiPlagiarismHeader/StickyWrapper";
-import MarkdownEditor from "../../../../comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
 import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
@@ -56,7 +55,6 @@ class InstructorReview extends React.Component<Props, State> {
 		'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 		'Выполняйте задания самостоятельно.';
 	private addCommentFormRef = React.createRef<AddCommentForm>();
-	private addCommentTextareaRef = React.createRef<MarkdownEditor>();
 
 	constructor(props: Props) {
 		super(props);
@@ -132,7 +130,15 @@ class InstructorReview extends React.Component<Props, State> {
 		if(currentSubmission) {
 			this.addMarkers();
 		}
+
+		//it is possible that selection in editor preserves even if other text in browser is selected
+		//if nothing selected in browser, then copy value from selection in editor
+		document.addEventListener('copy', this.onCopy);
 	}
+
+	componentWillUnmount = (): void => {
+		document.removeEventListener('copy', this.onCopy);
+	};
 
 	loadData = (): void => {
 		const {
@@ -162,7 +168,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	hideAddCommentForm = (): void => {
 		document.removeEventListener('keydown', this.onEscPressed);
-		document.removeEventListener('copy', this.onCopy);
 		this.setState({
 			addCommentFormCoords: undefined,
 			addCommentFormExtraSpace: undefined,
@@ -869,7 +874,6 @@ class InstructorReview extends React.Component<Props, State> {
 				{ isEditable && addCommentFormCoords !== undefined &&
 				<AddCommentForm
 					ref={ this.addCommentFormRef }
-					textareaRef={ this.addCommentTextareaRef }
 					user={ this.props.user }
 					value={ addCommentValue }
 					valueCanBeAddedToFavourite={ this.isCommentCanBeAddedToFavourite() }
@@ -1211,7 +1215,6 @@ class InstructorReview extends React.Component<Props, State> {
 			addCommentRanges: { startRange, endRange, },
 			addCommentSelections: selections,
 		}, () => {
-			document.addEventListener('copy', this.onCopy);
 			document.addEventListener('keydown', this.onEscPressed);
 			//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
 			const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
@@ -1226,10 +1229,13 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onCopy = async (): Promise<void> => {
 		const { editor } = this.state;
-		const selection = this.addCommentTextareaRef.current?.selectionRange;
-		if(editor && selection && selection.end - selection.start === 0) {
-			const textInEditor = editor.getSelection();
-			await navigator.clipboard.writeText(textInEditor);
+
+		if(editor) {
+			const selectedTextInBrowser = getSelection()?.toString();
+			const selectedTextInEditor = editor.getSelection();
+			if(!selectedTextInBrowser || selectedTextInBrowser.length === 0) {
+				await navigator.clipboard.writeText(selectedTextInEditor);
+			}
 		}
 	};
 

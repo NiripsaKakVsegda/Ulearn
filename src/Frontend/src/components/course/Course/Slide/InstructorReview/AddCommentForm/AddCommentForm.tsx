@@ -43,8 +43,6 @@ export interface Props {
 	addFavouriteReview: (favouriteReviewText: string,) => Promise<FavouriteComment>;
 	deleteFavouriteReview: (favouriteReviewId: number,) => void;
 	onClose: () => void;
-
-	textareaRef?: RefObject<MarkdownEditor>;
 }
 
 interface State {
@@ -290,7 +288,6 @@ class AddCommentForm extends React.Component<Props, State> {
 				{ texts.commentSectionHeaderText }
 			</span>
 			<MarkdownEditor
-				ref={ this.props.textareaRef }
 				className={ styles.addCommentTextArea }
 				width={ '230px' }
 				rows={ this.maxRowCount }
