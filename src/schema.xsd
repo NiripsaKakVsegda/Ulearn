@@ -631,7 +631,7 @@
 							</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element name="interpretNonJsonOutputAs" type="NonEmptyString" minOccurs="0" maxOccurs="1">
+					<xs:element name="interpretNonJsonOutputAs" type="InterpretNonJsonOutputAs" minOccurs="0" maxOccurs="1">
 						<xs:annotation>
 							<xs:documentation>
 								Как интерпретировать вывод, если не удалось распарсить вывод в JSON
@@ -840,6 +840,29 @@
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:minLength value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="InterpretNonJsonOutputAs">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CE">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Compilation Error</xs:documentation>
+					<xs:documentation xml:lang="ru">Ошибка компиляции</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="WA">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Wrong Answer</xs:documentation>
+					<xs:documentation xml:lang="ru">Неверный ответ</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SE">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Sandbox Error</xs:documentation>
+					<xs:documentation xml:lang="ru">Ошибка sandbox-а</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
 

@@ -43,6 +43,10 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		[CanBeNull]
 		[XmlElement("includePathForChecker")]
 		public string[] PathsToIncludeForChecker { get; set; } // Пути до директорий относительно директории с Unit, чьё содержимое нужно включить в архив. Перетирают файлы из ExerciseDir в архиве
+		
+		[CanBeNull]
+		[XmlElement("includePathForStudent")]
+		public string[] PathsToIncludeForStudent { get; set; }
 
 		[XmlElement("excludePathForStudent")]
 		public string[] PathsToExcludeForStudent { get; set; } // Шаблоны путей до файлов внутри ExerciseDir.
@@ -89,7 +93,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		private static readonly string[] wrongAnswerPatterns = { "*.WrongAnswer.*", "*.WA.*" };
 
 		[XmlIgnore]
-		private static readonly string[] initialPatterns = { "*.Initial.*" };
+		private static readonly string[] initialPatterns = { "*.Initial.*", "*.initial.*" };
 
 		[XmlIgnore]
 		private static readonly string[] solutionPatterns = { "*.Solution.*" };
@@ -249,9 +253,16 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					.Concat(new[] { "/checking/", "/bin/", "/obj/", ".idea/", ".vs/" })
 					.ToList();
 
+				var directoriesToInclude = exerciseBlock.PathsToIncludeForStudent
+					.EmptyIfNull()
+					.Select(pathToInclude => new DirectoryInfo(Path.Combine(fp.UnitDirectory.FullName, pathToInclude)))
+					.Select(d => d.FullName)
+					.Append(fp.ExerciseDirectory.FullName)
+					.ToList();
+				
 				var toUpdate = ReplaceWithInitialFiles(fp).ToList();
 
-				var zipMemoryStream = ZipUtils.CreateZipFromDirectory(new List<string> { fp.ExerciseDirectory.FullName }, excluded, toUpdate);
+				var zipMemoryStream = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, toUpdate);
 
 				log.Info($"Собираю zip-архив для студента: zip-архив собран, {zipMemoryStream.Length} байтов");
 				return zipMemoryStream;
