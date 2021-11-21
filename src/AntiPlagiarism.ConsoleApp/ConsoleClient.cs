@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
@@ -14,6 +15,7 @@ namespace AntiPlagiarism.ConsoleApp
 		private IAntiPlagiarismClient antiPlagiarismClient;
 		private SubmissionSearcher submissionSearcher;
 		private readonly Repository repository;
+		private const int MaxInQuerySubmissionsCount = 5;
 
 		public ConsoleClient(IAntiPlagiarismClient antiPlagiarismClient,
 			SubmissionSearcher submissionSearcher,
@@ -29,22 +31,41 @@ namespace AntiPlagiarism.ConsoleApp
 			return submissionSearcher.GetSubmissions();
 		}
 
-		public async Task SendSubmissionsAsync(List<Submission> submissions)
-		{
-			var inQueueCount = 0;
-
-			foreach (var submission in submissions)
-			{
-				
-				// todo: отправлять не все сразу, а по несколько штук
-				await SendSubmissionAsync(submission);
-			}
-		}
-
 		public void ShowAuthorPlagiarisms(Guid authorId)
 		{
 			// тут будет запрос к апи
 			throw new NotImplementedException();
+		}
+
+		public async Task SendSubmissionsAsync(List<Submission> submissions)
+		{
+			var remainingSubmissions = new Queue<Submission>(submissions);
+			var inQueueSubmissionIds = new List<int>();
+			
+			while (remainingSubmissions.Any() || inQueueSubmissionIds.Any())
+			{
+				// Если отправлено больше какого-то предела, узнаем, проверены ли уже отправленные
+				// Если еще не проверены - засыпаем на 10 секунд
+				if (inQueueSubmissionIds.Count >= MaxInQuerySubmissionsCount)
+				{
+					var getProcessingStatusResponse = await antiPlagiarismClient
+						.GetProcessingStatusAsync(
+							new GetProcessingStatusParameters
+							{
+								SubmissionIds = inQueueSubmissionIds.ToArray()
+							});
+					inQueueSubmissionIds = getProcessingStatusResponse.InQueueSubmissionIds.ToList();
+					
+					if (inQueueSubmissionIds.Count >= MaxInQuerySubmissionsCount)
+						await Task.Delay(10 * 1000);
+				}
+				else
+				{
+					var submission = remainingSubmissions.Dequeue();
+					await SendSubmissionAsync(submission);
+					inQueueSubmissionIds.Add(submission.Info.SubmissionId);
+				}
+			}
 		}
 
 		private async Task SendSubmissionAsync(Submission submission)
