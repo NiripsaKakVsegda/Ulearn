@@ -31,10 +31,22 @@ namespace AntiPlagiarism.ConsoleApp
 			return submissionSearcher.GetSubmissions();
 		}
 
-		public void ShowAuthorPlagiarisms(Guid authorId)
+		public async Task ShowTaskPlagiarismsAsync(Guid taskId)
 		{
-			// тут будет запрос к апи
-			throw new NotImplementedException();
+			foreach (var submission in repository
+				.SubmissionsInfo.Submissions.Where(s => s.TaskId == taskId))
+			{
+				var response = await antiPlagiarismClient.GetAuthorPlagiarismsAsync(new GetAuthorPlagiarismsParameters
+				{
+					AuthorId = submission.AuthorId,
+					TaskId = submission.TaskId,
+					Language = Language.CSharp
+				});
+
+				var author = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId);
+				// todo разобраться что тут писать
+				Console.WriteLine($"{author.Name} - ");
+			}
 		}
 
 		public async Task SendSubmissionsAsync(List<Submission> submissions)
