@@ -35,7 +35,7 @@ namespace AntiPlagiarism.ConsoleApp
 						{
 							Console.WriteLine("Новых посылок не найдено");
 						}
-						if (ValidateSubmissions(newSubmissions.Keys))
+						if (ValidateSubmissions(newSubmissions))
 						{
 							client.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
 							Console.WriteLine("Посылки успешно отправлены");
@@ -59,13 +59,13 @@ namespace AntiPlagiarism.ConsoleApp
 		{
 			Console.WriteLine("Будут отправлены следующие посылки:");
 			foreach (var author2Submissions in submissions
-				.GroupBy(s => s.AuthorId))
+				.GroupBy(s => s.Info.AuthorId))
 			{
 				Console.WriteLine(repo.SubmissionsInfo.Authors
 					.First(a => a.Id == author2Submissions.Key).Name);
 				foreach (var submission in author2Submissions)
 				{
-					var task = repo.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId);
+					var task = repo.SubmissionsInfo.Tasks.First(t => t.Id == submission.Info.TaskId);
 					Console.WriteLine($"->  {task.Title}");
 				}
 

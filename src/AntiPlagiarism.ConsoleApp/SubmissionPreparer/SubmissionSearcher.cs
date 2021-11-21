@@ -19,20 +19,25 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 			this.repository = repository;
 		}
 
-		public Dictionary<Submission, string> GetSubmissionsWithCode()
+		public List<Submission> GetSubmissions()
 		{
 			ActualizeInfo();
 
-			var submissions = new Dictionary<Submission, string>();
+			var submissions = new List<Submission>();
 
 			foreach (var task in repository.SubmissionsInfo.Tasks)
 			{
 				foreach (var author in repository.SubmissionsInfo.Authors)
 				{
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
-					if (Directory.Exists(path) 
-						&& repository.SubmissionsInfo.Submissions.All(s => s.TaskId != task.Id && s.AuthorId != author.Id))
-						submissions[new Submission { AuthorId = author.Id, TaskId = task.Id }] = codeExtractor.ExtractCode(path); 
+					if (Directory.Exists(path)
+						&& repository.SubmissionsInfo.Submissions.All(
+							s => s.TaskId != task.Id && s.AuthorId != author.Id))
+						submissions.Add(new Submission
+						{
+							Info = new SubmissionInfo { AuthorId = author.Id, TaskId = task.Id },
+							Code = codeExtractor.ExtractCode(path)
+						});
 				}
 			}
 

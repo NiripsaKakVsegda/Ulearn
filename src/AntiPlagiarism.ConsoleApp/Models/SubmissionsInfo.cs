@@ -7,6 +7,6 @@ namespace AntiPlagiarism.ConsoleApp.Models
 	{
 		public List<Author> Authors = new ();
 		public List<TaskInfo> Tasks = new ();
-		public List<Submission> Submissions = new ();
+		public List<SubmissionInfo> Submissions = new ();
 	}
 }

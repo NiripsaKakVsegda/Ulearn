@@ -17,7 +17,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 			LoadSubmissionsInfo();
 		}
 
-		public void AddSubmission(Submission submission)
+		public void AddSubmissionInfo(SubmissionInfo submission)
 		{
 			SubmissionsInfo.Submissions.Add(submission);
 			SaveSubmissionsInfo();

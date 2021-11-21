@@ -24,20 +24,20 @@ namespace AntiPlagiarism.ConsoleApp
 			this.repository = repository;
 		}
 
-		public Dictionary<Submission, string> GetNewSubmissionsAsync()
+		public List<Submission> GetNewSubmissionsAsync()
 		{
-			return submissionSearcher.GetSubmissionsWithCode();
+			return submissionSearcher.GetSubmissions();
 		}
 
-		public async Task SendSubmissionsAsync(Dictionary<Submission, string> submissions)
+		public async Task SendSubmissionsAsync(List<Submission> submissions)
 		{
 			var inQueueCount = 0;
 
-			foreach (var submission in submissions.Keys)
+			foreach (var submission in submissions)
 			{
 				
 				// todo: отправлять не все сразу, а по несколько штук
-				await SendSubmissionAsync(submission, submissions[submission]);
+				await SendSubmissionAsync(submission);
 			}
 		}
 
@@ -47,19 +47,20 @@ namespace AntiPlagiarism.ConsoleApp
 			throw new NotImplementedException();
 		}
 
-		private async Task SendSubmissionAsync(Submission submission, string code)
+		private async Task SendSubmissionAsync(Submission submission)
 		{
 			var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
 			{
-				TaskId = submission.TaskId,
-				AuthorId = submission.AuthorId,
-				Code = code,
+				TaskId = submission.Info.TaskId,
+				AuthorId = submission.Info.AuthorId,
+				Code = submission.Code,
 				Language = Language.CSharp,
 				AdditionalInfo = "some important info",
 				ClientSubmissionId = "client Id (name + task)"
 			});
-			submission.SubmissionId = response.SubmissionId;
-			repository.AddSubmission(submission);
+			submission.Info.SubmissionId = response.SubmissionId;
+			
+			repository.AddSubmissionInfo(submission.Info);
 		}
 	}
 }
