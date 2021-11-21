@@ -383,14 +383,14 @@ namespace AntiPlagiarism.Web.Controllers
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 			
-			log.Info($"Получение состояния проверки решения {parameters.SubmissionId}");
-
-			var workQueueItemIds = await workQueueRepo.GetItemIds().ConfigureAwait(false);
+			var workQueueItems = await workQueueRepo.GetItemsAsync().ConfigureAwait(false);
 
 			return new GetProcessingStatusResponse
 			{
-				SubmissionId = parameters.SubmissionId,
-				InQueue = workQueueItemIds.Contains(parameters.SubmissionId)
+				InQueueSubmissionIds = workQueueItems
+					.Select(item => item.Id)
+					.Where(id => parameters.SubmissionIds.Contains(id))
+					.ToArray()
 			};
 		}
 	}

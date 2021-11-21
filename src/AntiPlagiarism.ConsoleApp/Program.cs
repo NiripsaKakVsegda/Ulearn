@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AntiPlagiarism.Api;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
-using AntiPlagiarism.ConsoleApp.trash;
 using Ulearn.Common;
 
 namespace AntiPlagiarism.ConsoleApp
@@ -16,7 +16,8 @@ namespace AntiPlagiarism.ConsoleApp
 		static void Main(string[] args)
 		{
 			repo = new Repository(Directory.GetCurrentDirectory());
-			var client = new ConsoleClient(new FakeAntiPlagiarismClient(), 
+			//todo 
+			var client = new ConsoleClient(new AntiPlagiarismClient("placeHolder", "placeHolder"), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), new CodeExtractor(Language.Python3), repo),
 				repo);
 			

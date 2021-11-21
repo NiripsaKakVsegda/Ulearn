@@ -82,7 +82,7 @@ namespace AntiPlagiarism.Api
 
 		public Task<GetProcessingStatusResponse> GetProcessingStatusAsync(GetProcessingStatusParameters parameters)
 		{
-			return MakeRequestAsync<GetProcessingStatusParameters, GetProcessingStatusResponse>(HttpMethod.Get, Urls.GetProcessingStatus, parameters);
+			return MakeRequestAsync<GetProcessingStatusParameters, GetProcessingStatusResponse>(HttpMethod.Post, Urls.GetProcessingStatus, parameters);
 		}
 	}
 }

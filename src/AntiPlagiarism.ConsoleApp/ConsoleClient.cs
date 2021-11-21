@@ -6,7 +6,6 @@ using AntiPlagiarism.Api.Models.Parameters;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common;
-using Ulearn.Common.Extensions;
 
 namespace AntiPlagiarism.ConsoleApp
 {
@@ -32,27 +31,35 @@ namespace AntiPlagiarism.ConsoleApp
 
 		public async Task SendSubmissionsAsync(Dictionary<Submission, string> submissions)
 		{
+			var inQueueCount = 0;
+
 			foreach (var submission in submissions.Keys)
 			{
+				
 				// todo: отправлять не все сразу, а по несколько штук
-				var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
-				{
-					TaskId = submission.TaskId,
-					AuthorId = submission.AuthorId,
-					Code = submissions[submission],
-					Language = Language.CSharp,
-					AdditionalInfo = "some important info",
-					ClientSubmissionId = "client Id (name + task)"
-				});
-				submission.SubmissionId = response.SubmissionId;
-				repository.AddSubmission(submission);
+				await SendSubmissionAsync(submission, submissions[submission]);
 			}
 		}
 
-		public void ShowAuthorPlagiarisms()
+		public void ShowAuthorPlagiarisms(Guid authorId)
 		{
 			// тут будет запрос к апи
 			throw new NotImplementedException();
+		}
+
+		private async Task SendSubmissionAsync(Submission submission, string code)
+		{
+			var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
+			{
+				TaskId = submission.TaskId,
+				AuthorId = submission.AuthorId,
+				Code = code,
+				Language = Language.CSharp,
+				AdditionalInfo = "some important info",
+				ClientSubmissionId = "client Id (name + task)"
+			});
+			submission.SubmissionId = response.SubmissionId;
+			repository.AddSubmission(submission);
 		}
 	}
 }
