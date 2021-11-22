@@ -231,6 +231,7 @@ class Exercise extends React.Component<Props, State> {
 			submissionError,
 			slideProgress,
 			isAuthenticated,
+			expectedOutput,
 		} = this.props;
 		const { currentSubmission, submissionLoading, selectedReviewId, value, } = this.state;
 
@@ -311,8 +312,11 @@ class Exercise extends React.Component<Props, State> {
 				});
 			}
 
-			const output = lastCheckingResponse.submission?.automaticChecking?.output;
-			if(output) {
+			const hasOutput = HasOutput(
+				lastCheckingResponse?.message,
+				lastCheckingResponse.submission?.automaticChecking,
+				expectedOutput);
+			if(hasOutput) {
 				this.setState({
 					showOutput: true,
 				});
