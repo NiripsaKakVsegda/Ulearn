@@ -4,6 +4,7 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<RootNamespace>Ulearn.VideoAnnotations.Web</RootNamespace>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 
 	<ItemGroup>
