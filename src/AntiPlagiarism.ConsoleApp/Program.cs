@@ -11,47 +11,65 @@ namespace AntiPlagiarism.ConsoleApp
 {
 	class Program
 	{
-		private static bool isWorkingFlag;
+		private static bool isWorkingFlag = true;
 		private static Repository repo;
-		
+		private static ConsoleClient client;
+
+		private static List<CommandInfo> commands = new()
+		{
+			new CommandInfo("help", Help, "показывает это окно"),
+			new CommandInfo("exit", () => isWorkingFlag = false, "завершает выполнение программы"),
+			new CommandInfo("send", Send, "отправляет новые посылки на проверку антиплагиатом")
+		};
+
 		static void Main(string[] args)
 		{
-			repo = new Repository(Directory.GetCurrentDirectory());
-			//todo 
-			var client = new ConsoleClient(new AntiPlagiarismClient("placeHolder", "placeHolder"), 
-				new SubmissionSearcher(Directory.GetCurrentDirectory(), new CodeExtractor(Language.Python3), repo),
-				repo);
+			InitClient();
 			
-			// Todo: нормальный консольный интерфейс
-			var isWorking = true;
-			while (isWorking)
+			while (isWorkingFlag)
 			{
-				var command = ConsoleWorker.GetNextCommand();
-				switch (command)
+				var userInput = ConsoleWorker.GetUserInput();
+				var command = commands.FirstOrDefault(c => c.Command == userInput);
+				if (command == null)
 				{
-					case "send":
-						var newSubmissions = client.GetNewSubmissionsAsync();
-						if (newSubmissions.Count == 0)
-						{
-							Console.WriteLine("Новых посылок не найдено");
-						}
-						if (ValidateSubmissions(newSubmissions))
-						{
-							client.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
-							ConsoleWorker.WriteLine("Посылки успешно отправлены");
-						}
-						else
-							ConsoleWorker.WriteLine("Новые посылки не были отправлены");
-						break;
-					case "end":
-						isWorking = false;
-						break;
-					default:
-						ConsoleWorker.WriteLine("Неверная команда");
-						break;
+					ConsoleWorker.WriteLine("Неверная команда");
+					continue;
 				}
+				command.Action();
+			}
+		}
 
-				Console.WriteLine();
+		private static void InitClient()
+		{
+			repo = new Repository(Directory.GetCurrentDirectory());
+			client = new ConsoleClient(
+				new AntiPlagiarismClient("placeHolder", "placeHolder"), 
+				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
+					new CodeExtractor(Language.CSharp), repo),
+				repo);
+		}
+
+		private static void Send()
+		{
+			var newSubmissions = client.GetNewSubmissionsAsync();
+			if (newSubmissions.Count == 0)
+			{
+				Console.WriteLine("Новых посылок не найдено");
+			}
+			if (ValidateSubmissions(newSubmissions))
+			{
+				client.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
+				ConsoleWorker.WriteLine("Посылки успешно отправлены");
+			}
+			else
+				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
+		}
+
+		private static void Help()
+		{
+			foreach (var command in commands)
+			{
+				Console.WriteLine($"{command.Command} - {command.Help}");
 			}
 		}
 
