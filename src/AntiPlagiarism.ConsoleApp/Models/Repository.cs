@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using Newtonsoft.Json;
 using Ulearn.Common.Extensions;
 
@@ -15,6 +13,12 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		{
 			submissionsInfoFile = rootDirectory.PathCombine("submissions.json");
 			LoadSubmissionsInfo();
+		}
+
+		public void SetAccessToken(string token)
+		{
+			SubmissionsInfo.Token = token;
+			SaveSubmissionsInfo();
 		}
 
 		public void AddSubmissionInfo(SubmissionInfo submission)

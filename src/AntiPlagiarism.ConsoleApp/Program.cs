@@ -11,6 +11,9 @@ namespace AntiPlagiarism.ConsoleApp
 {
 	class Program
 	{
+		// todo вынести в DI (если потребуется)
+		private const string EndPointUrl = "http://localhost:33333/documentation/index.html";
+		
 		private static bool isWorkingFlag = true;
 		private static Repository repo;
 		private static ConsoleClient client;
@@ -42,11 +45,24 @@ namespace AntiPlagiarism.ConsoleApp
 		private static void InitClient()
 		{
 			repo = new Repository(Directory.GetCurrentDirectory());
+			
 			client = new ConsoleClient(
-				new AntiPlagiarismClient("placeHolder", "placeHolder"), 
+				new AntiPlagiarismClient(EndPointUrl, GetToken()), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
 					new CodeExtractor(Language.CSharp), repo),
 				repo);
+		}
+
+		private static string GetToken()
+		{
+			if (repo.SubmissionsInfo.Token == null)
+			{
+				Console.WriteLine("Введите токен преподавателя");
+				// todo
+				Console.WriteLine("Этот токен можно получить тут: ...");
+				repo.SetAccessToken(ConsoleWorker.GetUserInput());
+			}
+			return repo.SubmissionsInfo.Token;
 		}
 
 		private static void Send()
