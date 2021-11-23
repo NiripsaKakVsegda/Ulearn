@@ -3,6 +3,7 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <LangVersion>default</LangVersion>
     <TargetFramework>net5.0</TargetFramework>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
