@@ -11,6 +11,7 @@ namespace AntiPlagiarism.ConsoleApp
 {
 	class Program
 	{
+		private static bool isWorkingFlag;
 		private static Repository repo;
 		
 		static void Main(string[] args)
@@ -25,8 +26,7 @@ namespace AntiPlagiarism.ConsoleApp
 			var isWorking = true;
 			while (isWorking)
 			{
-				Console.Write("Введите команду: ");
-				var command = Console.ReadLine();
+				var command = ConsoleWorker.GetNextCommand();
 				switch (command)
 				{
 					case "send":
@@ -38,16 +38,16 @@ namespace AntiPlagiarism.ConsoleApp
 						if (ValidateSubmissions(newSubmissions))
 						{
 							client.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
-							Console.WriteLine("Посылки успешно отправлены");
+							ConsoleWorker.WriteLine("Посылки успешно отправлены");
 						}
 						else
-							Console.WriteLine("Новые посылки не были отправлены");
+							ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 						break;
 					case "end":
 						isWorking = false;
 						break;
 					default:
-						Console.WriteLine("Неверная команда");
+						ConsoleWorker.WriteLine("Неверная команда");
 						break;
 				}
 
@@ -58,19 +58,9 @@ namespace AntiPlagiarism.ConsoleApp
 		private static bool ValidateSubmissions(IEnumerable<Submission> submissions)
 		{
 			Console.WriteLine("Будут отправлены следующие посылки:");
-			foreach (var author2Submissions in submissions
-				.GroupBy(s => s.Info.AuthorId))
-			{
-				Console.WriteLine(repo.SubmissionsInfo.Authors
-					.First(a => a.Id == author2Submissions.Key).Name);
-				foreach (var submission in author2Submissions)
-				{
-					var task = repo.SubmissionsInfo.Tasks.First(t => t.Id == submission.Info.TaskId);
-					Console.WriteLine($"->  {task.Title}");
-				}
-
-				Console.WriteLine();
-			}
+			ConsoleWorker.PrintSubmissions(submissions.ToArray(), 
+				repo.SubmissionsInfo.Authors.ToArray(),
+				repo.SubmissionsInfo.Tasks.ToArray());
 
 			var answer = "";
 			Console.WriteLine("Отправить посылки (yes/no):");
