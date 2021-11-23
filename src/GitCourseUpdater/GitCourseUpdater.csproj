@@ -4,6 +4,7 @@
 		<TargetFrameworks>net48;net5.0</TargetFrameworks>
 		<NoWarn>NU1701;CS0168</NoWarn>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

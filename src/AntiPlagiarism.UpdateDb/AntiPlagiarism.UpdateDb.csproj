@@ -4,6 +4,7 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\AntiPlagiarism.Web\AntiPlagiarism.Web.csproj" />

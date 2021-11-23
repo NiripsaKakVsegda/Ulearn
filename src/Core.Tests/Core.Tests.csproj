@@ -5,6 +5,7 @@
 		<IsPackable>false</IsPackable>
 		<RootNamespace>Ulearn.Core.Tests</RootNamespace>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 
 	<ItemGroup>
