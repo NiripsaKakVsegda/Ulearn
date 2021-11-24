@@ -37,6 +37,7 @@ export const notificationsFeed = feed + '/notificationsPartial';
 export const groups = 'groups';
 export const courseStatisticsGoogleSheet = `course-statistics/export/to-google-sheets/tasks`;
 export const pythonVisualizer = 'python-visualizer';
+export const studentZipDownloadUrl = '/exercise/studentzip';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return `/${ coursePath }/${ courseId }/${ slideId }`;
