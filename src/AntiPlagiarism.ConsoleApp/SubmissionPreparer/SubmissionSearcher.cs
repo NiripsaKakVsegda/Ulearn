@@ -10,13 +10,13 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 	{
 		private readonly string rootDirectory;
 		private readonly CodeExtractor codeExtractor;
-		private readonly Repository repository;
+		private readonly Repository submissionRepo;
 
-		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor, Repository repository)
+		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor, Repository submissionRepo)
 		{
 			this.rootDirectory = rootDirectory;
 			this.codeExtractor = codeExtractor;
-			this.repository = repository;
+			this.submissionRepo = submissionRepo;
 		}
 
 		public List<Submission> GetSubmissions()
@@ -25,13 +25,13 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 
 			var submissions = new List<Submission>();
 
-			foreach (var task in repository.SubmissionsInfo.Tasks)
+			foreach (var task in submissionRepo.SubmissionsInfo.Tasks)
 			{
-				foreach (var author in repository.SubmissionsInfo.Authors)
+				foreach (var author in submissionRepo.SubmissionsInfo.Authors)
 				{
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
 					if (Directory.Exists(path)
-						&& repository.SubmissionsInfo.Submissions.All(
+						&& submissionRepo.SubmissionsInfo.Submissions.All(
 							s => s.TaskId != task.Id && s.AuthorId != author.Id))
 						submissions.Add(new Submission
 						{
@@ -47,18 +47,18 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 		private void ActualizeInfo()
 		{
 			foreach (var taskPath in GetNewDirectories(rootDirectory, 
-				repository.SubmissionsInfo.Tasks.Select(t => t.Title)))
+				submissionRepo.SubmissionsInfo.Tasks.Select(t => t.Title)))
 			{
-				repository.AddTask(new(Path.GetFileName(taskPath)));
+				submissionRepo.AddTask(new(Path.GetFileName(taskPath)));
 			}
 			
-			foreach (var taskPath in repository.SubmissionsInfo.Tasks
+			foreach (var taskPath in submissionRepo.SubmissionsInfo.Tasks
 					.Select(t => Path.Combine(rootDirectory, t.Title)))
 			{
 				foreach (var authorPath in GetNewDirectories(taskPath,
-						repository.SubmissionsInfo.Authors.Select(a => a.Name)))
+						submissionRepo.SubmissionsInfo.Authors.Select(a => a.Name)))
 				{
-					repository.AddAuthor(new(Path.GetFileName(authorPath)));
+					submissionRepo.AddAuthor(new(Path.GetFileName(authorPath)));
 				}
 			}
 		}

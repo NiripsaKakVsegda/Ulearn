@@ -7,7 +7,6 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public Guid AuthorId;
 		public Guid TaskId;
 		public int SubmissionId;
-		public string AttemptId;
 	}
 
 	public class Submission

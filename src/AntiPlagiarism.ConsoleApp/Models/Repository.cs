@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 using Ulearn.Common.Extensions;
 
@@ -6,37 +7,41 @@ namespace AntiPlagiarism.ConsoleApp.Models
 {
 	public class Repository
 	{
+		private readonly string configFile;
 		private readonly string submissionsInfoFile;
+		public Config Config;
 		public SubmissionsInfo SubmissionsInfo;
 
 		public Repository(string rootDirectory)
 		{
 			submissionsInfoFile = rootDirectory.PathCombine("submissions.json");
+			configFile = rootDirectory.PathCombine("config.json");
 			LoadSubmissionsInfo();
+			LoadConfig();
 		}
 
 		public void SetAccessToken(string token)
 		{
-			SubmissionsInfo.Token = token;
-			SaveSubmissionsInfo();
+			Config.Token = token;
+			SaveInJsonFile(Config, configFile);
 		}
 
 		public void AddSubmissionInfo(SubmissionInfo submission)
 		{
 			SubmissionsInfo.Submissions.Add(submission);
-			SaveSubmissionsInfo();
+			SaveInJsonFile(SubmissionsInfo, submissionsInfoFile);
 		}
 
 		public void AddAuthor(Author author)
 		{
 			SubmissionsInfo.Authors.Add(author);
-			SaveSubmissionsInfo();
+			SaveInJsonFile(SubmissionsInfo, submissionsInfoFile);
 		}
 		
 		public void AddTask(TaskInfo taskInfo)
 		{
 			SubmissionsInfo.Tasks.Add(taskInfo);
-			SaveSubmissionsInfo();
+			SaveInJsonFile(SubmissionsInfo, submissionsInfoFile);
 		}
 		
 		private void LoadSubmissionsInfo()
@@ -44,19 +49,25 @@ namespace AntiPlagiarism.ConsoleApp.Models
 			if (!File.Exists(submissionsInfoFile))
 			{
 				SubmissionsInfo = new SubmissionsInfo();
+				return;
 			}
-			else
+			SubmissionsInfo = JsonConvert.DeserializeObject<SubmissionsInfo>(
+				File.ReadAllText(submissionsInfoFile));
+		}
+		
+		private void LoadConfig()
+		{
+			if (!File.Exists(configFile))
 			{
-				SubmissionsInfo = JsonConvert.DeserializeObject<SubmissionsInfo>(
-					File.ReadAllText(submissionsInfoFile));                
+				Config = new Config();
+				return;
 			}
+			Config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configFile));
 		}
 
-		private void SaveSubmissionsInfo()
+		private void SaveInJsonFile<T>(T content, string file)
 		{
-			File.WriteAllText(
-				submissionsInfoFile, 
-				JsonConvert.SerializeObject(SubmissionsInfo, Formatting.Indented));
+			File.WriteAllText(file, JsonConvert.SerializeObject(content, Formatting.Indented));
 		}
 	}
 }

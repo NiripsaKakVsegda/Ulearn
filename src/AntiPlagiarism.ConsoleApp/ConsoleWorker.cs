@@ -24,7 +24,17 @@ namespace AntiPlagiarism.ConsoleApp
 			log.Info(text);
 		}
 
-		[CanBeNull]
+		public static bool GetUserAnswer()
+		{
+			var answer = "";
+			while (answer != "no" && answer != "yes")
+			{
+				Console.Write("(yes/no): ");
+				answer = Console.ReadLine();
+			}
+			return answer == "yes";
+		}
+		
 		public static string GetUserInput()
 		{
 			Console.Write("> ");

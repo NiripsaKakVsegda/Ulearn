@@ -11,25 +11,19 @@ namespace AntiPlagiarism.ConsoleApp
 {
 	class Program
 	{
-		// todo вынести в DI (если потребуется)
-		private const string EndPointUrl = "http://localhost:33333/documentation/index.html";
-		
-		private static bool isWorkingFlag = true;
 		private static Repository repo;
 		private static ConsoleClient client;
 
-		private static List<CommandInfo> commands = new()
+		private static List<UserActions> commands = new()
 		{
-			new CommandInfo("help", Help, "показывает это окно"),
-			new CommandInfo("exit", () => isWorkingFlag = false, "завершает выполнение программы"),
-			new CommandInfo("send", Send, "отправляет новые посылки на проверку антиплагиатом")
+			new UserActions("send", Send, "отправляет новые посылки на проверку антиплагиатом")
 		};
 
 		static void Main(string[] args)
 		{
 			InitClient();
 			
-			while (isWorkingFlag)
+			while (true)
 			{
 				var userInput = ConsoleWorker.GetUserInput();
 				var command = commands.FirstOrDefault(c => c.Command == userInput);
@@ -39,6 +33,10 @@ namespace AntiPlagiarism.ConsoleApp
 					continue;
 				}
 				command.Action();
+				
+				Console.Write("Продолжить? ");
+				if (!ConsoleWorker.GetUserAnswer())
+					return;
 			}
 		}
 
@@ -47,7 +45,7 @@ namespace AntiPlagiarism.ConsoleApp
 			repo = new Repository(Directory.GetCurrentDirectory());
 			
 			client = new ConsoleClient(
-				new AntiPlagiarismClient(EndPointUrl, GetToken()), 
+				new AntiPlagiarismClient(repo.Config.EndPointUrl, GetToken()), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
 					new CodeExtractor(Language.CSharp), repo),
 				repo);
@@ -55,14 +53,13 @@ namespace AntiPlagiarism.ConsoleApp
 
 		private static string GetToken()
 		{
-			if (repo.SubmissionsInfo.Token == null)
+			if (repo.Config.Token == null)
 			{
 				Console.WriteLine("Введите токен преподавателя");
-				// todo
-				Console.WriteLine("Этот токен можно получить тут: ...");
+				Console.WriteLine("Этот токен можно получить у администраторов Ulearn.me");
 				repo.SetAccessToken(ConsoleWorker.GetUserInput());
 			}
-			return repo.SubmissionsInfo.Token;
+			return repo.Config.Token;
 		}
 
 		private static void Send()
@@ -96,12 +93,8 @@ namespace AntiPlagiarism.ConsoleApp
 				repo.SubmissionsInfo.Authors.ToArray(),
 				repo.SubmissionsInfo.Tasks.ToArray());
 
-			var answer = "";
-			Console.WriteLine("Отправить посылки (yes/no):");
-
-			while (answer != "no" && answer != "yes")
-				answer = Console.ReadLine();
-			return answer == "yes";
+			Console.Write("Отправить посылки? ");
+			return ConsoleWorker.GetUserAnswer();
 		} 
 	}
 }
