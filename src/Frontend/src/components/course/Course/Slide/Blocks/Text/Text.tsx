@@ -70,7 +70,10 @@ function Text(props: Props): React.ReactElement {
 			anchor.addEventListener('click', (e) => {
 				e.stopPropagation();
 				e.preventDefault();
-				history.replace(anchor.href);
+				history.push({
+					pathname: anchor.pathname,
+					search: anchor.search
+				});
 			});
 		}
 	}
