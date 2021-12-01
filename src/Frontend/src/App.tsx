@@ -23,8 +23,6 @@ import { RootState } from "src/models/reduxState";
 import { deviceChangeAction } from "src/actions/device";
 import { DeviceType } from "src/consts/deviceType";
 import { getDeviceType } from "./utils/getDeviceType";
-
-
 const store = configureStore();
 
 // Update notifications count each minute
