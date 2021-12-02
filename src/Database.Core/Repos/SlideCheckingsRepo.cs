@@ -551,14 +551,15 @@ namespace Database.Repos
 						c.CourseId == courseId
 						&& c.SlideId == slideId
 						&& c.AuthorId == instructorId
+						&& c.AddingTime != null
 						&& !c.IsDeleted)
 					.OrderByDescending(c => c.AddingTime)
 					.Select(c => new { c.Comment, c.AddingTime })
 					.Take(count + 40)
 					.ToListAsync())
 				.GroupBy(c => c.Comment)
-				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime ?? DateTime.MaxValue)))
-				.OrderByDescending(group => group.Item2.First().AddingTime ?? DateTime.MaxValue)
+				.Select(group => (group.Key, group.OrderByDescending(c => c.AddingTime)))
+				.OrderByDescending(group => group.Item2.First().AddingTime)
 				.Select(g => g.Key);
 
 			if (skipReviews != null)
