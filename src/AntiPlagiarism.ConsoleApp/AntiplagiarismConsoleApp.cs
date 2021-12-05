@@ -10,14 +10,14 @@ using Ulearn.Common;
 
 namespace AntiPlagiarism.ConsoleApp
 {
-	public class ConsoleClient
+	public class AntiplagiarismConsoleApp
 	{
 		private IAntiPlagiarismClient antiPlagiarismClient;
 		private SubmissionSearcher submissionSearcher;
 		private readonly Repository repository;
 		private const int MaxInQuerySubmissionsCount = 5;
 
-		public ConsoleClient(IAntiPlagiarismClient antiPlagiarismClient,
+		public AntiplagiarismConsoleApp(IAntiPlagiarismClient antiPlagiarismClient,
 			SubmissionSearcher submissionSearcher,
 			Repository repository)
 		{
@@ -82,13 +82,16 @@ namespace AntiPlagiarism.ConsoleApp
 
 		private async Task SendSubmissionAsync(Submission submission)
 		{
+			var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.Info.AuthorId).Name;
+			var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.Info.TaskId).Title;
+			
 			var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
 			{
 				TaskId = submission.Info.TaskId,
 				AuthorId = submission.Info.AuthorId,
 				Code = submission.Code,
-				Language = Language.CSharp,
-				AdditionalInfo = "some important info",
+				Language = repository.Config.Language,
+				AdditionalInfo = $"Task: {taskTitle}; Author: {authorName}",
 				ClientSubmissionId = "client Id (name + task)"
 			});
 			submission.Info.SubmissionId = response.SubmissionId;

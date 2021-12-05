@@ -12,7 +12,7 @@ namespace AntiPlagiarism.ConsoleApp
 	class Program
 	{
 		private static Repository repo;
-		private static ConsoleClient client;
+		private static AntiplagiarismConsoleApp app;
 
 		private static List<UserActions> commands = new()
 		{
@@ -22,29 +22,40 @@ namespace AntiPlagiarism.ConsoleApp
 		static void Main(string[] args)
 		{
 			InitClient();
-			
-			while (true)
+
+			try
 			{
-				var userInput = ConsoleWorker.GetUserInput();
-				var command = commands.FirstOrDefault(c => c.Command == userInput);
-				if (command == null)
+				while (true)
 				{
-					ConsoleWorker.WriteLine("Неверная команда");
-					continue;
+					Help();
+					var userInput = ConsoleWorker.GetUserInput();
+					var command = commands.FirstOrDefault(c => c.Command == userInput);
+					if (command == null)
+					{
+						ConsoleWorker.WriteLine("Неверная команда");
+						continue;
+					}
+
+					command.Action();
+
+					Console.Write("Продолжить? ");
+					if (!ConsoleWorker.GetUserAnswer())
+						return;
 				}
-				command.Action();
-				
-				Console.Write("Продолжить? ");
-				if (!ConsoleWorker.GetUserAnswer())
-					return;
 			}
+			catch (Exception exception)
+			{
+				ConsoleWorker.WriteError(exception.Message);
+			}
+
+			Console.ReadKey();
 		}
 
 		private static void InitClient()
 		{
 			repo = new Repository(Directory.GetCurrentDirectory());
 			
-			client = new ConsoleClient(
+			app = new AntiplagiarismConsoleApp(
 				new AntiPlagiarismClient(repo.Config.EndPointUrl, GetToken()), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
 					new CodeExtractor(Language.CSharp), repo),
@@ -55,23 +66,24 @@ namespace AntiPlagiarism.ConsoleApp
 		{
 			if (repo.Config.Token == null)
 			{
-				Console.WriteLine("Введите токен преподавателя");
-				Console.WriteLine("Этот токен можно получить у администраторов Ulearn.me");
+				Console.WriteLine("Введите токен клиента антиплагиата");
 				repo.SetAccessToken(ConsoleWorker.GetUserInput());
 			}
+			ConsoleWorker.WriteLine($"Используется токен клиента {repo.Config.Token}");
+			//todo тк нам нужен id и имя преподавателя, можно сделать метод получения тут, заодно проверив право доступа
 			return repo.Config.Token;
 		}
 
 		private static void Send()
 		{
-			var newSubmissions = client.GetNewSubmissionsAsync();
+			var newSubmissions = app.GetNewSubmissionsAsync();
 			if (newSubmissions.Count == 0)
 			{
 				Console.WriteLine("Новых посылок не найдено");
 			}
 			if (ValidateSubmissions(newSubmissions))
 			{
-				client.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
+				app.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
 				ConsoleWorker.WriteLine("Посылки успешно отправлены");
 			}
 			else

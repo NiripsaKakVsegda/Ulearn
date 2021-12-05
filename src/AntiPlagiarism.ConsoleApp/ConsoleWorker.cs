@@ -56,9 +56,6 @@ namespace AntiPlagiarism.ConsoleApp
 
 				Console.WriteLine();
 			}
-
-			var answer = "";
-			Console.WriteLine("Отправить посылки (yes/no):");
 		}
 	}
 }

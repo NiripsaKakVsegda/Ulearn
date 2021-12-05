@@ -377,7 +377,7 @@ namespace AntiPlagiarism.Web.Controllers
 		/// <summary>
 		/// Возвращает состояние проверки антиплагиатом Submission по SubmissionId
 		/// </summary>
-		[HttpGet(Api.Urls.GetProcessingStatus)]
+		[HttpPost(Api.Urls.GetProcessingStatus)]
 		public async Task<ActionResult<GetProcessingStatusResponse>> GetProcessingStatusAsync(GetProcessingStatusParameters parameters)
 		{
 			if (!ModelState.IsValid)
