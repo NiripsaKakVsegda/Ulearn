@@ -4,7 +4,6 @@ using System.IO;
 using AntiPlagiarism.ConsoleApp.Models;
 using CsvHelper;
 using Ulearn.Common.Extensions;
-using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp
 {

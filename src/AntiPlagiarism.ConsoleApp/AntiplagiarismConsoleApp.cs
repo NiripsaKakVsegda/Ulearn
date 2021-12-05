@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
-using AntiPlagiarism.Api.Models.Results;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common;
+using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp
 {
@@ -18,6 +18,7 @@ namespace AntiPlagiarism.ConsoleApp
 		private readonly Repository repository;
 		private readonly PlagiarismCsvWriter csvWriter;
 		private const int MaxInQuerySubmissionsCount = 2;
+		private readonly ILog log = LogProvider.Get();
 
 		public AntiplagiarismConsoleApp(IAntiPlagiarismClient antiPlagiarismClient,
 			SubmissionSearcher submissionSearcher,
@@ -42,6 +43,8 @@ namespace AntiPlagiarism.ConsoleApp
 			ConsoleWorker.WriteLine("Получение данных о плагиате в предыдущих посылках");
 			foreach (var submission in repository.SubmissionsInfo.Submissions)
 			{
+				
+				log.Info("Get AntiPlagiarism levels");
 				var response = await antiPlagiarismClient.GetAuthorPlagiarismsAsync(new GetAuthorPlagiarismsParameters
 				{
 					AuthorId = submission.AuthorId,
@@ -68,10 +71,12 @@ namespace AntiPlagiarism.ConsoleApp
 			var remainingSubmissions = new Queue<Submission>(submissions);
 			var inQueueSubmissionIds = new List<int>();
 			
+			log.Info("Send submissions to AntiPlagiarism");
+			
 			while (remainingSubmissions.Any() || inQueueSubmissionIds.Any())
 			{
 				var processedSubmissionsCount = submissions.Count - (remainingSubmissions.Count + inQueueSubmissionIds.Count);
-				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount * 100 / submissions.Count}%");
+				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} посылок");
 				
 				while (remainingSubmissions.Any() && inQueueSubmissionIds.Count < MaxInQuerySubmissionsCount)
 				{
@@ -92,7 +97,7 @@ namespace AntiPlagiarism.ConsoleApp
 							});
 					inQueueSubmissionIds = getProcessingStatusResponse.InQueueSubmissionIds.ToList();
 					
-					if (inQueueSubmissionIds.Count >= MaxInQuerySubmissionsCount)
+					if (inQueueSubmissionIds.Count > 0)
 						await Task.Delay(5 * 1000);
 				}
 			}
@@ -109,12 +114,13 @@ namespace AntiPlagiarism.ConsoleApp
 				TaskId = submission.Info.TaskId,
 				AuthorId = submission.Info.AuthorId,
 				Code = submission.Code,
-				Language = repository.Config.Language,
+				Language = submission.Info.Language,
 				AdditionalInfo = $"Task: {taskTitle}; Author: {authorName}",
 				ClientSubmissionId = "client Id (name + task)"
 			});
 			submission.Info.SubmissionId = response.SubmissionId;
 			
+			log.Info($"Send submission {submission.Info.SubmissionId}");
 			repository.AddSubmissionInfo(submission.Info);
 		}
 	}

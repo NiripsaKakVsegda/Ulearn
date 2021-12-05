@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using AntiPlagiarism.ConsoleApp.Models;
-using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp

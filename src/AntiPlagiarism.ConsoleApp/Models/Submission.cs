@@ -1,4 +1,5 @@
 ﻿using System;
+using Ulearn.Common;
 
 namespace AntiPlagiarism.ConsoleApp.Models
 {
@@ -6,6 +7,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 	{
 		public Guid AuthorId;
 		public Guid TaskId;
+		public Language Language;
 		public int SubmissionId;
 	}
 

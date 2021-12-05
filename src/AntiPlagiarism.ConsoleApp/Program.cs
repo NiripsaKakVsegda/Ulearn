@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
-using Ulearn.Common;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File;
 using Vostok.Logging.File.Configuration;
@@ -22,8 +20,7 @@ namespace AntiPlagiarism.ConsoleApp
 		private static readonly List<UserActions> actions = new()
 		{
 			new UserActions("send", Send, "отправляет новые посылки на проверку антиплагиатом"),
-			// изменить название действия
-			new UserActions("show", Show, "получает информацию о плагиате и записывает в файл")
+			new UserActions("get-levels", GetLevels, "получает информацию о плагиате и записывает в файл")
 		};
 
 		static void Main(string[] args)
@@ -66,7 +63,7 @@ namespace AntiPlagiarism.ConsoleApp
 			app = new AntiplagiarismConsoleApp(
 				new AntiPlagiarismClient(repo.Config.EndPointUrl, GetToken()), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
-					new CodeExtractor(Language.CSharp), repo),
+					new CodeExtractor(repo.Config.Languages), repo),
 				repo,
 				new PlagiarismCsvWriter(Directory.GetCurrentDirectory()));
 		}
@@ -100,7 +97,7 @@ namespace AntiPlagiarism.ConsoleApp
 				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 		}
 
-		private static void Show()
+		private static void GetLevels()
 		{
 			app.GetPlagiarismsAsync().GetAwaiter().GetResult();
 		}

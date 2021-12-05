@@ -1,4 +1,5 @@
-﻿using Ulearn.Common;
+﻿using System.Collections.Generic;
+using Ulearn.Common;
 
 namespace AntiPlagiarism.ConsoleApp.Models
 {
@@ -6,6 +7,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 	{
 		public string Token;
 		public string EndPointUrl = "http://localhost:33333/";
-		public Language Language = Language.CSharp;
+		// todo запрашивать языки у пользователя
+		public List<Language> Languages = new() { Language.CSharp, Language.Python3 };
 	}
 }

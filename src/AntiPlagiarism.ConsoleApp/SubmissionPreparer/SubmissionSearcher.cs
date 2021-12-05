@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using AntiPlagiarism.ConsoleApp.Models;
 using Ulearn.Common.Extensions;
+using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 {
@@ -11,7 +12,9 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 		private readonly string rootDirectory;
 		private readonly CodeExtractor codeExtractor;
 		private readonly Repository submissionRepo;
-
+		
+		private readonly ILog log = LogProvider.Get();
+		
 		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor, Repository submissionRepo)
 		{
 			this.rootDirectory = rootDirectory;
@@ -33,11 +36,23 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 					if (Directory.Exists(path)
 						&& submissionRepo.SubmissionsInfo.Submissions.All(
 							s => s.TaskId != task.Id && s.AuthorId != author.Id))
-						submissions.Add(new Submission
+					{
+						var lang2Code = codeExtractor.ExtractCode(path);
+						foreach (var language in lang2Code.Keys)
 						{
-							Info = new SubmissionInfo { AuthorId = author.Id, TaskId = task.Id },
-							Code = codeExtractor.ExtractCode(path)
-						});
+							log.Info($"Find new submission: task {task.Title}, author {author.Name}, lang {language}");
+							submissions.Add(new Submission
+							{
+								Info = new SubmissionInfo
+								{
+									AuthorId = author.Id, 
+									TaskId = task.Id,
+									Language = language
+								},
+								Code = lang2Code[language]
+							});
+						}
+					}
 				}
 			}
 

@@ -8,16 +8,16 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 {
 	public class CodeExtractor
 	{
-		private readonly Language language;
+		private readonly List<Language> allowedLanguages;
 
-		public CodeExtractor(Language language)
+		public CodeExtractor(List<Language> allowedLanguages)
 		{
-			this.language = language;
+			this.allowedLanguages = allowedLanguages;
 		}
 		
-		public string ExtractCode(string submissionDirectoryPath)
+		public Dictionary<Language, string> ExtractCode(string submissionDirectoryPath)
 		{
-			var codePieces = new List<string>();
+			var lang2CodePieces = new Dictionary<Language, List<string>>();
 
 			var dirs = new Stack<string>();
 			dirs.Push(submissionDirectoryPath);
@@ -29,12 +29,18 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 
 				foreach (var file in dir.GetFiles())
 				{
-					if (language ==  LanguageHelpers.GuessByExtension(new FileInfo(file)))
-						codePieces.Add(File.ReadAllText(file));
+					var language = LanguageHelpers.GuessByExtension(new FileInfo(file));
+					if (allowedLanguages.Contains(language))
+					{
+						if (!lang2CodePieces.ContainsKey(language))
+							lang2CodePieces[language] = new List<string>();
+						lang2CodePieces[language].Add(File.ReadAllText(file));
+					}
 				}
 			} while (dirs.Count > 0);
 			
-			return string.Join('\n', codePieces);
+			return lang2CodePieces.ToDictionary(kwp => kwp.Key,
+				kwp => string.Join('\n', kwp.Value));
 		}
 	}
 }
