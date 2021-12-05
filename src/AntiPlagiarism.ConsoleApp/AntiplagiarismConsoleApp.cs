@@ -15,7 +15,7 @@ namespace AntiPlagiarism.ConsoleApp
 		private IAntiPlagiarismClient antiPlagiarismClient;
 		private SubmissionSearcher submissionSearcher;
 		private readonly Repository repository;
-		private const int MaxInQuerySubmissionsCount = 5;
+		private const int MaxInQuerySubmissionsCount = 2;
 
 		public AntiplagiarismConsoleApp(IAntiPlagiarismClient antiPlagiarismClient,
 			SubmissionSearcher submissionSearcher,
@@ -56,9 +56,19 @@ namespace AntiPlagiarism.ConsoleApp
 			
 			while (remainingSubmissions.Any() || inQueueSubmissionIds.Any())
 			{
-				// Если отправлено больше какого-то предела, узнаем, проверены ли уже отправленные
-				// Если еще не проверены - засыпаем на 10 секунд
-				if (inQueueSubmissionIds.Count >= MaxInQuerySubmissionsCount)
+				var processedSubmissionsCount = submissions.Count - (remainingSubmissions.Count + inQueueSubmissionIds.Count);
+				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount * 100 / submissions.Count}%");
+				
+				while (remainingSubmissions.Any() && inQueueSubmissionIds.Count < MaxInQuerySubmissionsCount)
+				{
+					var submission = remainingSubmissions.Dequeue();
+					await SendSubmissionAsync(submission);
+					inQueueSubmissionIds.Add(submission.Info.SubmissionId);
+				}
+				
+				// Узнаем, проверены ли уже отправленные
+				// Если еще не проверены - засыпаем на 5 секунд
+				if (inQueueSubmissionIds.Any())
 				{
 					var getProcessingStatusResponse = await antiPlagiarismClient
 						.GetProcessingStatusAsync(
@@ -69,15 +79,10 @@ namespace AntiPlagiarism.ConsoleApp
 					inQueueSubmissionIds = getProcessingStatusResponse.InQueueSubmissionIds.ToList();
 					
 					if (inQueueSubmissionIds.Count >= MaxInQuerySubmissionsCount)
-						await Task.Delay(10 * 1000);
-				}
-				else
-				{
-					var submission = remainingSubmissions.Dequeue();
-					await SendSubmissionAsync(submission);
-					inQueueSubmissionIds.Add(submission.Info.SubmissionId);
+						await Task.Delay(5 * 1000);
 				}
 			}
+			Console.WriteLine();
 		}
 
 		private async Task SendSubmissionAsync(Submission submission)

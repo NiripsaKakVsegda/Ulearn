@@ -15,6 +15,11 @@ namespace AntiPlagiarism.ConsoleApp
 			Console.WriteLine(text);
 			log.Info(text);
 		}
+
+		public static void ReWriteLine(string text)
+		{
+			Console.Write($"\r{text}");
+		}
 		
 		public static void WriteError(string text)
 		{

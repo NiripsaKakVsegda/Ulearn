@@ -6,6 +6,10 @@ using AntiPlagiarism.Api;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common;
+using Vostok.Logging.Abstractions;
+using Vostok.Logging.File;
+using Vostok.Logging.File.Configuration;
+using Vostok.Logging.Formatting;
 
 namespace AntiPlagiarism.ConsoleApp
 {
@@ -14,22 +18,23 @@ namespace AntiPlagiarism.ConsoleApp
 		private static Repository repo;
 		private static AntiplagiarismConsoleApp app;
 
-		private static List<UserActions> commands = new()
+		private static List<UserActions> actions = new()
 		{
 			new UserActions("send", Send, "отправляет новые посылки на проверку антиплагиатом")
 		};
 
 		static void Main(string[] args)
 		{
-			InitClient();
+			InitLogger();
+			InitApp();
 
 			try
 			{
 				while (true)
 				{
-					Help();
+					ShowHelpMessage();
 					var userInput = ConsoleWorker.GetUserInput();
-					var command = commands.FirstOrDefault(c => c.Command == userInput);
+					var command = actions.FirstOrDefault(c => c.Command == userInput);
 					if (command == null)
 					{
 						ConsoleWorker.WriteLine("Неверная команда");
@@ -51,7 +56,7 @@ namespace AntiPlagiarism.ConsoleApp
 			Console.ReadKey();
 		}
 
-		private static void InitClient()
+		private static void InitApp()
 		{
 			repo = new Repository(Directory.GetCurrentDirectory());
 			
@@ -80,6 +85,7 @@ namespace AntiPlagiarism.ConsoleApp
 			if (newSubmissions.Count == 0)
 			{
 				Console.WriteLine("Новых посылок не найдено");
+				return;
 			}
 			if (ValidateSubmissions(newSubmissions))
 			{
@@ -90,9 +96,9 @@ namespace AntiPlagiarism.ConsoleApp
 				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 		}
 
-		private static void Help()
+		private static void ShowHelpMessage()
 		{
-			foreach (var command in commands)
+			foreach (var command in actions)
 			{
 				Console.WriteLine($"{command.Command} - {command.Help}");
 			}
@@ -108,5 +114,24 @@ namespace AntiPlagiarism.ConsoleApp
 			Console.Write("Отправить посылки? ");
 			return ConsoleWorker.GetUserAnswer();
 		} 
+		
+		private static void InitLogger()
+		{
+			var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "{RollingSuffix}.log");
+			var fileLogSettings = new FileLogSettings
+			{
+				FilePath = logPath,
+				RollingStrategy = new RollingStrategyOptions
+				{
+					MaxFiles = 0,
+					Type = RollingStrategyType.Hybrid,
+					Period = RollingPeriod.Day,
+					MaxSize = 4 * 1073741824L,
+				},
+				OutputTemplate = OutputTemplate.Parse("{Timestamp:HH:mm:ss.fff} {Level:u5} {sourceContext:w}{Message}{NewLine}{Exception}")
+			};
+			var fileLog = new FileLog(fileLogSettings).WithMinimumLevel(LogLevel.Info);
+			LogProvider.Configure(fileLog);
+		}
 	}
 }
