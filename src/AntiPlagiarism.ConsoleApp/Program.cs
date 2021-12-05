@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
@@ -18,9 +19,11 @@ namespace AntiPlagiarism.ConsoleApp
 		private static Repository repo;
 		private static AntiplagiarismConsoleApp app;
 
-		private static List<UserActions> actions = new()
+		private static readonly List<UserActions> actions = new()
 		{
-			new UserActions("send", Send, "отправляет новые посылки на проверку антиплагиатом")
+			new UserActions("send", Send, "отправляет новые посылки на проверку антиплагиатом"),
+			// изменить название действия
+			new UserActions("show", Show, "получает информацию о плагиате и записывает в файл")
 		};
 
 		static void Main(string[] args)
@@ -50,7 +53,7 @@ namespace AntiPlagiarism.ConsoleApp
 			}
 			catch (Exception exception)
 			{
-				ConsoleWorker.WriteError(exception.Message);
+				ConsoleWorker.WriteError(exception);
 			}
 
 			Console.ReadKey();
@@ -64,7 +67,8 @@ namespace AntiPlagiarism.ConsoleApp
 				new AntiPlagiarismClient(repo.Config.EndPointUrl, GetToken()), 
 				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
 					new CodeExtractor(Language.CSharp), repo),
-				repo);
+				repo,
+				new PlagiarismCsvWriter(Directory.GetCurrentDirectory()));
 		}
 
 		private static string GetToken()
@@ -94,6 +98,11 @@ namespace AntiPlagiarism.ConsoleApp
 			}
 			else
 				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
+		}
+
+		private static void Show()
+		{
+			app.GetPlagiarismsAsync().GetAwaiter().GetResult();
 		}
 
 		private static void ShowHelpMessage()

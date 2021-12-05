@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
+using AntiPlagiarism.Api.Models.Results;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common;
@@ -15,15 +16,18 @@ namespace AntiPlagiarism.ConsoleApp
 		private IAntiPlagiarismClient antiPlagiarismClient;
 		private SubmissionSearcher submissionSearcher;
 		private readonly Repository repository;
+		private readonly PlagiarismCsvWriter csvWriter;
 		private const int MaxInQuerySubmissionsCount = 2;
 
 		public AntiplagiarismConsoleApp(IAntiPlagiarismClient antiPlagiarismClient,
 			SubmissionSearcher submissionSearcher,
-			Repository repository)
+			Repository repository,
+			PlagiarismCsvWriter csvWriter)
 		{
 			this.antiPlagiarismClient = antiPlagiarismClient;
 			this.submissionSearcher = submissionSearcher;
 			this.repository = repository;
+			this.csvWriter = csvWriter;
 		}
 
 		public List<Submission> GetNewSubmissionsAsync()
@@ -31,10 +35,12 @@ namespace AntiPlagiarism.ConsoleApp
 			return submissionSearcher.GetSubmissions();
 		}
 
-		public async Task ShowTaskPlagiarismsAsync(Guid taskId)
+		public async Task GetPlagiarismsAsync()
 		{
-			foreach (var submission in repository
-				.SubmissionsInfo.Submissions.Where(s => s.TaskId == taskId))
+			var plagiarisms = new List<PlagiarismInfo>();
+			
+			ConsoleWorker.WriteLine("Получение данных о плагиате в предыдущих посылках");
+			foreach (var submission in repository.SubmissionsInfo.Submissions)
 			{
 				var response = await antiPlagiarismClient.GetAuthorPlagiarismsAsync(new GetAuthorPlagiarismsParameters
 				{
@@ -43,10 +49,18 @@ namespace AntiPlagiarism.ConsoleApp
 					Language = Language.CSharp
 				});
 
-				var author = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId);
-				// todo разобраться что тут писать
-				Console.WriteLine($"{author.Name} - ");
+				var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId).Name;
+				var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId).Title;
+				plagiarisms.Add(new PlagiarismInfo
+				{
+					AuthorName = authorName,
+					TaskTitle = taskTitle,
+					Language = Language.CSharp,
+					FaintSuspicion = response.SuspicionLevels.FaintSuspicion,
+					StrongSuspicion = response.SuspicionLevels.StrongSuspicion
+				});
 			}
+			csvWriter.WritePlagiarism(plagiarisms);
 		}
 
 		public async Task SendSubmissionsAsync(List<Submission> submissions)

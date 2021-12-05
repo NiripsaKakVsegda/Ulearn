@@ -21,12 +21,12 @@ namespace AntiPlagiarism.ConsoleApp
 			Console.Write($"\r{text}");
 		}
 		
-		public static void WriteError(string text)
+		public static void WriteError(Exception exception)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(text);
+			Console.WriteLine($"Произошла ошибка {exception.Message}. Подробности смотрите в логе");
 			Console.ResetColor();
-			log.Info(text);
+			log.Error(exception);
 		}
 
 		public static bool GetUserAnswer()
