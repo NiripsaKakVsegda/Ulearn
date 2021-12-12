@@ -35,7 +35,7 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
 					if (Directory.Exists(path)
 						&& submissionRepo.SubmissionsInfo.Submissions.All(
-							s => s.TaskId != task.Id && s.AuthorId != author.Id))
+							s => s.TaskId != task.Id || s.AuthorId != author.Id))
 					{
 						var lang2Code = codeExtractor.ExtractCode(path);
 						foreach (var language in lang2Code.Keys)

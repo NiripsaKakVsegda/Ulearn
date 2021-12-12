@@ -16,6 +16,7 @@ namespace AntiPlagiarism.ConsoleApp
 	{
 		private static Repository repo;
 		private static AntiplagiarismConsoleApp app;
+		private static string workingDirectory;
 
 		private static readonly List<UserActions> actions = new()
 		{
@@ -58,14 +59,15 @@ namespace AntiPlagiarism.ConsoleApp
 
 		private static void InitApp()
 		{
-			repo = new Repository(Directory.GetCurrentDirectory());
+			workingDirectory = @"C:\Users\belyaev.ia\Desktop\hw\root";
+			repo = new Repository(workingDirectory);
 			
 			app = new AntiplagiarismConsoleApp(
 				new AntiPlagiarismClient(repo.Config.EndPointUrl, GetToken()), 
-				new SubmissionSearcher(Directory.GetCurrentDirectory(), 
+				new SubmissionSearcher(workingDirectory, 
 					new CodeExtractor(repo.Config.Languages), repo),
 				repo,
-				new PlagiarismCsvWriter(Directory.GetCurrentDirectory()));
+				new PlagiarismCsvWriter(workingDirectory));
 		}
 
 		private static string GetToken()

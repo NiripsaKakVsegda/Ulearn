@@ -43,24 +43,22 @@ namespace AntiPlagiarism.ConsoleApp
 			ConsoleWorker.WriteLine("Получение данных о плагиате в предыдущих посылках");
 			foreach (var submission in repository.SubmissionsInfo.Submissions)
 			{
-				
 				log.Info("Get AntiPlagiarism levels");
-				var response = await antiPlagiarismClient.GetAuthorPlagiarismsAsync(new GetAuthorPlagiarismsParameters
+				var response = await antiPlagiarismClient.GetSubmissionPlagiarismsAsync(new GetSubmissionPlagiarismsParameters
 				{
-					AuthorId = submission.AuthorId,
-					TaskId = submission.TaskId,
-					Language = Language.CSharp
+					SubmissionId = submission.SubmissionId
 				});
 
 				var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId).Name;
 				var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId).Title;
+				if (!response.Plagiarisms.Any())
+					continue;
 				plagiarisms.Add(new PlagiarismInfo
 				{
 					AuthorName = authorName,
 					TaskTitle = taskTitle,
-					Language = Language.CSharp,
-					FaintSuspicion = response.SuspicionLevels.FaintSuspicion,
-					StrongSuspicion = response.SuspicionLevels.StrongSuspicion
+					Language = submission.Language,
+					Weight = response.Plagiarisms.Max(p => p.Weight)
 				});
 			}
 			csvWriter.WritePlagiarism(plagiarisms);
@@ -72,11 +70,11 @@ namespace AntiPlagiarism.ConsoleApp
 			var inQueueSubmissionIds = new List<int>();
 			
 			log.Info("Send submissions to AntiPlagiarism");
+			Console.WriteLine("Отправка решений на проверку АнтиПлагиатом. Это может занять несколько минут	");
 			
 			while (remainingSubmissions.Any() || inQueueSubmissionIds.Any())
 			{
 				var processedSubmissionsCount = submissions.Count - (remainingSubmissions.Count + inQueueSubmissionIds.Count);
-				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} посылок");
 				
 				while (remainingSubmissions.Any() && inQueueSubmissionIds.Count < MaxInQuerySubmissionsCount)
 				{
@@ -100,6 +98,7 @@ namespace AntiPlagiarism.ConsoleApp
 					if (inQueueSubmissionIds.Count > 0)
 						await Task.Delay(5 * 1000);
 				}
+				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} посылок");
 			}
 			Console.WriteLine();
 		}

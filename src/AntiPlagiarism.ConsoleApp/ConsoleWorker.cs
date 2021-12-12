@@ -22,6 +22,7 @@ namespace AntiPlagiarism.ConsoleApp
 		
 		public static void WriteError(Exception exception)
 		{
+			Console.WriteLine();
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine($"Произошла ошибка {exception.Message}. Подробности смотрите в логе");
 			Console.ResetColor();

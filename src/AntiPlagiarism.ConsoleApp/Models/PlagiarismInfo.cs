@@ -7,7 +7,6 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public string AuthorName { get; set; }
 		public string TaskTitle { get; set; }
 		public Language Language { get; set; }
-		public double FaintSuspicion { get; set; }
-		public double StrongSuspicion { get; set; }
+		public double Weight { get; set; }
 	}
 }
