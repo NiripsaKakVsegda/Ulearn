@@ -2,6 +2,8 @@ import React from "react";
 import classNames from 'classnames';
 
 import colorHash from "src/utils/colorHash";
+import { botId } from "src/consts/common";
+import BotAvatar from "./BotAvatar";
 
 import { ShortUserInfo } from "src/models/users";
 
@@ -23,6 +25,10 @@ function Avatar(props: Props): React.ReactElement {
 	const { imageError } = state;
 	const imageUrl = user.avatarUrl;
 	const classes = classNames(className, styles["photo-avatar"], styles[size] || "big");
+
+	if(user.id === botId) {
+		return <BotAvatar/>;
+	}
 
 	if(imageUrl && !imageError) {
 		return renderImage(imageUrl, classes);

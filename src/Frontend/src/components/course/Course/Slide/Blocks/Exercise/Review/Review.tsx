@@ -12,6 +12,7 @@ import {
 	ScrollContainer,
 	Textarea,
 	ThemeContext,
+	Toast,
 } from "ui";
 import { MenuKebab, Send3, } from "icons";
 import { getDataFromReviewToCompareChanges } from "../../../InstructorReview/utils";
@@ -30,10 +31,11 @@ import { ReviewCommentResponse, ReviewInfo } from "src/models/exercise";
 import styles from "./Review.less";
 import texts from "./Review.texts";
 import { areReviewsSame } from "../ExerciseUtils";
+import { botId, botName, } from "src/consts/common";
 
 
 class Review extends React.Component<ReviewProps, ReviewState> {
-	private botUser = { visibleName: 'Ulearn bot', id: 'bot', };
+	private botUser = { visibleName: botName, id: botId };
 	private minDistanceBetweenReviews = 5;
 
 	constructor(props: ReviewProps) {
@@ -298,8 +300,27 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				&& !outdated
 				&& (authorToRender.id !== this.botUser.id || comments.length > 0)
 				&& this.renderAddReviewComment(replies[id], id) }
+				{ selectedReviewId === id
+				&& outdated
+				&& <Button
+					use={ 'primary' }
+					onClick={ this.copySelectedReviewTextToClipboard }>
+					{ texts.copyButton }
+				</Button>
+				}
 			</li>
 		);
+	};
+
+	copySelectedReviewTextToClipboard = () => {
+		const { renderedReviews, } = this.state;
+		const { selectedReviewId, } = this.props;
+
+		const review = renderedReviews.find(r => r.review.id === selectedReviewId)?.review;
+		if(review) {
+			navigator.clipboard.writeText(review.comment);
+			Toast.push('Текст скопирован');
+		}
 	};
 
 	renderComment(review: InstructorReviewInfo): React.ReactNode;

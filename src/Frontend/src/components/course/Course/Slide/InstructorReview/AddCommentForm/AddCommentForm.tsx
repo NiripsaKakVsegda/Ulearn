@@ -43,8 +43,6 @@ export interface Props {
 	addFavouriteReview: (favouriteReviewText: string,) => Promise<FavouriteComment>;
 	deleteFavouriteReview: (favouriteReviewId: number,) => void;
 	onClose: () => void;
-
-	textareaRef?: RefObject<MarkdownEditor>;
 }
 
 interface State {
@@ -164,11 +162,18 @@ class AddCommentForm extends React.Component<Props, State> {
 	};
 
 	componentDidUpdate(prevProps: Readonly<Props>): void {
-		const { favouriteReviews, } = this.props;
-		const { otherCommentsIds, favouriteCommentsIds, commentsById, } = this.state;
+		const { favouriteReviews,lastUsedReviews, } = this.props;
+		const { otherCommentsIds, favouriteCommentsIds, commentsById, lastUsedCommentsById, } = this.state;
 		const newCommentsById: { [id: number]: FavouriteComment } = favouriteReviews.reduce(
 			(pv, cv) => ({ ...pv, [cv.id]: { ...cv } }), {});
-
+		const newLastUsedCommentsIds= lastUsedReviews
+			.reduce((pv, cv, index) => ({ ...pv, [index]: { ...cv } }), {});
+		if(JSON.stringify(newLastUsedCommentsIds) !== JSON.stringify(lastUsedCommentsById)){
+			this.setState({
+				lastUsedCommentsById: newLastUsedCommentsIds,
+				lastUsedCommentsIds: lastUsedReviews.map((c, index) => ({ id: index, ref: React.createRef() })),
+			});
+		}
 		if(JSON.stringify(newCommentsById) !== JSON.stringify(commentsById)) {
 			this.setState({
 				commentsById: newCommentsById,
@@ -188,8 +193,8 @@ class AddCommentForm extends React.Component<Props, State> {
 						}
 					});
 				this.setState({
-					otherCommentsIds: newOtherCommentsIds,
-					favouriteCommentsIds: newFavouriteCommentsIds,
+					otherCommentsIds: newOtherCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
+					favouriteCommentsIds: newFavouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
 				}, this.markOverExtendedComments);
 			} else {
 				//one of favourite reviews updated
@@ -212,8 +217,8 @@ class AddCommentForm extends React.Component<Props, State> {
 						}
 					});
 				this.setState({
-					otherCommentsIds: newOtherCommentsIds,
-					favouriteCommentsIds: newFavouriteCommentsIds,
+					otherCommentsIds: newOtherCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
+					favouriteCommentsIds: newFavouriteCommentsIds.filter(c => newCommentsById[c.id] !== undefined),
 				}, this.markOverExtendedComments);
 			}
 		}
@@ -283,7 +288,6 @@ class AddCommentForm extends React.Component<Props, State> {
 				{ texts.commentSectionHeaderText }
 			</span>
 			<MarkdownEditor
-				ref={ this.props.textareaRef }
 				className={ styles.addCommentTextArea }
 				width={ '230px' }
 				rows={ this.maxRowCount }
@@ -381,9 +385,9 @@ class AddCommentForm extends React.Component<Props, State> {
 	renderComment = (c: FavouriteCommentWithStyles): React.ReactElement => {
 		const { commentsById, } = this.state;
 		const { user, } = this.props;
-		const { isFavourite, text, } = commentsById[c.id];
-		const renderedText = renderSimpleMarkdown(text, { removeBr: true, removePre: true });
-		const Icon = isFavourite
+		const comment = commentsById[c.id];
+		const renderedText = renderSimpleMarkdown(comment.text, { removeBr: true, removePre: true });
+		const Icon = comment.isFavourite
 			? (props: SvgIconProps) => <Star { ...props }/>
 			: (props: SvgIconProps) => <Star2 { ...props }/>;
 		const id = c.id.toString();
@@ -393,14 +397,14 @@ class AddCommentForm extends React.Component<Props, State> {
 				<li key={ id } ref={ c.ref }>
 					<Icon
 						id={ id }
-						className={ isFavourite ? styles.favouriteIcon : styles.notSelectedFavouriteIcon }
+						className={ comment.isFavourite ? styles.favouriteIcon : styles.notSelectedFavouriteIcon }
 						onClick={ this.onToggleFavouriteClick }/>
 					<Hint pos={ "right middle" } maxWidth={ this.maxCommentHintWidth }
 						  text={ <span className={ styles.preview }>
 							  <p className={ styles.previewHeader }> { texts.preview } </p>
 							  { Review.renderSampleCommentWrapper(<>
 								  { Review.renderHeaderContent(user, new Date().toDateString()) }
-								  { Review.renderCommentContent(renderSimpleMarkdown(text)) }
+								  { Review.renderCommentContent(renderSimpleMarkdown(comment.text)) }
 							  </>) }
 						  </span> }>
 						<span
@@ -417,7 +421,7 @@ class AddCommentForm extends React.Component<Props, State> {
 			<li key={ id } ref={ c.ref }>
 				<Icon
 					id={ id }
-					className={ isFavourite ? styles.favouriteIcon : styles.notSelectedFavouriteIcon }
+					className={ comment.isFavourite ? styles.favouriteIcon : styles.notSelectedFavouriteIcon }
 					onClick={ this.onToggleFavouriteClick }/>
 				<span
 					className={ styles.commentText }

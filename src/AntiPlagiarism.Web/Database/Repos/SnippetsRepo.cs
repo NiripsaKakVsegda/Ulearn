@@ -86,7 +86,7 @@ namespace AntiPlagiarism.Web.Database.Repos
 			EnableAutoDetectChanges();
 
 			log.Info($"Добавил. Пересчитываю статистику сниппета (количество авторов, у которых он встречается)");
-			var snippetStatistics = await GetOrAddSnippetStatisticsAsync(foundSnippet, submission.TaskId, submission.ClientId);
+			var snippetStatistics = await GetOrAddSnippetStatisticsAsync(foundSnippet, submission.TaskId, submission.ClientId, submission.Language);
 
 			DisableAutoDetectChanges();
 
@@ -122,7 +122,7 @@ namespace AntiPlagiarism.Web.Database.Repos
 			}
 		}
 
-		private async Task<SnippetStatistics> GetOrAddSnippetStatisticsAsync(Snippet snippet, Guid taskId, int clientId)
+		private async Task<SnippetStatistics> GetOrAddSnippetStatisticsAsync(Snippet snippet, Guid taskId, int clientId, Language language)
 		{
 			DisableAutoDetectChanges();
 			try
@@ -130,7 +130,8 @@ namespace AntiPlagiarism.Web.Database.Repos
 				var foundStatistics = await db.SnippetsStatistics.SingleOrDefaultAsync(
 					s => s.SnippetId == snippet.Id &&
 						s.TaskId == taskId &&
-						s.ClientId == clientId
+						s.ClientId == clientId &&
+						s.Language == language
 				).ConfigureAwait(false);
 				if (foundStatistics != null)
 					return foundStatistics;
@@ -140,6 +141,7 @@ namespace AntiPlagiarism.Web.Database.Repos
 					SnippetId = snippet.Id,
 					ClientId = clientId,
 					TaskId = taskId,
+					Language = language,
 				});
 				addedStatistics.State = EntityState.Added;
 

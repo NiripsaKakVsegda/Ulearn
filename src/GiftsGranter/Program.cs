@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +18,7 @@ namespace GiftsGranter
 {
 	internal class Program
 	{
-		private static ILog log => LogProvider.Get().ForContext(typeof(Program));
+		private static ILog Log => LogProvider.Get().ForContext(typeof(Program));
 		private readonly int maxGiftsPerRun;
 		private readonly VisitsRepo repo;
 		private readonly JObject settings;
@@ -68,41 +70,13 @@ namespace GiftsGranter
 		private static void Main(string[] args)
 		{
 			var settings = JObject.Parse(File.ReadAllText("appsettings.json"));
+			var staff = new StaffClient(settings["staff"]["clientAuth"].Value<string>());
 			var hostLog = settings["hostLog"].ToObject<HostLogConfiguration>();
 			var graphiteServiceName = settings["graphiteServiceName"].Value<string>();
 			LoggerSetup.Setup(hostLog, graphiteServiceName);
 			try
 			{
-				var staff = new StaffClient(settings["staff"]["clientAuth"].Value<string>());
-				if (args.Contains("-r"))
-				{
-					Console.WriteLine("Username (example: KONTUR\\pe):");
-					var username = Console.ReadLine();
-					Console.WriteLine($"Password for {username}:");
-					var password = GetConsolePassword();
-					var refreshToken = staff.GetRefreshToken(username, password);
-					Console.WriteLine($"RefreshToken: {refreshToken}");
-					return;
-				}
-
-				var telegramBot = new GiftsTelegramBot();
-				try
-				{
-					staff.UseRefreshToken(settings["staff"]["refreshToken"].Value<string>());
-					var maxGiftsPerRun = args.Length > 0 ? int.Parse(args[0]) : settings["maxGiftsPerRun"].Value<int>();
-					log.Info("UseGiftGrantsLimitPerRun\t" + maxGiftsPerRun);
-					var db = new ULearnDb();
-					var repo = new VisitsRepo(db);
-					var courses = settings["courses"].Values<string>();
-					var program = new Program(repo, staff, maxGiftsPerRun, settings, telegramBot);
-					foreach (var courseId in courses)
-						program.GrantGiftsForCourse(courseId);
-				}
-				catch (Exception e)
-				{
-					telegramBot.PostToChannel($"Error while grant staff gifts.\n\n{e}");
-					log.Error(e, "UnhandledException");
-				}
+				CreateCliCommands(settings, staff).Invoke(args);
 			}
 			finally
 			{
@@ -110,11 +84,75 @@ namespace GiftsGranter
 			}
 		}
 
+		private static RootCommand CreateCliCommands(JObject settings, StaffClient staff)
+		{
+			var root = new RootCommand();
+			root.AddOption(new Option<int?>("-c", () => settings["maxGiftsPerRun"]!.Value<int>(), "Max gifts to grant per run per course"));
+			root.Handler = CommandHandler.Create<int>(maxGiftsPerRun => GrantGiftsCommand(settings, staff, maxGiftsPerRun));
+
+			var updateRefreshToken = new Command("update-staff-refresh-token");
+			updateRefreshToken.AddAlias("r");
+			updateRefreshToken.Handler = CommandHandler.Create(() => UpdateRefreshTokenCommand(settings, staff));
+			root.AddCommand(updateRefreshToken);
+
+			var testStaff = new Command("test-staff");
+			testStaff.AddOption(new Option<int>("--userId"));
+			testStaff.AddAlias("t");
+			testStaff.Handler = CommandHandler.Create<int>((userId) => TestStaffCommand(settings, staff, userId));
+			root.AddCommand(testStaff);
+
+			return root;
+		}
+
+		private static void GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun)
+		{
+			var telegramBot = new GiftsTelegramBot();
+			try
+			{
+				Log.Info("UseGiftGrantsLimitPerRun\t" + maxGiftsPerRun);
+				var db = new ULearnDb();
+				var repo = new VisitsRepo(db);
+				var courses = settings["courses"].Values<string>();
+				var program = new Program(repo, staff, maxGiftsPerRun, settings, telegramBot);
+				foreach (var courseId in courses)
+					program.GrantGiftsForCourse(courseId);
+			}
+			catch (Exception e)
+			{
+				telegramBot.PostToChannel($"Error while grant staff gifts.\n\n{e}");
+				Log.Error(e, "UnhandledException");
+			}
+		}
+
+		private static void TestStaffCommand(JObject settings, StaffClient staff, int userId)
+		{
+			staff.UseRefreshToken(settings["staff"]["refreshToken"].Value<string>());
+			if (userId == 0)
+			{
+				var peUser = staff.GetUser("S-1-5-21-1231152155-1323711836-1525454979-1552");
+				Console.WriteLine("GetUser is OK");
+				userId = peUser["id"].Value<int>();
+			}
+
+			var userGifts = staff.GetUserGifts(userId)["gifts"].Children();
+			Console.WriteLine($"GetUserGifts is OK. Gifts count: {userGifts.Count()}");
+		}
+
+		private static void UpdateRefreshTokenCommand(JObject settings, StaffClient staff)
+		{
+			Console.WriteLine("Username (example: KONTUR\\pe):");
+			var username = Console.ReadLine();
+			Console.WriteLine($"Password for {username}:");
+			var password = GetConsolePassword();
+			var refreshToken = staff.GetRefreshToken(username, password);
+			Console.WriteLine($"RefreshToken: {refreshToken}");
+		}
+
 		private void GrantGiftsForCourse(string courseId)
 		{
-			log.Info($"StartProcessingCourse\t{courseId}");
+			Log.Info($"StartProcessingCourse\t{courseId}");
 			GrantGifts(courseId);
-			log.Info($"DoneCourse\t{courseId}");
+			Log.Info($"DoneCourse\t{courseId}");
 		}
 
 		private void GrantGifts(string courseId)
@@ -127,9 +165,9 @@ namespace GiftsGranter
 				.Where(e => e.User.Logins.Any(login => login.LoginProvider == "Контур.Паспорт"))
 				.ToList();
 			var stabilizedKonturCompleted = konturRating.Where(e => e.LastVisitTime < DateTime.Now - TimeSpan.FromDays(1)).ToList();
-			log.Info($"TotalCompleted\t{rating.Count}");
-			log.Info($"KonturCompleted\t{konturRating.Count}");
-			log.Info($"StabilizedKonturCompleted\t{stabilizedKonturCompleted.Count}");
+			Log.Info($"TotalCompleted\t{rating.Count}");
+			Log.Info($"KonturCompleted\t{konturRating.Count}");
+			Log.Info($"StabilizedKonturCompleted\t{stabilizedKonturCompleted.Count}");
 			EnsureHaveGifts(stabilizedKonturCompleted, courseSettings, courseId);
 		}
 
@@ -137,11 +175,11 @@ namespace GiftsGranter
 		{
 			var delayMs = settings["delayBetweenStaffRequests"].Value<int>();
 			var granted = 0;
-			foreach (var ratingEntry in entries)
+			foreach (var ratingEntry in entries.OrderByDescending(e => e.LastVisitTime))
 			{
 				if (granted >= maxGiftsPerRun)
 				{
-					log.Info($"GiftGrantsLimitPerRunExceeded\t{maxGiftsPerRun}");
+					Log.Info($"GiftGrantsLimitPerRunExceeded\t{maxGiftsPerRun}");
 					return;
 				}
 
@@ -163,9 +201,9 @@ namespace GiftsGranter
 				var hasComplexityGift = gifts["gifts"].Children().Any(gift => gift["imagePath"].Value<string>() == giftImagePath);
 				if (!hasComplexityGift)
 				{
-					log.Info($"NoGiftYet\t{entry.Score}\t{entry.User.VisibleName}");
+					Log.Info($"NoGiftYet\t{entry.Score}\t{entry.User.VisibleName}");
 					staffClient.GrantGift(staffUserId, entry.Score, courseSettings);
-					log.Info($"ComplexityGiftGrantedFor\t{entry.User.VisibleName}\t{entry.User.KonturLogin}");
+					Log.Info($"ComplexityGiftGrantedFor\t{entry.User.VisibleName}\t{entry.User.KonturLogin}");
 					telegramBot.PostToChannel($"Granted gift for course {courseId}\n{entry.Score} points for user {entry.User.VisibleName} {entry.User.KonturLogin}");
 					return true;
 				}
@@ -175,7 +213,7 @@ namespace GiftsGranter
 			catch (Exception e)
 			{
 				var message = $"Can't grant gift to {entry.User.VisibleName} (kontur-login: {entry.User.KonturLogin} ulearn-username: {entry.User.UserName})";
-				log.Error(e, message);
+				Log.Error(e, message);
 				telegramBot.PostToChannel(message);
 				telegramBot.PostToChannel($"```{e}```", ParseMode.Markdown);
 				return false;

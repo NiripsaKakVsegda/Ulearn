@@ -36,7 +36,7 @@ namespace Database.Repos
 						fbu.FavouriteReviewId == fr.Id && fbu.Timestamp >= startDate)
 				})
 				.Where(t => t.Count > 0)
-				.OrderBy(t => t.Count)
+				.OrderByDescending(t => t.Count)
 				.Select(t => t.FavouriteReview)
 				.Take(10)
 				.ToListAsync();

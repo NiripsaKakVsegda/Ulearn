@@ -67,8 +67,8 @@ namespace Ulearn.Core.RunCheckerJobApi
 
 		[DataMember]
 		public string RunCommand { get; set; }
-		
+
 		[DataMember]
-		public bool InterpretOutputAsWrongAnswer { get; set; }
+		public InterpretNonJsonOutputType InterpretNonJsonOutputAs { get; set; }
 	}
 }

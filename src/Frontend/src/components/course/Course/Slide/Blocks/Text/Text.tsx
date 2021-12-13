@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import classNames from "classnames";
 import translateCode from "src/codeTranslator/translateCode";
 import scrollToView from "src/utils/scrollToView";
+import { studentZipDownloadUrl } from "src/consts/routes";
 
 import styles from "./Text.less";
 
@@ -61,13 +62,18 @@ function Text(props: Props): React.ReactElement {
 		}
 
 		const sameOriginLinks = anchors.filter(
-			a => a.origin === window.location.origin && a.pathname !== window.location.pathname
+			a => a.origin === window.location.origin
+				&& a.pathname !== window.location.pathname
+				&& !a.pathname.toLowerCase().startsWith(studentZipDownloadUrl) //filtering all download links
 		);
 		for (const anchor of sameOriginLinks) {
 			anchor.addEventListener('click', (e) => {
 				e.stopPropagation();
 				e.preventDefault();
-				history.push(anchor.pathname);
+				history.push({
+					pathname: anchor.pathname,
+					search: anchor.search
+				});
 			});
 		}
 	}

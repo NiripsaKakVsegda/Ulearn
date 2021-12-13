@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -41,6 +43,10 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		[CanBeNull]
 		[XmlElement("includePathForChecker")]
 		public string[] PathsToIncludeForChecker { get; set; } // Пути до директорий относительно директории с Unit, чьё содержимое нужно включить в архив. Перетирают файлы из ExerciseDir в архиве
+		
+		[CanBeNull]
+		[XmlElement("includePathForStudent")]
+		public string[] PathsToIncludeForStudent { get; set; }
 
 		[XmlElement("excludePathForStudent")]
 		public string[] PathsToExcludeForStudent { get; set; } // Шаблоны путей до файлов внутри ExerciseDir.
@@ -50,10 +56,11 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlAttribute("noStudentZip")] // Не отдавать zip студенту
 		public virtual bool NoStudentZip { get; set; }
-
-		[XmlElement("interpretOutputAsWrongAnswer")]
-		public virtual bool InterpretOutputAsWrongAnswer { get; set; }
 		
+
+		[XmlElement("interpretNonJsonOutputAs")]
+		public virtual InterpretNonJsonOutputType? InterpretNonJsonOutputAs { get; set; }
+
 		[XmlElement("dockerImageName")] // см. DockerImageNameRegex
 		public virtual string DockerImageName { get; set; }
 
@@ -86,7 +93,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		private static readonly string[] wrongAnswerPatterns = { "*.WrongAnswer.*", "*.WA.*" };
 
 		[XmlIgnore]
-		private static readonly string[] initialPatterns = { "*.Initial.*" };
+		private static readonly string[] initialPatterns = { "*.Initial.*", "*.initial.*" };
 
 		[XmlIgnore]
 		private static readonly string[] solutionPatterns = { "*.Solution.*" };
@@ -123,6 +130,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				Language = LanguageHelpers.GuessByExtension(new FileInfo(UserCodeFilePath));
 			Slide = context.Slide;
 			CourseId = context.CourseId;
+			if (!InterpretNonJsonOutputAs.HasValue)
+				InterpretNonJsonOutputAs = InterpretNonJsonOutputType.SandboxError;
 			UnitDirectoryPathRelativeToCourse = context.UnitDirectory.GetRelativePath(context.CourseDirectory);
 			ExpectedOutput = ExpectedOutput ?? "";
 			var fp = GetFilesProvider(context.CourseDirectory.FullName);
@@ -186,7 +195,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					DockerImageName = DockerImageName,
 					RunCommand = RunCommand,
 					TimeLimit = TimeLimit,
-					InterpretOutputAsWrongAnswer = InterpretOutputAsWrongAnswer,
+					InterpretNonJsonOutputAs = InterpretNonJsonOutputAs.Value,
 				};
 			}
 		}
@@ -244,9 +253,16 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					.Concat(new[] { "/checking/", "/bin/", "/obj/", ".idea/", ".vs/" })
 					.ToList();
 
+				var directoriesToInclude = exerciseBlock.PathsToIncludeForStudent
+					.EmptyIfNull()
+					.Select(pathToInclude => new DirectoryInfo(Path.Combine(fp.UnitDirectory.FullName, pathToInclude)))
+					.Select(d => d.FullName)
+					.Append(fp.ExerciseDirectory.FullName)
+					.ToList();
+				
 				var toUpdate = ReplaceWithInitialFiles(fp).ToList();
 
-				var zipMemoryStream = ZipUtils.CreateZipFromDirectory(new List<string> { fp.ExerciseDirectory.FullName }, excluded, toUpdate);
+				var zipMemoryStream = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, toUpdate);
 
 				log.Info($"Собираю zip-архив для студента: zip-архив собран, {zipMemoryStream.Length} байтов");
 				return zipMemoryStream;

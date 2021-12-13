@@ -4,6 +4,7 @@
 		<RootNamespace>Database</RootNamespace>
 		<NoWarn>NU1701</NoWarn>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Core.csproj" />

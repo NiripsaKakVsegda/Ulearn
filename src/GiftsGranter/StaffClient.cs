@@ -13,10 +13,10 @@ namespace GiftsGranter
 {
 	public class StaffClient
 	{
+		private static ILog Log => LogProvider.Get().ForContext(typeof(StaffClient));
 		private readonly string clientAuth;
+		private readonly string passportUri = "https://passport.skbkontur.ru/v3/connect/token";
 		private string authToken;
-		private string passportUri = "https://passport.skbkontur.ru/v3/connect/token";
-		private static ILog log => LogProvider.Get().ForContext(typeof(StaffClient));
 
 		/// <param name="clientAuth">format: "clientId:clientSecret"</param>
 		public StaffClient(string clientAuth)
@@ -29,9 +29,10 @@ namespace GiftsGranter
 			var client = CreateHttpClient();
 			return FuncUtils.TrySeveralTimesAsync(async () =>
 			{
-				var response = await client.GetAsync($"https://staff.skbkontur.ru/api/{url}").ConfigureAwait(false);
-				return GetJsonResponse(response, url);
-			}, 3).GetAwaiter().GetResult();
+				var fullUrl = $"https://staff.skbkontur.ru/api/{url}";
+				var response = await client.GetAsync(fullUrl).ConfigureAwait(false);
+				return GetJsonResponse(response, fullUrl);
+			}, 2).GetAwaiter().GetResult();
 		}
 
 		private HttpClient CreateHttpClient()
@@ -56,7 +57,7 @@ namespace GiftsGranter
 
 		public JObject GetUserGifts(int staffUserId)
 		{
-			return Get($"/users/{staffUserId}/gifts");
+			return Get($"users/{staffUserId}/gifts");
 		}
 
 		public JObject GrantGift(int staffUserId, int score, CourseSettings courseSettings)
@@ -86,8 +87,8 @@ namespace GiftsGranter
 			string result = response.Content.ReadAsStringAsync().Result;
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				log.Error("Hint: If invalid_grant ask KONTUR\\pe to generate new refresh_token. It works 180 days.");
-				throw new Exception($"Url: {url}\nResult:\n{result}");
+				Log.Error("Hint: If invalid_grant ask KONTUR\\pe to generate new refresh_token. It works 180 days.");
+				throw new Exception($"Url: {url} StatusCode: {response.StatusCode}\nResult:\n{result}");
 			}
 			return JObject.Parse(result);
 		}

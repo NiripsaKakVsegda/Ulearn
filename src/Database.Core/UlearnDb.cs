@@ -311,6 +311,7 @@ namespace Database
 			AddIndex<NotificationTransportSettings>(modelBuilder, c => new { c.CourseId, c.NotificationType });
 
 			AddIndex<NotificationDelivery>(modelBuilder, c => c.CreateTime);
+			AddIndex<NotificationDelivery>(modelBuilder, c => c.Status);
 			AddIndex<NotificationDelivery>(modelBuilder, c => c.NextTryTime);
 			AddIndex<NotificationDelivery>(modelBuilder, c => new { c.NotificationId, c.NotificationTransportId });
 

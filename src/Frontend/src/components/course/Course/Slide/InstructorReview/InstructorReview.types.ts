@@ -126,6 +126,7 @@ export interface State {
 	addCommentFormCoords?: { left: number; top: number; bottom: number };
 	addCommentFormExtraSpace?: number;
 	addCommentRanges?: { startRange: CodeMirror.Position; endRange: CodeMirror.Position; };
+	addCommentSelections?: CodeMirror.Range[];
 
 	initialCode?: string;
 

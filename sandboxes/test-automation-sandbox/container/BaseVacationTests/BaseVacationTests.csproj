@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+	<AssemblyName>Packages</AssemblyName>
+    <RootNamespace>Packages</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit.Engine" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0-beta.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0-release-20210330-02" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Kontur.RetryableAssertions" Version="0.0.2-alpha" />
+    <PackageReference Include="Kontur.Selone" Version="0.0.6-alpha" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="*"/>
+  </ItemGroup>
+  
+</Project>

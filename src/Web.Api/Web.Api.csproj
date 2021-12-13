@@ -4,6 +4,7 @@
 		<NoWarn>NU1701;CS1573</NoWarn>
 		<RootNamespace>Ulearn.Web.Api</RootNamespace>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="AngleSharp" Version="0.14.0" />

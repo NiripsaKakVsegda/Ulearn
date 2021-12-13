@@ -6,6 +6,7 @@ import { Star, Star2, Edit, Trash, } from "icons";
 export default {
 	sendButton: 'Ответить',
 	editButton: <><Edit/> Редактировать</>,
+	copyButton: <>Скопировать текст</>,
 	deleteButton: <><Trash/> Удалить</>,
 	getToggleFavouriteMarkup: (isFavourite: boolean): React.ReactElement => isFavourite
 		? <span><Star color={ '#F69C00' }/> Убрать из Избранных</span>

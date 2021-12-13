@@ -3,6 +3,7 @@
     <TargetFramework>net48</TargetFramework>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <LangVersion>default</LangVersion>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

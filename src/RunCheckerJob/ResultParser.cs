@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json;
+using Ulearn.Common;
 using Ulearn.Core.RunCheckerJobApi;
 
 namespace RunCheckerJob
@@ -9,7 +11,7 @@ namespace RunCheckerJob
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(ResultParser));
 
-		public static RunningResults Parse(string stdout, string stderr)
+		public static RunningResults Parse(string stdout, string stderr, InterpretNonJsonOutputType interpretNonJsonOutputAs)
 		{
 			try
 			{
@@ -21,15 +23,12 @@ namespace RunCheckerJob
 			catch (Exception)
 			{
 				log.Warn("Не удалось распарсить результат");
-				return new RunningResults(Verdict.SandboxError)
+				return interpretNonJsonOutputAs switch
 				{
-					Logs = new[]
-					{
-						"Не удалось распарсить результат",
-						"Exit code: 0",
-						$"stdout: {stdout}",
-						$"stderr: {stderr}"
-					}
+					InterpretNonJsonOutputType.CompilationError => new RunningResults(Verdict.CompilationError) { CompilationOutput = string.Join("\n", new[] { stdout, stderr }.Where(s => !string.IsNullOrWhiteSpace(s)))},
+					InterpretNonJsonOutputType.WrongAnswer => new RunningResults(Verdict.WrongAnswer) { Output = stdout, Error = stderr },
+					InterpretNonJsonOutputType.SandboxError => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } },
+					_ => new RunningResults(Verdict.SandboxError) { Logs = new[] { "Не удалось распарсить результат", "Exit code: 0", $"stdout: {stdout}", $"stderr: {stderr}" } }
 				};
 			}
 		}

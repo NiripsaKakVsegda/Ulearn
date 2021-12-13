@@ -475,7 +475,7 @@ class Course extends Component<CourseProps, State> {
 					Вопросы и пожеланиями пишите на <a href="mailto:support@ulearn.me">support@ulearn.me</a>
 				</p>
 				<p>
-					Сделано в СКБ Контур
+					Сделано в <a href="https://kontur.ru/career">Контуре</a>
 				</p>
 			</footer>
 		);

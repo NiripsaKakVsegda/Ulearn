@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle } from "ui";
+import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle, Tooltip } from "ui";
 import { UnControlled, } from "react-codemirror2";
 import { Redirect } from "react-router-dom";
 import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
@@ -12,7 +12,6 @@ import CourseLoader from "../../CourseLoader";
 import AddCommentForm from "./AddCommentForm/AddCommentForm";
 import AntiPlagiarismHeader from "./AntiPlagiarismHeader/AntiPlagiarismHeader";
 import StickyWrapper from "./AntiPlagiarismHeader/StickyWrapper";
-import MarkdownEditor from "../../../../comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
 import checker from "./reviewPolicyChecker";
 
 import 'codemirror/addon/selection/mark-selection.js';
@@ -48,6 +47,7 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
+import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "../../../../../utils/localStorageManager";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -55,7 +55,6 @@ class InstructorReview extends React.Component<Props, State> {
 		'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
 		'Выполняйте задания самостоятельно.';
 	private addCommentFormRef = React.createRef<AddCommentForm>();
-	private addCommentTextareaRef = React.createRef<MarkdownEditor>();
 
 	constructor(props: Props) {
 		super(props);
@@ -85,6 +84,7 @@ class InstructorReview extends React.Component<Props, State> {
 			reviews = allReviews.reviews;
 			outdatedReviews = allReviews.outdatedReviews;
 		}
+		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 
 		this.state = {
 			selectedReviewId: -1,
@@ -96,7 +96,7 @@ class InstructorReview extends React.Component<Props, State> {
 			currentSubmissionContext,
 			editor: null,
 			addCommentValue: '',
-			showDiff: false,
+			showDiff: toggleInCache || false,
 			diffInfo: diffInfo,
 			favouriteReviewsSet,
 			favouriteByUserSet,
@@ -130,7 +130,15 @@ class InstructorReview extends React.Component<Props, State> {
 		if(currentSubmission) {
 			this.addMarkers();
 		}
+
+		//it is possible that selection in editor preserves even if other text in browser is selected
+		//if nothing selected in browser, then copy value from selection in editor
+		document.addEventListener('copy', this.onCopy);
 	}
+
+	componentWillUnmount = (): void => {
+		document.removeEventListener('copy', this.onCopy);
+	};
 
 	loadData = (): void => {
 		const {
@@ -160,11 +168,11 @@ class InstructorReview extends React.Component<Props, State> {
 
 	hideAddCommentForm = (): void => {
 		document.removeEventListener('keydown', this.onEscPressed);
-		document.removeEventListener('copy', this.onCopy);
 		this.setState({
 			addCommentFormCoords: undefined,
 			addCommentFormExtraSpace: undefined,
 			addCommentRanges: undefined,
+			addCommentSelections: undefined,
 		});
 	};
 
@@ -177,7 +185,27 @@ class InstructorReview extends React.Component<Props, State> {
 			antiPlagiarismStatusLoading,
 			slideContext,
 		} = this.props;
-		const { currentSubmission, reviews, diffInfo, showDiff, } = this.state;
+		const { currentSubmission, reviews, diffInfo, showDiff, addCommentSelections, editor, } = this.state;
+
+		if(addCommentSelections && editor) {
+			for (const selection of addCommentSelections) {
+				const range = selection;
+				const doc = editor.getDoc();
+
+				if(doc.getAllMarks().length > 0) {
+					break;
+				}
+
+				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
+				createTextMarker(
+					endRange.line,
+					endRange.ch,
+					startRange.line,
+					startRange.ch,
+					styles.selectionToReviewMarker,
+					doc);
+			}
+		}
 
 		if(prevProps.slideContext.slideInfo.query.userId !== slideContext.slideInfo.query.userId
 			|| prevProps.slideContext.slideInfo.query.submissionId !== slideContext.slideInfo.query.submissionId) {
@@ -457,7 +485,6 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onTabChange = (value: string): void => {
 		this.setState({ currentTab: value as InstructorReviewTabs });
-		this.hideAddCommentForm();
 	};
 
 	renderCurrentTab(currentTab: InstructorReviewTabs): React.ReactNode {
@@ -723,23 +750,51 @@ class InstructorReview extends React.Component<Props, State> {
 			<div className={ styles.topControlsWrapper }>
 				{ this.renderSubmissionsSelect() }
 				{ diffInfo &&
-				<Toggle
-					onValueChange={ this.onDiffToggleValueChanged }
-					checked={ showDiff }>
-					{ texts.getDiffText(
-						diffInfo.addedLinesCount,
-						styles.diffAddedLinesTextColor,
-						diffInfo.removedLinesCount,
-						styles.diffRemovedLinesTextColor,
-						!diffInfo.prevReviewedSubmission)
-					}
-				</Toggle> }
+				<Tooltip render={ this.renderShowDiffTooltip }>
+					<Toggle
+						onValueChange={ this.onDiffToggleValueChanged }
+						checked={ showDiff }>
+						{ texts.getDiffText(
+							diffInfo.addedLinesCount,
+							styles.diffAddedLinesTextColor,
+							diffInfo.removedLinesCount,
+							styles.diffRemovedLinesTextColor,
+							!diffInfo.prevReviewedSubmission)
+						}
+					</Toggle>
+				</Tooltip>
+				}
 				{ commentsEnabled &&
 				<span className={ styles.leaveCommentGuideText }>{ texts.leaveCommentGuideText }</span> }
 			</div>
-
 		);
 	}
+
+	private reviewCacheId = 'previous_review_toggle';
+
+	renderShowDiffTooltip = () => {
+		const { showDiff, } = this.state;
+		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
+
+		if(toggleInCache === showDiff) {
+			return undefined;
+		}
+
+		return (
+			<Button use={ 'link' }
+					onClick={ this.saveShowDiffToCache }>
+				{ texts.saveShowDiff }
+			</Button>
+		);
+	};
+
+	saveShowDiffToCache = () => {
+		const { showDiff, } = this.state;
+
+		saveToCache(reviewPreviousReviewToggle, this.reviewCacheId, showDiff);
+		Toast.push(texts.onSaveShowDiffToastMessage);
+		this.forceUpdate();//nothing is changed in props/state, so we need to rerender to hide tooltip
+	};
 
 	renderHeader = (fixed: boolean,): React.ReactElement => {
 		const {
@@ -819,7 +874,6 @@ class InstructorReview extends React.Component<Props, State> {
 				{ isEditable && addCommentFormCoords !== undefined &&
 				<AddCommentForm
 					ref={ this.addCommentFormRef }
-					textareaRef={ this.addCommentTextareaRef }
 					user={ this.props.user }
 					value={ addCommentValue }
 					valueCanBeAddedToFavourite={ this.isCommentCanBeAddedToFavourite() }
@@ -1080,25 +1134,35 @@ class InstructorReview extends React.Component<Props, State> {
 
 	onMouseUp = (): void => {
 		const { editor, addCommentFormCoords, } = this.state;
-		const { getFavouriteReviews, slideContext, } = this.props;
+		const { getFavouriteReviews, slideContext, favouriteReviews, } = this.props;
 
-		if(!editor || addCommentFormCoords) {
+		if(!editor) {
 			return;
 		}
 
 		const doc = editor.getDoc();
-
 		const selections = doc.listSelections();
+
 		const firstSelection = selections[0];
 		const startRange = this.getStartAndEndFromRange(firstSelection)[0];
 
 		const lastSelection = selections[selections.length - 1];
 		const endRange = this.getStartAndEndFromRange(lastSelection)[1];
+
 		let coords: { left: number, right: number, top: number, bottom: number } | undefined
 			= undefined;
 		for (const selection of selections) {
 			const range = selection;
 			const selectedText = doc.getSelection();
+
+			if(selectedText.length == 0) {
+				this.onFormClose();
+				return;
+			}
+
+			if(addCommentFormCoords) {
+				return;
+			}
 
 			if(selectedText.length > 0) {
 				const [startRange, endRange,] = this.getStartAndEndFromRange(range);
@@ -1114,46 +1178,64 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		if(coords) {
 			const c = coords;
-			getFavouriteReviews(slideContext.courseId, slideContext.slideId)
-				.then(() => {
-					const wrapperHeight = editor
-						.getScrollerElement()
-						.getBoundingClientRect()
-						.height - 50;
-					const lineHeight = 20;
-					const padding = 16;
-					c.left = editor
-						.getGutterElement()
-						.getBoundingClientRect()
-						.width + padding / 2;
-					c.bottom += padding;
-					this.setState({
-						addCommentFormCoords: coords,
-						addCommentRanges: { startRange, endRange, },
-					}, () => {
-						document.addEventListener('copy', this.onCopy);
-						document.addEventListener('keydown', this.onEscPressed);
-						//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
-						const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
-						if(addCommentFormHeight) {
-							const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
-							this.setState({
-								addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
-							});
-						}
+			if(favouriteReviews) {
+				getFavouriteReviews(slideContext.courseId, slideContext.slideId);
+				this.openAddCommentForm(c, startRange, endRange, editor, selections);
+			} else {
+				getFavouriteReviews(slideContext.courseId, slideContext.slideId)
+					.then(() => {
+						this.openAddCommentForm(c, startRange, endRange, editor, selections);
 					});
-				});
+			}
 		}
 
 		document.removeEventListener('mouseup', this.onMouseUp);
 	};
 
+	openAddCommentForm = (
+		coords: { left: number, right: number, top: number, bottom: number },
+		startRange: CodeMirror.Position,
+		endRange: CodeMirror.Position,
+		editor: CodeMirror.Editor,
+		selections: CodeMirror.Range[],
+	) => {
+		const wrapperHeight = editor
+			.getScrollerElement()
+			.getBoundingClientRect()
+			.height - 50;
+		const lineHeight = 20;
+		const padding = 16;
+		coords.left = editor
+			.getGutterElement()
+			.getBoundingClientRect()
+			.width + padding / 2;
+		coords.bottom += padding;
+		this.setState({
+			addCommentFormCoords: coords,
+			addCommentRanges: { startRange, endRange, },
+			addCommentSelections: selections,
+		}, () => {
+			document.addEventListener('keydown', this.onEscPressed);
+			//addCommentFormExtraSpace should be added after AddCommentForm is rendered to get height
+			const addCommentFormHeight = this.addCommentFormRef.current?.getHeight();
+			if(addCommentFormHeight) {
+				const extraSpace = (endRange.line + 1) * lineHeight + addCommentFormHeight + padding - wrapperHeight;
+				this.setState({
+					addCommentFormExtraSpace: extraSpace > 0 ? extraSpace : undefined,
+				});
+			}
+		});
+	};
+
 	onCopy = async (): Promise<void> => {
 		const { editor } = this.state;
-		const selection = this.addCommentTextareaRef.current?.selectionRange;
-		if(editor && selection && selection.end - selection.start === 0) {
-			const textInEditor = editor.getSelection();
-			await navigator.clipboard.writeText(textInEditor);
+
+		if(editor) {
+			const selectedTextInBrowser = getSelection()?.toString();
+			const selectedTextInEditor = editor.getSelection();
+			if(!selectedTextInBrowser || selectedTextInBrowser.length === 0) {
+				await navigator.clipboard.writeText(selectedTextInEditor);
+			}
 		}
 	};
 

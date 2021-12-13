@@ -16,7 +16,8 @@ namespace Ulearn.Core.CSharp.Validators
 			var mustStartWithUpper = MustStartWithUpper(identifier.Parent);
 			var mustStartWithLower = MustStartWithLower(identifier.Parent);
 			var isUpper = char.IsUpper(name[0]);
-			var isLower = char.IsLower(name[0]);
+			var isLower = char.IsLower(name[0]) 
+						|| name[0] == '_' && name.Length > 1 && char.IsLower(name[1]);
 
 			if (mustStartWithLower && !isLower)
 				yield return new SolutionStyleError(StyleErrorType.NamingCase01, identifier);

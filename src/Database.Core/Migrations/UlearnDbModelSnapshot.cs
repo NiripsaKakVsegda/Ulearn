@@ -1616,6 +1616,8 @@ namespace Database.Migrations
 
                     b.HasIndex("NotificationTransportId");
 
+                    b.HasIndex("Status");
+
                     b.HasIndex("NotificationId", "NotificationTransportId");
 
                     b.ToTable("NotificationDeliveries");
@@ -3975,16 +3977,16 @@ namespace Database.Migrations
                 {
                     b.Navigation("Comments");
                 });
-			
-            modelBuilder.Entity("Database.Models.GoogleSheetExportTask", b =>
-                {
-                    b.Navigation("Groups");
-				});
 
             modelBuilder.Entity("Database.Models.FavouriteReview", b =>
                 {
                     b.Navigation("FavouriteReviewsByUser");
-				});
+                });
+
+            modelBuilder.Entity("Database.Models.GoogleSheetExportTask", b =>
+                {
+                    b.Navigation("Groups");
+                });
 
             modelBuilder.Entity("Database.Models.Group", b =>
                 {

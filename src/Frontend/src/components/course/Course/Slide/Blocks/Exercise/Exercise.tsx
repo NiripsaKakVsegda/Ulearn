@@ -20,7 +20,7 @@ import moment from "moment";
 import * as acceptedSolutionsApi from "src/api/acceptedSolutions";
 import { exerciseSolutions, loadFromCache, saveToCache, } from "src/utils/localStorageManager";
 import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
-import { isInstructor } from "src/utils/courseRoles";
+import { isInstructor, UserInfo } from "src/utils/courseRoles";
 import {
 	getLastSuccessSubmission,
 	getReviewsWithoutDeleted,
@@ -28,13 +28,13 @@ import {
 	getSelectedReviewIdByCursor,
 	getSubmissionColor,
 	hasSuccessSubmission,
+	isAcceptedSolutionsWillNotDiscardScore,
 	isFirstRightAnswer,
 	loadLanguageStyles,
 	replaceReviewMarker,
 	ReviewInfoWithMarker,
 	SubmissionColor,
-	submissionIsLast,
-	isAcceptedSolutionsWillNotDiscardScore
+	submissionIsLast
 } from "./ExerciseUtils";
 import { getDataFromReviewToCompareChanges, getReviewAnchorTop } from "../../InstructorReview/utils";
 import checker from "../../InstructorReview/reviewPolicyChecker";
@@ -46,11 +46,11 @@ import {
 	AutomaticExerciseCheckingResult as CheckingResult,
 	AutomaticExerciseCheckingResult,
 	RunSolutionResponse,
-	SolutionRunStatus, SubmissionInfo,
+	SolutionRunStatus,
+	SubmissionInfo,
 } from "src/models/exercise";
 import { SlideUserProgress } from "src/models/userProgress";
 import { ExerciseBlock, ExerciseBlockProps } from "src/models/slide";
-import { UserInfo } from "src/utils/courseRoles";
 import { ShortUserInfo } from "src/models/users";
 import { SlideContext } from "../../Slide.types";
 
@@ -231,6 +231,7 @@ class Exercise extends React.Component<Props, State> {
 			submissionError,
 			slideProgress,
 			isAuthenticated,
+			expectedOutput,
 		} = this.props;
 		const { currentSubmission, submissionLoading, selectedReviewId, value, } = this.state;
 
@@ -308,6 +309,15 @@ class Exercise extends React.Component<Props, State> {
 				|| submission?.automaticChecking?.result === AutomaticExerciseCheckingResult.CompilationError) {
 				this.setState({
 					isEditable: true,
+				});
+			}
+
+			const hasOutput = HasOutput(
+				lastCheckingResponse?.message,
+				lastCheckingResponse.submission?.automaticChecking,
+				expectedOutput);
+			if(hasOutput) {
+				this.setState({
 					showOutput: true,
 				});
 			}

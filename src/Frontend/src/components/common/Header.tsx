@@ -158,7 +158,7 @@ class Header extends Component<Props, State> {
 
 		return (
 			<Link to={ '/' } className={ cn(styles.headerElement, styles.logo) }>
-				{ isIconOnly(deviceType) ? 'U.me' : 'Ulearn.me' }
+				{ isIconOnly(deviceType) ? 'U.me' : 'ULearn.me' }
 			</Link>
 		);
 	}

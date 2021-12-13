@@ -4150,36 +4150,15 @@ footer:hover {
 /* ReSharper restore DeclarationIsEmpty */
 /*#endregion */
 
-.jumbotron {
-	padding-top: 30px;
-	padding-bottom: 30px;
-	margin-bottom: 30px;
-	color: inherit;
-	background-color: #eee;
-}
-
 .legacy-page .container .jumbotron {
 	margin-top: 40px;
+	margin-bottom: 30px;
+	padding: 0;
+	background-color: unset;
 }
 
-.container .jumbotron, .container-fluid .jumbotron {
-	padding-right: 15px;
-	padding-left: 15px;
-	border-radius: 6px;
-}
-
-@media screen and (min-width: 768px) {
-	.container .jumbotron, .container-fluid .jumbotron {
-		padding-right: 60px;
-		padding-left: 60px;
-	}
-}
-
-@media screen and (min-width: 768px) {
-	.jumbotron {
-		padding-top: 48px;
-		padding-bottom: 48px;
-	}
+.legacy-page .container .jumbotron img {
+	max-width: 100%;
 }
 
 .legacy-page .terms-container .container,
@@ -5549,7 +5528,17 @@ body.lti-component {
 	margin-top: 0;
 }
 
-/* bootsrtap override*/
+/* bootstrap override*/
 label {
 	font-weight: 400;
+}
+
+.legacy-page .course-tile .btn.btn-primary {
+	margin-top: 10px;
+	padding: 6px 39px;
+	font-size: 18px;
+	font-weight: 600;
+	background: #222222;
+	border-radius: 50px;
+	border-color: unset;
 }
