@@ -2,7 +2,7 @@
 installationDirectoryPath=$1
 
 # Пропишем путь до исполняемого файла в файл задачи. Разрешены только полные пути.
-sudo sed -i "s@%ExecStart%@/bin/bash -c `dotnet $installationDirectoryPath/RunCheckerJob.dll`@" deploy/runcheckerjob.service
+sudo sed -i "s@%ExecStart%@/usr/local/bin/dotnet $installationDirectoryPath/RunCheckerJob.dll@" deploy/runcheckerjob.service
 
 # Скопируем файл задачи в папку для созданных вручную задач
 sudo cp deploy/runcheckerjob.service /etc/systemd/system
