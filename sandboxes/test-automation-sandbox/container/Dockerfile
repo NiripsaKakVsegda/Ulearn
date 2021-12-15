@@ -21,6 +21,7 @@ google-chrome-stable \
 --no-install-recommends \
 && apt-get purge --auto-remove -y curl \
 && rm -rf /var/lib/apt/lists/*
+RUN dotnet tool install --global dotnet-serve
 
 RUN mkdir /app
 
