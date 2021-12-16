@@ -348,7 +348,7 @@
 	foreach (var user in groupUsers.OrderBy(user => user.UserVisibleName))
 	{
 		<tr class="student" data-user-id="@user.UserId" data-group="@groupId">
-			<td title="@(Model.IsInstructor ? user.UserName : user.UserVisibleName)" class="student-name">
+			<td title="@(user.UserId)" class="student-name">
 				@if (Model.CanViewProfiles)
 				{
 					@Html.ActionLink(user.UserVisibleName.TruncateWithEllipsis(30), "Profile", "Account", new { userId = user.UserId }, new { })
