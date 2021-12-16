@@ -205,7 +205,6 @@ class Navigation extends Component<Props, State> {
 		const xDiff = xDown - clientX;
 		const yDiff = yDown - clientY;
 		const menuWidth = this.wrapper.current.getBoundingClientRect().width;
-
 		if(moveStarted || Math.abs(xDiff) > this.touchDistanceTolerance) {
 			let diff, ratio;
 			if(navigationOpened) {
@@ -299,7 +298,6 @@ class Navigation extends Component<Props, State> {
 				returnInUnit();
 			}
 		}
-
 		if(deviceType !== prevProps.deviceType) {
 			if(this.isMobileNavigationEnabled()) {
 				this.tryAddTouchListener();
@@ -315,10 +313,11 @@ class Navigation extends Component<Props, State> {
 
 	lockBodyScroll = (lock: boolean): void => {
 		const classList = this.body?.classList;
-		if(!this.isMobileNavigationEnabled()) {
+		if(!classList) {
 			return;
 		}
-		if(!classList) {
+		if(!this.isMobileNavigationEnabled()) {
+			classList.toggle(styles.overflow, false);
 			return;
 		}
 		if(lock !== classList.contains(styles.overflow)) {
@@ -381,7 +380,6 @@ class Navigation extends Component<Props, State> {
 
 	renderUnitNavigation(): React.ReactNode {
 		const {
-			toggleNavigation,
 			unitTitle,
 			unitItems,
 			nextUnit,
@@ -395,13 +393,23 @@ class Navigation extends Component<Props, State> {
 			<>
 				<NavigationContent
 					items={ unitItems }
-					onClick={ toggleNavigation }
+					onClick={ this.closeNavigation }
 					getRefToActive={ this.currentActiveItem }
 				/>
 				{ nextUnit && <NextUnit unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
 			</>
 		);
 	}
+
+	closeNavigation = (): void => {
+		const {
+			toggleNavigation,
+		} = this.props;
+
+		if(this.isMobileNavigationEnabled()) {
+			toggleNavigation();
+		}
+	};
 
 	renderCourseNavigation(): React.ReactElement {
 		const {
