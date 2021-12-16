@@ -13,8 +13,8 @@ function Profile(props) {
 		: user.visibleName;
 
 	return canViewProfiles
-		? <Link href={ profileUrl }>{ name }</Link>
-		: <div className={ styles.name }>{ name }</div>;
+		? <Link title={ user.id } href={ profileUrl }>{ name }</Link>
+		: <div title={ user.id } className={ styles.name }>{ name }</div>;
 }
 
 const GetNameWithSecondNameFirst = (user) => user.lastName && user.firstName ? `${ user.lastName } ${ user.firstName }` : user.visibleName;
