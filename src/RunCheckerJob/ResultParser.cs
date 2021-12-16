@@ -15,7 +15,19 @@ namespace RunCheckerJob
 		{
 			try
 			{
-				var result = JsonConvert.DeserializeObject<RunningResults>(stdout);
+				var objectStartCommaIndex = stdout.IndexOf('{');
+				var objectEndCommaIndex = stdout.LastIndexOf('}');
+				
+				RunningResults result;
+
+				if (objectStartCommaIndex != 0 || objectEndCommaIndex != stdout.Length - 1)
+				{
+					var objectToParse = stdout.Substring(objectStartCommaIndex, objectEndCommaIndex - objectStartCommaIndex + 1);
+					result = JsonConvert.DeserializeObject<RunningResults>(objectToParse);
+					log.Warn("При парсинге результата были замечены сторонние символы");
+				}
+				else result = JsonConvert.DeserializeObject<RunningResults>(stdout);
+
 				if (result == null)
 					throw new Exception();
 				return result;
