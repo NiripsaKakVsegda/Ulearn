@@ -22,6 +22,8 @@ google-chrome-stable \
 && apt-get purge --auto-remove -y curl \
 && rm -rf /var/lib/apt/lists/*
 RUN dotnet tool install --global dotnet-serve
+# doesn't get added to path
+ENV PATH="${PATH}:/root/.dotnet/tools"
 
 RUN mkdir /app
 
