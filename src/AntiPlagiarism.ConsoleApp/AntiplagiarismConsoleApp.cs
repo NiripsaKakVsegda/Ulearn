@@ -53,12 +53,18 @@ namespace AntiPlagiarism.ConsoleApp
 				var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId).Title;
 				if (!response.Plagiarisms.Any())
 					continue;
+
+				var mostSimilarSubmission = response.Plagiarisms.OrderByDescending(p => p.Weight).First();
+				
+				var authorOfMostSimilarSubmission = repository.SubmissionsInfo.Authors.Single(
+					a => a.Id == mostSimilarSubmission.SubmissionInfo.AuthorId);
 				plagiarisms.Add(new PlagiarismInfo
 				{
 					AuthorName = authorName,
 					TaskTitle = taskTitle,
+					PlagiarismAuthorName = authorOfMostSimilarSubmission.Name,
 					Language = submission.Language,
-					Weight = response.Plagiarisms.Max(p => p.Weight)
+					Weight = $"{Math.Round(response.Plagiarisms.Max(p => p.Weight) * 100, 2)}%" 
 				});
 			}
 			csvWriter.WritePlagiarism(plagiarisms);
@@ -98,8 +104,9 @@ namespace AntiPlagiarism.ConsoleApp
 					if (inQueueSubmissionIds.Count > 0)
 						await Task.Delay(5 * 1000);
 				}
-				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} посылок");
+				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} решений");
 			}
+			ConsoleWorker.ReWriteLine("Обработка решений завершена.");
 			Console.WriteLine();
 		}
 

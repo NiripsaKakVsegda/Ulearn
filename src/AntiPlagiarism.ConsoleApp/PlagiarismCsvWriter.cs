@@ -18,11 +18,20 @@ namespace AntiPlagiarism.ConsoleApp
 
 		public void WritePlagiarism(List<PlagiarismInfo> plagiarisms)
 		{
-			using var stream = new StreamWriter(csvFile);
-			using var csv = new CsvWriter(stream, CultureInfo.InvariantCulture);
-			csv.WriteRecords(plagiarisms);
-			
-			ConsoleWorker.WriteLine($"Информация о плагиате записана в файл {csvFile}");
+			try
+			{
+				using var stream = new StreamWriter(csvFile);
+				using var csv = new CsvWriter(stream, CultureInfo.InvariantCulture);
+				csv.WriteRecords(plagiarisms);
+
+				ConsoleWorker.WriteLine($"Информация о плагиате записана в файл {csvFile}");
+			}
+			catch (IOException e)
+			{
+				ConsoleWorker.WriteLine("Не удалось записать результат");
+				ConsoleWorker.WriteLine($"Закройте файл {csvFile} и попробуйте ещё раз");
+				ConsoleWorker.WriteError(e, false);
+			}
 		}
 	}
 }

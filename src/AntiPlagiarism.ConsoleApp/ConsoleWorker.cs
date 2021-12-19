@@ -20,12 +20,15 @@ namespace AntiPlagiarism.ConsoleApp
 			Console.Write($"\r{text}");
 		}
 		
-		public static void WriteError(Exception exception)
+		public static void WriteError(Exception exception, bool printToUser=true)
 		{
-			Console.WriteLine();
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine($"Произошла ошибка {exception.Message}. Подробности смотрите в логе");
-			Console.ResetColor();
+			if (printToUser)
+			{
+				Console.WriteLine();
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"Произошла ошибка {exception.Message}. Подробности смотрите в логе");
+				Console.ResetColor();
+			}
 			log.Error(exception);
 		}
 
