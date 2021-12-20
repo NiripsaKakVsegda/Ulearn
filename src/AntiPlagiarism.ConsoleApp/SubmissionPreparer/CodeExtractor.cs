@@ -8,11 +8,11 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 {
 	public class CodeExtractor
 	{
-		private readonly List<Language> allowedLanguages;
+		private readonly List<Language> excludedLanguages;
 
-		public CodeExtractor(List<Language> allowedLanguages)
+		public CodeExtractor(List<Language> excludedLanguages)
 		{
-			this.allowedLanguages = allowedLanguages;
+			this.excludedLanguages = excludedLanguages;
 		}
 		
 		public Dictionary<Language, string> ExtractCode(string submissionDirectoryPath)
@@ -30,7 +30,7 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 				foreach (var file in dir.GetFiles())
 				{
 					var language = LanguageHelpers.GuessByExtension(new FileInfo(file));
-					if (allowedLanguages.Contains(language))
+					if (!excludedLanguages.Contains(language))
 					{
 						if (!lang2CodePieces.ContainsKey(language))
 							lang2CodePieces[language] = new List<string>();

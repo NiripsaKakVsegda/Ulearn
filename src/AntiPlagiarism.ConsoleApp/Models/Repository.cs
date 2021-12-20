@@ -6,7 +6,8 @@ namespace AntiPlagiarism.ConsoleApp.Models
 {
 	public class Repository
 	{
-		private readonly string configFile;
+		public const string configFileName = "config.json";
+		private readonly string configFilePath;
 		private readonly string submissionsInfoFile;
 		public Config Config;
 		public SubmissionsInfo SubmissionsInfo;
@@ -14,7 +15,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public Repository(string rootDirectory)
 		{
 			submissionsInfoFile = rootDirectory.PathCombine("submissions.json");
-			configFile = rootDirectory.PathCombine("config.json");
+			configFilePath = rootDirectory.PathCombine(configFileName);
 			LoadSubmissionsInfo();
 			LoadConfig();
 		}
@@ -22,7 +23,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public void SetAccessToken(string token)
 		{
 			Config.Token = token;
-			SaveInJsonFile(Config, configFile);
+			SaveInJsonFile(Config, configFilePath);
 		}
 
 		public void AddSubmissionInfo(SubmissionInfo submission)
@@ -56,12 +57,12 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		
 		private void LoadConfig()
 		{
-			if (!File.Exists(configFile))
+			if (!File.Exists(configFilePath))
 			{
 				Config = new Config();
 				return;
 			}
-			Config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configFile));
+			Config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configFilePath));
 		}
 
 		private void SaveInJsonFile<T>(T content, string file)

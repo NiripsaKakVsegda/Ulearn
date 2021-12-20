@@ -1,133 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using AntiPlagiarism.Api;
-using AntiPlagiarism.Api.Models.Parameters;
 using AntiPlagiarism.ConsoleApp.Models;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
-using Ulearn.Common;
 using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp
 {
 	public class AntiplagiarismConsoleApp
 	{
-		private IAntiPlagiarismClient antiPlagiarismClient;
-		private SubmissionSearcher submissionSearcher;
+		private readonly SubmissionSearcher submissionSearcher;
+		private readonly SubmissionSender submissionSender;
+		private readonly PlagiarismWriter plagiarismWriter;
 		private readonly Repository repository;
-		private readonly PlagiarismCsvWriter csvWriter;
-		private const int MaxInQuerySubmissionsCount = 2;
 		private readonly ILog log = LogProvider.Get();
-
-		public AntiplagiarismConsoleApp(IAntiPlagiarismClient antiPlagiarismClient,
-			SubmissionSearcher submissionSearcher,
-			Repository repository,
-			PlagiarismCsvWriter csvWriter)
+		
+		private readonly List<UserActions> actions;
+		
+		public AntiplagiarismConsoleApp(SubmissionSearcher submissionSearcher,
+			SubmissionSender submissionSender,
+			PlagiarismWriter plagiarismWriter,
+			Repository repository)
 		{
-			this.antiPlagiarismClient = antiPlagiarismClient;
 			this.submissionSearcher = submissionSearcher;
 			this.repository = repository;
-			this.csvWriter = csvWriter;
+			this.plagiarismWriter = plagiarismWriter;
+			this.submissionSender = submissionSender;
+
+			actions = new()
+			{
+				new UserActions("send", SendNewSubmissions, "отправляет новые посылки на проверку антиплагиатом"),
+				new UserActions("get-plagiarism", GetPlagiarisms, "получает информацию о плагиате и записывает в файл")
+			};
 		}
 
-		public List<Submission> GetNewSubmissionsAsync()
+		public void Run()
+		{
+			try
+			{
+				while (true)
+				{
+					ShowHelpMessage();
+					var userInput = ConsoleWorker.GetUserInput();
+					var command = actions.FirstOrDefault(c => c.Command == userInput);
+					if (command == null)
+					{
+						ConsoleWorker.WriteLine("Неверная команда");
+						continue;
+					}
+
+					command.Action();
+
+					Console.Write("Продолжить? ");
+					if (!ConsoleWorker.GetUserAnswer())
+						return;
+				}
+			}
+			catch (Exception exception)
+			{
+				ConsoleWorker.WriteError(exception);
+			}
+
+			Console.ReadKey();
+		}
+
+		private List<Submission> GetNewSubmissions()
 		{
 			return submissionSearcher.GetSubmissions();
 		}
 
-		public async Task GetPlagiarismsAsync()
+		private void SendNewSubmissions()
 		{
-			var plagiarisms = new List<PlagiarismInfo>();
-			
-			ConsoleWorker.WriteLine("Получение данных о плагиате в предыдущих посылках");
-			foreach (var submission in repository.SubmissionsInfo.Submissions)
+			var newSubmissions = GetNewSubmissions();
+			if (newSubmissions.Count == 0)
 			{
-				log.Info("Get AntiPlagiarism levels");
-				var response = await antiPlagiarismClient.GetSubmissionPlagiarismsAsync(new GetSubmissionPlagiarismsParameters
-				{
-					SubmissionId = submission.SubmissionId
-				});
-
-				var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId).Name;
-				var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId).Title;
-				if (!response.Plagiarisms.Any())
-					continue;
-
-				var mostSimilarSubmission = response.Plagiarisms.OrderByDescending(p => p.Weight).First();
-				
-				var authorOfMostSimilarSubmission = repository.SubmissionsInfo.Authors.Single(
-					a => a.Id == mostSimilarSubmission.SubmissionInfo.AuthorId);
-				plagiarisms.Add(new PlagiarismInfo
-				{
-					AuthorName = authorName,
-					TaskTitle = taskTitle,
-					PlagiarismAuthorName = authorOfMostSimilarSubmission.Name,
-					Language = submission.Language,
-					Weight = $"{Math.Round(response.Plagiarisms.Max(p => p.Weight) * 100, 2)}%" 
-				});
+				Console.WriteLine("Новых посылок не найдено");
+				return;
 			}
-			csvWriter.WritePlagiarism(plagiarisms);
+			if (ValidateSubmissions(newSubmissions))
+			{
+				submissionSender.SendSubmissionsAsync(newSubmissions).GetAwaiter().GetResult();
+				ConsoleWorker.WriteLine("Посылки успешно отправлены");
+			}
+			else
+				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 		}
 
-		public async Task SendSubmissionsAsync(List<Submission> submissions)
+		private void GetPlagiarisms()
 		{
-			var remainingSubmissions = new Queue<Submission>(submissions);
-			var inQueueSubmissionIds = new List<int>();
-			
-			log.Info("Send submissions to AntiPlagiarism");
-			Console.WriteLine("Отправка решений на проверку АнтиПлагиатом. Это может занять несколько минут	");
-			
-			while (remainingSubmissions.Any() || inQueueSubmissionIds.Any())
-			{
-				var processedSubmissionsCount = submissions.Count - (remainingSubmissions.Count + inQueueSubmissionIds.Count);
-				
-				while (remainingSubmissions.Any() && inQueueSubmissionIds.Count < MaxInQuerySubmissionsCount)
-				{
-					var submission = remainingSubmissions.Dequeue();
-					await SendSubmissionAsync(submission);
-					inQueueSubmissionIds.Add(submission.Info.SubmissionId);
-				}
-				
-				// Узнаем, проверены ли уже отправленные
-				// Если еще не проверены - засыпаем на 5 секунд
-				if (inQueueSubmissionIds.Any())
-				{
-					var getProcessingStatusResponse = await antiPlagiarismClient
-						.GetProcessingStatusAsync(
-							new GetProcessingStatusParameters
-							{
-								SubmissionIds = inQueueSubmissionIds.ToArray()
-							});
-					inQueueSubmissionIds = getProcessingStatusResponse.InQueueSubmissionIds.ToList();
-					
-					if (inQueueSubmissionIds.Count > 0)
-						await Task.Delay(5 * 1000);
-				}
-				ConsoleWorker.ReWriteLine($"Обработано {processedSubmissionsCount}/{submissions.Count} решений");
-			}
-			ConsoleWorker.ReWriteLine("Обработка решений завершена.");
-			Console.WriteLine();
+			plagiarismWriter.GetPlagiarismsAsync().GetAwaiter().GetResult();
 		}
 
-		private async Task SendSubmissionAsync(Submission submission)
+		private void ShowHelpMessage()
 		{
-			var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.Info.AuthorId).Name;
-			var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.Info.TaskId).Title;
-			
-			var response = await antiPlagiarismClient.AddSubmissionAsync(new AddSubmissionParameters
+			foreach (var command in actions)
 			{
-				TaskId = submission.Info.TaskId,
-				AuthorId = submission.Info.AuthorId,
-				Code = submission.Code,
-				Language = submission.Info.Language,
-				AdditionalInfo = $"Task: {taskTitle}; Author: {authorName}",
-				ClientSubmissionId = "client Id (name + task)"
-			});
-			submission.Info.SubmissionId = response.SubmissionId;
-			
-			log.Info($"Send submission {submission.Info.SubmissionId}");
-			repository.AddSubmissionInfo(submission.Info);
+				Console.WriteLine($"{command.Command} - {command.Help}");
+			}
+		}
+
+		private bool ValidateSubmissions(IEnumerable<Submission> submissions)
+		{
+			Console.WriteLine("Будут отправлены следующие посылки:");
+			ConsoleWorker.PrintSubmissions(submissions.ToArray(), 
+				repository.SubmissionsInfo.Authors.ToArray(),
+				repository.SubmissionsInfo.Tasks.ToArray());
+
+			Console.Write("Отправить посылки? ");
+			return ConsoleWorker.GetUserAnswer();
 		}
 	}
 }

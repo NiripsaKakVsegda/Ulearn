@@ -7,7 +7,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 	{
 		public string Token;
 		public string EndPointUrl = "http://localhost:33333/";
-		// todo запрашивать языки у пользователя
-		public List<Language> Languages = new() { Language.CSharp, Language.Python3 };
+		public int MaxInQuerySubmissionsCount = 3;
+		public List<Language> ExcludedLanguages = new() { Language.Text };
 	}
 }
