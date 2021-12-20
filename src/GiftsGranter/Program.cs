@@ -106,6 +106,7 @@ namespace GiftsGranter
 
 		private static void GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun)
 		{
+			staff.UseRefreshToken(settings["staff"]["refreshToken"].Value<string>());
 			var telegramBot = new GiftsTelegramBot();
 			try
 			{
@@ -207,7 +208,7 @@ namespace GiftsGranter
 					telegramBot.PostToChannel($"Granted gift for course {courseId}\n{entry.Score} points for user {entry.User.VisibleName} {entry.User.KonturLogin}");
 					return true;
 				}
-
+				Log.Debug($"HasGiftAlready {entry.User.VisibleName}\t{staffUserId}");
 				return false;
 			}
 			catch (Exception e)
