@@ -88,7 +88,7 @@ namespace GiftsGranter
 		{
 			var root = new RootCommand();
 			root.AddOption(new Option<int?>("-c", () => settings["maxGiftsPerRun"]!.Value<int>(), "Max gifts to grant per run per course"));
-			root.Handler = CommandHandler.Create<int>(maxGiftsPerRun => GrantGiftsCommand(settings, staff, maxGiftsPerRun));
+			root.Handler = CommandHandler.Create<int>(c => GrantGiftsCommand(settings, staff, c));
 
 			var updateRefreshToken = new Command("update-staff-refresh-token");
 			updateRefreshToken.AddAlias("r");
