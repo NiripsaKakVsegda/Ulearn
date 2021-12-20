@@ -40,8 +40,8 @@ namespace AntiPlagiarism.ConsoleApp
 			{
 				while (true)
 				{
-					ShowHelpMessage();
-					var userInput = ConsoleWorker.GetUserInput();
+					var userInput = ConsoleWorker.GetUserChoice(actions.Select(
+						a => new ConsoleOption{ Option = a.Command, Description = a.Help}).ToList());
 					var command = actions.FirstOrDefault(c => c.Command == userInput);
 					if (command == null)
 					{

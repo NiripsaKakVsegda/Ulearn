@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AntiPlagiarism.ConsoleApp.Models;
 using Vostok.Logging.Abstractions;
@@ -49,6 +50,21 @@ namespace AntiPlagiarism.ConsoleApp
 			return Console.ReadLine();
 		}
 		
+		public static string GetUserChoice(List<ConsoleOption> options)
+		{
+			for (var i = 1; i <= options.Count; i++)
+			{
+				Console.WriteLine($"{i}. {options[i - 1].Option} {options[i - 1].Description}");
+			}
+
+			var userAnswer = GetUserInput();
+			
+			if (int.TryParse(userAnswer, out var n) && (n >= 1 && n <= options.Count))
+				return options[n - 1].Option;
+
+			return options.FirstOrDefault(o => o.Option == userAnswer)?.Option;
+		}
+
 		public static void PrintSubmissions(Submission[] submissions, Author[] authors, TaskInfo[] tasks)
 		{
 			foreach (var taskToSubmissions in submissions
@@ -65,5 +81,11 @@ namespace AntiPlagiarism.ConsoleApp
 				Console.WriteLine();
 			}
 		}
+	}
+
+	public class ConsoleOption
+	{
+		public string Option { get; init; }
+		public string Description { get; init; }
 	}
 }
