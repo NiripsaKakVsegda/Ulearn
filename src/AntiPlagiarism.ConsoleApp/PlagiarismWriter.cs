@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.Api.Models.Parameters;
+using AntiPlagiarism.Api.Models.Results;
 using AntiPlagiarism.ConsoleApp.Models;
+using AntiPlagiarism.ConsoleApp.Models.CsvPlagiarismInfo;
 using Vostok.Logging.Abstractions;
 
 namespace AntiPlagiarism.ConsoleApp
@@ -23,12 +25,53 @@ namespace AntiPlagiarism.ConsoleApp
 			this.repository = repository;
 		}
 
-		public async Task GetPlagiarismsAsync()
+		public async Task GetPlagiarismsBrief()
 		{
-			var plagiarisms = new List<PlagiarismInfo>();
+			var briefPlagiarismInfos = new List<BriefPlagiarismInfo>();
 			
-			ConsoleWorker.WriteLine("Получение данных о плагиате в предыдущих посылках");
-			foreach (var submission in repository.SubmissionsInfo.Submissions)
+			foreach (var author in repository.SubmissionsInfo.Authors)
+			{
+				var authorPlagiarismCount = 0;
+				var authorStrongPlagiarismCount = 0;
+				foreach (var submission in repository.SubmissionsInfo.Submissions
+							.Where(s => s.AuthorId == author.Id))
+				{
+					var response = await antiPlagiarismClient.GetSubmissionPlagiarismsAsync(new GetSubmissionPlagiarismsParameters
+					{
+						SubmissionId = submission.SubmissionId
+					});
+					
+					if (!response.Plagiarisms.Any())
+						continue;
+					
+					var maxWeight = response.Plagiarisms.Max(p => p.Weight);
+					if (maxWeight >= response.SuspicionLevels.FaintSuspicion)
+						authorPlagiarismCount++;
+					if (maxWeight >= response.SuspicionLevels.StrongSuspicion)
+						authorStrongPlagiarismCount++;
+				}
+				
+				briefPlagiarismInfos.Add(new BriefPlagiarismInfo
+				{
+					AuthorName = author.Name,
+					TotalSuspicionCount = authorPlagiarismCount,
+					StrongSuspicionCount = authorStrongPlagiarismCount
+				});
+			}
+			
+			csvWriter.WritePlagiarism(briefPlagiarismInfos
+				.OrderByDescending(b => b.TotalSuspicionCount)
+				.ThenByDescending(b => b.StrongSuspicionCount)
+				.ToList());
+		}
+
+		public async Task GetPlagiarismsByAuthorAsync(Author author)
+		{
+			var plagiarisms = new List<AuthorPlagiarismInfo>();
+			
+			ConsoleWorker.WriteLine($"Получение данных о плагиате {author.Name}");
+			foreach (var submission in repository.SubmissionsInfo.Submissions
+						.Where(s => s.AuthorId == author.Id))
 			{
 				log.Info("Get AntiPlagiarism levels");
 				var response = await antiPlagiarismClient.GetSubmissionPlagiarismsAsync(new GetSubmissionPlagiarismsParameters
@@ -36,7 +79,6 @@ namespace AntiPlagiarism.ConsoleApp
 					SubmissionId = submission.SubmissionId
 				});
 
-				var authorName = repository.SubmissionsInfo.Authors.First(a => a.Id == submission.AuthorId).Name;
 				var taskTitle = repository.SubmissionsInfo.Tasks.First(t => t.Id == submission.TaskId).Title;
 				if (!response.Plagiarisms.Any())
 					continue;
@@ -45,13 +87,24 @@ namespace AntiPlagiarism.ConsoleApp
 				
 				var authorOfMostSimilarSubmission = repository.SubmissionsInfo.Authors.Single(
 					a => a.Id == mostSimilarSubmission.SubmissionInfo.AuthorId);
-				plagiarisms.Add(new PlagiarismInfo
+				var levels = await antiPlagiarismClient.GetSuspicionLevelsAsync(new GetSuspicionLevelsParameters
 				{
-					AuthorName = authorName,
+					TaskId = submission.TaskId,
+					Language = submission.Language
+				});
+				
+				var weight = response.Plagiarisms.Max(p => p.Weight);
+				if (weight < levels.SuspicionLevels.FaintSuspicion)
+					continue;
+				
+				plagiarisms.Add(new AuthorPlagiarismInfo
+				{
+					AuthorName = author.Name,
 					TaskTitle = taskTitle,
 					PlagiarismAuthorName = authorOfMostSimilarSubmission.Name,
+					SuspicionLevel = weight < levels.SuspicionLevels.StrongSuspicion ? "слабый" : "сильный", 
 					Language = submission.Language,
-					Weight = $"{Math.Round(response.Plagiarisms.Max(p => p.Weight) * 100, 2)}%" 
+					Weight = $"{Math.Round(weight * 100, 2)}%" 
 				});
 			}
 			csvWriter.WritePlagiarism(plagiarisms);

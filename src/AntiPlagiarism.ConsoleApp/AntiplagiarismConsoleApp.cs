@@ -30,7 +30,8 @@ namespace AntiPlagiarism.ConsoleApp
 			actions = new()
 			{
 				new UserActions("send", SendNewSubmissions, "отправляет новые посылки на проверку антиплагиатом"),
-				new UserActions("get-plagiarism", GetPlagiarisms, "получает информацию о плагиате и записывает в файл")
+				new UserActions("get-plagiarism-byauthor", GetAuthorPlagiarisms, "получает информацию о плагиате и записывает в файл"),
+				new UserActions("get-plagiarism-brief", GetPlagiarismBrief, "получает список количества подозрительных решений")
 			};
 		}
 
@@ -86,17 +87,20 @@ namespace AntiPlagiarism.ConsoleApp
 				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 		}
 
-		private void GetPlagiarisms()
+		private void GetPlagiarismBrief()
 		{
-			plagiarismWriter.GetPlagiarismsAsync().GetAwaiter().GetResult();
+			plagiarismWriter.GetPlagiarismsBrief().GetAwaiter().GetResult();
 		}
 
-		private void ShowHelpMessage()
+		private void GetAuthorPlagiarisms()
 		{
-			foreach (var command in actions)
-			{
-				Console.WriteLine($"{command.Command} - {command.Help}");
-			}
+			Console.WriteLine("Выберите автора для получение антиплагиата:");
+			var authorName = ConsoleWorker.GetUserChoice(repository.SubmissionsInfo.Authors
+				.Select(a => new ConsoleOption { Option = a.Name })
+				.ToList());
+			plagiarismWriter.GetPlagiarismsByAuthorAsync(
+				repository.SubmissionsInfo.Authors.First(a => a.Name == authorName))
+				.GetAwaiter().GetResult();
 		}
 
 		private bool ValidateSubmissions(IEnumerable<Submission> submissions)
