@@ -67,6 +67,30 @@ interface ExerciseBlockProps {
 	slideId: string;
 	courseId: string;
 	forceInitialCode: boolean;
+	exerciseTexts: ExerciseTexts;
+}
+
+export interface ExerciseTexts {
+	// «Все тесты пройдены». Показывается тем, у кого потенциально бывает код-ревью, но это решение не отправлено на него.
+	// Например, потому что есть более новое решение.
+	allTestsPassed: string | null;
+
+	// «Все тесты пройдены, задача сдана». Показывается тем, у кого не бывает код-ревью. Например, вольнослушателям.
+	allTestsPassedWithoutReview: string | null;
+
+	// «Все тесты пройдены, за&nbsp;код-ревью {0} +{1}». Вместо {0} и {1} подставляются слова «получено»/«получен» и «X балл/балла/баллов».
+	codeReviewPassed: string | null;
+
+	// «Все тесты пройдены, за&nbsp;<a href=\"{0}\" title=\"Отредактировать код-ревью\">код-ревью</a> {1} +{2}».
+	// Аналогично предыдущему, только со ссылкой на редактирование код-ревью для преподавателя.
+	codeReviewPassedInstructorView: string | null;
+
+	// «Все тесты пройдены, решение ожидает код-ревью». Показывается студенту.
+	waitingForCodeReview: string | null;
+
+	// «Все тесты пройдены, решение ожидает <a href=\"{0}\" title=\"Перейти к код-ревью\">код-ревью</a>». Показывается преподавателю.
+	// Вместо {0} подставляется ссылка на код-ревью.
+	waitingForCodeReviewInstructorView: string | null;
 }
 
 interface ExerciseBlock extends Block {

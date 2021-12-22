@@ -701,13 +701,14 @@ class Exercise extends React.Component<Props, State> {
 	): React.ReactNode => {
 		const { currentSubmission, visibleCheckingResponse } = this.state;
 		const { waitingForManualChecking, prohibitFurtherManualChecking, score } = this.props.slideProgress;
-		const { submissions } = this.props;
+		const { submissions, exerciseTexts } = this.props;
 		if(!currentSubmission && !visibleCheckingResponse) {
 			return null;
 		}
 		const hasSubmissionWithManualChecking = submissions?.some(s => s.manualChecking != null);
 		return (
 			<ExerciseFormHeader
+				exerciseTexts={ exerciseTexts }
 				solutionRunStatus={ visibleCheckingResponse ? visibleCheckingResponse.solutionRunStatus : null }
 				selectedSubmission={ currentSubmission }
 				waitingForManualChecking={ waitingForManualChecking }

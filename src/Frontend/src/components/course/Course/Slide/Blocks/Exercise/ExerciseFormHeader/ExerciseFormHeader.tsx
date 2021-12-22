@@ -10,17 +10,19 @@ import {
 } from "src/models/exercise";
 import getPluralForm from "src/utils/getPluralForm";
 import { SubmissionColor } from "../ExerciseUtils";
+import { ExerciseTexts } from "src/models/slide";
 
 interface ExerciseFormHeaderProps {
-	solutionRunStatus: SolutionRunStatus | null, // Если результаты посылки, сделанной только что и не содержащей submission
-	selectedSubmission: SubmissionInfo | null, // Если результаты выбранной посылки
-	submissionColor: SubmissionColor,
-	waitingForManualChecking?: boolean,  // Студент в целом ожидает ревью?
-	selectedSubmissionIsLast?: boolean,
-	selectedSubmissionIsLastSuccess?: boolean, // Это последнее решение, прошедшее тесты?
-	prohibitFurtherManualChecking?: boolean, // True, если ревью по задаче включено, но запрещено для задачи этого студента преподавателем
-	hasSubmissionWithManualChecking?: boolean // Есть решение с ManualChecking, пусть и не оцененным (для определения самого факта, что студент посылал задачу, когда была доступна проверка)
-	score?: number,
+	solutionRunStatus: SolutionRunStatus | null; // Если результаты посылки, сделанной только что и не содержащей submission
+	selectedSubmission: SubmissionInfo | null; // Если результаты выбранной посылки
+	submissionColor: SubmissionColor;
+	waitingForManualChecking?: boolean;  // Студент в целом ожидает ревью?
+	selectedSubmissionIsLast?: boolean;
+	selectedSubmissionIsLastSuccess?: boolean; // Это последнее решение, прошедшее тесты?
+	prohibitFurtherManualChecking?: boolean; // True, если ревью по задаче включено, но запрещено для задачи этого студента преподавателем
+	hasSubmissionWithManualChecking?: boolean; // Есть решение с ManualChecking, пусть и не оцененным (для определения самого факта, что студент посылал задачу, когда была доступна проверка)
+	score?: number;
+	exerciseTexts: ExerciseTexts;
 }
 
 const submissionColorToStyle: EnumDictionary<SubmissionColor, string> = {
@@ -45,7 +47,7 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 	}
 
 	getText(): string | null {
-		const { solutionRunStatus, selectedSubmission, score, selectedSubmissionIsLast } = this.props;
+		const { solutionRunStatus, selectedSubmission, score, selectedSubmissionIsLast, } = this.props;
 		let text: string | null = null;
 		if(solutionRunStatus && solutionRunStatus !== SolutionRunStatus.Success) {
 			text = this.getTextForCheckingResponse(solutionRunStatus);
@@ -64,7 +66,8 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 			waitingForManualChecking,
 			prohibitFurtherManualChecking,
 			selectedSubmissionIsLastSuccess,
-			hasSubmissionWithManualChecking
+			hasSubmissionWithManualChecking,
+			exerciseTexts,
 		} = this.props;
 		const { automaticChecking, manualChecking, } = selectedSubmission;
 		const manualCheckingPassed = (manualChecking?.percent ?? null) !== null;
@@ -76,9 +79,14 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 				case ProcessStatus.Done:
 					switch (automaticChecking.result) {
 						case CheckingResult.RightAnswer:
-							return ExerciseFormHeader.getTextAllTestPassed(waitingForManualChecking,
-								prohibitFurtherManualChecking, manualCheckingPassed, hasSubmissionWithManualChecking,
-								!!selectedSubmissionIsLastSuccess);
+							return ExerciseFormHeader.getTextAllTestPassed(
+								waitingForManualChecking,
+								prohibitFurtherManualChecking,
+								manualCheckingPassed,
+								hasSubmissionWithManualChecking,
+								!!selectedSubmissionIsLastSuccess,
+								exerciseTexts,
+							);
 						case CheckingResult.CompilationError:
 							return texts.compilationError;
 						case CheckingResult.RuntimeError:
@@ -133,20 +141,21 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 		manualCheckingPassed: boolean,
 		hasSubmissionWithManualChecking: boolean | undefined,
 		selectedSubmissionIsLastSuccess: boolean,
+		exerciseTexts: ExerciseTexts,
 	): string | null {
 		if(manualCheckingPassed) {
-			return texts.allTestPassedWasReviewed;
+			return exerciseTexts.codeReviewPassed || texts.allTestPassedWasReviewed;
 		}
 		if(waitingForManualChecking && selectedSubmissionIsLastSuccess) {
-			return texts.allTestPassedPendingReview;
+			return exerciseTexts.waitingForCodeReview || texts.allTestPassedPendingReview;
 		}
 		if((prohibitFurtherManualChecking || (hasSubmissionWithManualChecking && !waitingForManualChecking)) && selectedSubmissionIsLastSuccess) {
-			return texts.allTestPassedProhibitFurtherReview;
+			return exerciseTexts.allTestsPassed || texts.allTestPassedProhibitFurtherReview;
 		}
 		if(selectedSubmissionIsLastSuccess) {
-			return texts.allTestPassedNoReview;
+			return exerciseTexts.allTestsPassedWithoutReview || texts.allTestPassedNoReview;
 		}
-		return texts.allTestPassed;
+		return exerciseTexts.allTestsPassed || texts.allTestPassed;
 	}
 
 	static getTextNoTests(waitingForManualChecking: boolean | undefined,

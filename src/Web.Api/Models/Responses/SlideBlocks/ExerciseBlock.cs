@@ -53,10 +53,14 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 		
 		[DataMember]
 		public bool PythonVisualizerEnabled { get; set; }
+		
+		[DataMember]
+		public ExerciseTexts ExerciseTexts { get; set; }
 
 		public ExerciseBlockResponse(AbstractExerciseBlock exerciseBlock,
 			ExerciseSlideRendererContext context)
 		{
+			ExerciseTexts = exerciseBlock.Texts;
 			if (exerciseBlock is PolygonExerciseBlock polygonExerciseBlock)
 			{
 				Languages = PolygonExerciseBlock.LanguagesInfo.Keys.ToArray();
