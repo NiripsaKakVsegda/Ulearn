@@ -20,9 +20,10 @@ import {
 } from "src/consts/routes";
 
 import styles from '../Header.less';
+import { MatchParams } from "../../../models/router";
 
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps<MatchParams> {
 	account: AccountState;
 	deviceType: DeviceType;
 }

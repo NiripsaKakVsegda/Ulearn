@@ -3,35 +3,36 @@ import React from "react";
 import { MenuHeader, MenuItem, MenuSeparator } from "ui";
 import LinkComponent from "../../LinkComponent";
 
-import { coursesPath, coursePath, adminCheckingQueuePath } from "src/consts/routes";
+import { adminCheckingQueuePath, coursePath, coursesPath } from "src/consts/routes";
 
 import { CourseInfo } from "src/models/course";
 import { CourseAccessType, CourseRoleType, } from "src/consts/accessType";
 import { DeviceType } from "src/consts/deviceType";
 import { buildQuery } from "src/utils";
 
-const VISIBLE_COURSES_COUNT = 10;
-const COURSES_TO_BE_SORTED_BY_LAST_VISIT_COUNT = 4;
+const lastVisitedCoursesMaxCount = 4;
+const controllableCoursesMaxCount = 10;
 
 export function getCourseMenuItems(
-	courseIds: string[],
+	controllableCourseIds: string[],
 	courseById: { [courseId: string]: CourseInfo },
 	isSystemAdministrator: boolean
 ): React.ReactElement[] {
-	courseIds = courseIds.filter(item => courseById[item] !== undefined);
-	const coursesInfo = courseIds
+	controllableCourseIds = controllableCourseIds.filter(item => courseById[item] !== undefined);
+	const controllableCourses = controllableCourseIds
 		.filter(courseId => courseById[courseId])
-		.map(courseId => courseById[courseId]);
-
-	const lastVisitedCourses = [...coursesInfo].sort(sortCoursesByTimestamp)
-		.slice(0, COURSES_TO_BE_SORTED_BY_LAST_VISIT_COUNT);
-	const lastVisitedCoursesIds = new Set(lastVisitedCourses.map(c => c.id));
+		.map(courseId => courseById[courseId])
+		.sort(sortCoursesByTimestamp)
+		.slice(0, controllableCoursesMaxCount);
+	const controllableCoursesIds = new Set(controllableCourses.map(c => c.id));
+	const lastVisitedCourses = Object.values(courseById)
+		.filter(course => !controllableCoursesIds.has(course.id) && course.timestamp !== null)
+		.sort(sortCoursesByTimestamp)
+		.slice(0, lastVisitedCoursesMaxCount);
 
 	const items = [
+		...controllableCourses,
 		...lastVisitedCourses,
-		...coursesInfo.filter(c => !lastVisitedCoursesIds.has(c.id))
-			.sort(sortCoursesByTitle)
-			.slice(0, VISIBLE_COURSES_COUNT - COURSES_TO_BE_SORTED_BY_LAST_VISIT_COUNT)
 	].map(
 		courseInfo =>
 			<MenuItem
@@ -40,7 +41,7 @@ export function getCourseMenuItems(
 				component={ LinkComponent }>{ courseInfo.title }
 			</MenuItem>
 	);
-	if(courseIds.length > coursesInfo.length || isSystemAdministrator) {
+	if(controllableCourseIds.length > controllableCourses.length || isSystemAdministrator) {
 		items.push(
 			<MenuItem href={ coursesPath } key="-course-list" component={ LinkComponent }>
 				<strong>Все курсы</strong>
@@ -85,7 +86,7 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 			Ведомость курса
 		</MenuItem>,
 
-		<MenuItem href={`/${courseId}/google-sheet-tasks` } key="GoogleSheetTasks"
+		<MenuItem href={ `/${ courseId }/google-sheet-tasks` } key="GoogleSheetTasks"
 				  component={ LinkComponent }>
 			Ведомости в Google Sheets
 		</MenuItem>,

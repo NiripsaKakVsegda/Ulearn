@@ -1,7 +1,7 @@
 import React, { Component, } from 'react';
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import cn from "classnames";
 
 import { toggleNavigationAction } from "src/actions/navigation";
@@ -11,7 +11,6 @@ import { isIconOnly } from "./HeaderElements/CoursesMenus/CoursesMenuUtils";
 import HeaderComponentErrorBoundary from "./Error/HeaderComponentErrorBoundary";
 import Hijack from "src/components/hijack/Hijack";
 import StudentMode from "src/components/common/StudentMode/StudentMode";
-import { Link } from "react-router-dom";
 import Menu from "./HeaderElements/Menu";
 import SysAdminMenu from "./HeaderElements/SysAdminMenu";
 import MyCoursesMenu from "./HeaderElements/CoursesMenus/MyCoursesMenu";
@@ -53,7 +52,6 @@ class Header extends Component<Props, State> {
 	static mapPropsToState({ account, courses }: Props): State {
 		const { currentCourseId, courseById } = courses;
 		const { groupsAsStudent, roleByCourse, accessesByCourse, isSystemAdministrator } = account;
-
 		let controllableCourseIds: string[];
 		if(isSystemAdministrator) {
 			controllableCourseIds = Object.keys(courseById);
@@ -206,7 +204,9 @@ class Header extends Component<Props, State> {
 					deviceType={ deviceType }
 					controllableCourseIds={ controllableCourseIds }
 				/> }
-				{ !isSystemAdministrator && controllableCourseIds.length > 0 &&
+				{ !isSystemAdministrator
+				&& (controllableCourseIds.length > 0
+					|| Object.values(courses.courseById).some(c => c.timestamp !== null)) &&
 				<MyCoursesMenu
 					courses={ courses }
 					deviceType={ deviceType }
@@ -235,7 +235,7 @@ class Header extends Component<Props, State> {
 		} = this.state;
 		const { courses, } = this.props;
 
-		if(controllableCourseIds.length === 0) {
+		if(controllableCourseIds.length === 0 && !Object.values(courses.courseById).some(c => c.timestamp !== null)) {
 			return null;
 		}
 
