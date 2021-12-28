@@ -5006,6 +5006,7 @@ body.lti-component {
 	padding: 8px 15px;
 	margin-bottom: 10px;
 	border: 1px solid #bbb;
+	word-break: break-word;
 }
 
 @media (max-width: 800px) {
