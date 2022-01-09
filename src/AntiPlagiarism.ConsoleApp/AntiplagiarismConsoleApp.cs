@@ -26,36 +26,14 @@ namespace AntiPlagiarism.ConsoleApp
 			this.repository = repository;
 			this.plagiarismWriter = plagiarismWriter;
 			this.submissionSender = submissionSender;
-
-			actions = new()
-			{
-				new UserActions("send", SendNewSubmissions, "отправляет новые посылки на проверку антиплагиатом"),
-				new UserActions("get-plagiarism-byauthor", GetAuthorPlagiarisms, "получает информацию о плагиате и записывает в файл"),
-				new UserActions("get-plagiarism-brief", GetPlagiarismBrief, "получает список количества подозрительных решений")
-			};
 		}
 
 		public void Run()
 		{
 			try
 			{
-				while (true)
-				{
-					var userInput = ConsoleWorker.GetUserChoice(actions.Select(
-						a => new ConsoleOption{ Option = a.Command, Description = a.Help}).ToList());
-					var command = actions.FirstOrDefault(c => c.Command == userInput);
-					if (command == null)
-					{
-						ConsoleWorker.WriteLine("Неверная команда");
-						continue;
-					}
-
-					command.Action();
-
-					Console.Write("Продолжить? ");
-					if (!ConsoleWorker.GetUserAnswer())
-						return;
-				}
+				SendNewSubmissions();
+				GetPlagiarisms();
 			}
 			catch (Exception exception)
 			{
@@ -86,21 +64,9 @@ namespace AntiPlagiarism.ConsoleApp
 			else
 				ConsoleWorker.WriteLine("Новые посылки не были отправлены");
 		}
-
-		private void GetPlagiarismBrief()
+		private void GetPlagiarisms()
 		{
-			plagiarismWriter.GetPlagiarismsBrief().GetAwaiter().GetResult();
-		}
-
-		private void GetAuthorPlagiarisms()
-		{
-			Console.WriteLine("Выберите автора для получение антиплагиата:");
-			var authorName = ConsoleWorker.GetUserChoice(repository.SubmissionsInfo.Authors
-				.Select(a => new ConsoleOption { Option = a.Name })
-				.ToList());
-			plagiarismWriter.GetPlagiarismsByAuthorAsync(
-				repository.SubmissionsInfo.Authors.First(a => a.Name == authorName))
-				.GetAwaiter().GetResult();
+			plagiarismWriter.GetPlagiarismsAsync().GetAwaiter().GetResult();
 		}
 
 		private bool ValidateSubmissions(IEnumerable<Submission> submissions)

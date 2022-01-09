@@ -1,9 +1,8 @@
-﻿using AntiPlagiarism.ConsoleApp.Models.CsvPlagiarismInfo;
-using Ulearn.Common;
+﻿using Ulearn.Common;
 
 namespace AntiPlagiarism.ConsoleApp.Models
 {
-	public class AuthorPlagiarismInfo : IPlagiarismInfo
+	public class PlagiarismInfo
 	{
 		[CsvHelper.Configuration.Attributes.Name("Автор решения")]
 		public string AuthorName { get; set; }
@@ -14,13 +13,16 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		[CsvHelper.Configuration.Attributes.Name("Автор с наиболее похожим решением")]
 		public string PlagiarismAuthorName { get; set; }
 		
-		[CsvHelper.Configuration.Attributes.Name("Уровень подозрительности")]
+		[CsvHelper.Configuration.Attributes.Name("Уровень схожести")]
 		public string SuspicionLevel { get; set; }
 		
-		[CsvHelper.Configuration.Attributes.Name("Степень схожести решений")]
+		[CsvHelper.Configuration.Attributes.Name("Процент схожести решений")]
 		public string Weight { get; set; }
 		
 		[CsvHelper.Configuration.Attributes.Name("Язык решения")]
 		public Language Language { get; set; }
+		
+		[CsvHelper.Configuration.Attributes.Name("Количество списываний студента")]
+		public int PlagiarismCount { get; set; }
 	}
 }

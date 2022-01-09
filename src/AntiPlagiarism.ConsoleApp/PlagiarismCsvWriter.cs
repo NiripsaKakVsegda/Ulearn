@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using AntiPlagiarism.ConsoleApp.Models.CsvPlagiarismInfo;
+using AntiPlagiarism.ConsoleApp.Models;
 using CsvHelper;
 using Ulearn.Common.Extensions;
 
@@ -16,7 +16,7 @@ namespace AntiPlagiarism.ConsoleApp
 			this.path = path;
 		}
 
-		public void WritePlagiarism<T>(List<T> plagiarisms, string fileName="plagiarisms.csv") where T: IPlagiarismInfo
+		public void WritePlagiarism(List<PlagiarismInfo> plagiarisms, string fileName="plagiarisms.csv")
 		{
 			var file = path.PathCombine(fileName);
 			try
