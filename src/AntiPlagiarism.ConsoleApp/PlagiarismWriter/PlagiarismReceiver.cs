@@ -7,19 +7,22 @@ using AntiPlagiarism.Api.Models.Parameters;
 using AntiPlagiarism.ConsoleApp.Models;
 using Vostok.Logging.Abstractions;
 
-namespace AntiPlagiarism.ConsoleApp
+namespace AntiPlagiarism.ConsoleApp.PlagiarismWriter
 {
-	public class PlagiarismWriter
+	public class PlagiarismReceiver
 	{
 		private readonly ILog log = LogProvider.Get();
 		private IAntiPlagiarismClient antiPlagiarismClient;
-		private readonly PlagiarismCsvWriter csvWriter;
+		private readonly DiffsWriter diffsWriter;
 		private readonly Repository repository;
 
-		public PlagiarismWriter(IAntiPlagiarismClient antiPlagiarismClient, PlagiarismCsvWriter csvWriter, Repository repository)
+		public PlagiarismReceiver(
+			IAntiPlagiarismClient antiPlagiarismClient,
+			DiffsWriter diffsWriter,
+			Repository repository)
 		{
 			this.antiPlagiarismClient = antiPlagiarismClient;
-			this.csvWriter = csvWriter;
+			this.diffsWriter = diffsWriter;
 			this.repository = repository;
 		}
 
@@ -61,11 +64,13 @@ namespace AntiPlagiarism.ConsoleApp
 					PlagiarismAuthorName = authorOfMostSimilarSubmission.Name,
 					SuspicionLevel = weight < levels.SuspicionLevels.StrongSuspicion ? "слабый" : "сильный", 
 					Language = submission.Language,
-					Weight = $"{Math.Round(weight * 100, 2)}%" 
+					Weight = $"{Math.Round(weight * 100, 2)}%",
+					Code = response.SubmissionInfo.Code,
+					PlagiarismCode = mostSimilarSubmission.SubmissionInfo.Code
 				});
 			}
 			
-			csvWriter.WritePlagiarism(plagiarisms.Select(p1 =>
+			diffsWriter.WritePlagiarisms(plagiarisms.Select(p1 =>
 			{
 				p1.PlagiarismCount = plagiarisms.Count(p2 => p1.AuthorName == p2.AuthorName);
 				return p1;

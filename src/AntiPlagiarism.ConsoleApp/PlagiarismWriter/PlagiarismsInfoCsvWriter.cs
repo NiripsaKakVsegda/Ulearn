@@ -5,13 +5,13 @@ using AntiPlagiarism.ConsoleApp.Models;
 using CsvHelper;
 using Ulearn.Common.Extensions;
 
-namespace AntiPlagiarism.ConsoleApp
+namespace AntiPlagiarism.ConsoleApp.PlagiarismWriter
 {
-	public class PlagiarismCsvWriter
+	public class PlagiarismsInfoCsvWriter
 	{
 		private readonly string path;
 		
-		public PlagiarismCsvWriter(string path)
+		public PlagiarismsInfoCsvWriter(string path)
 		{
 			this.path = path;
 		}

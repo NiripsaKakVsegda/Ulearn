@@ -24,5 +24,11 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		
 		[CsvHelper.Configuration.Attributes.Name("Количество списываний студента")]
 		public int PlagiarismCount { get; set; }
+		
+		[CsvHelper.Configuration.Attributes.Ignore]
+		public string Code { get; set; }
+		
+		[CsvHelper.Configuration.Attributes.Ignore]
+		public string PlagiarismCode { get; set; }
 	}
 }

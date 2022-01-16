@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AntiPlagiarism.ConsoleApp.Models;
+using AntiPlagiarism.ConsoleApp.PlagiarismWriter;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Vostok.Logging.Abstractions;
 
@@ -11,7 +12,7 @@ namespace AntiPlagiarism.ConsoleApp
 	{
 		private readonly SubmissionSearcher submissionSearcher;
 		private readonly SubmissionSender submissionSender;
-		private readonly PlagiarismWriter plagiarismWriter;
+		private readonly PlagiarismReceiver plagiarismReceiver;
 		private readonly Repository repository;
 		private readonly ILog log = LogProvider.Get();
 		
@@ -19,12 +20,12 @@ namespace AntiPlagiarism.ConsoleApp
 		
 		public AntiplagiarismConsoleApp(SubmissionSearcher submissionSearcher,
 			SubmissionSender submissionSender,
-			PlagiarismWriter plagiarismWriter,
+			PlagiarismReceiver plagiarismReceiver,
 			Repository repository)
 		{
 			this.submissionSearcher = submissionSearcher;
 			this.repository = repository;
-			this.plagiarismWriter = plagiarismWriter;
+			this.plagiarismReceiver = plagiarismReceiver;
 			this.submissionSender = submissionSender;
 		}
 
@@ -66,7 +67,7 @@ namespace AntiPlagiarism.ConsoleApp
 		}
 		private void GetPlagiarisms()
 		{
-			plagiarismWriter.GetPlagiarismsAsync().GetAwaiter().GetResult();
+			plagiarismReceiver.GetPlagiarismsAsync().GetAwaiter().GetResult();
 		}
 
 		private bool ValidateSubmissions(IEnumerable<Submission> submissions)

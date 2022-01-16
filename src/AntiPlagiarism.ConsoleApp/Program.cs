@@ -2,6 +2,7 @@
 using System.IO;
 using AntiPlagiarism.Api;
 using AntiPlagiarism.ConsoleApp.Models;
+using AntiPlagiarism.ConsoleApp.PlagiarismWriter;
 using AntiPlagiarism.ConsoleApp.SubmissionPreparer;
 using Ulearn.Common.Extensions;
 using Vostok.Logging.Abstractions;
@@ -35,7 +36,7 @@ namespace AntiPlagiarism.ConsoleApp
 			app = new AntiplagiarismConsoleApp(
 				new SubmissionSearcher(workingDirectory, new CodeExtractor(repository.Config.ExcludedLanguages), repository),
 				new SubmissionSender(antiPlagiarismClient, repository),
-				new PlagiarismWriter(antiPlagiarismClient, new PlagiarismCsvWriter(workingDirectory), repository),
+				new PlagiarismReceiver(antiPlagiarismClient, new DiffsWriter(workingDirectory), repository),
 				repository);
 		}
 
