@@ -34,7 +34,7 @@ namespace AntiPlagiarism.ConsoleApp
 			antiPlagiarismClient = new AntiPlagiarismClient(repository.Config.EndPointUrl, GetToken());
 			
 			app = new AntiplagiarismConsoleApp(
-				new SubmissionSearcher(workingDirectory, new CodeExtractor(repository.Config.ExcludedLanguages), repository),
+				new SubmissionSearcher(workingDirectory, new CodeExtractor(repository), repository),
 				new SubmissionSender(antiPlagiarismClient, repository),
 				new PlagiarismReceiver(antiPlagiarismClient, new DiffsWriter(workingDirectory), repository),
 				repository);

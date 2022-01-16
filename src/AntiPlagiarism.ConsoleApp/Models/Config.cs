@@ -8,6 +8,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public string Token;
 		public string EndPointUrl = "http://localhost:33333/";
 		public int MaxInQuerySubmissionsCount = 3;
+		public List<string> ExcludedPaths = new() { "node_modules", "diffs" };
 		public List<Language> ExcludedLanguages = new() { Language.Text };
 	}
 }

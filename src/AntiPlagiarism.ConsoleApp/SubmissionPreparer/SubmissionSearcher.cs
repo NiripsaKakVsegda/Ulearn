@@ -11,15 +11,16 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 	{
 		private readonly string rootDirectory;
 		private readonly CodeExtractor codeExtractor;
-		private readonly Repository submissionRepo;
-		
+		private readonly Repository repository;
+
 		private readonly ILog log = LogProvider.Get();
 		
-		public SubmissionSearcher(string rootDirectory, CodeExtractor codeExtractor, Repository submissionRepo)
+		public SubmissionSearcher(
+			string rootDirectory, CodeExtractor codeExtractor, Repository repository)
 		{
 			this.rootDirectory = rootDirectory;
 			this.codeExtractor = codeExtractor;
-			this.submissionRepo = submissionRepo;
+			this.repository = repository;
 		}
 
 		public List<Submission> GetSubmissions()
@@ -28,13 +29,13 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 
 			var submissions = new List<Submission>();
 
-			foreach (var task in submissionRepo.SubmissionsInfo.Tasks)
+			foreach (var task in repository.SubmissionsInfo.Tasks)
 			{
-				foreach (var author in submissionRepo.SubmissionsInfo.Authors)
+				foreach (var author in repository.SubmissionsInfo.Authors)
 				{
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
 					if (Directory.Exists(path)
-						&& submissionRepo.SubmissionsInfo.Submissions.All(
+						&& repository.SubmissionsInfo.Submissions.All(
 							s => s.TaskId != task.Id || s.AuthorId != author.Id))
 					{
 						var lang2Code = codeExtractor.ExtractCode(path);
@@ -62,26 +63,27 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 		private void ActualizeInfo()
 		{
 			foreach (var taskPath in GetNewDirectories(rootDirectory, 
-				submissionRepo.SubmissionsInfo.Tasks.Select(t => t.Title)))
+				repository.SubmissionsInfo.Tasks.Select(t => t.Title)))
 			{
-				submissionRepo.AddTask(new(Path.GetFileName(taskPath)));
+				repository.AddTask(new(Path.GetFileName(taskPath)));
 			}
 			
-			foreach (var taskPath in submissionRepo.SubmissionsInfo.Tasks
+			foreach (var taskPath in repository.SubmissionsInfo.Tasks
 					.Select(t => Path.Combine(rootDirectory, t.Title)))
 			{
 				foreach (var authorPath in GetNewDirectories(taskPath,
-						submissionRepo.SubmissionsInfo.Authors.Select(a => a.Name)))
+						repository.SubmissionsInfo.Authors.Select(a => a.Name)))
 				{
-					submissionRepo.AddAuthor(new(Path.GetFileName(authorPath)));
+					repository.AddAuthor(new(Path.GetFileName(authorPath)));
 				}
 			}
 		}
 		
-		private static string[] GetNewDirectories(string path, IEnumerable<string> recordedDirs) =>
+		private string[] GetNewDirectories(string path, IEnumerable<string> recordedDirs) =>
 			Directory.GetDirectories(path)
 				.Select(Path.GetFileName)
 				.Where(dir => !recordedDirs.Contains(dir))
+				.Where(dir => !repository.Config.ExcludedPaths.Any(excluded => dir.Contains(excluded)))
 				.ToArray();
 	}
 }
