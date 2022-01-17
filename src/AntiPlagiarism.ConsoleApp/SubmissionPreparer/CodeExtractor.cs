@@ -45,7 +45,13 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 			} while (dirs.Count > 0);
 			
 			return lang2CodePieces.ToDictionary(kwp => kwp.Key,
-				kwp => string.Join('\n', kwp.Value));
+				kwp => string.Join('\n', kwp.Value))
+				.Where(kwp => HasCorrectLenght(kwp.Value))
+				.ToDictionary(kwp => kwp.Key,
+					kwp => kwp.Value);
 		}
+
+		private bool HasCorrectLenght(string code) 
+			=> code.Split('\n').Length <= repository.Config.MaxCodeLinesCount;
 	}
 }
