@@ -6,7 +6,8 @@ namespace AntiPlagiarism.ConsoleApp.Models
 {
 	public class Repository
 	{
-		public const string configFileName = "config.json";
+		public const string AntiplagiarismDataDirectory = "antiplagiarism_app";
+		public const string ConfigFileName = "config.json";
 		private readonly string configFilePath;
 		private readonly string submissionsInfoFile;
 		public Config Config;
@@ -14,8 +15,9 @@ namespace AntiPlagiarism.ConsoleApp.Models
 
 		public Repository(string rootDirectory)
 		{
-			submissionsInfoFile = rootDirectory.PathCombine("submissions.json");
-			configFilePath = rootDirectory.PathCombine(configFileName);
+			var repositoryPath = rootDirectory.PathCombine(AntiplagiarismDataDirectory);
+			submissionsInfoFile = repositoryPath.PathCombine("submissions.json");
+			configFilePath = repositoryPath.PathCombine(ConfigFileName);
 			LoadSubmissionsInfo();
 			LoadConfig();
 		}

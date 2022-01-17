@@ -16,8 +16,6 @@ namespace AntiPlagiarism.ConsoleApp
 		private readonly Repository repository;
 		private readonly ILog log = LogProvider.Get();
 		
-		private readonly List<UserActions> actions;
-		
 		public AntiplagiarismConsoleApp(SubmissionSearcher submissionSearcher,
 			SubmissionSender submissionSender,
 			PlagiarismReceiver plagiarismReceiver,

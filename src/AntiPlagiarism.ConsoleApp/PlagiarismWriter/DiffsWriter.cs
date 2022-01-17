@@ -12,7 +12,7 @@ namespace AntiPlagiarism.ConsoleApp.PlagiarismWriter
 
 		public DiffsWriter(string path)
 		{
-			plagiarismsDirectory = path.PathCombine("diffs");
+			plagiarismsDirectory = path.PathCombine(Repository.AntiplagiarismDataDirectory).PathCombine("diffs");
 			csvWriter = new PlagiarismsInfoCsvWriter(path);
 		}
 		

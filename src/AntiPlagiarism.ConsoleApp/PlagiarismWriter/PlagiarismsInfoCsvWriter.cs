@@ -13,7 +13,7 @@ namespace AntiPlagiarism.ConsoleApp.PlagiarismWriter
 		
 		public PlagiarismsInfoCsvWriter(string path)
 		{
-			this.path = path;
+			this.path = path.PathCombine(Repository.AntiplagiarismDataDirectory);
 		}
 
 		public void WritePlagiarism(List<PlagiarismInfo> plagiarisms, string fileName="plagiarisms.csv")

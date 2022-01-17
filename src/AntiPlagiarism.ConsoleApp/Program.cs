@@ -42,7 +42,9 @@ namespace AntiPlagiarism.ConsoleApp
 
 		private static string GetWorkingDirectory()
 		{
-			if (File.Exists(Directory.GetCurrentDirectory().PathCombine(Repository.configFileName)))
+			if (File.Exists(Directory.GetCurrentDirectory()
+					.PathCombine(Repository.AntiplagiarismDataDirectory)
+					.PathCombine(Repository.ConfigFileName)))
 				return Directory.GetCurrentDirectory();
 			Console.WriteLine("Введите путь до корневой директории, содержащей решения задач");
 			return ConsoleWorker.GetUserInput();
