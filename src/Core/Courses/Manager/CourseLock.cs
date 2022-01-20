@@ -117,6 +117,7 @@ namespace Ulearn.Core.Courses.Manager
 			}
 			catch (IOException)
 			{
+				File.Delete(tempFileName);
 				return false;
 			}
 		}
