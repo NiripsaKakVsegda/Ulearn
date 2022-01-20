@@ -26,6 +26,7 @@ namespace uLearn
 			}
 
 			File.ReadAllText(lockFileName).Should().BeEquivalentTo("test");
+			File.Delete(tempFileName);
 		}
 
 		private string CreateTempFile()
