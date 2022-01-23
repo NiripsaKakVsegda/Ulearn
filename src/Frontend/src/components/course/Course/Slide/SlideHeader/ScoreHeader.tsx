@@ -3,19 +3,18 @@ import { connect, ConnectedProps } from "react-redux";
 import classNames from 'classnames';
 
 import DownloadedHtmlContent from 'src/components/common/DownloadedHtmlContent.js';
-import { Link, Modal, } from "ui";
+import { Link, Loader, Modal, } from "ui";
 
 import { isInstructor } from "src/utils/courseRoles";
 
+import { SubmissionInfo } from "src/models/exercise";
+import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
 import { SlideType } from "src/models/slide";
 import { constructPathToStudentSubmissions } from "src/consts/routes";
 import { RootState } from "src/models/reduxState";
 
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
-import { SubmissionInfo } from "../../../../../models/exercise";
-import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
-import { Loader } from "@skbkontur/react-ui";
 
 interface State {
 	isModalShowed: boolean;
@@ -25,7 +24,6 @@ interface State {
 const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 	const [{ isModalShowed, isContentInModalReady }, setState] = useState<State>(
 		{ isModalShowed: false, isContentInModalReady: false, });
-
 
 	const {
 		score,
@@ -37,6 +35,7 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 		courseId,
 		slideId,
 		showStudentSubmissions,
+		anyAttemptsUsed,
 	} = props;
 	if(score === null || maxScore === null) {
 		return null;
@@ -58,7 +57,7 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 
 	const maxModalWidth = window.innerWidth - 40;
 	const modalWidth: undefined | number = maxModalWidth > 880 ? 880 : maxModalWidth; //TODO пока что это мок, в будущем width будет другой
-	const anyTryUsed = isSkipped || hasReviewedSubmissions || waitingForManualChecking;
+	const anyTryUsed = isSkipped || hasReviewedSubmissions || waitingForManualChecking || anyAttemptsUsed;
 
 	return (
 		<div className={ styles.header }>
@@ -139,7 +138,6 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		: false;
 	const instructor = isInstructor(
 		{ isSystemAdministrator: account.isSystemAdministrator, courseRole: account.roleByCourse[courseId] });
-
 	return {
 		courseId,
 		slideId,
@@ -150,6 +148,7 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		hasReviewedSubmissions: hasReviewedSubmissions,
 		showStudentSubmissions: slideType === SlideType.Exercise && instructor,
+		anyAttemptsUsed: slideProgress?.usedAttempts > 0,
 	};
 };
 const connector = connect(mapState);

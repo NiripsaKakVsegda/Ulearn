@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -25,11 +27,14 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		protected readonly IVisitsRepo visitsRepo;
 		protected readonly IGroupsRepo groupsRepo;
 		protected readonly IUnitsRepo unitsRepo;
+		protected readonly IGroupMembersRepo groupMembersRepo;
+		protected readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 		protected readonly SlideRenderer slideRenderer;
 		protected readonly WebApiConfiguration configuration;
 
 		public SlidesController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo,
 			IUserSolutionsRepo solutionsRepo, IUserQuizzesRepo userQuizzesRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo,
+			IGroupMembersRepo groupMembersRepo, IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			SlideRenderer slideRenderer, ICoursesRepo coursesRepo, IUnitsRepo unitsRepo, IOptions<WebApiConfiguration> configuration)
 			: base(courseStorage, db, usersRepo)
 		{
@@ -41,6 +46,8 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			this.groupsRepo = groupsRepo;
 			this.slideRenderer = slideRenderer;
 			this.unitsRepo = unitsRepo;
+			this.groupMembersRepo = groupMembersRepo;
+			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 			this.configuration = configuration.Value;
 		}
 
@@ -54,6 +61,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				return NotFound(new { status = "error", message = "Course not found" });
 
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, course.Id, CourseRoleType.Instructor);
+			var isTester = await courseRolesRepo.HasUserAccessToCourse(UserId, course.Id, CourseRoleType.Tester);
 			var visibleUnitsIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
 			var slide = course.FindSlideById(slideId, isInstructor, visibleUnitsIds);
 			if (slide == null)
@@ -67,17 +75,29 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				return NotFound(new { status = "error", message = "Slide not found" });
 
 			var userId = User.GetUserId();
+
+			if (!isTester && (slide.IsExtraContent || slide.Unit.Settings.IsExtraContent))
+			{
+				var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
+				var publications = await additionalContentPublicationsRepo.GetAdditionalContentPublications(course.Id, userGroups.Select(g => g.Id).ToHashSet());
+
+				if (slide.IsExtraContent && !publications.Any(p => p.SlideId == slide.Id && p.Date <= DateTime.Now))
+					return NotFound(new { status = "error", message = "Slide not found" });
+				if (slide.Unit.Settings.IsExtraContent && !publications.Any(p => p.UnitId == slide.Unit.Id && p.Date <= DateTime.Now))
+					return NotFound(new { status = "error", message = "Slide not found" });
+			}
+
 			var getSlideMaxScoreFunc = await BuildGetSlideMaxScoreFunc(solutionsRepo, userQuizzesRepo, visitsRepo, groupsRepo, course, userId);
 			var getGitEditLinkFunc = await BuildGetGitEditLinkFunc(userId, course, courseRolesRepo, coursesRepo);
 
 			var slideRenderContext = new SlideRenderContext(
-				course.Id, 
+				course.Id,
 				slide,
 				UserId,
 				configuration.BaseUrlApi,
 				configuration.BaseUrl,
 				!isInstructor,
-				course.Settings.VideoAnnotationsGoogleDoc, 
+				course.Settings.VideoAnnotationsGoogleDoc,
 				Url);
 
 			return await slideRenderer.BuildSlideInfo(slideRenderContext, getSlideMaxScoreFunc, getGitEditLinkFunc);

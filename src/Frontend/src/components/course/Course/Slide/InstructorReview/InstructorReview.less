@@ -72,6 +72,35 @@
   color: @negativeColor;
 }
 
+.solvedAfterDeadLine {
+  color: @redText;
+}
+
+.solvedAfterDeadLineWrapper {
+  display: block;
+  position: absolute;
+  margin-top: -30px;
+}
+
+.solvedAfterDeadLineToken {
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  background-color: @redText;
+  border-radius: 10px;
+}
+
+.solvedAfterDeadLine:hover {
+  cursor: pointer;
+}
+
 .leaveCommentGuideText {
   display: none;
   margin-left: auto;

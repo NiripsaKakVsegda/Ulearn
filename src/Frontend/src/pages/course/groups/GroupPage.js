@@ -11,9 +11,15 @@ import Error404 from "src/components/common/Error/Error404.tsx";
 import styles from "./groupPage.less";
 import Page from "../../index";
 import { changeCurrentCourseAction } from "src/actions/course";
+import GroupAdditionalContent
+	from "src/components/groups/GroupSettingsPage/GroupAdditionalContent/GroupAdditionalContent";
+import GroupDeadLines from "src/components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { buildQuery } from "src/utils";
+
+
+const pages = ['settings', 'members', 'additional-content', 'dead-lines'];
 
 class GroupPage extends Component {
-
 	state = {
 		group: {},
 		updatedFields: {},
@@ -125,6 +131,42 @@ class GroupPage extends Component {
 						group={ group }
 						onChangeGroupOwner={ this.onChangeGroupOwner }/>
 					}
+					{ groupPage === "additional-content" &&
+					<GroupAdditionalContent
+						courseId={ courseId }
+						groupId={ groupId }
+						getAdditionalContent={ (courseId, groupId) => api.get(`additional-content/${ courseId }?groupId=${ groupId }`) }
+						deletePublication={ (publicationId) => api.delete(`additional-content` + buildQuery({
+							publicationId,
+						})) }
+						updatePublication={ (publicationId, publication) =>
+							api.patch(`additional-content` + buildQuery({
+								publicationId,
+								date: publication
+							})) }
+						addPublication={ (courseId, groupId, unitId, slideId, publication) =>
+							api.post(`additional-content/${ courseId }` + buildQuery({
+								groupId,
+								slideId,
+								unitId,
+								date: publication
+							})) }
+						user={ this.props.account }
+					/>
+					}
+					{ groupPage === "dead-lines" &&
+					<GroupDeadLines
+						courseId={ courseId }
+						groupId={ groupId }
+						getStudents={ api.groups.getStudents }
+						getCourse={ api.courses.getCourse }
+						getDeadLines={ api.deadLines.getDeadLines }
+						changeDeadLine={ api.deadLines.changeDeadLine }
+						createDeadLine={ api.deadLines.createDeadLine }
+						deleteDeadLine={ api.deadLines.deleteDeadLine }
+						user={ this.props.account }
+					/>
+					}
 				</div>
 			</Page>
 		)
@@ -135,7 +177,7 @@ class GroupPage extends Component {
 		const { groupId, groupPage } = this.props.match.params;
 		let courseId = this.props.match.params.courseId.toLowerCase();
 
-		if(!['settings', 'members'].includes(groupPage)) {
+		if(!pages.includes(groupPage)) {
 			return <Redirect to={ `/${ courseId }/groups/${ groupId }/settings` }/>
 		}
 
@@ -153,6 +195,8 @@ class GroupPage extends Component {
 					<Tabs value={ groupPage } onValueChange={ this.onChangeTab }>
 						<Tabs.Tab id="settings">Настройки</Tabs.Tab>
 						<Tabs.Tab id="members">Преподаватели и студенты</Tabs.Tab>
+						<Tabs.Tab id="additional-content">Дополнительный контент</Tabs.Tab>
+						<Tabs.Tab id="dead-lines">Настройка дедлайнов</Tabs.Tab>
 					</Tabs>
 				</div>
 			</header>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,10 @@ namespace Ulearn.Core.Courses.Units
 		[XmlArray("slides")]
 		[XmlArrayItem("add")]
 		public string[] SlidesPaths { get; set; } = new string[0];
+		
+		[XmlAttribute("isExtraContent")]
+		[DefaultValue(false)]
+		public bool IsExtraContent { get; set; }
 
 		public static UnitSettings Load(FileInfo file, CourseSettings courseSettings)
 		{

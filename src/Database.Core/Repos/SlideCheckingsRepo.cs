@@ -128,7 +128,7 @@ namespace Database.Repos
 
 		#region Slide Score Calculating
 
-		public async Task<(int Score, int? Percent)> GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId)
+		public async Task<(int Score, int? Percent)> GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId, int maxAutomaticScorePercent = 100)
 		{
 			var hasAutomaticChecking = slide.Exercise.HasAutomaticChecking();
 			if (hasAutomaticChecking)
@@ -141,14 +141,19 @@ namespace Database.Repos
 
 			var percent = await GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (percent == null)
-				return (automaticScore, null);
-			return (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
+			return percent == null
+				? (ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent), null)
+				: (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
 		}
 
 		public static int ConvertExerciseManualCheckingPercentToScore(int manualCheckingPercent, int scoreWithCodeReview)
 		{
 			return (int)Math.Ceiling(manualCheckingPercent / 100m * scoreWithCodeReview);
+		}
+
+		public static int ConvertAutomaticScoreWithDeadLinePercentToScore(int automaticScore, int maxAutomaticScorePercent)
+		{
+			return (int)Math.Ceiling(automaticScore * maxAutomaticScorePercent / 100m);
 		}
 
 		public async Task<int?> GetLastReviewPercentForExerciseSlide(string courseId, Guid slideId, string userId, DateTime? submissionBefore = null)
@@ -163,11 +168,11 @@ namespace Database.Repos
 			return lastChecking?.Percent;
 		}
 
-		public async Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId)
+		public async Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 100)
 		{
 			var manualScore = await GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
 			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
-			return automaticScore + manualScore;
+			return ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent) + manualScore;
 		}
 
 		public List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)

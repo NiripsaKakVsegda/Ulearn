@@ -14,6 +14,11 @@ import { MatchParams } from "src/models/router";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { SubmissionInfo } from "src/models/exercise";
 import { getDataIfLoaded } from "src/redux";
+import { DeadLineInfo } from "../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
+import { AccountState } from "../../../redux/account";
+import { CourseRoleType } from "../../../consts/accessType";
+import { isTimeArrived } from "../../../utils/momentUtils";
 
 
 export interface SlideInfo {
@@ -43,6 +48,7 @@ export function getCourseStatistics(
 	progress: { [p: string]: SlideUserProgress },
 	scoringGroups: ScoringGroup[],
 	flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics },
+	deadLines?: DeadLineInfo[],
 ): CourseStatistics {
 	const courseStatistics: CourseStatistics = {
 		courseProgress: { current: 0, max: 0, inProgress: 0, },
@@ -56,8 +62,13 @@ export function getCourseStatistics(
 	}
 
 	for (const unit of Object.values(units)) {
-		const unitStatistics = getUnitStatistics(unit, progress, scoringGroups,
-			flashcardsStatisticsByUnits[unit.id]);
+		const unitStatistics = getUnitStatistics(
+			unit,
+			progress,
+			scoringGroups,
+			flashcardsStatisticsByUnits[unit.id],
+			deadLines?.filter(d => d.unitId === unit.id)
+		);
 
 		courseStatistics.courseProgress.current += unitStatistics.current;
 		courseStatistics.courseProgress.max += unitStatistics.max;
@@ -75,13 +86,21 @@ export const getUnitStatistics = (
 	progress: { [p: string]: SlideUserProgress },
 	scoringGroups: ScoringGroup[],
 	flashcardsStatistics: FlashcardsStatistics,
+	deadLines?: DeadLineInfo[],
 ): UnitProgressWithLastVisit => {
 	const visitsGroup = scoringGroups.find(gr => gr.id === ScoringGroupsIds.visits);
 	let unitScore = 0, unitMaxScore = 0, unitDoneSlidesCount = 0, unitInProgressSlidesCount = 0;
 	const statusesBySlides: { [slideId: string]: SlideProgressStatus } = {};
 	let mostPreferablySlideToOpen: StartupSlideInfo | null = null;
 
-	for (const { maxScore, id, scoringGroup, type, quizMaxTriesCount, } of unit.slides) {
+	for (const { maxScore, id, scoringGroup, type, quizMaxTriesCount, additionalContentInfo, } of unit.slides) {
+		let scoreAfterDeadLine = maxScore;
+		if(deadLines && deadLines.length > 0) {
+			const deadLine = getCurrentDeadLine(deadLines.filter(d => d.slideId === null || d.slideId === id));
+			if(deadLine) {
+				scoreAfterDeadLine = Math.ceil(deadLine.scorePercent * maxScore / 100);
+			}
+		}
 		statusesBySlides[id] = SlideProgressStatus.notVisited;
 		const slideProgress = progress[id];
 
@@ -107,13 +126,13 @@ export const getUnitStatistics = (
 					break;
 				case SlideType.CourseFlashcards:
 				case SlideType.Quiz: {
-					statusesBySlides[id] = (score === maxScore || usedAttempts >= quizMaxTriesCount) && !waitingForManualChecking && !prohibitFurtherManualChecking
+					statusesBySlides[id] = (score === maxScore || usedAttempts >= quizMaxTriesCount || score === scoreAfterDeadLine && usedAttempts > 0) && !waitingForManualChecking && !prohibitFurtherManualChecking
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;
 				}
 				case SlideType.Exercise: {
-					statusesBySlides[id] = score === maxScore || !waitingForManualChecking && score > 0 || prohibitFurtherManualChecking || isSkipped
+					statusesBySlides[id] = score === maxScore || !waitingForManualChecking && score >= scoreAfterDeadLine || prohibitFurtherManualChecking || isSkipped
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;
@@ -124,14 +143,14 @@ export const getUnitStatistics = (
 			if(!mostPreferablySlideToOpen) {
 				mostPreferablySlideToOpen = {
 					id,
-					timestamp: new Date(timestamp),
+					timestamp: timestampAsDate,
 					status: statusesBySlides[id],
 				};
 			} else if((mostPreferablySlideToOpen.timestamp.getTime() < timestampAsDate.getTime() || statusesBySlides[id] === SlideProgressStatus.canBeImproved)
 				&& mostPreferablySlideToOpen.status !== SlideProgressStatus.canBeImproved) {
 				mostPreferablySlideToOpen = {
 					id,
-					timestamp: new Date(timestamp),
+					timestamp: timestampAsDate,
 					status: statusesBySlides[id],
 				};
 			}
@@ -198,7 +217,8 @@ export const slideActionsRegex = {
 
 export default function getSlideInfo(
 	route: RouteComponentProps<MatchParams>,
-	courseInfo?: CourseInfo,
+	courseInfo: CourseInfo | undefined,
+	user: AccountState,
 ): SlideInfo {
 	const { location, match } = route;
 	const { search, pathname, } = location;
@@ -218,7 +238,7 @@ export default function getSlideInfo(
 		: slideSlugOrAction?.match(slideActionsRegex.flashcards)
 			? SlideType.CourseFlashcards
 			: SlideType.NotFound;
-	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo);
+	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo, user);
 	return {
 		slideType: navigationInfo?.current.type || slideType,
 		slideId,
@@ -232,17 +252,44 @@ export default function getSlideInfo(
 }
 
 export function getSlideNavigationInfoBySlideId(
-	slideId?: string,
-	courseInfo?: CourseInfo,
+	slideId: string | undefined,
+	courseInfo: CourseInfo | undefined,
+	user: AccountState,
 ): SlideNavigationInfo | undefined {
 	if(courseInfo && courseInfo.units) {
-		const units = courseInfo.units;
+		const courseRole = user.roleByCourse[courseInfo.id];
+		const isStudent = !courseRole || courseRole == CourseRoleType.student;
+		const units = courseInfo.units
+			.filter(u => {
+				const isAdditionalContent = u.additionalContentInfo.isAdditionalContent;
+				const additionalContentPublicationDate = u.additionalContentInfo.publicationDate;
+
+				return !(isStudent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
+					additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+			}).map(u => {
+					return {
+						...u,
+						slides: u.slides.filter(s => {
+							const isAdditionalContent = s.additionalContentInfo.isAdditionalContent;
+							const additionalContentPublicationDate = s.additionalContentInfo.publicationDate;
+
+							return !(isStudent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
+								additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+						})
+					};
+				}
+			);
+
 		let prevSlide, nextSlide;
 
 		for (let i = 0; i < units.length; i++) {
-			const { slides } = units[i];
+			const unit = units[i];
+
+			const { slides } = unit;
+
 			for (let j = 0; j < slides.length; j++) {
 				const slide = slides[j] as ShortSlideInfo & { firstInModule: boolean, lastInModule: boolean };
+				slide.unitId = unit.id;
 
 				if(slide.id === slideId) {
 					if(j > 0) {

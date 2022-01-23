@@ -1,32 +1,34 @@
 import {
-	INSTRUCTOR_STUDENT_MODE_TOGGLE,
-	StudentModeAction,
-
-	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
-	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL,
-	StudentProhibitFurtherManualCheckingStartAction,
-	StudentProhibitFurtherManualCheckingFailAction,
-
-	INSTRUCTOR_STUDENT_INFO_LOAD_START,
+	ANTIPLAGIARISM_STATUS_LOAD_FAIL,
+	ANTIPLAGIARISM_STATUS_LOAD_START,
+	ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
+	AntiPlagiarismStatusLoadFailAction,
+	AntiPlagiarismStatusLoadStartAction,
+	AntiPlagiarismStatusLoadSuccessAction,
+	DeadLinesLoadFailAction,
+	DeadLinesLoadStartAction,
+	DeadLinesLoadSuccessAction,
+	INSTRUCTOR_DEAD_LINES_LOAD_FAIL,
+	INSTRUCTOR_DEAD_LINES_LOAD_START,
+	INSTRUCTOR_DEAD_LINES_LOAD_SUCCESS,
 	INSTRUCTOR_STUDENT_INFO_LOAD_FAIL,
+	INSTRUCTOR_STUDENT_INFO_LOAD_START,
 	INSTRUCTOR_STUDENT_INFO_LOAD_SUCCESS,
+	INSTRUCTOR_STUDENT_MODE_TOGGLE,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_FAIL,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD,
+	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_START,
 	StudentInfoLoadFailAction,
 	StudentInfoLoadStartAction,
 	StudentInfoLoadSuccessAction,
-
-	ANTIPLAGIARISM_STATUS_LOAD_START,
-	ANTIPLAGIARISM_STATUS_LOAD_SUCCESS,
-	ANTIPLAGIARISM_STATUS_LOAD_FAIL,
-	AntiPlagiarismStatusLoadStartAction,
-	AntiPlagiarismStatusLoadSuccessAction,
-	AntiPlagiarismStatusLoadFailAction,
-	INSTRUCTOR_STUDENT_PROHIBIT_FURTHER_MANUAL_CHECKING_LOAD,
+	StudentModeAction,
+	StudentProhibitFurtherManualCheckingFailAction,
 	StudentProhibitFurtherManualCheckingLoadAction,
+	StudentProhibitFurtherManualCheckingStartAction,
 } from 'src/actions/instructor.types';
 import { ShortUserInfo } from "src/models/users";
-import {
-	AntiPlagiarismStatusResponse,
-} from "../models/instructor";
+import { AntiPlagiarismStatusResponse, } from "../models/instructor";
+import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
 
 export const studentModeToggleAction = (isStudentMode: boolean): StudentModeAction => ({
 	type: INSTRUCTOR_STUDENT_MODE_TOGGLE,
@@ -118,5 +120,36 @@ export const antiplagiarimsStatusLoadFailAction = (
 ): AntiPlagiarismStatusLoadFailAction => ({
 	type: ANTIPLAGIARISM_STATUS_LOAD_FAIL,
 	submissionId,
+	error,
+});
+
+export const deadLinesLoadStartAction = (
+	courseId: string,
+	studentId: string,
+): DeadLinesLoadStartAction => ({
+	type: INSTRUCTOR_DEAD_LINES_LOAD_START,
+	courseId,
+	studentId,
+});
+
+export const deadLinesLoadSuccessAction = (
+	courseId: string,
+	studentId: string,
+	deadLines: DeadLineInfo[],
+): DeadLinesLoadSuccessAction => ({
+	type: INSTRUCTOR_DEAD_LINES_LOAD_SUCCESS,
+	courseId,
+	studentId,
+	deadLines,
+});
+
+export const deadLinesLoadFailAction = (
+	courseId: string,
+	studentId: string,
+	error: string,
+): DeadLinesLoadFailAction => ({
+	type: INSTRUCTOR_DEAD_LINES_LOAD_FAIL,
+	courseId,
+	studentId,
 	error,
 });

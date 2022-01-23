@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Database.Models;
+using Database.Repos.DeadLines;
+using Database.Repos.Groups;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Vostok.Logging.Abstractions;
@@ -16,12 +18,17 @@ namespace Database.Repos
 	{
 		private readonly UlearnDb db;
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
+		private readonly IDeadLinesRepo deadLinesRepo;
+
 		private static ILog log => LogProvider.Get().ForContext(typeof(VisitsRepo));
 
-		public VisitsRepo(UlearnDb db, ISlideCheckingsRepo slideCheckingsRepo)
+		public VisitsRepo(UlearnDb db,
+			ISlideCheckingsRepo slideCheckingsRepo,
+			IDeadLinesRepo deadLinesRepo)
 		{
 			this.db = db;
 			this.slideCheckingsRepo = slideCheckingsRepo;
+			this.deadLinesRepo = deadLinesRepo;
 		}
 
 		public async Task<Visit> AddVisit(string courseId, Guid slideId, string userId, string ipAddress)
@@ -130,9 +137,19 @@ namespace Database.Repos
 		public async Task UpdateScoreForVisit(string courseId, Slide slide, string userId)
 		{
 			var maxSlideScore = slide.MaxScore;
+
+			var deadLines = await deadLinesRepo.GetDeadLines(courseId, slide.Unit.Id, slide.Id, Guid.Parse(userId));
+			var deadLineScorePercent = 100;
+			if (deadLines.Count > 0)
+			{
+				var currentDate = DateTime.Now;
+				var deadLine = DeadLinesUtils.GetCurrentDeadLine(deadLines, currentDate);
+				deadLineScorePercent = deadLine.ScorePercent;
+			}
+
 			var newScore = slide is ExerciseSlide ex
-				? (await slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId)).Score
-				: await slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId);
+				? (await slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent)).Score
+				: await slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent);
 			newScore = Math.Min(newScore, maxSlideScore);
 			var isPassed = await slideCheckingsRepo.IsSlidePassed(courseId, slide.Id, userId);
 			if (await IsSkipped(courseId, slide.Id, userId))
@@ -141,7 +158,8 @@ namespace Database.Repos
 					$"Новое количество баллов: {newScore}, слайд пройден: {isPassed}");
 			await UpdateAttempts(courseId, slide.Id, userId, visit =>
 			{
-				visit.Score = newScore;
+				if (visit.Score < newScore)
+					visit.Score = newScore;
 				visit.IsPassed = isPassed;
 			});
 		}

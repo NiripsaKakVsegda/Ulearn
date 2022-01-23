@@ -1,11 +1,14 @@
 import { ReactNode } from "react";
 import { Language } from "src/consts/languages";
-import { AttemptsStatistics, SubmissionInfo } from "src/models/exercise";
+import { AttemptsStatistics } from "src/models/exercise";
+import { AdditionalContentInfo } from "../components/course/Navigation/types";
 
 interface ShortSlideInfo {
 	id: string;
 	title: string;
 	hide: boolean | undefined;
+	unitId: string;
+	additionalContentInfo: AdditionalContentInfo;
 	slug: string; // Человекочитаемый фрагмент url для слайда
 	maxScore: number;
 	scoringGroup: string | null;

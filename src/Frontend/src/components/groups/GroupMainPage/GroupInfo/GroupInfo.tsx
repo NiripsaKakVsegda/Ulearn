@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 
-import { Ok, Delete, ArchiveUnpack } from "icons";
-import { Kebab, MenuItem, Gapped } from "ui";
+import { ArchiveUnpack, Delete, Ok } from "icons";
+import { Gapped, Kebab, MenuItem } from "ui";
 
 import getPluralForm from "src/utils/getPluralForm";
 import { Mobile, NotMobile } from "src/utils/responsive";
@@ -14,12 +14,13 @@ import styles from "./groupInfo.less";
 
 interface Props {
 	courseId: string;
+	page: string | null;
 	group: GroupInfoType;
 	deleteGroup: (group: GroupInfoType, groupType: 'archiveGroups' | 'groups') => void;
 	toggleArchived: (group: GroupInfoType, isNotArchived: boolean) => void;
 }
 
-function GroupInfo({ group, courseId, deleteGroup, toggleArchived, }: Props): React.ReactElement | null {
+function GroupInfo({ group, courseId, deleteGroup, toggleArchived, page, }: Props): React.ReactElement | null {
 	if(!group) {
 		return null;
 	}
@@ -33,10 +34,10 @@ function GroupInfo({ group, courseId, deleteGroup, toggleArchived, }: Props): Re
 		<div className={ styles.wrapper }>
 			<div className={ styles["content-wrapper"] }>
 				<Link className={ styles["link-to-group-page"] }
-					  to={ `/${ courseId }/groups/${ group.id }/` }/>
+					  to={ `/${ courseId }/groups/${ group.id }/` + page ?? '' }/>
 				<div className={ styles["content-block"] }>
 					<header className={ styles.content }>
-						<Link to={ `/${ courseId }/groups/${ group.id }/` }
+						<Link to={ `/${ courseId }/groups/${ group.id }/` + page ?? '' }
 							  className={ styles.groupLink }>
 							<h3 className={ styles["group-name"] }>{ group.name }</h3>
 						</Link>

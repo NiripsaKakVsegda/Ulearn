@@ -1,15 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import classnames from 'classnames';
+import { buildQuery } from "src/utils";
+import { constructPathToGroupsPage } from "src/consts/routes";
+import { momentFromServerToLocal } from "src/utils/momentUtils";
 
-import { DocumentLite, EyeClosed, } from "icons";
-import { Hint } from "ui";
+import { Calendar, DocumentLite, EyeClosed, } from "icons";
+import { Hint, Toast, Tooltip, } from "ui";
 
 import { SlideType } from 'src/models/slide';
 import { MenuItem, SlideProgressStatus } from "../../types";
 
 import styles from './NavigationItem.less';
-
 
 export interface Props extends MenuItem<SlideType> {
 	metro: {
@@ -20,6 +22,7 @@ export interface Props extends MenuItem<SlideType> {
 	},
 	onClick: () => void;
 	getRefToActive?: React.RefObject<HTMLLIElement>;
+	courseId: string;
 }
 
 function NavigationItem({
@@ -32,18 +35,22 @@ function NavigationItem({
 	score,
 	maxScore,
 	type,
+	additionalContentInfo,
 	status,
 	containsVideo,
 	getRefToActive,
+	courseId,
 }: Props): React.ReactElement {
 	const classes = {
 		[styles.itemLink]: true,
 		[styles.active]: isActive,
 	};
+	const isSlideCanBeVisited = !additionalContentInfo.isAdditionalContent || !additionalContentInfo.hideInfo || additionalContentInfo.isPublished;
 
 	return (
 		<li className={ styles.root } ref={ isActive ? getRefToActive : undefined }>
-			<Link to={ url } className={ classnames(classes) } onClick={ onClick }>
+			<Link to={ isSlideCanBeVisited ? url : '#' } className={ classnames(classes) }
+				  onClick={ isSlideCanBeVisited ? onClick : function (){Toast.push('Слайд ещё не опубликован')} }>
 				{ metro && renderMetro() }
 				<div className={ styles.firstLine }>
 					<span className={ styles.icon }>
@@ -56,12 +63,36 @@ function NavigationItem({
 								<EyeClosed/>
 							</Hint>
 						</span> }
+						{ additionalContentInfo.hideInfo && additionalContentInfo.publicationDate && !additionalContentInfo.isPublished && <span className={ styles.isHiddenIcon }>
+							<Hint text={ `Этот слайд будет опубликован ${ momentFromServerToLocal(
+								additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss').format('DD.MM.YYYY в HH:mm') }` }>
+								<Calendar/>
+							</Hint>
+						</span> }
+						{
+							additionalContentInfo.isAdditionalContent && !additionalContentInfo.hideInfo && <Tooltip
+								render={ renderAdditionalContentTooltip }>
+								<span className={ styles.isHiddenIcon }>
+									<EyeClosed/>
+								</span>
+							</Tooltip>
+						}
 					</span>
 					{ renderScore() }
 				</div>
 			</Link>
 		</li>
 	);
+
+	function renderAdditionalContentTooltip() {
+		return <>
+			Этот слайд является дополнительным контентом.<br/>
+			По умолчанию студенты его не видят.<br/>
+			Его можно опубликовать на <Link
+			to={ constructPathToGroupsPage(courseId) + buildQuery({ groupsSettings: 'additional-content' }) }>странице
+			группы</Link>
+		</>;
+	}
 
 	function renderIcon() {
 		switch (type) {

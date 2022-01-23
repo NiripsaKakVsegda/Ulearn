@@ -1,5 +1,6 @@
 import { ShortSlideInfo } from "./slide";
 import { ScoringGroupsIds } from "src/consts/scoringGroup";
+import { AdditionalContentInfo } from "../components/course/Navigation/types";
 
 interface CourseInfo {
 	id: string;
@@ -32,6 +33,7 @@ interface UnitInfo {
 	title: string;
 	isNotPublished?: boolean;
 	publicationDate?: string;
+	additionalContentInfo: AdditionalContentInfo;
 	slides: ShortSlideInfo[];
 	additionalScores: UnitScoringGroupInfo[];
 }

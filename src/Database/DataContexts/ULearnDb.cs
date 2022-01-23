@@ -254,5 +254,8 @@ namespace Database.DataContexts
 
 		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
 		public DbSet<FavouriteReviewByUser> FavouriteReviewByUsers { get; set; }
+		
+		public DbSet<AdditionalContentPublication> AdditionalContentPublications { get; set; }
+		public DbSet<DeadLine> DeadLines { get; set; }
 	}
 }

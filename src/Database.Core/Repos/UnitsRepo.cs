@@ -37,7 +37,11 @@ namespace Database.Repos
 				.Where(u => u.CourseId == course.Id && u.PublishTime <= DateTime.Now)
 				.Select(u => u.UnitId)
 				.ToListAsync());
-			return course.GetUnitsNotSafe().Select(u => u.Id).Where(g => visibleUnitsIds.Contains(g)).ToList();
+			return course
+				.GetUnitsNotSafe()
+				.Where(u => visibleUnitsIds.Contains(u.Id) || u.Settings.IsExtraContent)
+				.Select(u => u.Id)
+				.ToList();
 		}
 
 		public async Task<bool> IsUnitVisibleForStudents(Course course, Guid unitId)
@@ -55,9 +59,9 @@ namespace Database.Repos
 		public async Task<HashSet<string>> GetVisibleCourses()
 		{
 			var appearances = (await db.UnitAppearances
-				.Where(u => u.PublishTime <= DateTime.Now)
-				.Select(u => new { u.CourseId, u.UnitId })
-				.ToListAsync())
+					.Where(u => u.PublishTime <= DateTime.Now)
+					.Select(u => new { u.CourseId, u.UnitId })
+					.ToListAsync())
 				.GroupBy(p => p.CourseId)
 				.Where(g => courseStorage.FindCourse(g.Key) != null)
 				.Where(g =>

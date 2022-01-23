@@ -14,6 +14,7 @@ import { FavouriteReviewRedux, LastUsedReview, } from "src/redux/instructor";
 import { SlideContext } from "../Slide.types";
 import { RouteComponentProps } from "react-router-dom";
 import { MatchParams } from "src/models/router";
+import { DeadLineInfo, DeadLinesResponse } from "../../../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
 
 export interface PropsFromRedux {
 	user?: UserInfo;
@@ -35,6 +36,8 @@ export interface PropsFromRedux {
 	antiPlagiarismStatusError: boolean;
 	antiPlagiarismStatusLoading: boolean;
 	prohibitFurtherManualChecking: boolean;
+
+	deadLines: DeadLineInfo[] | undefined;
 }
 
 export interface ApiFromRedux {
@@ -71,6 +74,7 @@ export interface ApiFromRedux {
 	) => Promise<ReviewInfo | ReviewCommentResponse | string>;
 
 	assignBotReview: (submissionId: number, review: ReviewInfo) => Promise<ReviewInfo>;
+	loadDeadLines: (courseId: string, studentId: string) => Promise<string | DeadLinesResponse>;
 }
 
 export interface PropsFromSlide {

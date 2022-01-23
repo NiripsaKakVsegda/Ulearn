@@ -1,0 +1,63 @@
+@import "/src/variables";
+
+.text {
+  font-size: 16px;
+  font-family: @defaultFonts;
+}
+
+.table {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 240px 220px 220px 150px 70px 141px;
+  grid-template-rows: auto;
+  grid-template-areas: "TimeAndDate Module Slide User Score Controls";
+  column-gap: 12px;
+  row-gap: 12px;
+  overflow: auto;
+  align-items: baseline;
+
+  td {
+    vertical-align: baseline;
+    white-space: nowrap;
+  }
+}
+
+.conflictHint {
+  position: absolute;
+  left: -18px;
+  color: @errorColor;
+  padding-top: 5px;
+}
+
+.score {
+  grid-area: 1 / 5 / 1 / 7;
+}
+
+.moduleTitle {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.additionalText {
+  color: @additionalColor;
+}
+
+.deleteButtonText {
+  color: @redText;
+}
+
+.updateButton {
+  color: @successColor;
+}
+
+@media (min-width: @minTabletWidth) {
+  .conflictHint {
+    left: -23px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .conflictHint {
+    left: -30px;
+  }
+}

@@ -17,7 +17,7 @@
 			<th>Измененить время публикации</th>
 			<th>Скрыть</th>
 		</tr>
-		@foreach (var unit in Model.Units)
+		@foreach (var unit in Model.Units.Where(u => !u.Item1.Settings.IsExtraContent))
 		{
 			<tr>
 				<td>@unit.Item1.Title</td>

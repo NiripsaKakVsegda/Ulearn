@@ -91,3 +91,7 @@ export function constructPathToAccount(userId: string): string {
 export function constructPathToGroup(courseId: string, groupId: number): string {
 	return `/${ courseId }/${ groups }/${ groupId }`;
 }
+
+export function constructPathToGroupsPage(courseId: string,): string {
+	return `/${ courseId }/${ groups }`;
+}

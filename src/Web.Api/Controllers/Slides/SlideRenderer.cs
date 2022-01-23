@@ -61,6 +61,11 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				ContainsVideo = slide.Blocks.OfType<YoutubeBlock>().Any(),
 				GitEditLink = getGitEditLink(slide),
 				QuizMaxTriesCount = slide is QuizSlide quizSlide ? quizSlide.MaxTriesCount : 0,
+				AdditionalContentInfo = new AdditionalContent
+				{
+					IsAdditionalContent = slide.IsExtraContent,
+					PublicationDate = null,
+				}
 			};
 		}
 

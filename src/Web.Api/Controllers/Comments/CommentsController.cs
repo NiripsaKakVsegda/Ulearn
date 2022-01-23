@@ -29,14 +29,17 @@ namespace Ulearn.Web.Api.Controllers.Comments
 	public class CommentsController : BaseCommentController
 	{
 		private readonly ICommentPoliciesRepo commentPoliciesRepo;
+		private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 
 		public CommentsController(ICourseStorage courseStorage, UlearnDb db,
 			ICommentsRepo commentsRepo, ICommentLikesRepo commentLikesRepo, ICommentPoliciesRepo commentPoliciesRepo,
 			IUsersRepo usersRepo, ICoursesRepo coursesRepo, ICourseRolesRepo courseRolesRepo, INotificationsRepo notificationsRepo,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo, IUnitsRepo unitsRepo)
 			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
 		{
 			this.commentPoliciesRepo = commentPoliciesRepo;
+			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 		}
 
 		/// <summary>
@@ -47,13 +50,33 @@ namespace Ulearn.Web.Api.Controllers.Comments
 		{
 			var courseId = parameters.CourseId;
 			var slideId = parameters.SlideId;
-			var course =  courseStorage.GetCourse(courseId);
+			var course = courseStorage.GetCourse(courseId);
+			var userId = UserId;
 
-			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor).ConfigureAwait(false);
-			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, UserId).ConfigureAwait(false);
+			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor).ConfigureAwait(false);
+			var isTester = isInstructor || await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Tester).ConfigureAwait(false);
+			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, userId).ConfigureAwait(false);
 			var slide = await GetSlide(courseId, slideId, isInstructor, visibleUnits);
 			if (slide == null)
 				return StatusCode((int)HttpStatusCode.NotFound, $"No slide with id {slideId}");
+
+			if (!isTester && (slide.IsExtraContent || slide.Unit.Settings.IsExtraContent))
+			{
+				if (userId != null)
+				{
+					var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
+
+					if (userGroups.Count == 0)
+						return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups.");
+
+					var isSlidePublished = await additionalContentPublicationsRepo.IsSlidePublishedForGroups(course.Id, slide, userGroups.Select(g => g.Id).ToHashSet());
+
+					if (!isSlidePublished)
+						return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups with slide published.");
+				}
+				else
+					return StatusCode((int)HttpStatusCode.Unauthorized, $"You have no access to view comments on slide with id {slideId}. You should be authenticated.");
+			}
 
 			if (parameters.ForInstructors)
 			{
@@ -70,7 +93,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 
 		private async Task<Slide> GetSlide(string courseId, Guid slideId, bool isInstructor, IEnumerable<Guid> visibleUnits)
 		{
-			var course =  courseStorage.GetCourse(courseId);
+			var course = courseStorage.GetCourse(courseId);
 			var slide = course.FindSlideById(slideId, isInstructor, visibleUnits);
 			if (slide == null)
 			{
@@ -78,6 +101,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 				if (instructorNote != null && isInstructor)
 					slide = instructorNote;
 			}
+
 			return slide;
 		}
 
@@ -128,14 +152,30 @@ namespace Ulearn.Web.Api.Controllers.Comments
 		{
 			var courseId = courseAuthorizationParameters.CourseId;
 			var slideId = parameters.SlideId;
+			var userId = UserId;
 			parameters.Text.TrimEnd();
 
 			var course = courseStorage.GetCourse(courseId);
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor).ConfigureAwait(false);
+			var isTester = isInstructor || await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Tester).ConfigureAwait(false);
 			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, UserId).ConfigureAwait(false);
 			var slide = await GetSlide(courseId, slideId, isInstructor, visibleUnits);
 			if (slide == null)
 				return StatusCode((int)HttpStatusCode.NotFound, $"No slide with id {slideId}");
+
+			if (!isTester && (slide.IsExtraContent || slide.Unit.Settings.IsExtraContent))
+			{
+				var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
+
+				if (userGroups.Count == 0)
+					return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups.");
+
+				var isSlidePublished = await additionalContentPublicationsRepo.IsSlidePublishedForGroups(course.Id, slide, userGroups.Select(g => g.Id).ToHashSet());
+
+				if (!isSlidePublished)
+					return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups with slide published.");
+			}
+
 			var slideIsExercise = slide is ExerciseSlide;
 
 			if (parameters.ForInstructors)
@@ -174,13 +214,13 @@ namespace Ulearn.Web.Api.Controllers.Comments
 				await NotifyAboutNewCommentAsync(comment).ConfigureAwait(false);
 
 			var userAvailableGroupsIds = !isInstructor ? null : (await groupAccessesRepo.GetAvailableForUserGroupsAsync(User.GetUserId(), false, true, true).ConfigureAwait(false)).Select(g => g.Id).ToHashSet();
-			var authors2Groups = !isInstructor ? null : await groupMembersRepo.GetUsersGroupsAsync(courseId, new List<string> {UserId}, true).ConfigureAwait(false);
+			var authors2Groups = !isInstructor ? null : await groupMembersRepo.GetUsersGroupsAsync(courseId, new List<string> { UserId }, true).ConfigureAwait(false);
 			var passed = slideIsExercise ? await visitsRepo.IsPassed(comment.CourseId, comment.SlideId, comment.AuthorId) : false;
 
 			return BuildCommentResponse(
 				comment,
 				false, new DefaultDictionary<int, List<Comment>>(), new DefaultDictionary<int, int>(), new HashSet<int>(), // canUserSeeNotApprovedComments not used if addReplies == false
-				authors2Groups, passed ? new HashSet<string>{comment.AuthorId} : null, userAvailableGroupsIds, false, addCourseIdAndSlideId: true, addParentCommentId: true, addReplies: false
+				authors2Groups, passed ? new HashSet<string> { comment.AuthorId } : null, userAvailableGroupsIds, false, addCourseIdAndSlideId: true, addParentCommentId: true, addReplies: false
 			);
 		}
 

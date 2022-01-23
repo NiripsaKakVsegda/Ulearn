@@ -3,6 +3,7 @@ import { Block } from "src/models/slide";
 
 export interface SlideContext {
 	courseId: string;
+	unitId: string;
 	slideId: string;
 	title: string;
 	slideInfo: SlideInfo;

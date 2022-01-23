@@ -5,6 +5,7 @@ import GroupInfo from "../GroupInfo/GroupInfo";
 import { GroupInfo as GroupInfoType } from "src/models/groups";
 
 import styles from "./groupList.less";
+import { getQueryStringParameter } from "../../../../utils";
 
 interface Props {
 	courseId: string;
@@ -28,6 +29,7 @@ function GroupList({
 	children,
 	userId,
 }: Props): React.ReactElement {
+	const page = getQueryStringParameter('groupsSettings');
 	return (
 		<section className={ styles.wrapper }>
 			{ loading &&
@@ -77,6 +79,7 @@ function GroupList({
 							group={ group }
 							deleteGroup={ deleteGroup }
 							toggleArchived={ toggleArchived }
+							page={ page }
 						/>)
 				}
 			</div>

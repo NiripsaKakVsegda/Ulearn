@@ -15,6 +15,7 @@ export interface MenuItem<T extends SlideType> {
 	isActive: boolean;
 	visited: boolean;
 	hide?: boolean;
+	additionalContentInfo: AdditionalContentInfo;
 
 	status: SlideProgressStatus;
 }
@@ -56,7 +57,15 @@ export interface CourseMenuItem {
 	isActive: boolean;
 	isNotPublished?: boolean;
 	publicationDate?: string;
+	additionalContentInfo: AdditionalContentInfo;
 	onClick?: (id: string) => void;
+}
+
+export interface AdditionalContentInfo {
+	isAdditionalContent: boolean;
+	publicationDate: string | null;
+	hideInfo?: boolean;
+	isPublished?: boolean;
 }
 
 export interface FlashcardsStatistics {

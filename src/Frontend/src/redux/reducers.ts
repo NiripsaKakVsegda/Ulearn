@@ -12,6 +12,7 @@ import commentsReducer from "./comments";
 import groupsReducer from "./groups";
 import submissionsReducer from "./submissions";
 import favouriteReviewsReducer from "./favouriteReviews";
+import deadLinesReducer from "./deadLines";
 
 const rootReducer = combineReducers({
 	account: accountReducer,
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
 	groups: groupsReducer,
 	submissions: submissionsReducer,
 	favouriteReviews: favouriteReviewsReducer,
+	deadLines: deadLinesReducer,
 });
 
 type RootState = ReturnType<typeof rootReducer>

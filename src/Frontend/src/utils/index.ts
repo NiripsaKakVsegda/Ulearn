@@ -14,7 +14,7 @@ export function getQueryStringParameter(name: string, url?: string): string | nu
 	return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-//query params should be explained in MatchParams in src/consts/router.tx
+//query params should be explained in MatchParams in src/models/router.ts
 
 export function buildQuery(
 	params?: Record<string, unknown>,

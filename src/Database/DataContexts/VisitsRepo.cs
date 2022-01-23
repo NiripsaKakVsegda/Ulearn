@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using Database.DataContexts.DeadLines;
 using Database.Models;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Slides;
@@ -69,11 +70,11 @@ namespace Database.DataContexts
 			return db.Visits.FirstOrDefault(v => v.CourseId == courseId && v.SlideId == slideId && v.UserId == userId);
 		}
 
-		public  LastVisit FindLastVisit(string courseId, string userId, Guid? slideId = null)
+		public LastVisit FindLastVisit(string courseId, string userId, Guid? slideId = null)
 		{
 			if (slideId == null)
 				return db.LastVisits
-					.Where(v => v.CourseId == courseId && v.UserId == userId)	
+					.Where(v => v.CourseId == courseId && v.UserId == userId)
 					.OrderByDescending(v => v.Timestamp)
 					.FirstOrDefault();
 			return db.LastVisits
@@ -88,18 +89,44 @@ namespace Database.DataContexts
 		public Task UpdateScoreForVisit(string courseId, Slide slide, string userId)
 		{
 			var maxSlideScore = slide.MaxScore;
+
+			var groups = db.Groups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Select(g => g.Id);
+			var userGroupsIds = db.GroupMembers
+				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
+				.Select(m => m.GroupId)
+				.ToList();
+			var deadLines = db.DeadLines.Where(d =>
+					d.CourseId == courseId
+					&& userGroupsIds.Contains(d.GroupId)
+					&& d.UnitId == slide.Unit.Id
+					&& (d.SlideId == null || d.SlideId == slide.Id)
+					&& (d.UserId == null || d.UserId.ToString() == userId))
+				.ToList();
+			var deadLineScorePercent = 100;
+			if (deadLines.Count > 0)
+			{
+				var currentDate = DateTime.Now;
+				var deadLine = DeadLinesUtils.GetCurrentDeadLine(deadLines, currentDate);
+				deadLineScorePercent = deadLine.ScorePercent;
+			}
+
 			var newScore = slide is ExerciseSlide ex
-				? slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId).Score
-				: slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId);
+				? slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent).Score
+				: slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent);
+			
 			newScore = Math.Min(newScore, maxSlideScore);
 			var isPassed = slideCheckingsRepo.IsSlidePassed(courseId, slide.Id, userId);
 			if (IsSkipped(courseId, slide.Id, userId))
 				newScore = 0;
 			log.Info($"Обновляю количество баллов пользователя {userId} за слайд {slide.Id} в курсе \"{courseId}\". " +
 					$"Новое количество баллов: {newScore}, слайд пройден: {isPassed}");
+			
 			return UpdateAttempts(courseId, slide.Id, userId, visit =>
 			{
-				visit.Score = newScore;
+				if (visit.Score < newScore)
+					visit.Score = newScore;
 				visit.IsPassed = isPassed;
 			});
 		}

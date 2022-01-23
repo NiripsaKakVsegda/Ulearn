@@ -1,13 +1,13 @@
-import { CHANGED, FAIL, FailAction, LOAD, loadFail, loadStart, loadSuccess, START, } from "src/consts/actions";
+import { FAIL, FailAction, LOAD, loadFail, loadStart, loadSuccess, START, } from "src/consts/actions";
 import { ShortUserInfo } from "src/models/users";
-import {
-	AntiPlagiarismStatusResponse,
-} from "src/models/instructor";
+import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
+import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
 
 const instructor = 'INSTRUCTOR';
 const student = '_STUDENT';
 const info = '_INFO';
 const antiPlagiarismStatus = "_ANTIPLAGIARISM_STATUS";
+const deadlines = "_DEAD_LINES";
 const modeToggle = '_MODE_TOGGLE';
 const prohibitFurtherManualChecking = '_PROHIBIT_FURTHER_MANUAL_CHECKING';
 
@@ -23,6 +23,11 @@ export const INSTRUCTOR_STUDENT_INFO_LOAD_FAIL = instructor + student + info + l
 
 export const ANTIPLAGIARISM_STATUS_LOAD_START = instructor + antiPlagiarismStatus + loadStart;
 export const ANTIPLAGIARISM_STATUS_LOAD_SUCCESS = instructor + antiPlagiarismStatus + loadSuccess;
+
+export const INSTRUCTOR_DEAD_LINES_LOAD_START = instructor + deadlines + loadStart;
+export const INSTRUCTOR_DEAD_LINES_LOAD_SUCCESS = instructor + deadlines + loadSuccess;
+export const INSTRUCTOR_DEAD_LINES_LOAD_FAIL = instructor + deadlines + loadFail;
+
 export const ANTIPLAGIARISM_STATUS_LOAD_FAIL = instructor + antiPlagiarismStatus + loadFail;
 
 
@@ -87,6 +92,25 @@ export interface AntiPlagiarismStatusLoadFailAction extends FailAction {
 	submissionId: number;
 }
 
+export interface DeadLinesLoadStartAction {
+	type: typeof INSTRUCTOR_DEAD_LINES_LOAD_START;
+	courseId: string;
+	studentId: string;
+}
+
+export interface DeadLinesLoadSuccessAction {
+	type: typeof INSTRUCTOR_DEAD_LINES_LOAD_SUCCESS;
+	courseId: string;
+	studentId: string;
+	deadLines: DeadLineInfo[];
+}
+
+export interface DeadLinesLoadFailAction extends FailAction {
+	type: typeof INSTRUCTOR_DEAD_LINES_LOAD_FAIL;
+	courseId: string;
+	studentId: string;
+}
+
 export type InstructorAction =
 	StudentModeAction
 
@@ -99,4 +123,8 @@ export type InstructorAction =
 	| AntiPlagiarismStatusLoadStartAction
 	| AntiPlagiarismStatusLoadSuccessAction
 	| AntiPlagiarismStatusLoadFailAction
+
+	| DeadLinesLoadStartAction
+	| DeadLinesLoadSuccessAction
+	| DeadLinesLoadFailAction
 	;

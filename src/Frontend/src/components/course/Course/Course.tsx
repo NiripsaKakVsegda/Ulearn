@@ -20,7 +20,7 @@ import { UrlError } from "src/components/common/Error/NotFoundErrorBoundary";
 import Error404 from "src/components/common/Error/Error404";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { Edit, } from "icons";
+import { Edit, HelpDot, } from "icons";
 import CourseLoader from "./CourseLoader";
 
 import { findNextUnit, findUnitIdBySlideId, getCourseStatistics, SlideInfo, } from "./CourseUtils";
@@ -37,6 +37,10 @@ import { SlideUserProgress, } from "src/models/userProgress";
 import { AccountState } from "src/redux/account";
 import { CourseRoleType } from "src/consts/accessType";
 import { ShortUserInfo } from "src/models/users";
+import { DeadLineInfo } from "../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
+import { isTimeArrived, momentFromServerToLocal } from "src/utils/momentUtils";
+import { Gapped, Hint, Toast } from "ui";
 import {
 	CourseStatistics,
 	FlashcardsStatistics,
@@ -74,6 +78,7 @@ interface CourseProps extends RouteComponentProps {
 	loadedCourseIds: Record<string, unknown>;
 	flashcardsStatisticsByUnits?: { [unitId: string]: FlashcardsStatistics },
 	flashcardsLoading: boolean;
+	deadLines?: DeadLineInfo[];
 
 	isStudentMode: boolean;
 	navigationOpened: boolean;
@@ -86,6 +91,7 @@ interface CourseProps extends RouteComponentProps {
 	loadCourseErrors: (courseId: string) => void;
 	loadUserProgress: (courseId: string, userId: string) => void;
 	updateVisitedSlide: (courseId: string, slideId: string) => void;
+	loadDeadLines: (courseId: string) => void;
 }
 
 const defaultMeta: Meta = {
@@ -123,15 +129,21 @@ class Course extends Component<CourseProps, State> {
 			loadCourse,
 			loadUserProgress,
 			loadCourseErrors,
+			loadDeadLines,
 			courseId,
 			courseInfo,
 			progress,
 			user,
+			deadLines,
 		} = this.props;
 		const { title } = this.state;
 		const { isAuthenticated } = user;
 
 		this.startSignalRConnection();
+
+		if(!deadLines) {
+			loadDeadLines(courseId);
+		}
 
 		if(!courseInfo) {
 			loadCourse(courseId);
@@ -226,13 +238,15 @@ class Course extends Component<CourseProps, State> {
 			isHijacked,
 			updateVisitedSlide,
 			flashcardsStatisticsByUnits,
+			deadLines,
 		} = props;
 
 		if(!units || !flashcardsStatisticsByUnits) {
 			return null;
 		}
 
-		const newStats = getCourseStatistics(units, progress, courseInfo.scoring.groups, flashcardsStatisticsByUnits);
+		const newStats = getCourseStatistics(units, progress, courseInfo.scoring.groups, flashcardsStatisticsByUnits,
+			deadLines);
 		//TMP TODO rozentor: remove next line if orrange approved
 		newStats.courseProgress.inProgress = 0;
 
@@ -362,7 +376,7 @@ class Course extends Component<CourseProps, State> {
 	}
 
 	renderSlide(): React.ReactElement {
-		const { user, courseId, isStudentMode, slideInfo, } = this.props;
+		const { user, courseId, isStudentMode, slideInfo, deadLines, } = this.props;
 		const { Page, title, openedUnit, } = this.state;
 
 		const { isNavigationVisible, isReview, isLti } = slideInfo;
@@ -384,6 +398,11 @@ class Course extends Component<CourseProps, State> {
 			isSystemAdministrator,
 			courseRole,
 		};
+		const currentDeadLine = deadLines && openedUnit && currentSlideInfo
+			? getCurrentDeadLine(deadLines.filter(
+				d => d.unitId === openedUnit.id && (d.slideId === null || d.slideId === currentSlideInfo.id)))
+			: undefined;
+
 		return (
 			<main className={ wrapperClassName }>
 				{ isReview &&
@@ -408,6 +427,21 @@ class Course extends Component<CourseProps, State> {
 						: title }
 					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 				</h1> }
+				{
+					currentDeadLine && currentSlideInfo
+					&& !isReview
+					&& (currentSlideInfo.type === SlideType.Exercise || currentSlideInfo.type === SlideType.Quiz)
+					&& <p className={ styles.deadLine }>
+						<Gapped gap={ 5 }>
+							Дедлайн для сдачи { momentFromServerToLocal(currentDeadLine.date).format(
+							'DD.MM.YYYY HH:mm') }
+							<Hint text={ `Если сдать после срока, вы получите ${ Math.ceil(
+								currentDeadLine.scorePercent * currentSlideInfo.maxScore / 100) } баллов за авто-проверку` }>
+								<HelpDot/>
+							</Hint>
+						</Gapped>
+					</p>
+				}
 				<div className={ styles.slide }>
 					{ isNavigationVisible && !isStudentMode &&
 					<SlideHeader
@@ -489,6 +523,7 @@ class Course extends Component<CourseProps, State> {
 		const props = {
 			navigationOpened,
 			courseTitle: courseInfo.title,
+			courseId: courseInfo.id,
 		};
 		const unitProps = openedUnit &&
 			this.createUnitSettings(byUnits[openedUnit.id], openedUnit, flashcardsStatisticsByUnits[openedUnit.id])
@@ -503,26 +538,45 @@ class Course extends Component<CourseProps, State> {
 		courseProgress: Progress,
 		flashcardsStatistics: FlashcardsStatistics,
 	): CourseNavigationProps {
-		const { courseInfo, slideInfo: { slideId, }, } = this.props;
+		const { courseInfo, slideInfo: { slideId, courseId, }, user, } = this.props;
 		const { highlightedUnit, } = this.state;
 
+		let units = courseInfo.units.map(item => ({
+			title: item.title,
+			id: item.id,
+			isActive: highlightedUnit === item.id,
+			onClick: this.unitClickHandle,
+			progress: Object.prototype.hasOwnProperty
+				.call(scoresByUnits, item.id) ? scoresByUnits[item.id] : undefined,
+			isNotPublished: item.isNotPublished,
+			publicationDate: item.publicationDate,
+			additionalContentInfo: item.additionalContentInfo,
+		}));
+
+		if(!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student) {
+			units = units
+				.map(u => ({
+					...u,
+					onClick: !u.additionalContentInfo.isAdditionalContent
+					|| u.additionalContentInfo.publicationDate && isTimeArrived(u.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss')
+						? u.onClick
+						: this.unitUnavailableClickHandle,
+					additionalContentInfo: {
+						...u.additionalContentInfo,
+						isPublished: u.additionalContentInfo.publicationDate && isTimeArrived(
+							u.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss') || false,
+						hideInfo: true,
+					}
+				}));
+		}
+
 		return {
-			courseId: courseInfo.id,
 			slideId,
 
 			flashcardsStatistics,
 
 			courseProgress,
-			courseItems: courseInfo.units.map(item => ({
-				title: item.title,
-				id: item.id,
-				isActive: highlightedUnit === item.id,
-				onClick: this.unitClickHandle,
-				progress: Object.prototype.hasOwnProperty
-					.call(scoresByUnits, item.id) ? scoresByUnits[item.id] : undefined,
-				isNotPublished: item.isNotPublished,
-				publicationDate: item.publicationDate,
-			})),
+			courseItems: units,
 			containsFlashcards: courseInfo.containsFlashcards,
 			returnInUnit: this.returnInUnit,
 		};
@@ -533,18 +587,33 @@ class Course extends Component<CourseProps, State> {
 		openUnit: UnitInfo,
 		unitFlashcardsStatistic: FlashcardsStatistics | undefined,
 	): UnitNavigationProps {
-		const { courseInfo, slideInfo, courseId, progress, } = this.props;
+		const { courseInfo, slideInfo, courseId, progress, user, } = this.props;
+
+		let slides = Course.mapUnitItems(
+			openUnit.slides,
+			progress,
+			courseId,
+			unitProgress && unitProgress.statusesBySlides,
+			slideInfo.slideId,
+		);
+
+		if(!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student) {
+			slides = slides
+				.map(s => ({
+					...s,
+					additionalContentInfo: {
+						...s.additionalContentInfo,
+						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(
+							s.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss') || false,
+						hideInfo: true,
+					}
+				}));
+		}
 
 		return {
 			unitTitle: openUnit.title,
 			unitProgress,
-			unitItems: Course.mapUnitItems(
-				openUnit.slides,
-				progress,
-				courseId,
-				unitProgress && unitProgress.statusesBySlides,
-				slideInfo.slideId,
-			),
+			unitItems: slides,
 			nextUnit: findNextUnit(openUnit, courseInfo),
 			unitFlashcardsStatistic,
 
@@ -572,6 +641,7 @@ class Course extends Component<CourseProps, State> {
 			visited: Boolean(progress && progress[item.id]),
 			hide: item.hide,
 			containsVideo: item.containsVideo,
+			additionalContentInfo: item.additionalContentInfo,
 			status: statuses ? statuses[item.id] : SlideProgressStatus.notVisited,
 		}));
 	}
@@ -599,6 +669,14 @@ class Course extends Component<CourseProps, State> {
 				history.push(constructPathToSlide(courseId, newOpenedUnit.slides[0].id));
 			}
 		}
+	};
+
+	unitUnavailableClickHandle = (): void => {
+		Toast.push('Курс ещё не опубликован');
+	};
+
+	slideUnavailableClickHandle = (): void => {
+		Toast.push('Слайд ещё не опубликован');
 	};
 
 	returnInUnitsMenu = (): void => {

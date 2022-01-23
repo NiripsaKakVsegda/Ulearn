@@ -93,6 +93,8 @@ namespace Database.Di
 			services.AddScoped<IAcceptedSolutionsRepo, AcceptedSolutionsRepo>();
 			services.AddScoped<IGoogleSheetExportTasksRepo, GoogleSheetExportTasksRepo>();
 			services.AddScoped<IFavouriteReviewsRepo, FavouriteReviewsRepo>();
+			services.AddScoped<IAdditionalContentPublicationsRepo, AdditionalContentPublicationsRepo>();
+			services.AddScoped<IDeadLinesRepo, DeadLinesRepo>();
 
 			return services;
 		}

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Button, FLAT_THEME, Select, Tabs, ThemeContext, Toast, Toggle, Tooltip } from "ui";
+import { Button, FLAT_THEME, Hint, Select, Tabs, ThemeContext, Toast, Toggle, Tooltip } from "ui";
 import { UnControlled, } from "react-codemirror2";
 import { Redirect } from "react-router-dom";
 import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
@@ -47,7 +47,9 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
-import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "../../../../../utils/localStorageManager";
+import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
+import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
+import moment from "moment";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -148,6 +150,8 @@ class InstructorReview extends React.Component<Props, State> {
 			getStudentGroups,
 			favouriteReviews,
 			getFavouriteReviews,
+			deadLines,
+			loadDeadLines,
 			slideContext: { courseId, slideId, slideInfo: { query, }, },
 		} = this.props;
 
@@ -163,6 +167,10 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		if(!favouriteReviews) {
 			getFavouriteReviews(courseId, slideId);
+		}
+
+		if(!deadLines) {
+			loadDeadLines(courseId, query.userId);
 		}
 	};
 
@@ -430,6 +438,9 @@ class InstructorReview extends React.Component<Props, State> {
 			user,
 			curScore,
 			prevScore,
+			deadLines,
+			lastCheckedSubmissionId,
+			slideContext,
 		} = this.props;
 		const {
 			currentTab,
@@ -447,11 +458,27 @@ class InstructorReview extends React.Component<Props, State> {
 			return <CourseLoader/>;
 		}
 
+		const deadLine = getCurrentDeadLine(
+			deadLines?.filter(
+				d => d.unitId === slideContext.unitId && (d.slideId === null || d.slideId === slideContext.slideId))
+			?? []);
+		const isDeadLineViolated = !lastCheckedSubmissionId && deadLine
+			&& moment(studentSubmissions[0].timestamp).diff(moment(deadLine.date)) > 0;
+
 		return (
 			<>
 				<BlocksWrapper withoutBottomPaddings>
 					<h3 className={ styles.reviewHeader }>
 						<span className={ styles.reviewStudentName }>
+							{
+								isDeadLineViolated &&
+								<span className={ styles.solvedAfterDeadLineWrapper }>
+									<Hint text={ texts.getDeadLineViolationInfo(
+										studentSubmissions[0], deadLine) }>
+										<span className={ styles.solvedAfterDeadLineToken }>После дедлайна</span>
+									</Hint>
+								</span>
+							}
 							{ texts.getStudentInfo(student.visibleName, studentGroups) }
 						</span>
 						<span className={ styles.reviewHeaderScore }>

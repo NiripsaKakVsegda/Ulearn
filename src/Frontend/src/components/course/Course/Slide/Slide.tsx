@@ -63,6 +63,7 @@ class Slide extends React.Component<Props> {
 				courseId,
 				title: navigationInfo.current.title,
 				slideInfo,
+				unitId: navigationInfo.current.unitId,
 			},
 		};
 
@@ -108,7 +109,9 @@ export const DefaultSlide = ({
 	slideContext,
 }: SlidePropsWithContext): React.ReactElement => {
 	if(slideError) {
-		return <p>slideError</p>;
+		return <BlocksWrapper>
+			<p>Не удалось загрузить слайд</p>
+		</BlocksWrapper>;
 	}
 
 	if(slideBlocks.length === 0) {

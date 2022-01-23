@@ -1,21 +1,24 @@
 import { Dispatch } from "redux";
 import api from "./index";
 import {
-	studentLoadSuccessAction,
-	studentLoadFailAction,
-	studentLoadStartAction,
+	antiplagiarimsStatusLoadFailAction,
 	antiplagiarimsStatusLoadStartAction,
 	antiplagiarimsStatusLoadSuccessAction,
-	antiplagiarimsStatusLoadFailAction,
-	studentProhibitFurtherManualCheckingStartAction,
+	deadLinesLoadFailAction,
+	deadLinesLoadStartAction,
+	deadLinesLoadSuccessAction,
+	studentLoadFailAction,
+	studentLoadStartAction,
+	studentLoadSuccessAction,
 	studentProhibitFurtherManualCheckingFailAction,
+	studentProhibitFurtherManualCheckingStartAction,
 } from "src/actions/instructor";
 import { ShortUserInfo } from "src/models/users";
 import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
-import {
-	AntiPlagiarismStatusResponse, QueueItemType, ReviewQueueResponse,
-} from "src/models/instructor";
+import { AntiPlagiarismStatusResponse, QueueItemType, ReviewQueueResponse, } from "src/models/instructor";
+import { DeadLinesResponse } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { getDeadLinesByStudentId } from "./deadLines";
 
 export function getAntiPlagiarismStatus(courseId: string,
 	submissionId: number,
@@ -108,8 +111,24 @@ const prohibitFurtherManualCheckingRedux = (
 	};
 };
 
+const getDeadLinesRedux = (courseId: string, studentId: string) => {
+	return (dispatch: Dispatch): Promise<DeadLinesResponse | string> => {
+		dispatch(deadLinesLoadStartAction(courseId, studentId));
+		return api.deadLines.getDeadLinesByStudentId(courseId, studentId)
+			.then(r => {
+				dispatch(deadLinesLoadSuccessAction(courseId, studentId, r.deadLines));
+				return r;
+			})
+			.catch(error => {
+				dispatch(deadLinesLoadFailAction(courseId, studentId, error,));
+				return error;
+			});
+	};
+};
+
 export const redux = {
 	getAntiPlagiarismStatus: getAntiPlagiarismStatusRedux,
 	getStudentInfo: getStudentInfoRedux,
 	prohibitFurtherManualChecking: prohibitFurtherManualCheckingRedux,
+	getDeadLines: getDeadLinesRedux,
 };

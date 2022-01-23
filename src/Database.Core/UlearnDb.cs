@@ -386,7 +386,7 @@ namespace Database
 
 			AddIndex<UserFlashcardsVisit>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId, c.FlashcardId }, false);
 			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
-			
+
 			AddIndex<GoogleSheetExportTask>(modelBuilder, c => new { c.CourseId, c.AuthorId });
 
 			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
@@ -394,6 +394,13 @@ namespace Database
 
 			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
 			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
+
+			AddIndex<AdditionalContentPublication>(modelBuilder, c => new { c.CourseId, c.GroupId });
+			AddIndex<AdditionalContentPublication>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideId });
+
+			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, });
+			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideId, c.UserId });
+			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.UserId });
 		}
 
 		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class
@@ -527,5 +534,7 @@ namespace Database
 
 		public DbSet<FavouriteReview> FavouriteReviews { get; set; }
 		public DbSet<FavouriteReviewByUser> FavouriteReviewsByUsers { get; set; }
+		public DbSet<AdditionalContentPublication> AdditionalContentPublications { get; set; }
+		public DbSet<DeadLine> DeadLines { get; set; }
 	}
 }

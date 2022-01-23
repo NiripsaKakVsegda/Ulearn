@@ -1,0 +1,36 @@
+@import "/src/variables";
+
+.text {
+  font-size: 16px;
+  font-family: @defaultFonts;
+}
+
+.table {
+  td { //> tbody > tr >
+    padding: 6px 12px;
+    vertical-align: baseline;
+  }
+
+  td.slides {
+    padding-left: 40px;
+    /*  background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;*/
+  }
+}
+
+.moduleTitle {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.additionalText {
+  color: @additionalColor;
+}
+
+.hideButtonText span {
+  color: @redText;
+}
+
+.hideButtonText button:hover {
+  color: @redText;
+}

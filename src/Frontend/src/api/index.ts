@@ -15,6 +15,7 @@ import * as slides from "./slides";
 import * as instructor from "./instructor";
 import * as favouriteReviews from "./favouriteReviews";
 import * as googleSheet from "./googleSheet";
+import * as deadLines from "./deadLines";
 import * as signalR from "@microsoft/signalr";
 
 const API_JWT_TOKEN_UPDATED = "API_JWT_TOKEN_UPDATED";
@@ -234,6 +235,7 @@ const api = {
 	instructor,
 	favouriteReviews,
 	googleSheet,
+	deadLines,
 };
 
 export default api;

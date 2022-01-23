@@ -25,6 +25,7 @@ export type Props = PropsFromRedux & DefaultNavigationProps & CourseNavigationPr
 interface DefaultNavigationProps {
 	courseTitle: string;
 	navigationOpened: boolean;
+	courseId: string;
 }
 
 interface PropsFromRedux {
@@ -34,7 +35,6 @@ interface PropsFromRedux {
 }
 
 export interface CourseNavigationProps {
-	courseId: string;
 	slideId?: string;
 
 	flashcardsStatistics: FlashcardsStatistics;
@@ -383,6 +383,7 @@ class Navigation extends Component<Props, State> {
 			unitTitle,
 			unitItems,
 			nextUnit,
+			courseId,
 		} = this.props;
 
 		if(!unitTitle || !unitItems) {
@@ -395,6 +396,7 @@ class Navigation extends Component<Props, State> {
 					items={ unitItems }
 					onClick={ this.closeNavigation }
 					getRefToActive={ this.currentActiveItem }
+					courseId={ courseId }
 				/>
 				{ nextUnit && <NextUnit unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
 			</>
@@ -427,6 +429,7 @@ class Navigation extends Component<Props, State> {
 				<CourseNavigationContent
 					getRefToActive={ this.currentActiveItem }
 					items={ courseItems }
+					courseId={ courseId }
 				/> }
 				{ containsFlashcards &&
 				<Flashcards

@@ -15,7 +15,8 @@ import { SlideContext } from "../Slide.types";
 import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { MatchParams } from "src/models/router";
-import { setNextSubmissionButtonDisabled } from "../../../../../actions/submissions";
+import { setNextSubmissionButtonDisabled } from "src/actions/submissions";
+import { DeadLineInfo } from "../../../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
 
 interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;
@@ -60,7 +61,8 @@ export const mapStateToProps = (
 	const prevScore = lastReviewedSubmission?.manualChecking?.percent ?? null;
 
 	let studentGroups: ShortGroupInfo[] | undefined;
-	const reduxGroups = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId])
+	const studentGroupsIds = getDataIfLoaded(state.groups.groupsIdsByUserId[studentId]);
+	const reduxGroups = studentGroupsIds
 		?.map(groupId => getDataIfLoaded(state.groups.groupById[groupId]));
 	if(reduxGroups && reduxGroups.every(g => g !== undefined)) {
 		studentGroups = reduxGroups.map(g => ({ ...g, courseId, })) as ShortGroupInfo[];
@@ -78,6 +80,12 @@ export const mapStateToProps = (
 		.prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId[courseId]
 		?.[slideId]
 		?.[studentId] || false;
+
+	let deadLines: DeadLineInfo[] | undefined = undefined;
+	const courseStudents = getDataIfLoaded(state.instructor.deadLinesByCourseIdByStudentId[courseId]);
+	if(courseStudents) {
+		deadLines = getDataIfLoaded(courseStudents[studentId]);
+	}
 
 	return {
 		user: buildUserInfo(state.account, courseId,),
@@ -98,6 +106,7 @@ export const mapStateToProps = (
 		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
 
 		prohibitFurtherManualChecking,
+		deadLines,
 	};
 };
 
@@ -149,6 +158,9 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 		assignBotReview: (submissionId, review) =>
 			api.submissions.redux.assignBotReview(submissionId, review)(dispatch),
+
+		loadDeadLines: (courseId: string, studentId: string) => api.instructor.redux.getDeadLines(courseId,
+			studentId)(dispatch),
 	};
 };
 

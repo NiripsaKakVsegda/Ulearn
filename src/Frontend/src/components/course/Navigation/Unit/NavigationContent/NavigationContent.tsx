@@ -12,9 +12,10 @@ interface Props {
 	items: MenuItem<SlideType>[];
 	onClick: () => void;
 	getRefToActive?: React.RefObject<HTMLLIElement>;
+	courseId: string;
 }
 
-function NavigationContent({ items, onClick, getRefToActive, }: Props): React.ReactElement {
+function NavigationContent({ items, onClick, getRefToActive, courseId, }: Props): React.ReactElement {
 	return (
 		<ol className={ styles.root }>
 			{ items.map(renderItem) }
@@ -37,6 +38,7 @@ function NavigationContent({ items, onClick, getRefToActive, }: Props): React.Re
 				metro={ metroSettings }
 				onClick={ onClick }
 				getRefToActive={ getRefToActive }
+				courseId={ courseId }
 			/>
 		);
 	}

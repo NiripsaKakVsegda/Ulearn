@@ -122,7 +122,7 @@ namespace Database.DataContexts
 
 		#region Slide Score Calculating
 
-		public (int Score, int? Percent) GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId)
+		public (int Score, int? Percent) GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId, int maxAutomaticScorePercent = 100)
 		{
 			var hasAutomaticChecking = slide.Exercise.HasAutomaticChecking();
 			if (hasAutomaticChecking)
@@ -135,9 +135,14 @@ namespace Database.DataContexts
 
 			var percent = GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
-			if (percent == null)
-				return (automaticScore, null);
-			return (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
+			return percent == null
+				? (ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent), null)
+				: (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
+		}
+		
+		public static int ConvertAutomaticScoreWithDeadLinePercentToScore(int automaticScore, int maxAutomaticScorePercent)
+		{
+			return (int)Math.Ceiling(automaticScore * maxAutomaticScorePercent / 100m);
 		}
 
 		public static int ConvertExerciseManualCheckingPercentToScore(int manualCheckingPercent, int scoreWithCodeReview)
@@ -158,11 +163,11 @@ namespace Database.DataContexts
 			return lastChecking?.Percent;
 		}
 
-		public int GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId)
+		public int GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 10)
 		{
 			var manualScore = GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).Max();
 			var automaticScore = GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).Max();
-			return automaticScore + manualScore;
+			return ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent) + manualScore;
 		}
 
 		public List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits)

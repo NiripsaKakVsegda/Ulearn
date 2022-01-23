@@ -4,7 +4,7 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 
 import { Course, } from 'src/components/course/Course/Course';
 
-import { loadCourse, loadCourseErrors, changeCurrentCourseAction } from "src/actions/course";
+import { changeCurrentCourseAction, loadCourse, loadCourseErrors } from "src/actions/course";
 import { loadUserProgress, userProgressUpdate } from "src/actions/userProgress";
 import { loadFlashcards } from "src/actions/flashcards";
 
@@ -13,11 +13,13 @@ import { MatchParams } from "src/models/router";
 import { CourseInfo, UnitInfo } from "src/models/course";
 import { FlashcardsStatistics } from "src/components/course/Navigation/types";
 import getSlideInfo from "src/components/course/Course/CourseUtils";
+import api from "src/api";
+import { getDataIfLoaded } from "../../redux";
 
 const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParams>) => {
 	const courseId = route.match.params.courseId.toLowerCase();
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
-	const slideInfo = getSlideInfo(route, courseInfo);
+	const slideInfo = getSlideInfo(route, courseInfo, state.account);
 	const flashcardsByUnit = state.courses.flashcardsInfoByCourseByUnits[courseId];
 	const flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics } | undefined = flashcardsByUnit ? {} : undefined;
 	if(flashcardsStatisticsByUnits) {
@@ -50,6 +52,7 @@ const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParam
 		isSlideReady: state.slides.isSlideReady,
 		isHijacked: state.account.isHijacked,
 		isStudentMode: state.instructor.isStudentMode,
+		deadLines: getDataIfLoaded(state.deadLines.deadLines[courseId]),
 	};
 };
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -59,6 +62,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 	loadCourseErrors: (courseId: string) => loadCourseErrors(courseId)(dispatch),
 	loadUserProgress: (courseId: string, userId: string) => loadUserProgress(courseId, userId)(dispatch),
 	updateVisitedSlide: (courseId: string, slideId: string) => userProgressUpdate(courseId, slideId)(dispatch),
+	loadDeadLines: (courseId: string) => api.deadLines.redux.getDeadLinesForCurrentUserRedux(courseId)(dispatch),
 });
 
 

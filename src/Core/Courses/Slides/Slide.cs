@@ -42,6 +42,10 @@ namespace Ulearn.Core.Courses.Slides
 		[DefaultValue(false)]
 		public bool Hide { get; set; }
 
+		[XmlAttribute("isExtraContent")]
+		[DefaultValue(false)]
+		public bool IsExtraContent { get; set; }
+
 		[XmlElement("defaultIncludeCodeFile")]
 		public string DefaultIncludeCodeFile { get; set; }
 
@@ -285,7 +289,7 @@ namespace Ulearn.Core.Courses.Slides
 				}
 				else if (visibleSlideBlocks[componentIndex] is YoutubeBlock youtubeBlock)
 				{
-					var videoComponent = youtubeBlock.ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : ""});
+					var videoComponent = youtubeBlock.ToEdxComponent(context with { ComponentIndex = componentIndex, DisplayName = componentIndex == 0 ? slide.Title : "" });
 					components.Add(videoComponent);
 				}
 				componentIndex++;

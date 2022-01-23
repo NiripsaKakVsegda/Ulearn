@@ -50,6 +50,43 @@ namespace Database.Migrations
                     b.ToTable("AcceptedSolutionsPromotes");
                 });
 
+            modelBuilder.Entity("Database.Models.AdditionalContentPublication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SlideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId", "GroupId");
+
+                    b.HasIndex("CourseId", "GroupId", "UnitId", "SlideId");
+
+                    b.ToTable("AdditionalContentPublications");
+                });
+
             modelBuilder.Entity("Database.Models.AdditionalScore", b =>
                 {
                     b.Property<int>("Id")
@@ -735,6 +772,46 @@ namespace Database.Migrations
                     b.HasKey("CourseVersionId");
 
                     b.ToTable("CourseVersionFiles");
+                });
+
+            modelBuilder.Entity("Database.Models.DeadLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ScorePercent")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SlideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId", "GroupId");
+
+                    b.HasIndex("CourseId", "UserId");
+
+                    b.HasIndex("CourseId", "GroupId", "UnitId", "SlideId", "UserId");
+
+                    b.ToTable("DeadLines");
                 });
 
             modelBuilder.Entity("Database.Models.EnabledAdditionalScoringGroup", b =>

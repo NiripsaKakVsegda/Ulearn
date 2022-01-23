@@ -110,6 +110,32 @@ namespace uLearn.Web.Controllers
 
 			if (slide == null)
 				return HttpNotFound();
+			
+			if ((slide.IsExtraContent || slide.Unit.Settings.IsExtraContent) && (!isInstructor || isGuest || !User.HasAccessFor(course.Id, CourseRole.Tester)))
+			{
+				if (isGuest)
+					return HttpNotFound();
+
+				var userGroups = groupsRepo.GetUserGroups(course.Id, User.Identity.GetUserId())
+					.Select(g => g.Id)
+					.ToList();
+
+				if (userGroups.Count == 0)
+					return HttpNotFound();
+
+				var unitPublications = db.AdditionalContentPublications
+					.Where(ac => ac.CourseId == courseId && ac.UnitId == slide.Unit.Id && userGroups.Contains(ac.GroupId))
+					.ToList();
+
+				if (!unitPublications.Any())
+					return HttpNotFound();
+
+				if (slide.Unit.Settings.IsExtraContent && !unitPublications.Any(p => p.SlideId == null && DateTime.Now >= p.Date))
+					return HttpNotFound();
+
+				if (slide.IsExtraContent && !unitPublications.Any(p => p.SlideId == slide.Id && DateTime.Now >= p.Date))
+					return HttpNotFound();
+			}
 
 			AbstractManualSlideChecking queueItem = null;
 			var isManualCheckingReadonly = false;
@@ -225,7 +251,11 @@ namespace uLearn.Web.Controllers
 		{
 			var userId = User.Identity.GetUserId();
 			var lastVisit = visitsRepo.FindLastVisit(courseId, userId);
-			var orderedVisibleSlides = orderedVisibleUnits.SelectMany(u => u.GetSlides(isInstructor)).ToList();
+			var orderedVisibleSlides = orderedVisibleUnits
+				.Where(u => isInstructor || !u.Settings.IsExtraContent)
+				.SelectMany(u => u.GetSlides(isInstructor))
+				.Where(s => isInstructor || !s.IsExtraContent)
+				.ToList();
 			if (lastVisit != null)
 			{
 				var lastVisitedSlide = orderedVisibleSlides.FirstOrDefault(s => s.Id == lastVisit.SlideId);
@@ -427,7 +457,7 @@ namespace uLearn.Web.Controllers
 					.Distinct(StringComparer.OrdinalIgnoreCase)
 					.Where(c => visibleCourses.Contains(c)).ToList();
 				courses = courses.Where(c => coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase)
-					|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
+											|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 			}
 
 			var incorrectChars = new string(CourseManager.InvalidForCourseIdCharacters.OrderBy(c => c).Where(c => 32 <= c).ToArray());
