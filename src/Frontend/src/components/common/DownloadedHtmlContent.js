@@ -392,7 +392,7 @@ class Meta extends Component {
 				<title>{ meta.title }</title>
 				<meta name="title" content={ meta.title }/>
 				<meta property="og:title" content={ meta.title }/>
-				<meta property="og:image" content={ meta.imageUrl }/>
+				<meta property="og:image" content={'/favicon.ico' }/>
 				<meta property="og:image:alt" content={ meta.description }/>
 				<meta property="og:description" content={ meta.description }/>
 				<meta property="og:locale" content="ru_RU"/>
