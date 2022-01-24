@@ -9,6 +9,7 @@ namespace AntiPlagiarism.ConsoleApp.Models
 		public Guid TaskId;
 		public Language Language;
 		public int SubmissionId;
+		public int AttemptHashCode;
 	}
 
 	public class Submission

@@ -34,13 +34,17 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 				foreach (var author in repository.SubmissionsInfo.Authors)
 				{
 					var path = rootDirectory.PathCombine(task.Title).PathCombine(author.Name);
-					if (Directory.Exists(path)
-						&& repository.SubmissionsInfo.Submissions.All(
-							s => s.TaskId != task.Id || s.AuthorId != author.Id))
+					if (Directory.Exists(path))
 					{
 						var lang2Code = codeExtractor.ExtractCode(path);
 						foreach (var language in lang2Code.Keys)
 						{
+							var currentAttemptHashCode = lang2Code[language].GetPersistantHashCode();
+							var previousAttempt = repository.SubmissionsInfo.Submissions.FirstOrDefault(
+								s => s.AuthorId == author.Id && s.TaskId == task.Id && s.Language == language);
+							if (previousAttempt != null && previousAttempt.AttemptHashCode == currentAttemptHashCode)
+								continue;
+							
 							log.Info($"Find new submission: task {task.Title}, author {author.Name}, lang {language}");
 							submissions.Add(new Submission
 							{
@@ -48,7 +52,8 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 								{
 									AuthorId = author.Id, 
 									TaskId = task.Id,
-									Language = language
+									Language = language,
+									AttemptHashCode = currentAttemptHashCode
 								},
 								Code = lang2Code[language]
 							});
