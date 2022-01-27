@@ -15,12 +15,24 @@ export interface Props {
 }
 
 export interface State {
-	students: GroupStudentInfo[];
-	modules: { [id: string]: DeadLineModuleInfo };
 	responseDeadLines: { [id: string]: StateDeadLineInfo; };
 	actualDeadLines: { [id: string]: StateDeadLineInfo; };
-	errors: { [id: string]: 'time' | 'date' | 'time&date' };
+	errors: ValidationErrorsContainer;
+
+	unitsMarkup: Markup[];
+	studentsMarkup: Markup[];
+	slidesMarkupByUnit: {
+		[unitId: string]: Markup[];
+	};
 }
+
+export type Markup =  [id: string, title: string];
+
+export interface ValidationErrorsContainer {
+	[id: string]: ValidationErrorType;
+}
+
+export type ValidationErrorType = 'time' | 'date' | 'time&date';
 
 export interface DeadLineModuleInfo {
 	id: string;
@@ -36,5 +48,5 @@ export interface DeadLineSlideInfo {
 export interface StateDeadLineInfo extends Omit<DeadLineInfo, 'date'> {
 	date?: string;
 	time?: string;
-	error?: boolean;
+	isOverlappedByOtherDeadLine?: boolean;
 }
