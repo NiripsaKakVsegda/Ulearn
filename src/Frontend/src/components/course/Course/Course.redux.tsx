@@ -46,6 +46,7 @@ const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParam
 		user: state.account,
 		progress: state.userProgress.progress[courseId],
 		courseLoadingErrorStatus: state.courses.courseLoadingErrorStatus,
+		courseLoading: state.courses.courseLoading,
 		flashcardsStatisticsByUnits,
 		flashcardsLoading: state.courses.flashcardsLoading,
 

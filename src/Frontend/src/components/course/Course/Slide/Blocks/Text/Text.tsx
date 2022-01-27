@@ -42,12 +42,12 @@ function Text(props: Props): React.ReactElement {
 		const anchors = Array.from(textContainer.current.getElementsByTagName('a'));
 		//if href equal to origin + pathname + hash => <a href="#hash"> that means its navigation on slide via headers, we need to handle this via our modificated scrolling
 		const hashAnchorsLinks = anchors.filter(
-			a => window.location.origin + window.location.pathname + a.hash === a.href);
+			a => (window.location.origin + window.location.pathname + a.hash).toLowerCase() === a.href.toLowerCase());
 
 		const hashInUrl = window.location.hash;
 		if(hashInUrl) {
-			const hashToScroll = hashInUrl.replace('#', '');
-			if(anchors.some(a => a.name === hashToScroll)) {
+			const hashToScroll = hashInUrl.replace('#', '').toLowerCase();
+			if(anchors.some(a => a.name.toLowerCase() === hashToScroll)) {
 				scrollToHashAnchor(hashInUrl);
 			}
 		}
@@ -62,8 +62,8 @@ function Text(props: Props): React.ReactElement {
 		}
 
 		const sameOriginLinks = anchors.filter(
-			a => a.origin === window.location.origin
-				&& a.pathname !== window.location.pathname
+			a => a.origin.toLowerCase() === window.location.origin.toLowerCase()
+				&& a.pathname.toLowerCase() !== window.location.pathname.toLowerCase()
 				&& !a.pathname.toLowerCase().startsWith(studentZipDownloadUrl) //filtering all download links
 		);
 		for (const anchor of sameOriginLinks) {

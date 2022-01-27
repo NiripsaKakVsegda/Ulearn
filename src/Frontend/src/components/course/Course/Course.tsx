@@ -74,6 +74,7 @@ interface CourseProps extends RouteComponentProps {
 	progress: { [p: string]: SlideUserProgress };
 	units: UnitsInfo | null;
 	courseLoadingErrorStatus: string | null;
+	courseLoading: boolean;
 	loadedCourseIds: Record<string, unknown>;
 	flashcardsStatisticsByUnits?: { [unitId: string]: FlashcardsStatistics },
 	flashcardsLoading: boolean;
@@ -180,7 +181,6 @@ class Course extends Component<CourseProps, State> {
 	onCourseChangedEvent = (eventData: string): void => {
 		const { loadCourse, loadedCourseIds, } = this.props;
 		const { courseId } = JSON.parse(eventData);
-
 		if(loadedCourseIds[courseId]) {
 			loadCourse(courseId);
 		}
@@ -201,6 +201,7 @@ class Course extends Component<CourseProps, State> {
 			flashcardsLoading,
 			flashcardsStatisticsByUnits,
 			slideInfo,
+			courseLoading,
 		} = this.props;
 		const { title, } = this.state;
 		const { isAuthenticated, } = user;
@@ -208,6 +209,12 @@ class Course extends Component<CourseProps, State> {
 		if(isAuthenticated !== prevProps.user.isAuthenticated && user.id) {
 			loadCourse(courseId);
 			loadUserProgress(courseId, user.id);
+			return;
+		}
+
+		if(!courseInfo && !courseLoading){
+			loadCourse(courseId);
+			return;
 		}
 
 		if(courseInfo !== prevProps.courseInfo && !flashcardsStatisticsByUnits && !flashcardsLoading) {
