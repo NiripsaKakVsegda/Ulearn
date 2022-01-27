@@ -1,6 +1,6 @@
-import { ShortSlideInfo } from "./slide";
-import { ScoringGroupsIds } from "src/consts/scoringGroup";
-import { AdditionalContentInfo } from "../components/course/Navigation/types";
+import {ShortSlideInfo} from "./slide";
+import {ScoringGroupsIds} from "src/consts/scoringGroup";
+import {AdditionalContentInfo} from "src/models/additionalContent";
 
 interface CourseInfo {
 	id: string;

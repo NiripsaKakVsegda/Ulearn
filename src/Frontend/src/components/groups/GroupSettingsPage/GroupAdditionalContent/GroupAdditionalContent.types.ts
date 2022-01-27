@@ -1,5 +1,9 @@
 import { ShortUserInfo } from "src/models/users";
-import { UnitInfo } from "../../../../models/course";
+import { UnitInfo } from "src/models/course";
+import {
+	AdditionalContentPublicationResponse,
+	AdditionalContentPublicationsResponse
+} from "src/models/additionalContent";
 
 export interface Props {
 	getAdditionalContent: (courseId: string, groupId: number) => Promise<AdditionalContentPublicationsResponse>;
@@ -46,20 +50,6 @@ export interface StatePublicationInfo {
 	date?: string;
 	time?: string;
 	author: ShortUserInfo;
-}
-
-export interface AdditionalContentPublicationResponse {
-	id: string;
-	courseId: string;
-	groupId: number;
-	slideId: string | null;
-	unitId: string;
-	date: string;
-	author: ShortUserInfo;
-}
-
-export interface AdditionalContentPublicationsResponse {
-	publications: AdditionalContentPublicationResponse[];
 }
 
 export interface InputAttributeData {

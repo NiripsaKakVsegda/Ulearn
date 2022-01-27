@@ -30,7 +30,7 @@ import {
 import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, FavouriteReview } from "src/models/instructor";
 import { ReduxData } from "./index";
-import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 
 export interface InstructorState {
 	isStudentMode: boolean;

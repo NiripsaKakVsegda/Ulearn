@@ -14,7 +14,7 @@ import { FavouriteReviewRedux, LastUsedReview, } from "src/redux/instructor";
 import { SlideContext } from "../Slide.types";
 import { RouteComponentProps } from "react-router-dom";
 import { MatchParams } from "src/models/router";
-import { DeadLineInfo, DeadLinesResponse } from "../../../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo, DeadLinesResponse } from "src/models/deadLines";
 
 export interface PropsFromRedux {
 	user?: UserInfo;

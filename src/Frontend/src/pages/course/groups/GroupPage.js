@@ -14,7 +14,6 @@ import { changeCurrentCourseAction } from "src/actions/course";
 import GroupAdditionalContent
 	from "src/components/groups/GroupSettingsPage/GroupAdditionalContent/GroupAdditionalContent";
 import GroupDeadLines from "src/components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
-import { buildQuery } from "src/utils";
 
 
 const pages = ['settings', 'members', 'additional-content', 'dead-lines'];
@@ -135,22 +134,10 @@ class GroupPage extends Component {
 					<GroupAdditionalContent
 						courseId={ courseId }
 						groupId={ groupId }
-						getAdditionalContent={ (courseId, groupId) => api.get(`additional-content/${ courseId }?groupId=${ groupId }`) }
-						deletePublication={ (publicationId) => api.delete(`additional-content` + buildQuery({
-							publicationId,
-						})) }
-						updatePublication={ (publicationId, publication) =>
-							api.patch(`additional-content` + buildQuery({
-								publicationId,
-								date: publication
-							})) }
-						addPublication={ (courseId, groupId, unitId, slideId, publication) =>
-							api.post(`additional-content/${ courseId }` + buildQuery({
-								groupId,
-								slideId,
-								unitId,
-								date: publication
-							})) }
+						getAdditionalContent={ api.additionalContent.getAdditionalContent }
+						deletePublication={ api.additionalContent.deletePublication }
+						updatePublication={ api.additionalContent.updatePublication }
+						addPublication={ api.additionalContent.addPublication }
 						user={ this.props.account }
 					/>
 					}

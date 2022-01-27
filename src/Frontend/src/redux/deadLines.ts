@@ -6,7 +6,7 @@ import {
 	DeadLinesLoadFailAction,
 	DeadLinesLoadSuccess,
 } from "src/actions/deadLines.types";
-import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 import { ReduxData } from "./index";
 
 interface DeadLinesState {

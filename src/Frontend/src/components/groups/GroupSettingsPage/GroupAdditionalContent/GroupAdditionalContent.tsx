@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import moment from "moment/moment";
 import { Button, DatePicker, Gapped, Input, Loader, Toast } from "ui";
+import api from "src/api";
+import { UnitInfo } from "src/models/course";
+import { AdditionalContentInfo, AdditionalContentPublicationResponse } from "src/models/additionalContent";
 import {
 	convertDefaultTimezoneToLocal,
 	momentToDateInputFormat,
@@ -10,7 +13,6 @@ import {
 import { clone } from "src/utils/jsonExtensions";
 import { ValidationContainer, ValidationWrapper } from '@skbkontur/react-ui-validations';
 import {
-	AdditionalContentPublicationResponse,
 	InputAttributeData,
 	ParsedInputAttrData,
 	Props,
@@ -22,9 +24,6 @@ import {
 
 import styles from './groupAdditionalContent.less';
 import texts from './GroupAdditionalContent.texts';
-import api from "../../../../api";
-import { UnitInfo } from "src/models/course";
-import { AdditionalContentInfo } from "../../../course/Navigation/types";
 
 const gmtOffsetInHours = moment().utcOffset() / 60;
 const gmtOffsetInHoursAsString = `${ gmtOffsetInHours >= 0 ? '+' : '-' }${ gmtOffsetInHours }`;

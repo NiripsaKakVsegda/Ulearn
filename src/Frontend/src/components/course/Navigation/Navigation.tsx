@@ -398,7 +398,8 @@ class Navigation extends Component<Props, State> {
 					getRefToActive={ this.currentActiveItem }
 					courseId={ courseId }
 				/>
-				{ nextUnit && <NextUnit unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
+				{ nextUnit && nextUnit.slides.length > 0 &&
+				<NextUnit unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
 			</>
 		);
 	}

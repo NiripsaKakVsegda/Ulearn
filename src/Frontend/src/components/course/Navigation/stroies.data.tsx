@@ -150,6 +150,10 @@ export const standardSlideProps: MenuItem<SlideType> = {
 	type: SlideType.Lesson,
 	url: "",
 	visited: false,
+	additionalContentInfo: {
+		publicationDate: null,
+		isAdditionalContent: false,
+	}
 };
 
 const metro = {
@@ -426,5 +430,13 @@ export function getCourseModules(): CourseMenuItem[] {
 			inProgress: 66,
 		},
 		isNotPublished: true
-	}];
+	}].map(
+		s=>({
+			...s,
+			additionalContentInfo: {
+				publicationDate: null,
+				isAdditionalContent: false,
+			}
+		})
+	);
 }

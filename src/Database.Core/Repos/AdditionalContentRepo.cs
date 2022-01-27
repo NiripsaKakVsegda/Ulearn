@@ -21,6 +21,20 @@ namespace Database.Repos
 		{
 			return await GetAdditionalContentPublications(courseId, new HashSet<int> { groupId });
 		}
+		
+		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, Guid userId)
+		{
+			var groups = db.Groups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Select(g => g.Id);
+			var userIdAsString = userId.ToString();
+			var userGroupsIds = await db.GroupMembers
+				.Where(m => groups.Contains(m.GroupId) && m.UserId == userIdAsString)
+				.Select(m => m.GroupId)
+				.ToListAsync();
+			
+			return await GetAdditionalContentPublications(courseId, userGroupsIds.ToHashSet());
+		}
 
 		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, HashSet<int> groupIds)
 		{

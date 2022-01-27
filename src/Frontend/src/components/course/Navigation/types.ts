@@ -1,4 +1,5 @@
 import { SlideType } from 'src/models/slide';
+import { AdditionalContentInfo } from "src/models/additionalContent";
 
 export interface MenuItem<T extends SlideType> {
 	type: T;
@@ -59,13 +60,6 @@ export interface CourseMenuItem {
 	publicationDate?: string;
 	additionalContentInfo: AdditionalContentInfo;
 	onClick?: (id: string) => void;
-}
-
-export interface AdditionalContentInfo {
-	isAdditionalContent: boolean;
-	publicationDate: string | null;
-	hideInfo?: boolean;
-	isPublished?: boolean;
 }
 
 export interface FlashcardsStatistics {

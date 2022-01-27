@@ -14,11 +14,9 @@ import { MatchParams } from "src/models/router";
 import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { SubmissionInfo } from "src/models/exercise";
 import { getDataIfLoaded } from "src/redux";
-import { DeadLineInfo } from "../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
-import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
-import { AccountState } from "../../../redux/account";
-import { CourseRoleType } from "../../../consts/accessType";
-import { isTimeArrived } from "../../../utils/momentUtils";
+import { DeadLineInfo } from "src/models/deadLines";
+import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
+import { isTimeArrived } from "src/utils/momentUtils";
 
 
 export interface SlideInfo {
@@ -32,6 +30,7 @@ export interface SlideInfo {
 	isLti: boolean;
 	isNavigationVisible: boolean;
 	query: UlearnQueryParams;
+	deadLineInfo: DeadLineInfo | null;
 
 	//navigation
 	navigationInfo?: SlideNavigationInfo;
@@ -96,7 +95,7 @@ export const getUnitStatistics = (
 	for (const { maxScore, id, scoringGroup, type, quizMaxTriesCount, additionalContentInfo, } of unit.slides) {
 		let scoreAfterDeadLine = maxScore;
 		if(deadLines && deadLines.length > 0) {
-			const deadLine = getCurrentDeadLine(deadLines.filter(d => d.slideId === null || d.slideId === id));
+			const deadLine = getDeadLineForSlide(deadLines, id, unit.id);
 			if(deadLine) {
 				scoreAfterDeadLine = Math.ceil(deadLine.scorePercent * maxScore / 100);
 			}
@@ -218,7 +217,7 @@ export const slideActionsRegex = {
 export default function getSlideInfo(
 	route: RouteComponentProps<MatchParams>,
 	courseInfo: CourseInfo | undefined,
-	user: AccountState,
+	deadLines?: DeadLineInfo[],
 ): SlideInfo {
 	const { location, match } = route;
 	const { search, pathname, } = location;
@@ -238,7 +237,14 @@ export default function getSlideInfo(
 		: slideSlugOrAction?.match(slideActionsRegex.flashcards)
 			? SlideType.CourseFlashcards
 			: SlideType.NotFound;
-	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo, user);
+
+	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo);
+
+	let deadLineInfo = null;
+	if(deadLines && navigationInfo && slideId) {
+		deadLineInfo = getDeadLineForSlide(deadLines, slideId, navigationInfo.current.unitId);
+	}
+
 	return {
 		slideType: navigationInfo?.current.type || slideType,
 		slideId,
@@ -248,37 +254,16 @@ export default function getSlideInfo(
 		isNavigationVisible,
 		query: queryParams,
 		navigationInfo,
+		deadLineInfo,
 	};
 }
 
 export function getSlideNavigationInfoBySlideId(
 	slideId: string | undefined,
 	courseInfo: CourseInfo | undefined,
-	user: AccountState,
 ): SlideNavigationInfo | undefined {
 	if(courseInfo && courseInfo.units) {
-		const courseRole = user.roleByCourse[courseInfo.id];
-		const isStudent = !courseRole || courseRole == CourseRoleType.student;
-		const units = courseInfo.units
-			.filter(u => {
-				const isAdditionalContent = u.additionalContentInfo.isAdditionalContent;
-				const additionalContentPublicationDate = u.additionalContentInfo.publicationDate;
-
-				return !(isStudent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
-					additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
-			}).map(u => {
-					return {
-						...u,
-						slides: u.slides.filter(s => {
-							const isAdditionalContent = s.additionalContentInfo.isAdditionalContent;
-							const additionalContentPublicationDate = s.additionalContentInfo.publicationDate;
-
-							return !(isStudent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
-								additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
-						})
-					};
-				}
-			);
+		const units = courseInfo.units;
 
 		let prevSlide, nextSlide;
 

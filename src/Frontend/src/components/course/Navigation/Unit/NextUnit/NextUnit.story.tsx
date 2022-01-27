@@ -13,6 +13,7 @@ export default {
 const defaultProps: Props = {
 	onClick: mock,
 	unit: {
+		additionalContentInfo: { isAdditionalContent: false, publicationDate: null, },
 		additionalScores: [],
 		id: '123',
 		title: 'Следующий модуль',
@@ -27,7 +28,8 @@ const defaultProps: Props = {
 			apiUrl: '123',
 			questionsCount: 0,
 			quizMaxTriesCount: 2,
-			containsVideo: false,
+			containsVideo: false, unitId: '123',
+			additionalContentInfo: { isAdditionalContent: false, publicationDate: null, },
 		}],
 	}
 };

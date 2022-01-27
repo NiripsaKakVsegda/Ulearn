@@ -1,23 +1,26 @@
 import api from "./index";
-import { buildQuery } from "../utils";
-import { DeadLineInfo, DeadLinesResponse, } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { buildQuery } from "src/utils";
+import { DeadLineInfo, DeadLinesResponse, } from "src/models/deadLines";
 import { Dispatch } from "redux";
-import { deadLinesLoadFailAction, deadLinesLoadStartAction, deadLinesLoadSuccessAction, } from "../actions/deadLines";
+import { deadLinesLoadFailAction, deadLinesLoadStartAction, deadLinesLoadSuccessAction, } from "src/actions/deadLines";
+import { deadLines } from "src/consts/routes";
+
+const forUser = 'for-user';
 
 export function getDeadLines(courseId: string, groupId: number): Promise<DeadLinesResponse> {
-	return api.get(`dead-lines` + buildQuery({ courseId, groupId }));
+	return api.get(deadLines + buildQuery({ courseId, groupId }));
 }
 
 export function getDeadLinesByStudentId(courseId: string, studentId: string): Promise<DeadLinesResponse> {
-	return api.get(`dead-lines/for-user/${ studentId }` + buildQuery({ courseId }));
+	return api.get(`${ deadLines }/${ forUser }/${ studentId }` + buildQuery({ courseId }));
 }
 
 export function getDeadLinesForCurrentUser(courseId: string): Promise<DeadLinesResponse> {
-	return api.get(`dead-lines/for-user` + buildQuery({ courseId }));
+	return api.get(`${ deadLines }/${ forUser }` + buildQuery({ courseId }));
 }
 
 export function changeDeadLine(deadLine: DeadLineInfo): Promise<Response> {
-	return api.patch(`dead-lines/${ deadLine.id }` + buildQuery({
+	return api.patch(`${ deadLines }/${ deadLine.id }` + buildQuery({
 		...deadLine,
 		userId: deadLine.userId === null ? undefined : deadLine.userId,
 		slideId: deadLine.slideId === null ? undefined : deadLine.slideId,
@@ -27,7 +30,7 @@ export function changeDeadLine(deadLine: DeadLineInfo): Promise<Response> {
 }
 
 export function createDeadLine(courseId: string, deadLine: DeadLineInfo): Promise<DeadLineInfo> {
-	return api.post(`dead-lines` + buildQuery({
+	return api.post(deadLines + buildQuery({
 		...deadLine,
 		courseId,
 		userId: deadLine.userId === null ? undefined : deadLine.userId,
@@ -38,7 +41,7 @@ export function createDeadLine(courseId: string, deadLine: DeadLineInfo): Promis
 }
 
 export function deleteDeadLine(deadLineId: string): Promise<Response> {
-	return api.delete(`dead-lines/${ deadLineId }`);
+	return api.delete(`${ deadLines }/${ deadLineId }`);
 }
 
 //REDUX

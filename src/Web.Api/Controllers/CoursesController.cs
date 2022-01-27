@@ -223,9 +223,6 @@ namespace Ulearn.Web.Api.Controllers
 						.Where(s => s != null)
 						.ToList();
 
-					if (slides.Count == 0)
-						return null;
-
 					return new UnitInfo
 					{
 						Id = u.Id,

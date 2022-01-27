@@ -32,6 +32,7 @@ namespace Database.Repos.DeadLines
 			var lastActive = deadLines
 				.Where(d => d.Date <= currentTime)
 				.OrderByDescending(d => d.Date)
+				.ThenByDescending(d => d.ScorePercent)
 				.FirstOrDefault();
 
 			DeadLine inactive = null;

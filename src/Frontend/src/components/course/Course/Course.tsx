@@ -37,8 +37,7 @@ import { SlideUserProgress, } from "src/models/userProgress";
 import { AccountState } from "src/redux/account";
 import { CourseRoleType } from "src/consts/accessType";
 import { ShortUserInfo } from "src/models/users";
-import { DeadLineInfo } from "../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
-import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
+import { DeadLineInfo } from "src/models/deadLines";
 import { isTimeArrived, momentFromServerToLocal } from "src/utils/momentUtils";
 import { Gapped, Hint, Toast } from "ui";
 import {
@@ -257,7 +256,6 @@ class Course extends Component<CourseProps, State> {
 			const openUnitId = findUnitIdBySlideId(slideId, courseInfo);
 			const openedUnit = openUnitId ? units[openUnitId] : undefined;
 			window.scrollTo(0, 0);
-
 			const Page = Course.getOpenedPage(props.courseInfo, slideInfo?.slideType);
 			const title = Course.getTitle(slideInfo.navigationInfo?.current.title);
 			if(slideId && progress && !isHijacked) {
@@ -349,6 +347,7 @@ class Course extends Component<CourseProps, State> {
 		if(courseLoadingErrorStatus) {
 			return <Error404/>;
 		}
+
 		if(!courseInfo || !flashcardsStatisticsByUnits) {
 			return <CourseLoader isSlideLoader={ false }/>;
 		}
@@ -398,10 +397,6 @@ class Course extends Component<CourseProps, State> {
 			isSystemAdministrator,
 			courseRole,
 		};
-		const currentDeadLine = deadLines && openedUnit && currentSlideInfo
-			? getCurrentDeadLine(deadLines.filter(
-				d => d.unitId === openedUnit.id && (d.slideId === null || d.slideId === currentSlideInfo.id)))
-			: undefined;
 
 		return (
 			<main className={ wrapperClassName }>
@@ -428,15 +423,15 @@ class Course extends Component<CourseProps, State> {
 					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 				</h1> }
 				{
-					currentDeadLine && currentSlideInfo
+					slideInfo.deadLineInfo && currentSlideInfo
 					&& !isReview
 					&& (currentSlideInfo.type === SlideType.Exercise || currentSlideInfo.type === SlideType.Quiz)
 					&& <p className={ styles.deadLine }>
 						<Gapped gap={ 5 }>
-							Дедлайн для сдачи { momentFromServerToLocal(currentDeadLine.date).format(
+							Дедлайн для сдачи { momentFromServerToLocal(slideInfo.deadLineInfo.date).format(
 							'DD.MM.YYYY HH:mm') }
 							<Hint text={ `Если сдать после срока, вы получите ${ Math.ceil(
-								currentDeadLine.scorePercent * currentSlideInfo.maxScore / 100) } баллов за авто-проверку` }>
+								slideInfo.deadLineInfo.scorePercent * currentSlideInfo.maxScore / 100) } баллов за авто-проверку` }>
 								<HelpDot/>
 							</Hint>
 						</Gapped>
@@ -553,12 +548,13 @@ class Course extends Component<CourseProps, State> {
 			additionalContentInfo: item.additionalContentInfo,
 		}));
 
-		if(!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student) {
+		if(!user.isSystemAdministrator && (!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student)) {
 			units = units
 				.map(u => ({
 					...u,
 					onClick: !u.additionalContentInfo.isAdditionalContent
-					|| u.additionalContentInfo.publicationDate && isTimeArrived(u.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss')
+					|| u.additionalContentInfo.publicationDate && isTimeArrived(u.additionalContentInfo.publicationDate,
+						'DD.MM.YYYY HH:mm:ss')
 						? u.onClick
 						: this.unitUnavailableClickHandle,
 					additionalContentInfo: {
@@ -597,7 +593,7 @@ class Course extends Component<CourseProps, State> {
 			slideInfo.slideId,
 		);
 
-		if(!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student) {
+		if(!user.isSystemAdministrator && (!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student)) {
 			slides = slides
 				.map(s => ({
 					...s,
@@ -672,7 +668,7 @@ class Course extends Component<CourseProps, State> {
 	};
 
 	unitUnavailableClickHandle = (): void => {
-		Toast.push('Курс ещё не опубликован');
+		Toast.push('Модуль ещё не опубликован');
 	};
 
 	slideUnavailableClickHandle = (): void => {

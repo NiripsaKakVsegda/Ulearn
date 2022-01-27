@@ -87,8 +87,8 @@ class Image extends React.Component<Props, State> {
 			<div className={ wrapperClass } onClick={ this.onClick } ref={ this.wrapper }>
 				<ImageGallery
 					ref={ this.gallery }
-					onImageLoad={ this.onImageLoad as unknown as (e: React.MouseEventHandler<HTMLImageElement>) => void }
-					onImageError={ this.onImageError as unknown as (e: React.MouseEventHandler<HTMLImageElement>) => void }
+					onImageLoad={ this.onImageLoad }
+					onImageError={ this.onImageError }
 					onBeforeSlide={ this.onBeforeSlide }
 					additionalClass={ classNames(styles.imageWrapper, { [styles.open]: fullscreen }) }
 					useBrowserFullscreen={ false }

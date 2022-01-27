@@ -4,13 +4,11 @@ import {
 	AutomaticExerciseCheckingResult,
 	SubmissionInfo
 } from "src/models/exercise";
-import { convertDefaultTimezoneToLocal, momentFromServer, momentFromServerToLocal } from "src/utils/momentUtils";
+import { convertDefaultTimezoneToLocal, momentFromServer, } from "src/utils/momentUtils";
 import React from "react";
 import getPluralForm from "src/utils/getPluralForm";
 import { ShortGroupInfo } from "src/models/comments";
-import { DeadLineInfo } from "../../../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
-import moment from "moment-timezone";
-import { DEFAULT_TIMEZONE } from "../../../../../consts/defaultTimezone";
+import { DeadLineInfo } from "src/models/deadLines";
 
 const texts = {
 	getTabName: (tab: InstructorReviewTabs): string => {
@@ -43,7 +41,8 @@ const texts = {
 	getDeadLineViolationInfo: (
 		submission: SubmissionInfo,
 		deadLine: DeadLineInfo
-	): React.ReactText => `Первое решение было прислано ${ momentFromServer(submission.timestamp).from(momentFromServer(deadLine.date)) } после дедлайна`,
+	): React.ReactText => `Первое решение было прислано ${ momentFromServer(submission.timestamp).from(
+		momentFromServer(deadLine.date)) } после дедлайна`,
 	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore: number | null,
 		currentScore: number | null
 	): string => {

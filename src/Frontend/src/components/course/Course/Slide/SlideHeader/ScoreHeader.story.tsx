@@ -7,11 +7,12 @@ import { ScoreHeader, ScoreHeaderPropsFromRedux } from "./ScoreHeader";
 import { RootState } from "src/models/reduxState";
 import { SlideType } from "src/models/slide";
 import { CourseRoleType } from "src/consts/accessType";
+import { SlideInfo } from "../../CourseUtils";
 
 const courseId = "courseId";
 const slideId = "slideId";
 
-const slideInfo = {
+const slideInfo: SlideInfo = {
 	slideId,
 	courseId,
 	slideType: SlideType.Exercise,
@@ -19,6 +20,7 @@ const slideInfo = {
 	isReview: true,
 	isNavigationVisible: false,
 	query: { queueSlideId: null, slideId: null, submissionId: 1, isLti: false, userId: null, done: false, group: null },
+	deadLineInfo: null,
 };
 
 const ListTemplate: Story<{ items: { props: ScoreHeaderPropsFromRedux, header: string }[] }>
@@ -44,7 +46,8 @@ const reduxProps: ScoreHeaderPropsFromRedux = {
 	waitingForManualChecking: false,
 	prohibitFurtherManualChecking: false,
 	maxScore: 50,
-	hasReviewedSubmissions: false
+	hasReviewedSubmissions: false,
+	anyAttemptsUsed: false,
 };
 
 export const AllHeaders = ListTemplate.bind({});

@@ -1,14 +1,44 @@
-import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 import { momentFromServer, } from "./momentUtils";
 import moment from "moment";
 
-export function getCurrentDeadLine(deadLines: DeadLineInfo[]): DeadLineInfo | null {
+export function getDeadLineForStudent(
+	deadLines: DeadLineInfo[],
+	studentId: string | null,
+): DeadLineInfo | null {
+	deadLines = deadLines.filter(
+		d => d.userId === null || d.userId === studentId);
+
 	if(deadLines.length === 0) {
 		return null;
 	}
+
+	return getDeadLine(deadLines);
+}
+
+export function getDeadLineForSlide(deadLines: DeadLineInfo[], slideId: string, unitId: string): DeadLineInfo | null {
+	deadLines = deadLines.filter(
+		d => d.unitId === unitId && (d.slideId === null || d.slideId === slideId));
+
+	if(deadLines.length === 0) {
+		return null;
+	}
+
+	return getDeadLine(deadLines);
+}
+
+export function getDeadLine(deadLines: DeadLineInfo[],): DeadLineInfo | null {
 	const convertedDeadLines = deadLines
 		.map(d => ({ ...d, date: momentFromServer(d.date) }))
-		.sort((d1, d2) => d1.date.diff(d2.date));
+		.sort((d1, d2) => {
+			const diff = d1.date.diff(d2.date);
+
+			if(diff !== 0) {
+				return diff;
+			}
+
+			return d2.scorePercent - d1.scorePercent;
+		});
 
 	const curMoment = moment();
 	const inactiveDeadLines = convertedDeadLines
@@ -26,16 +56,16 @@ export function getCurrentDeadLine(deadLines: DeadLineInfo[]): DeadLineInfo | nu
 
 	if(inactiveDeadLines.length > 0) {
 		const maxScoreAmongInActive = Math.max(...inactiveDeadLines.map(d => d.scorePercent));
-		inactive = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive);
+		inactive = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive)!;
 		if(inactive) {
 			inactive = { ...inactive, date: inactive.date.format() };
 		}
 	}
 
-	if(inactive == null) {
+	if(inactive === null) {
 		return lastActive;
 	}
-	if(lastActive == null) {
+	if(lastActive === null) {
 		return inactive;
 	}
 

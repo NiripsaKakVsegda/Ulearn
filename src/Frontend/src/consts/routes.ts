@@ -38,6 +38,8 @@ export const groups = 'groups';
 export const courseStatisticsGoogleSheet = `course-statistics/export/to-google-sheets/tasks`;
 export const pythonVisualizer = 'python-visualizer';
 export const studentZipDownloadUrl = '/exercise/studentzip';
+export const additionalContent = 'additional-content-publications';
+export const deadLines = 'dead-lines';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return `/${ coursePath }/${ courseId }/${ slideId }`;

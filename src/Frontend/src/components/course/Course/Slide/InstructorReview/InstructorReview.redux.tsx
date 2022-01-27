@@ -16,7 +16,7 @@ import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { MatchParams } from "src/models/router";
 import { setNextSubmissionButtonDisabled } from "src/actions/submissions";
-import { DeadLineInfo } from "../../../../groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 
 interface Props extends RouteComponentProps<MatchParams> {
 	slideContext: SlideContext;

@@ -4,7 +4,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import AnyPage from "src/pages/AnyPage";
 import GroupListPage from "src/pages/course/groups/GroupListPage";
 import GroupPage from "src/pages/course/groups/GroupPage.js";
-import Course from 'src/pages/course/CoursePage';
+import Course from 'src/components/course/Course/Course.redux';
 
 import { getQueryStringParameter } from "src/utils";
 import { AccountState } from "src/redux/account";

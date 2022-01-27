@@ -48,7 +48,7 @@ import {
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
 import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
-import { getCurrentDeadLine } from "src/utils/deadLinesUtils";
+import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
 import moment from "moment";
 
 
@@ -458,10 +458,7 @@ class InstructorReview extends React.Component<Props, State> {
 			return <CourseLoader/>;
 		}
 
-		const deadLine = getCurrentDeadLine(
-			deadLines?.filter(
-				d => d.unitId === slideContext.unitId && (d.slideId === null || d.slideId === slideContext.slideId))
-			?? []);
+		const deadLine = getDeadLineForSlide(deadLines ?? [], slideContext.slideId, slideContext.unitId);
 		const isDeadLineViolated = !lastCheckedSubmissionId && deadLine
 			&& moment(studentSubmissions[0].timestamp).diff(moment(deadLine.date)) > 0;
 

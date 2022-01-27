@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Language } from "src/consts/languages";
 import { AttemptsStatistics } from "src/models/exercise";
-import { AdditionalContentInfo } from "../components/course/Navigation/types";
+import { AdditionalContentInfo } from "src/models/additionalContent";
 
 interface ShortSlideInfo {
 	id: string;

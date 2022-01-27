@@ -103,6 +103,12 @@
 		<xs:attribute name="id" type="NonEmptyString" use="required" />
 		<xs:attribute name="url" type="NonEmptyString" use="optional" />
 		<xs:attribute name="title" type="NonEmptyString" use="required" />
+		<xs:attribute name="isExtraContent" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unit is extra content</xs:documentation>
+				<xs:documentation xml:lang="ru">Модуль является доп. контентом</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 
 	<xs:complexType name="UnitSlides">
@@ -250,6 +256,12 @@
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Side is shown to instructors only</xs:documentation>
 				<xs:documentation xml:lang="ru">Слайд показывается только преподавателям</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isExtraContent" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Side is extra content</xs:documentation>
+				<xs:documentation xml:lang="ru">Слайд является доп. контентом</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:attributeGroup>

@@ -28,7 +28,7 @@ import {
 } from 'src/actions/instructor.types';
 import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, } from "../models/instructor";
-import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 
 export const studentModeToggleAction = (isStudentMode: boolean): StudentModeAction => ({
 	type: INSTRUCTOR_STUDENT_MODE_TOGGLE,

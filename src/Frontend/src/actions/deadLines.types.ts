@@ -1,5 +1,5 @@
-import { FAIL, FailAction, START, SUCCESS } from "../consts/actions";
-import { DeadLinesResponse } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { FAIL, FailAction, START, SUCCESS } from "src/consts/actions";
+import { DeadLinesResponse } from "src/models/deadLines";
 
 const DEAD_LINES_LOAD = "DEAD_LINES_LOAD";
 export const DEAD_LINES_LOAD_START = DEAD_LINES_LOAD + START;

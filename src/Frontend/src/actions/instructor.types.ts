@@ -1,7 +1,7 @@
 import { FAIL, FailAction, LOAD, loadFail, loadStart, loadSuccess, START, } from "src/consts/actions";
 import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, } from "src/models/instructor";
-import { DeadLineInfo } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo } from "src/models/deadLines";
 
 const instructor = 'INSTRUCTOR';
 const student = '_STUDENT';

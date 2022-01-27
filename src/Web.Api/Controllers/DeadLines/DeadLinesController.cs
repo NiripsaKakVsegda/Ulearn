@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -9,7 +8,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Web.Api.Models.Responses;
+using Ulearn.Web.Api.Models.Responses.DeadLines;
 
 namespace Ulearn.Web.Api.Controllers.DeadLines
 {
@@ -37,10 +36,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 		{
 			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, Guid.Parse(UserId));
 
-			return new DeadLinesResponse
-			{
-				DeadLines = deadLines,
-			};
+			return DeadLinesResponse.BuildDeadLinesInfo(deadLines);
 		}
 
 		[HttpGet("for-user/{userId}")]
@@ -52,10 +48,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 
 			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, Guid.Parse(UserId));
 
-			return new DeadLinesResponse
-			{
-				DeadLines = deadLines,
-			};
+			return DeadLinesResponse.BuildDeadLinesInfo(deadLines);
 		}
 
 		[HttpGet]
@@ -64,13 +57,10 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester);
 			if (!isInstructor)
 				return Forbid($"You do not have an access to view dead lines in course {courseId}");
-			
+
 			var deadLines = await deadLinesRepo.GetDeadLines(courseId, groupId);
 
-			return new DeadLinesResponse
-			{
-				DeadLines = deadLines,
-			};
+			return DeadLinesResponse.BuildDeadLinesInfo(deadLines);
 		}
 
 		[HttpPost]
@@ -86,7 +76,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester);
 			if (!isInstructor)
 				return Forbid($"You do not have an access to add dead lines in course {courseId}");
-			
+
 			var deadLine = await deadLinesRepo.AddDeadLine(courseId, groupId, unitId, slideId, userId, date, scorePercent);
 
 			return deadLine;
@@ -104,7 +94,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			[FromQuery] int scorePercent)
 		{
 			var deadLine = await deadLinesRepo.GetDeadLineById(deadLineId);
-			
+
 			if (deadLine == null)
 			{
 				return NotFound($"Dead line with id {deadLineId} was not found");
@@ -134,7 +124,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			{
 				return NotFound($"Dead line with id {deadLineId} was not found");
 			}
-			
+
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, deadLine.CourseId, CourseRoleType.Tester);
 			if (!isInstructor)
 				return Forbid($"You do not have an access to delete dead lines in course {deadLine.CourseId}");

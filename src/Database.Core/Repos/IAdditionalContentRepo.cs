@@ -8,6 +8,7 @@ namespace Database.Repos
 {
 	public interface IAdditionalContentPublicationsRepo
 	{
+		Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, Guid userId);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, int groupId);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, HashSet<int> groupIds);
 		Task<AdditionalContentPublication> AddAdditionalContentPublication(string courseId, int groupId, string authorId, Guid unitId, Guid? slideId, DateTime date);

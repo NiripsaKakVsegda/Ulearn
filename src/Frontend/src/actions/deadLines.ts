@@ -1,4 +1,4 @@
-import { DeadLineInfo, } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import { DeadLineInfo, } from "src/models/deadLines";
 import {
 	DEAD_LINES_LOAD_FAIL,
 	DEAD_LINES_LOAD_START,

@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-
+import { getDataIfLoaded } from "src/redux";
 import { Course, } from 'src/components/course/Course/Course';
 
 import { changeCurrentCourseAction, loadCourse, loadCourseErrors } from "src/actions/course";
@@ -14,12 +14,13 @@ import { CourseInfo, UnitInfo } from "src/models/course";
 import { FlashcardsStatistics } from "src/components/course/Navigation/types";
 import getSlideInfo from "src/components/course/Course/CourseUtils";
 import api from "src/api";
-import { getDataIfLoaded } from "../../redux";
 
 const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParams>) => {
 	const courseId = route.match.params.courseId.toLowerCase();
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
-	const slideInfo = getSlideInfo(route, courseInfo, state.account);
+	const deadLines = getDataIfLoaded(state.deadLines.deadLines[courseId]);
+	const slideInfo = getSlideInfo(route, courseInfo, deadLines);
+
 	const flashcardsByUnit = state.courses.flashcardsInfoByCourseByUnits[courseId];
 	const flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics } | undefined = flashcardsByUnit ? {} : undefined;
 	if(flashcardsStatisticsByUnits) {
@@ -52,7 +53,7 @@ const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParam
 		isSlideReady: state.slides.isSlideReady,
 		isHijacked: state.account.isHijacked,
 		isStudentMode: state.instructor.isStudentMode,
-		deadLines: getDataIfLoaded(state.deadLines.deadLines[courseId]),
+		deadLines,
 	};
 };
 const mapDispatchToProps = (dispatch: Dispatch) => ({

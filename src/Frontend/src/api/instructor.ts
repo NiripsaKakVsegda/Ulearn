@@ -17,8 +17,7 @@ import { ShortUserInfo } from "src/models/users";
 import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
 import { AntiPlagiarismStatusResponse, QueueItemType, ReviewQueueResponse, } from "src/models/instructor";
-import { DeadLinesResponse } from "../components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
-import { getDeadLinesByStudentId } from "./deadLines";
+import { DeadLinesResponse } from "src/models/deadLines";
 
 export function getAntiPlagiarismStatus(courseId: string,
 	submissionId: number,

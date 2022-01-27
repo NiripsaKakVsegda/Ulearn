@@ -3,14 +3,15 @@ import { Dispatch } from "redux";
 import { getCourse, getCourseErrors } from 'src/api/courses';
 import { CourseInfo } from "src/models/course";
 import {
-	COURSES_UPDATED,
 	COURSE_LOAD_ERRORS,
 	COURSE_LOAD_FAIL,
 	COURSE_LOAD_START,
 	COURSE_LOAD_SUCCESS,
-	COURSES_COURSE_ENTERED,
 	CourseAction,
+	COURSES_COURSE_ENTERED,
+	COURSES_UPDATED,
 } from "src/actions/course.types";
+import { RequestError } from "../api";
 
 export const courseUpdatedAction = (courseById: { [courseId: string]: CourseInfo },): CourseAction => ({
 	type: COURSES_UPDATED,
@@ -55,7 +56,7 @@ export const loadCourse = (courseId: string): (dispatch: Dispatch) => void => {
 				dispatch(loadCourseSuccessAction(courseId, result));
 			})
 			.catch(err => {
-				dispatch(loadCourseFailAction(err.status));
+				dispatch(loadCourseFailAction(err.response.status));
 			});
 	};
 };
