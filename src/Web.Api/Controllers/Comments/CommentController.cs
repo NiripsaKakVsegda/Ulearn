@@ -33,8 +33,9 @@ namespace Ulearn.Web.Api.Controllers.Comments
 	{
 		public CommentController(ICourseStorage courseStorage, UlearnDb db,
 			IUsersRepo usersRepo, ICommentsRepo commentsRepo, ICommentLikesRepo commentLikesRepo, ICoursesRepo coursesRepo, ICourseRolesRepo courseRolesRepo,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			INotificationsRepo notificationsRepo, IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo, IUnitsRepo unitsRepo)
-			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
+			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, additionalContentPublicationsRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
 		{
 		}
 
@@ -93,6 +94,9 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			var slide = course.FindSlideById(comment.SlideId, isInstructor, visibleUnitsIds);
 			if (slide == null)
 				return NotFound(new ErrorResponse($"Slide with comment {commentId} not found"));
+			var isTester = isInstructor || await courseRolesRepo.HasUserAccessToCourse(UserId, comment.CourseId, CourseRoleType.Tester).ConfigureAwait(false);
+			if (!isTester && !await additionalContentPublicationsRepo.IsSlidePublishedForUser(comment.CourseId, slide, UserId))
+				return NotFound(new ErrorResponse($"Slide with id {slide.Id}"));
 			var slideIsExercise = slide is ExerciseSlide;
 
 			DefaultDictionary<int, int> likesCount;
@@ -134,7 +138,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			return BuildCommentResponse(
 				comment,
 				canUserSeeNotApprovedComments, new DefaultDictionary<int, List<Comment>>(), likesCount, likedByUserCommentsIds,
-				author2Groups, passed ? new HashSet<string>{comment.AuthorId} : null,
+				author2Groups, passed ? new HashSet<string> { comment.AuthorId } : null,
 				userAvailableGroupsIds, canViewAllGroupMembers, addCourseIdAndSlideId: true, addParentCommentId: true, addReplies: false
 			);
 		}
@@ -151,7 +155,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			if (comment == null)
 				return NotFound(new ErrorResponse($"Comment {commentId} not found"));
 
-			var parentComment = comment.ParentCommentId == -1 ? null :  await commentsRepo.FindCommentByIdAsync(comment.ParentCommentId, includeDeleted: false).ConfigureAwait(false);
+			var parentComment = comment.ParentCommentId == -1 ? null : await commentsRepo.FindCommentByIdAsync(comment.ParentCommentId, includeDeleted: false).ConfigureAwait(false);
 			var parentCommentCourseId = parentComment?.CourseId;
 
 			var canEditOrDeleteComment = await CanEditOrDeleteCommentAsync(comment, UserId, parentCommentCourseId).ConfigureAwait(false);
@@ -252,9 +256,9 @@ namespace Ulearn.Web.Api.Controllers.Comments
 		private async Task<bool> CanEditOrDeleteCommentAsync(Comment comment, string userId, string parentCommentCourseId)
 		{
 			return comment.AuthorId == userId
-				|| await CanModerateCommentsInCourseAsync(comment.CourseId, userId).ConfigureAwait(false)
-				// ULEARN-467
-				|| parentCommentCourseId != comment.CourseId && await CanModerateCommentsInCourseAsync(parentCommentCourseId, userId).ConfigureAwait(false);
+					|| await CanModerateCommentsInCourseAsync(comment.CourseId, userId).ConfigureAwait(false)
+					// ULEARN-467
+					|| parentCommentCourseId != comment.CourseId && await CanModerateCommentsInCourseAsync(parentCommentCourseId, userId).ConfigureAwait(false);
 		}
 
 		private async Task<bool> CanModerateCommentsInCourseAsync(string courseId, string userId)

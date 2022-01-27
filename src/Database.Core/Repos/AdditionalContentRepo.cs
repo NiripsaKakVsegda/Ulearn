@@ -22,14 +22,13 @@ namespace Database.Repos
 			return await GetAdditionalContentPublications(courseId, new HashSet<int> { groupId });
 		}
 		
-		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, Guid userId)
+		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, string userId)
 		{
 			var groups = db.Groups
 				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
 				.Select(g => g.Id);
-			var userIdAsString = userId.ToString();
 			var userGroupsIds = await db.GroupMembers
-				.Where(m => groups.Contains(m.GroupId) && m.UserId == userIdAsString)
+				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
 				.Select(m => m.GroupId)
 				.ToListAsync();
 			
@@ -83,6 +82,22 @@ namespace Database.Repos
 			return await db.AdditionalContentPublications
 				.Where(p => p.CourseId == courseId && p.GroupId == groupId && p.UnitId == unitId && p.SlideId == slideId)
 				.AnyAsync();
+		}
+
+		public async Task<bool> IsSlidePublishedForUser(string courseId, Slide slide, string userId)
+		{
+			if (!slide.IsExtraContent && !slide.Unit.Settings.IsExtraContent)
+				return true;
+			
+			var groups = db.Groups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Select(g => g.Id);
+			var userGroupsIds = await db.GroupMembers
+				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
+				.Select(m => m.GroupId)
+				.ToListAsync();
+
+			return await IsSlidePublishedForGroups(courseId, slide, userGroupsIds.ToHashSet());
 		}
 
 		public async Task<bool> IsSlidePublishedForGroups(string courseId, Slide slide, HashSet<int> userGroupIds)

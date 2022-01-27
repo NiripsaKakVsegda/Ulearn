@@ -47,12 +47,14 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly IServiceScopeFactory serviceScopeFactory;
 		private readonly IMasterCourseManager courseManager;
 		private readonly StyleErrorsResultObserver styleErrorsResultObserver;
+		private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 		private readonly ErrorsBot errorsBot;
 		private static ILog log => LogProvider.Get().ForContext(typeof(ExerciseController));
 
 		public ExerciseController(ICourseStorage courseStorage, IMasterCourseManager courseManager, UlearnDb db, MetricSender metricSender,
 			IUsersRepo usersRepo, IUserSolutionsRepo userSolutionsRepo, ICourseRolesRepo courseRolesRepo, IVisitsRepo visitsRepo,
 			ISlideCheckingsRepo slideCheckingsRepo, IGroupsRepo groupsRepo, StyleErrorsResultObserver styleErrorsResultObserver,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			IStyleErrorsRepo styleErrorsRepo, IUnitsRepo unitsRepo, ErrorsBot errorsBot, IServiceScopeFactory serviceScopeFactory)
 			: base(courseStorage, db, usersRepo)
 		{
@@ -64,6 +66,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			this.groupsRepo = groupsRepo;
 			this.styleErrorsRepo = styleErrorsRepo;
 			this.unitsRepo = unitsRepo;
+			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 			this.styleErrorsResultObserver = styleErrorsResultObserver;
 			this.serviceScopeFactory = serviceScopeFactory;
 			this.courseManager = courseManager;
@@ -73,7 +76,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		[HttpPost("/slides/{courseId}/{slideId}/exercise/submit")]
 		[Authorize]
 		public async Task<ActionResult<RunSolutionResponse>> RunSolution(
-			[FromRoute] Course course, 
+			[FromRoute] Course course,
 			[FromRoute] Guid slideId,
 			[FromBody] RunSolutionParameters parameters,
 			[FromQuery] Language language)
@@ -101,10 +104,19 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			}
 
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor);
+			var isTester = isInstructor || await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester);
 			var visibleUnitsIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
 			var exerciseSlide = courseStorage.FindCourse(courseId)?.FindSlideById(slideId, isInstructor, visibleUnitsIds) as ExerciseSlide;
 			if (exerciseSlide == null)
 				return NotFound(new ErrorResponse("Slide not found"));
+			if (!isTester && (exerciseSlide.IsExtraContent || exerciseSlide.Unit.Settings.IsExtraContent))
+			{
+				var publications = await additionalContentPublicationsRepo.GetAdditionalContentPublicationsForUser(courseId, UserId);
+				if (exerciseSlide.IsExtraContent && !publications.Any(p => p.SlideId == exerciseSlide.Id && p.Date <= DateTime.Now))
+					return NotFound(new ErrorResponse("Slide not found"));
+				if (exerciseSlide.Unit.Settings.IsExtraContent && !publications.Any(p => p.UnitId == exerciseSlide.Unit.Id && p.Date <= DateTime.Now))
+					return NotFound(new ErrorResponse("Slide not found"));
+			}
 
 			var result = await CheckSolution(
 				courseId, exerciseSlide, code, language, UserId, User.Identity.Name,
@@ -114,15 +126,15 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			return result;
 		}
 
-		private async Task<RunSolutionResponse> CheckSolution(string courseId, 
+		private async Task<RunSolutionResponse> CheckSolution(string courseId,
 			ExerciseSlide exerciseSlide,
-			string userCode, 
+			string userCode,
 			Language language,
 			string userId,
 			string userName,
-			bool waitUntilChecked, 
+			bool waitUntilChecked,
 			bool saveSubmissionOnCompileErrors
-			)
+		)
 		{
 			var exerciseMetricId = RunnerSetResultController.GetExerciseMetricId(courseId, exerciseSlide);
 			metricSender.SendCount("exercise.try");
@@ -265,6 +277,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 					}
 				});
 			}
+
 			return styleErrors;
 		}
 
@@ -275,10 +288,14 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		{
 			var course = courseStorage.GetCourse(courseId);
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor);
+			var isTester = isInstructor || await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester);
 			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, UserId);
 			var slide = courseStorage.FindCourse(courseId)?.FindSlideById(slideId, isInstructor, visibleUnits);
 			if (slide is not ExerciseSlide exerciseSlide)
 				return NotFound();
+
+			if (!isTester && !await additionalContentPublicationsRepo.IsSlidePublishedForUser(course.Id, exerciseSlide, UserId))
+				return NotFound(new ErrorResponse("Slide not found"));
 
 			if (exerciseSlide.Exercise is SingleFileExerciseBlock)
 				return NotFound();

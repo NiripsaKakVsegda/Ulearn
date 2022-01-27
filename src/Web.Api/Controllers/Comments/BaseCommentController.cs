@@ -28,9 +28,11 @@ namespace Ulearn.Web.Api.Controllers.Comments
 		protected readonly IGroupAccessesRepo groupAccessesRepo;
 		protected readonly IVisitsRepo visitsRepo;
 		protected readonly IUnitsRepo unitsRepo;
+		protected readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 
 		public BaseCommentController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			ICommentsRepo commentsRepo, ICommentLikesRepo commentLikesRepo, ICoursesRepo coursesRepo, ICourseRolesRepo courseRolesRepo,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			INotificationsRepo notificationsRepo, IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo, IUnitsRepo unitsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
@@ -41,6 +43,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			this.notificationsRepo = notificationsRepo;
 			this.groupMembersRepo = groupMembersRepo;
 			this.groupAccessesRepo = groupAccessesRepo;
+			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 			this.visitsRepo = visitsRepo;
 			this.unitsRepo = unitsRepo;
 		}

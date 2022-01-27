@@ -8,7 +8,7 @@ namespace Database.Repos
 {
 	public interface IAdditionalContentPublicationsRepo
 	{
-		Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, Guid userId);
+		Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, string userId);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, int groupId);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, HashSet<int> groupIds);
 		Task<AdditionalContentPublication> AddAdditionalContentPublication(string courseId, int groupId, string authorId, Guid unitId, Guid? slideId, DateTime date);
@@ -18,5 +18,6 @@ namespace Database.Repos
 		Task<bool> HasPublication(string courseId, int groupId, Guid unitId, Guid? slideId);
 		
 		Task<bool> IsSlidePublishedForGroups(string courseId, Slide slide, HashSet<int> userGroupIds);
+		Task<bool> IsSlidePublishedForUser(string courseId, Slide slide, string userId);
 	}
 }

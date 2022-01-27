@@ -28,6 +28,8 @@ namespace Ulearn.Web.Api.Controllers
 	{
 		private readonly IUsersFlashcardsVisitsRepo usersFlashcardsVisitsRepo;
 		private readonly IUserFlashcardsUnlockingRepo userFlashcardsUnlockingRepo;
+		private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
+		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IUnitsRepo unitsRepo;
 		private readonly string baseUrlApi;
 		private readonly string baseUrlWeb;
@@ -36,11 +38,13 @@ namespace Ulearn.Web.Api.Controllers
 		public FlashcardsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			IUsersFlashcardsVisitsRepo usersFlashcardsVisitsRepo,
 			IUserFlashcardsUnlockingRepo userFlashcardsUnlockingRepo,
+			ICourseRolesRepo courseRolesRepo,
 			IUnitsRepo unitsRepo, IOptions<WebApiConfiguration> configuration)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.usersFlashcardsVisitsRepo = usersFlashcardsVisitsRepo;
 			this.userFlashcardsUnlockingRepo = userFlashcardsUnlockingRepo;
+			this.courseRolesRepo = courseRolesRepo;
 			this.unitsRepo = unitsRepo;
 			baseUrlApi = configuration.Value.BaseUrlApi;
 			baseUrlWeb = configuration.Value.BaseUrl;
@@ -57,11 +61,19 @@ namespace Ulearn.Web.Api.Controllers
 			var userFlashcardsVisitsByCourse = await usersFlashcardsVisitsRepo.GetUserFlashcardsVisitsAsync(UserId, course.Id);
 			var flashcardResponseByUnits = new FlashcardResponseByUnits();
 			var visibleUnits = await unitsRepo.GetVisibleUnitIds(course, UserId);
+			var isTester = await courseRolesRepo.HasUserAccessToCourse(UserId, course.Id, CourseRoleType.Tester);
+			var publications = isTester
+				? new List<AdditionalContentPublication>()
+				: await additionalContentPublicationsRepo.GetAdditionalContentPublicationsForUser(course.Id, UserId);
+
 			foreach (var unit in course.GetUnits(visibleUnits))
 			{
 				var unitFlashcardsResponse = new UnitFlashcardsResponse();
 				var unitFlashcards = unit.Flashcards;
 				if (unitFlashcards.Count == 0)
+					continue;
+
+				if (unit.Settings.IsExtraContent && !isTester && publications.All(p => p.UnitId != unit.Id))
 					continue;
 
 				var flashcardResponsesEnumerable = GetFlashcardResponses(course.Id, unit, unitFlashcards, userFlashcardsVisitsByCourse);

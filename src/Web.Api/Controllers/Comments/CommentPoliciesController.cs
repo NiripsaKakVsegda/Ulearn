@@ -20,8 +20,9 @@ namespace Ulearn.Web.Api.Controllers.Comments
 
 		public CommentPoliciesController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			ICommentsRepo commentsRepo, ICommentLikesRepo commentLikesRepo, ICoursesRepo coursesRepo, ICourseRolesRepo courseRolesRepo, INotificationsRepo notificationsRepo,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			ICommentPoliciesRepo commentPoliciesRepo, IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo, IUnitsRepo unitsRepo)
-			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
+			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, additionalContentPublicationsRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
 		{
 			this.commentPoliciesRepo = commentPoliciesRepo;
 		}
@@ -49,7 +50,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 		/// </summary>
 		[HttpPatch]
 		[Authorize(Policy = "CourseAdmins")]
-		public async Task<IActionResult> UpdatePolicy([FromQuery]string courseId, [FromBody] UpdatePolicyParameters parameters)
+		public async Task<IActionResult> UpdatePolicy([FromQuery] string courseId, [FromBody] UpdatePolicyParameters parameters)
 		{
 			if (courseId == null || !courseStorage.HasCourse(courseId))
 				return NotFound(new ErrorResponse($"Course '{courseId}' not found"));

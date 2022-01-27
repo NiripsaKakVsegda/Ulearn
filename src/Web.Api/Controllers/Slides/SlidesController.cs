@@ -76,16 +76,8 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 			var userId = User.GetUserId();
 
-			if (!isTester && (slide.IsExtraContent || slide.Unit.Settings.IsExtraContent))
-			{
-				var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
-				var publications = await additionalContentPublicationsRepo.GetAdditionalContentPublications(course.Id, userGroups.Select(g => g.Id).ToHashSet());
-
-				if (slide.IsExtraContent && !publications.Any(p => p.SlideId == slide.Id && p.Date <= DateTime.Now))
-					return NotFound(new { status = "error", message = "Slide not found" });
-				if (slide.Unit.Settings.IsExtraContent && !publications.Any(p => p.UnitId == slide.Unit.Id && p.Date <= DateTime.Now))
-					return NotFound(new { status = "error", message = "Slide not found" });
-			}
+			if (!isTester && !await additionalContentPublicationsRepo.IsSlidePublishedForUser(course.Id, slide, userId))
+				return NotFound(new { status = "error", message = "Slide not found" });
 
 			var getSlideMaxScoreFunc = await BuildGetSlideMaxScoreFunc(solutionsRepo, userQuizzesRepo, visitsRepo, groupsRepo, course, userId);
 			var getGitEditLinkFunc = await BuildGetGitEditLinkFunc(userId, course, courseRolesRepo, coursesRepo);

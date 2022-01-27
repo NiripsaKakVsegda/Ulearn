@@ -29,17 +29,15 @@ namespace Ulearn.Web.Api.Controllers.Comments
 	public class CommentsController : BaseCommentController
 	{
 		private readonly ICommentPoliciesRepo commentPoliciesRepo;
-		private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 
 		public CommentsController(ICourseStorage courseStorage, UlearnDb db,
 			ICommentsRepo commentsRepo, ICommentLikesRepo commentLikesRepo, ICommentPoliciesRepo commentPoliciesRepo,
 			IUsersRepo usersRepo, ICoursesRepo coursesRepo, ICourseRolesRepo courseRolesRepo, INotificationsRepo notificationsRepo,
 			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			IGroupMembersRepo groupMembersRepo, IGroupAccessesRepo groupAccessesRepo, IVisitsRepo visitsRepo, IUnitsRepo unitsRepo)
-			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
+			: base(courseStorage, db, usersRepo, commentsRepo, commentLikesRepo, coursesRepo, courseRolesRepo, additionalContentPublicationsRepo, notificationsRepo, groupMembersRepo, groupAccessesRepo, visitsRepo, unitsRepo)
 		{
 			this.commentPoliciesRepo = commentPoliciesRepo;
-			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 		}
 
 		/// <summary>
@@ -60,23 +58,8 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			if (slide == null)
 				return StatusCode((int)HttpStatusCode.NotFound, $"No slide with id {slideId}");
 
-			if (!isTester && (slide.IsExtraContent || slide.Unit.Settings.IsExtraContent))
-			{
-				if (userId != null)
-				{
-					var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
-
-					if (userGroups.Count == 0)
-						return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups.");
-
-					var isSlidePublished = await additionalContentPublicationsRepo.IsSlidePublishedForGroups(course.Id, slide, userGroups.Select(g => g.Id).ToHashSet());
-
-					if (!isSlidePublished)
-						return StatusCode((int)HttpStatusCode.Forbidden, $"You have no access to view comments on slide with id {slideId}. You are not in any groups with slide published.");
-				}
-				else
-					return StatusCode((int)HttpStatusCode.Unauthorized, $"You have no access to view comments on slide with id {slideId}. You should be authenticated.");
-			}
+			if (!isTester && !await additionalContentPublicationsRepo.IsSlidePublishedForUser(courseId, slide, userId))
+				return StatusCode((int)HttpStatusCode.NotFound, $"No slide with id {slideId}");
 
 			if (parameters.ForInstructors)
 			{
