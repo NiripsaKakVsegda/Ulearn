@@ -13,7 +13,6 @@ import {
 import { clone } from "src/utils/jsonExtensions";
 import { ValidationContainer, ValidationWrapper } from '@skbkontur/react-ui-validations';
 import {
-	InputAttributeData,
 	ParsedInputAttrData,
 	Props,
 	PublicationInfoById,
@@ -24,9 +23,16 @@ import {
 
 import styles from './groupAdditionalContent.less';
 import texts from './GroupAdditionalContent.texts';
+import { isDateValid, itTimeValid } from "./utils";
 
 const gmtOffsetInHours = moment().utcOffset() / 60;
 const gmtOffsetInHoursAsString = `${ gmtOffsetInHours >= 0 ? '+' : '-' }${ gmtOffsetInHours }`;
+const defaultTime = '00:00';
+const inputFormatChars = {
+	'1': '[0-2]',
+	'3': '[0-5]',
+	'2': '[0-9]',
+};
 
 function GroupAdditionalContent({
 	getAdditionalContent,
@@ -37,24 +43,26 @@ function GroupAdditionalContent({
 	groupId,
 	user,
 }: Props): React.ReactElement {
-	const defaultTime = '00:00';
-	const [state, setState] = useState<State | null>(null);
+	const [state, setState] = useState<State | null | 'isLoading'>(null);
 
-	if(!state) {
+	if(!state && state !== 'isLoading') {
+		setState('isLoading');
 		loadData();
 	}
 
 	return (
-		<Loader type={ "big" } active={ state == null } className={ styles.text }>
+		<Loader type={ "big" } active={ state === null || state === 'isLoading' } className={ styles.text }>
 			<Gapped gap={ 12 } vertical>
 				<p>{ texts.info }</p>
 
 				<ValidationContainer>
 					<table className={ styles.table }>
 						<tbody>
-						{ state && state.units.length === 0 &&
-						<p>В этом курсе нет слайдов или модулей помеченных как доп. контент</p> }
-						{ state && state.units.map(renderUnitInfo) }
+						{ state && state !== 'isLoading' && (
+							state.units.length === 0
+								? <p>{ texts.noAdditionalContent }</p>
+								: state.units.map(renderUnitInfo)
+						) }
 						</tbody>
 					</table>
 				</ValidationContainer>
@@ -64,8 +72,10 @@ function GroupAdditionalContent({
 
 	function loadData() {
 		Promise.all(
-			[getAdditionalContent(courseId, groupId),
-				api.courses.getCourse(courseId)]
+			[
+				getAdditionalContent(courseId, groupId),
+				api.courses.getCourse(courseId)
+			]
 		).then(([publicationsResponse, courseInfo]) => {
 			const publicationsInitial: { slides: PublicationInfoById, units: PublicationInfoById } = {
 				slides: {},
@@ -88,7 +98,9 @@ function GroupAdditionalContent({
 			}, publicationsInitial);
 
 			const units = courseInfo.units.filter(
-				u => u.additionalContentInfo.isAdditionalContent || u.slides.some(s => s.additionalContentInfo.isAdditionalContent));
+				u => u.additionalContentInfo.isAdditionalContent || u.slides.some(
+					s => s.additionalContentInfo.isAdditionalContent));
+
 			for (const unit of units) {
 				unit.slides = unit.slides.filter(s => s.additionalContentInfo.isAdditionalContent);
 
@@ -114,7 +126,6 @@ function GroupAdditionalContent({
 					}
 				}
 			}
-
 
 			setState({
 				units,
@@ -142,141 +153,43 @@ function GroupAdditionalContent({
 	}
 
 	function renderUnitInfo(unit: UnitInfo) {
-		if(!state) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 		const publicationInfo = state.actual.units[unit.id];
 
 		return (
 			<React.Fragment key={ unit.id }>
-				{ renderAdditionalContentPublicationInfo(unit, publicationInfo) }
+				{ <AdditionalContentPublication
+					item={ unit }
+					publication={ publicationInfo }
+					original={ state.response.units[unit.id] }
+
+					changeDate={ changeDate }
+					changeTime={ changeTime }
+					cancel={ cancel }
+					save={ save }
+					hide={ hide }
+				/> }
 				{
 					unit.slides
 					&& unit.slides
 						.map(slide =>
-							renderAdditionalContentPublicationInfo(slide, state.actual.slides[slide.id]))
+							<AdditionalContentPublication
+								key={ slide.id }
+								item={ slide }
+								publication={ state.actual.slides[slide.id] }
+								original={ state.response.slides[slide.id] }
+								parentModule={ state.actual.units[unit.id] }
+
+								changeDate={ changeDate }
+								changeTime={ changeTime }
+								cancel={ cancel }
+								save={ save }
+								hide={ hide }
+							/>)
 				}
 			</React.Fragment>
-		);
-	}
-
-	function renderAdditionalContentPublicationInfo(
-		item: { id: string, title: string, additionalContentInfo: AdditionalContentInfo, },
-		publication: StateAdditionalContentPublication,
-	) {
-		if(!item.additionalContentInfo.isAdditionalContent) {
-			return (
-				<td>
-					<span className={ styles.moduleTitle }>{ item.title }</span>
-				</td>
-			);
-		}
-
-		const original = publication.slideId
-			? state?.response.slides[publication.slideId]
-			: state?.response.units[publication.unitId];
-
-		if(!original || !state) {
-			return;
-		}
-
-		const hasTimeError = publication.publication
-			&& publication.publication.time
-			&& !itTimeValid(publication.publication.time);
-		const timeValidationInfo = hasTimeError ? { message: "Неверное время" } : null;
-
-		const hasDateError = publication.publication
-			&& publication.publication.date
-			&& !isDateValid(publication.publication.date);
-		const dateValidationInfo = hasDateError ? { message: "Неверная дата" } : null;
-
-		const wasPublished = original.publication !== undefined;
-		const isPublished = publication.publication !== undefined;
-
-		const isAnyChangesPending = wasPublished !== isPublished
-			|| original.publication?.author.id !== publication.publication?.author.id
-			|| original.publication?.date !== publication.publication?.date
-			|| original.publication?.time !== publication.publication?.time;
-
-		const inputAttributeData = buildDataAttributes(publication.unitId, publication.slideId,);
-		const parentModule = publication.slideId && state.actual.units[publication.unitId];
-
-		return (
-			<tr key={ item.id }>
-				<td className={ publication.slideId ? styles.slides : '' }>
-					<span className={ publication.slideId ? '' : styles.moduleTitle }>{ item.title }</span>
-				</td>
-				<td>
-					<ValidationWrapper validationInfo={ dateValidationInfo }>
-						<DatePicker
-							width={ '120px' }
-							value={ publication.publication?.date }
-							onValueChange={ (value) =>
-								changeDate(publication.slideId || publication.unitId, publication.slideId === null,
-									value,) }
-							enableTodayLink
-							minDate={ parentModule
-							&& parentModule.publication
-							&& parentModule.publication.date || momentToDateInputFormat(moment()) }
-						/>
-					</ValidationWrapper>
-
-					<ValidationWrapper validationInfo={ timeValidationInfo }>
-						<Input
-							width={ 120 }
-							alwaysShowMask
-							rightIcon={ `GMT${ gmtOffsetInHoursAsString }` }
-							formatChars={ {
-								'1': '[0-2]',
-								'3': '[0-5]',
-								'2': '[0-9]',
-							} }
-							mask={ `12:32` }
-							value={ publication.publication?.time }
-							onValueChange={ (value) => changeTime(publication.slideId || publication.unitId,
-								publication.slideId === null, value,) }
-						/>
-					</ValidationWrapper>
-				</td>
-
-				<td>{
-					hasTimeError || hasDateError
-						? <Button
-							onClick={ cancel }
-							use={ 'link' }
-							size={ 'medium' }
-							{ ...inputAttributeData }>
-							{ texts.cancel }
-						</Button>
-						: isAnyChangesPending
-							? <Button
-								onClick={ save }
-								use={ 'link' }
-								size={ 'medium' }
-								{ ...inputAttributeData }>
-								{ wasPublished ? texts.save : texts.publish }
-							</Button>
-							: <span className={ styles.additionalText }>
-								{
-									texts.buildPublicationText(publication.publication?.author.visibleName)
-								}
-							</span>
-				}
-
-				</td>
-				{
-					original.publication && <td>
-						<Button
-							onClick={ hide }
-							use={ 'link' }
-							size={ 'medium' }
-							className={ styles.hideButtonText }
-							{ ...inputAttributeData }>
-							{ texts.hide }
-						</Button>
-					</td>
-				}
-			</tr>
 		);
 	}
 
@@ -285,7 +198,7 @@ function GroupAdditionalContent({
 		isUnit: boolean,
 		value: string,
 	) {
-		if(!state) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -303,21 +216,12 @@ function GroupAdditionalContent({
 			}
 		}
 
-		setState(prevState => (prevState && {
-			...prevState,
-			actual: newState,
-		}));
-	}
-
-	function isDateValid(value: string,) {
-		const [day, month, year] = value.split('.');
-		return day && month && year;
-	}
-
-	function itTimeValid(value: string) {
-		const [hours, minutes] = value.split(":");
-		const isTimeInvalid = !hours || parseInt(hours) > 23 || !minutes || value.length < 5;
-		return !isTimeInvalid;
+		setState(prevState => (prevState && prevState !== 'isLoading'
+			? {
+				...prevState,
+				actual: newState,
+			}
+			: null));
 	}
 
 	function changeTime(
@@ -325,7 +229,7 @@ function GroupAdditionalContent({
 		isUnit: boolean,
 		value: string,
 	) {
-		if(!state) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -339,49 +243,16 @@ function GroupAdditionalContent({
 			};
 		}
 
-		setState(prevState => (prevState && {
-			...prevState,
-			actual: newState,
-		}));
+		setState(prevState => (prevState && prevState !== 'isLoading'
+			? {
+				...prevState,
+				actual: newState,
+			}
+			: null));
 	}
 
-	function buildDataAttributes(unitId: string, slideId: string | null): InputAttributeData {
-		if(slideId) {
-			return {
-				'data-slide-id': slideId,
-				'data-unit-id': unitId,
-			};
-		}
-		return {
-			'data-unit-id': unitId,
-		};
-	}
-
-	function parseDataAttributesFromDataset(element: HTMLElement | null): ParsedInputAttrData {
-		if(!element) {
-			return { unitId: '-1', };
-		}
-
-		const unitId = element.dataset.unitId;
-		const slideId = element.dataset.slideId;
-
-		if(!unitId) {
-			return { unitId: '-1', };
-		}
-
-		return { unitId, slideId };
-	}
-
-	function save(event: React.MouseEvent<HTMLElement>) {
-		saveByIds(parseDataAttributesFromDataset(event.currentTarget.parentElement));
-	}
-
-	function cancel(event: React.MouseEvent<HTMLElement>) {
-		cancelByIds(parseDataAttributesFromDataset(event.currentTarget.parentElement));
-	}
-
-	function saveByIds({ unitId, slideId }: ParsedInputAttrData) {
-		if(!state) {
+	function save({ unitId, slideId }: ParsedInputAttrData) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -414,11 +285,11 @@ function GroupAdditionalContent({
 
 		request
 			.then(() => {
-				Toast.push('Изменения сохранены');
+				Toast.push(texts.successSave);
 			})
 			.catch(() => {
 				setState(stateBeforeUpdate);
-				Toast.push('Возникла ошибка');
+				Toast.push(texts.error);
 			});
 
 	}
@@ -429,7 +300,7 @@ function GroupAdditionalContent({
 		updateType: 'actual' | 'response',
 		publication: StateAdditionalContentPublication
 	) {
-		if(!state) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -447,15 +318,17 @@ function GroupAdditionalContent({
 		}
 
 		setState(prevState => {
-			return prevState && {
-				...prevState,
-				...stateUpdater,
-			};
+			return prevState && prevState !== 'isLoading'
+				? {
+					...prevState,
+					...stateUpdater,
+				}
+				: null;
 		});
 	}
 
-	function cancelByIds({ unitId, slideId }: ParsedInputAttrData) {
-		if(!state) {
+	function cancel({ unitId, slideId }: ParsedInputAttrData) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -471,9 +344,8 @@ function GroupAdditionalContent({
 		);
 	}
 
-	function hide(event: React.MouseEvent<HTMLElement>) {
-		const { unitId, slideId, } = parseDataAttributesFromDataset(event.currentTarget.parentElement);
-		if(!state) {
+	function hide({ unitId, slideId, }: ParsedInputAttrData) {
+		if(!state || state === 'isLoading') {
 			return;
 		}
 
@@ -481,10 +353,10 @@ function GroupAdditionalContent({
 
 		deletePublication(publication.id)
 			.then(() => {
-				Toast.push('Контент был снят с публикации');
+				Toast.push(texts.successHide);
 			})
 			.catch(() => {
-				Toast.push('Возникла ошибка');
+				Toast.push(texts.error);
 			});
 
 		const id = slideId || unitId;
@@ -501,6 +373,147 @@ function GroupAdditionalContent({
 			'response',
 			{ ...publication, publication: undefined, id: '' },
 		);
+	}
+}
+
+
+function AdditionalContentPublication({
+	item,
+	publication,
+	original,
+	parentModule,
+
+	changeDate,
+	changeTime,
+	cancel,
+	save,
+	hide,
+}: {
+	item: { id: string, title: string, additionalContentInfo: AdditionalContentInfo, },
+	publication: StateAdditionalContentPublication,
+	original: StateAdditionalContentPublication,
+	parentModule?: StateAdditionalContentPublication,
+
+	changeDate: (id: string, isUnit: boolean, value: string,) => void,
+	changeTime: (id: string, isUnit: boolean, value: string,) => void,
+	cancel: ({ unitId, slideId }: ParsedInputAttrData) => void,
+	save: ({ unitId, slideId }: ParsedInputAttrData) => void,
+	hide: ({ unitId, slideId }: ParsedInputAttrData) => void,
+}) {
+	if(!item.additionalContentInfo.isAdditionalContent) {
+		return (
+			<td>
+				<span className={ styles.moduleTitle }>{ item.title }</span>
+			</td>
+		);
+	}
+
+	const hasTimeError = publication.publication
+		&& publication.publication.time
+		&& !itTimeValid(publication.publication.time);
+	const timeValidationInfo = hasTimeError ? { message: "Неверное время" } : null;
+
+	const hasDateError = publication.publication
+		&& publication.publication.date
+		&& !isDateValid(publication.publication.date);
+	const dateValidationInfo = hasDateError ? { message: "Неверная дата" } : null;
+
+	const wasPublished = original.publication !== undefined;
+	const isPublished = publication.publication !== undefined;
+
+	const isAnyChangesPending = wasPublished !== isPublished
+		|| original.publication?.author.id !== publication.publication?.author.id
+		|| original.publication?.date !== publication.publication?.date
+		|| original.publication?.time !== publication.publication?.time;
+
+	const minDate = parentModule
+		&& parentModule.publication
+		&& parentModule.publication.date || momentToDateInputFormat(moment());
+
+	return (
+		<tr key={ item.id }>
+			<td className={ publication.slideId ? styles.slides : '' }>
+				<span className={ publication.slideId ? '' : styles.moduleTitle }>{ item.title }</span>
+			</td>
+			<td>
+				<ValidationWrapper validationInfo={ dateValidationInfo }>
+					<DatePicker
+						width={ '120px' }
+						value={ publication.publication?.date }
+						onValueChange={ changeDateWithIds }
+						enableTodayLink
+						minDate={ minDate }
+					/>
+				</ValidationWrapper>
+
+				<ValidationWrapper validationInfo={ timeValidationInfo }>
+					<Input
+						width={ 120 }
+						alwaysShowMask
+						rightIcon={ `GMT${ gmtOffsetInHoursAsString }` }
+						formatChars={ inputFormatChars }
+						mask={ `12:32` }
+						value={ publication.publication?.time }
+						onValueChange={ changeTimeWithIds }
+					/>
+				</ValidationWrapper>
+			</td>
+
+			<td>{
+				hasTimeError || hasDateError
+					? <Button
+						onClick={ cancelWithIds }
+						use={ 'link' }
+						size={ 'medium' }>
+						{ texts.cancel }
+					</Button>
+					: isAnyChangesPending
+						? <Button
+							onClick={ saveWithIds }
+							use={ 'link' }
+							size={ 'medium' }>
+							{ wasPublished ? texts.save : texts.publish }
+						</Button>
+						: <span className={ styles.additionalText }>
+								{
+									texts.buildPublicationText(publication.publication?.author.visibleName)
+								}
+							</span>
+			}
+
+			</td>
+			{
+				original.publication && <td>
+					<Button
+						onClick={ hideWithIds }
+						use={ 'link' }
+						size={ 'medium' }
+						className={ styles.hideButtonText }>
+						{ texts.hide }
+					</Button>
+				</td>
+			}
+		</tr>
+	);
+
+	function changeDateWithIds(value: string,) {
+		changeDate(publication.slideId || publication.unitId, publication.slideId === null, value);
+	}
+
+	function changeTimeWithIds(value: string,) {
+		changeTime(publication.slideId || publication.unitId, publication.slideId === null, value);
+	}
+
+	function cancelWithIds() {
+		cancel({ slideId: publication.slideId ?? undefined, unitId: publication.unitId });
+	}
+
+	function saveWithIds() {
+		save({ slideId: publication.slideId ?? undefined, unitId: publication.unitId });
+	}
+
+	function hideWithIds() {
+		hide({ slideId: publication.slideId ?? undefined, unitId: publication.unitId });
 	}
 }
 
