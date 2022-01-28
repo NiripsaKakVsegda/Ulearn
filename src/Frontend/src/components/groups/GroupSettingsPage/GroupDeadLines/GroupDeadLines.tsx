@@ -332,7 +332,7 @@ function GroupDeadLines({
 			}
 
 			deadLineInfo.unitId = value;
-			deadLineInfo.slideId = notFoundId;
+			deadLineInfo.slideId = null;
 		});
 	}
 
@@ -340,7 +340,7 @@ function GroupDeadLines({
 		id: string,
 		value: string,
 	) {
-		changeDeadLine(id, (deadLineInfo) => deadLineInfo.slideId = value === notFoundId ? null : value);
+		changeDeadLine(id, (deadLineInfo) => deadLineInfo.slideId = (value === notFoundId ? null : value));
 	}
 
 	function changePercent(
@@ -354,7 +354,7 @@ function GroupDeadLines({
 		id: string,
 		value: string,
 	) {
-		changeDeadLine(id, (deadLineInfo) => deadLineInfo.userId = value === notFoundId ? null : value);
+		changeDeadLine(id, (deadLineInfo) => deadLineInfo.userId = (value === notFoundId ? null : value));
 	}
 
 	function changeDeadLine(id: string, update: (deadLine: StateDeadLineInfo) => void) {
