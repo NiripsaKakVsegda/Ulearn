@@ -217,7 +217,8 @@ export const slideActionsRegex = {
 export default function getSlideInfo(
 	route: RouteComponentProps<MatchParams>,
 	courseInfo: CourseInfo | undefined,
-	deadLines?: DeadLineInfo[],
+	deadLines: DeadLineInfo[] | undefined,
+	isUserTesterOrHigher: boolean,
 ): SlideInfo {
 	const { location, match } = route;
 	const { search, pathname, } = location;
@@ -238,7 +239,7 @@ export default function getSlideInfo(
 			? SlideType.CourseFlashcards
 			: SlideType.NotFound;
 
-	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo);
+	const navigationInfo = getSlideNavigationInfoBySlideId(slideId, courseInfo, isUserTesterOrHigher);
 
 	let deadLineInfo = null;
 	if(deadLines && navigationInfo && slideId) {
@@ -258,12 +259,39 @@ export default function getSlideInfo(
 	};
 }
 
+function filterUnitsAndSlidesByAdditionalPublication(
+	units: UnitInfo[],
+	isUserCanSeeNotPublishedContent: boolean
+): UnitInfo[] {
+	return units
+		.filter(u => {
+			const isAdditionalContent = u.additionalContentInfo.isAdditionalContent;
+			const additionalContentPublicationDate = u.additionalContentInfo.publicationDate;
+
+			return !(!isUserCanSeeNotPublishedContent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
+				additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+		}).map(u => {
+				return {
+					...u,
+					slides: u.slides.filter(s => {
+						const isAdditionalContent = s.additionalContentInfo.isAdditionalContent;
+						const additionalContentPublicationDate = s.additionalContentInfo.publicationDate;
+
+						return !(!isUserCanSeeNotPublishedContent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
+							additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+					})
+				};
+			}
+		);
+}
+
 export function getSlideNavigationInfoBySlideId(
 	slideId: string | undefined,
 	courseInfo: CourseInfo | undefined,
+	isUserCanSeeNotPublishedContent: boolean,
 ): SlideNavigationInfo | undefined {
 	if(courseInfo && courseInfo.units) {
-		const units = courseInfo.units;
+		const units = filterUnitsAndSlidesByAdditionalPublication(courseInfo.units, isUserCanSeeNotPublishedContent);
 
 		let prevSlide, nextSlide;
 

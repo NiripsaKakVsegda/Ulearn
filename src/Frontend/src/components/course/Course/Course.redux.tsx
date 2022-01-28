@@ -14,12 +14,13 @@ import { CourseInfo, UnitInfo } from "src/models/course";
 import { FlashcardsStatistics } from "src/components/course/Navigation/types";
 import getSlideInfo from "src/components/course/Course/CourseUtils";
 import api from "src/api";
+import { CourseRoleType } from "src/consts/accessType";
 
 const mapStateToProps = (state: RootState, route: RouteComponentProps<MatchParams>) => {
 	const courseId = route.match.params.courseId.toLowerCase();
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
 	const deadLines = getDataIfLoaded(state.deadLines.deadLines[courseId]);
-	const slideInfo = getSlideInfo(route, courseInfo, deadLines);
+	const slideInfo = getSlideInfo(route, courseInfo, deadLines, state.account.isSystemAdministrator || state.account.roleByCourse[courseId] && state.account.roleByCourse[courseId] !== CourseRoleType.student);
 
 	const flashcardsByUnit = state.courses.flashcardsInfoByCourseByUnits[courseId];
 	const flashcardsStatisticsByUnits: { [unitId: string]: FlashcardsStatistics } | undefined = flashcardsByUnit ? {} : undefined;
