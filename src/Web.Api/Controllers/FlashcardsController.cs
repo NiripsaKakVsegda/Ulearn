@@ -38,12 +38,14 @@ namespace Ulearn.Web.Api.Controllers
 		public FlashcardsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
 			IUsersFlashcardsVisitsRepo usersFlashcardsVisitsRepo,
 			IUserFlashcardsUnlockingRepo userFlashcardsUnlockingRepo,
+			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
 			ICourseRolesRepo courseRolesRepo,
 			IUnitsRepo unitsRepo, IOptions<WebApiConfiguration> configuration)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.usersFlashcardsVisitsRepo = usersFlashcardsVisitsRepo;
 			this.userFlashcardsUnlockingRepo = userFlashcardsUnlockingRepo;
+			this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 			this.courseRolesRepo = courseRolesRepo;
 			this.unitsRepo = unitsRepo;
 			baseUrlApi = configuration.Value.BaseUrlApi;

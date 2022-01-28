@@ -31,7 +31,7 @@ export function getDeadLine(deadLines: DeadLineInfo[],): DeadLineInfo | null {
 	const convertedDeadLines = deadLines
 		.map(d => ({ ...d, date: momentFromServer(d.date) }))
 		.sort((d1, d2) => {
-			const diff = d1.date.diff(d2.date);
+			const diff = d2.date.diff(d1.date);
 
 			if(diff !== 0) {
 				return diff;

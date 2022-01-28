@@ -31,17 +31,19 @@ namespace Database.Repos
 				query = query
 					.Where(d => d.UnitId == unitId);
 			}
-			
-			if (slideId != null)
-			{
-				query = query
-					.Where(d => d.SlideId == slideId);
-			}
-			
+
+			if (slideId != null )
+				if (unitId != null)
+					query = query
+						.Where(d => d.SlideId == null || d.SlideId == slideId);
+				else
+					query = query
+						.Where(d => d.SlideId == slideId);
+
 			if (userId != null)
 			{
 				query = query
-					.Where(d => d.UserId == userId);
+					.Where(d => d.UserId == null || d.UserId == userId);
 			}
 
 			return await query.ToListAsync();
