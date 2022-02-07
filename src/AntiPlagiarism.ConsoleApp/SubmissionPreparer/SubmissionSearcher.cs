@@ -40,9 +40,10 @@ namespace AntiPlagiarism.ConsoleApp.SubmissionPreparer
 						foreach (var language in lang2Code.Keys)
 						{
 							var currentAttemptHashCode = lang2Code[language].GetPersistantHashCode();
-							var previousAttempt = repository.SubmissionsInfo.Submissions.FirstOrDefault(
-								s => s.AuthorId == author.Id && s.TaskId == task.Id && s.Language == language);
-							if (previousAttempt != null && previousAttempt.AttemptHashCode == currentAttemptHashCode)
+							var previousAttempts = repository.SubmissionsInfo.Submissions.Where(
+								s => s.AuthorId == author.Id && s.TaskId == task.Id && s.Language == language)
+								.ToArray();
+							if (previousAttempts.Any(prev => prev.AttemptHashCode == currentAttemptHashCode))
 								continue;
 							
 							log.Info($"Find new submission: task {task.Title}, author {author.Name}, lang {language}");
