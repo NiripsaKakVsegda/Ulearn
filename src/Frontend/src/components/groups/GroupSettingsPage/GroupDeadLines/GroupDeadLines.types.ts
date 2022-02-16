@@ -19,14 +19,19 @@ export interface State {
 	actualDeadLines: { [id: string]: StateDeadLineInfo; };
 	errors: ValidationErrorsContainer;
 
-	unitsMarkup: Markup[];
-	studentsMarkup: Markup[];
+	unitsMarkup: Markup<string>[];
+	studentsMarkup: Markup<string>[];
 	slidesMarkupByUnit: {
-		[unitId: string]: Markup[];
+		[unitId: string]: Markup<SlidesMarkupValue>[];
 	};
 }
 
-export type Markup =  [id: string, title: string];
+export type Markup<T> = [value: T, title: string];
+
+export interface SlidesMarkupValue {
+	id: string;
+	isScoringGroup?: boolean;
+}
 
 export interface ValidationErrorsContainer {
 	[id: string]: ValidationErrorType;
@@ -43,6 +48,7 @@ export interface DeadLineModuleInfo {
 export interface DeadLineSlideInfo {
 	id: string;
 	title: string;
+	scoringGroupId: string | null;
 }
 
 export interface StateDeadLineInfo extends Omit<DeadLineInfo, 'date'> {

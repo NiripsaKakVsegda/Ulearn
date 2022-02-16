@@ -45,6 +45,7 @@ import {
 	FlashcardsStatistics,
 	MenuItem,
 	Progress,
+	SlideAdditionalInfo,
 	SlideProgressStatus,
 	UnitProgress,
 } from "../Navigation/types";
@@ -212,7 +213,7 @@ class Course extends Component<CourseProps, State> {
 			return;
 		}
 
-		if(!courseInfo && !courseLoading){
+		if(!courseInfo && !courseLoading) {
 			loadCourse(courseId);
 			return;
 		}
@@ -596,7 +597,7 @@ class Course extends Component<CourseProps, State> {
 			openUnit.slides,
 			progress,
 			courseId,
-			unitProgress && unitProgress.statusesBySlides,
+			unitProgress && unitProgress.additionalInfoBySlide,
 			slideInfo.slideId,
 		);
 
@@ -628,7 +629,7 @@ class Course extends Component<CourseProps, State> {
 		unitSlides: ShortSlideInfo[],
 		progress: { [p: string]: SlideUserProgress },
 		courseId: string,
-		statuses?: { [slideId: string]: SlideProgressStatus },
+		info?: { [slideId: string]: SlideAdditionalInfo },
 		slideId?: string,
 	): MenuItem<SlideType>[] {
 		return unitSlides.map(item => ({
@@ -645,7 +646,8 @@ class Course extends Component<CourseProps, State> {
 			hide: item.hide,
 			containsVideo: item.containsVideo,
 			additionalContentInfo: item.additionalContentInfo,
-			status: statuses ? statuses[item.id] : SlideProgressStatus.notVisited,
+			status: info ? info[item.id].status : SlideProgressStatus.notVisited,
+			deadLineInfo: info ? info[item.id].deadLine : undefined,
 		}));
 	}
 

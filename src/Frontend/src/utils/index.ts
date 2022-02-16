@@ -33,7 +33,13 @@ export function buildQuery(
 	}
 
 	return '?' + notUndefinedParams
-		.map(key => (convert ? convert(esc(key)) : esc(key)) + '=' + esc(
-			params[key] as string).toLowerCase())
+		.map(key => {
+				if(Array.isArray(params[key])) {
+					const array = (params[key] as []).map(encodeURIComponent);
+					return (convert ? convert(esc(key)) : esc(key)) + '=' + array.join('&' + key + '=');
+				}
+				return (convert ? convert(esc(key)) : esc(key)) + '=' + esc(params[key] as string).toLowerCase();
+			}
+		)
 		.join('&');
 }

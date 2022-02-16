@@ -3,6 +3,7 @@ import { SlideUserProgress } from "src/models/userProgress";
 import {
 	CourseStatistics,
 	FlashcardsStatistics,
+	SlideAdditionalInfo,
 	SlideProgressStatus,
 	StartupSlideInfo,
 	UnitProgressWithLastVisit
@@ -89,18 +90,19 @@ export const getUnitStatistics = (
 ): UnitProgressWithLastVisit => {
 	const visitsGroup = scoringGroups.find(gr => gr.id === ScoringGroupsIds.visits);
 	let unitScore = 0, unitMaxScore = 0, unitDoneSlidesCount = 0, unitInProgressSlidesCount = 0;
-	const statusesBySlides: { [slideId: string]: SlideProgressStatus } = {};
+	const additionalInfoBySlide: { [slideId: string]: SlideAdditionalInfo } = {};
 	let mostPreferablySlideToOpen: StartupSlideInfo | null = null;
 
-	for (const { maxScore, id, scoringGroup, type, quizMaxTriesCount, additionalContentInfo, } of unit.slides) {
+	for (const { maxScore, id, scoringGroup, type, quizMaxTriesCount, } of unit.slides) {
 		let scoreAfterDeadLine = maxScore;
-		if(deadLines && deadLines.length > 0) {
-			const deadLine = getDeadLineForSlide(deadLines, id, unit.id);
+		additionalInfoBySlide[id] = { status: SlideProgressStatus.notVisited, };
+		if(deadLines && deadLines.length > 0 && (type === SlideType.Exercise || type === SlideType.Quiz)) {
+			const deadLine = getDeadLineForSlide(deadLines, scoringGroup, id, unit.id);
 			if(deadLine) {
 				scoreAfterDeadLine = Math.ceil(deadLine.scorePercent * maxScore / 100);
+				additionalInfoBySlide[id].deadLine = deadLine;
 			}
 		}
-		statusesBySlides[id] = SlideProgressStatus.notVisited;
 		const slideProgress = progress[id];
 
 		if(slideProgress && slideProgress.visited) {
@@ -115,23 +117,23 @@ export const getUnitStatistics = (
 
 			switch (type) {
 				case SlideType.Lesson: {
-					statusesBySlides[id] = SlideProgressStatus.done;
+					additionalInfoBySlide[id].status = SlideProgressStatus.done;
 					break;
 				}
 				case SlideType.Flashcards:
-					statusesBySlides[id] = flashcardsStatistics.unratedCount === 0
+					additionalInfoBySlide[id].status = flashcardsStatistics.unratedCount === 0
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;
 				case SlideType.CourseFlashcards:
 				case SlideType.Quiz: {
-					statusesBySlides[id] = (score === maxScore || usedAttempts >= quizMaxTriesCount || score === scoreAfterDeadLine && usedAttempts > 0) && !waitingForManualChecking && !prohibitFurtherManualChecking
+					additionalInfoBySlide[id].status = (score === maxScore || usedAttempts >= quizMaxTriesCount || score === scoreAfterDeadLine && usedAttempts > 0) && !waitingForManualChecking && !prohibitFurtherManualChecking
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;
 				}
 				case SlideType.Exercise: {
-					statusesBySlides[id] = score === maxScore || !waitingForManualChecking && score >= scoreAfterDeadLine || prohibitFurtherManualChecking || isSkipped
+					additionalInfoBySlide[id].status = score === maxScore || !waitingForManualChecking && score >= scoreAfterDeadLine || prohibitFurtherManualChecking || isSkipped
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;
@@ -143,22 +145,22 @@ export const getUnitStatistics = (
 				mostPreferablySlideToOpen = {
 					id,
 					timestamp: timestampAsDate,
-					status: statusesBySlides[id],
+					status: additionalInfoBySlide[id].status,
 				};
-			} else if((mostPreferablySlideToOpen.timestamp.getTime() < timestampAsDate.getTime() || statusesBySlides[id] === SlideProgressStatus.canBeImproved)
+			} else if((mostPreferablySlideToOpen.timestamp.getTime() < timestampAsDate.getTime() || additionalInfoBySlide[id].status === SlideProgressStatus.canBeImproved)
 				&& mostPreferablySlideToOpen.status !== SlideProgressStatus.canBeImproved) {
 				mostPreferablySlideToOpen = {
 					id,
 					timestamp: timestampAsDate,
-					status: statusesBySlides[id],
+					status: additionalInfoBySlide[id].status,
 				};
 			}
 		}
 
-		if(statusesBySlides[id] === SlideProgressStatus.done) {
+		if(additionalInfoBySlide[id].status === SlideProgressStatus.done) {
 			unitDoneSlidesCount++;
 		}
-		if(statusesBySlides[id] === SlideProgressStatus.canBeImproved) {
+		if(additionalInfoBySlide[id].status === SlideProgressStatus.canBeImproved) {
 			unitInProgressSlidesCount++;
 		}
 
@@ -181,7 +183,7 @@ export const getUnitStatistics = (
 		current: unitDoneSlidesCount,
 		inProgress: unitInProgressSlidesCount,
 		max: unit.slides.length,
-		statusesBySlides,
+		additionalInfoBySlide,
 		// redundant, no more score calculation, for more info visit ULEARN-840 on yt
 		// current: unitScore,
 		// max: unitMaxScore,
@@ -243,7 +245,8 @@ export default function getSlideInfo(
 
 	let deadLineInfo = null;
 	if(deadLines && navigationInfo && slideId) {
-		deadLineInfo = getDeadLineForSlide(deadLines, slideId, navigationInfo.current.unitId);
+		deadLineInfo = getDeadLineForSlide(deadLines, navigationInfo.current.scoringGroup, slideId,
+			navigationInfo.current.unitId);
 	}
 
 	return {

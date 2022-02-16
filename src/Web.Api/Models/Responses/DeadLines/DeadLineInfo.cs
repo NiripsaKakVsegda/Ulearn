@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Database.Models;
+using JetBrains.Annotations;
 
 namespace Ulearn.Web.Api.Models.Responses.DeadLines
 {
@@ -23,10 +25,15 @@ namespace Ulearn.Web.Api.Models.Responses.DeadLines
 		public Guid UnitId { get; set; }
 
 		[DataMember]
-		public Guid? SlideId { get; set; }
+		public DeadLineSlideType SlideType { get; set; }
+		
+		[DataMember]
+		[CanBeNull]
+		public string SlideValue { get; set; }
 
 		[DataMember]
-		public Guid? UserId { get; set; }
+		[CanBeNull]
+		public List<Guid> UserIds { get; set; }
 
 		[DataMember]
 		public int ScorePercent { get; set; }
@@ -40,8 +47,9 @@ namespace Ulearn.Web.Api.Models.Responses.DeadLines
 				CourseId = deadLine.CourseId,
 				GroupId = deadLine.GroupId,
 				UnitId = deadLine.UnitId,
-				SlideId = deadLine.SlideId,
-				UserId = deadLine.UserId,
+				SlideType = deadLine.SlideType,
+				SlideValue = deadLine.SlideValue,
+				UserIds = deadLine.UserIds,
 				ScorePercent = deadLine.ScorePercent,
 			};
 		}

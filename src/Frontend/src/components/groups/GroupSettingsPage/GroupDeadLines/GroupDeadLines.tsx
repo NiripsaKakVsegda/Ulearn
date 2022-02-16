@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import moment from "moment/moment";
 
-import { Button, DatePicker, Gapped, Hint, Input, Loader, Select, Toast } from "ui";
+import { Button, DatePicker, DropdownMenu, Gapped, Hint, Input, Kebab, Loader, MenuItem, Select, Toast } from "ui";
 import { ValidationContainer, ValidationWrapper } from "@skbkontur/react-ui-validations";
-import { Delete, Undo, Warning } from "icons";
+import { Copy, Delete, Undo, Warning } from "icons";
 
 import { clone } from "src/utils/jsonExtensions";
 import { convertDefaultTimezoneToLocal, momentToDateInputFormat, momentToTimeInputFormat } from "src/utils/momentUtils";
@@ -11,11 +11,12 @@ import { getDeadLineForStudent, } from "src/utils/deadLinesUtils";
 
 import { DEFAULT_TIMEZONE } from "src/consts/defaultTimezone";
 
-import { DeadLineInfo, ScorePercent } from "src/models/deadLines";
+import { DeadLineInfo, DeadLineSlideType, ScorePercent } from "src/models/deadLines";
 import {
 	DeadLineModuleInfo,
 	Markup,
 	Props,
+	SlidesMarkupValue,
 	State,
 	StateDeadLineInfo,
 	ValidationErrorType
@@ -34,20 +35,21 @@ const timeFormatChars = {
 };
 
 const notFoundId = '-1';
+const isLoading = 'isLoading';
 
 function GroupDeadLines({
 	courseId,
 	groupId,
 	...api
 }: Props): React.ReactElement {
-	const [state, setState] = useState<State | null | 'isLoading'>(null);
+	const [state, setState] = useState<State | null | typeof isLoading>(null);
 
-	if(!state && state !== 'isLoading') {
-		setState('isLoading');
+	if(!state && state !== isLoading) {
+		setState(isLoading);
 		loadData();
 	}
 
-	const deadLines = state && state !== 'isLoading' ? Object.values(state.actualDeadLines) : null;
+	const deadLines = state && state !== isLoading ? Object.values(state.actualDeadLines) : null;
 	const isNewDeadLineAddedButNotSaved = deadLines?.some(d => d.id === notFoundId);
 
 	return (
@@ -90,7 +92,7 @@ function GroupDeadLines({
 	);
 
 	function renderDeadLines() {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -100,6 +102,7 @@ function GroupDeadLines({
 
 				deadLineInfo={ d }
 				stateDeadLine={ state.responseDeadLines[d.id] }
+				isNewDeadLineAddedButNotSaved={ isNewDeadLineAddedButNotSaved }
 
 				units={ state.unitsMarkup }
 				slides={ state.slidesMarkupByUnit[d.unitId] }
@@ -116,6 +119,7 @@ function GroupDeadLines({
 				changeStudent={ changeStudent }
 				changeTime={ changeTime }
 				changeUnit={ changeUnit }
+				copyDeadLinesForNextModule={ copyDeadLinesForNextModule }
 			/>);
 	}
 
@@ -126,6 +130,7 @@ function GroupDeadLines({
 			api.getCourse(courseId)
 		]).then(([deadLinesResponse, studentsResponse, courseInfo]) => {
 			const units: { [id: string]: DeadLineModuleInfo } = {};
+			const scoringGroups = courseInfo.scoring.groups;
 			courseInfo.units
 				.reduce((pv, cv) => {
 					const slides = cv.slides
@@ -133,6 +138,7 @@ function GroupDeadLines({
 						.map(s => ({
 							id: s.id,
 							title: s.title,
+							scoringGroupId: s.scoringGroup,
 						}));
 					if(slides.length > 0) {
 						pv[cv.id] = {
@@ -152,14 +158,22 @@ function GroupDeadLines({
 					return a.diff(b);
 				});
 
-			const unitsMarkup: Markup[] = unitsValues.map(m => [m.id, m.title]);
-			const slidesMarkupByUnit = unitsValues.reduce((pv, cv) => {
-				return {
-					...pv,
-					[cv.id]: cv.slides.map(s => [s.id, s.title]).concat([[notFoundId, texts.allSlides]]),
-				};
-			}, {});
-			const studentsMarkup: Markup[] = studentsResponse.students
+			const unitsMarkup: Markup<string>[] = unitsValues.map(m => [m.id, m.title]);
+			const slidesMarkupByUnit = unitsValues
+				.reduce((pv, cv) => {
+					const scoringGroupIdsByUnit = new Set(cv.slides.map(s => s.scoringGroupId));
+					const scoringGroupByUnit = scoringGroups.filter(sg => scoringGroupIdsByUnit.has(sg.id));
+
+					return {
+						...pv,
+						[cv.id]: cv.slides
+							.map(s => [{ id: s.id }, s.title])
+							.concat(scoringGroupByUnit.map(
+								s => [{ id: s.id, isScoringGroup: true }, `Все слайды «${ s.abbr }»`]))
+							.concat([[{ id: notFoundId }, texts.allSlides]]),
+					};
+				}, {});
+			const studentsMarkup: Markup<string>[] = studentsResponse.students
 				.map(s => [s.user.id, s.user.visibleName]);
 			studentsMarkup.push([notFoundId, texts.allStudents]);
 
@@ -173,6 +187,7 @@ function GroupDeadLines({
 				};
 			}, {});
 			const studentsIds = new Set(studentsResponse.students.map(s => s.user.id));
+			const scoringGroupsIds = new Set(scoringGroups.map(g => g.id));
 
 			const deadLines = deadLinesResponse.deadLines
 				.reduce((pv, cv) => {
@@ -180,8 +195,11 @@ function GroupDeadLines({
 
 					//filtering all deadlines for deleted units/slides or for excluded students
 					if(!unitsIds.has(cv.unitId) ||
-						cv.slideId !== null && !slidesIdsByUnitId[cv.unitId].has(cv.slideId) ||
-						cv.userId !== null && !studentsIds.has(cv.userId)
+						cv.slideType === DeadLineSlideType.ScoringGroupId && cv.slideValue !== null && !scoringGroupsIds.has(
+							cv.slideValue) ||
+						cv.slideType === DeadLineSlideType.SlideId && cv.slideValue !== null && !slidesIdsByUnitId[cv.unitId].has(
+							cv.slideValue) ||
+						cv.userIds !== null && cv.userIds.some(userId => !studentsIds.has(userId))
 					) {
 						return pv;
 					}
@@ -216,11 +234,14 @@ function GroupDeadLines({
 		deadlines.forEach(d => {
 			const overlappingDeadLines = deadlines
 				.filter(d1 => d1.unitId === d.unitId &&
-					(d.slideId === null || d1.slideId === null || d1.slideId === d.slideId) &&
-					(d.userId === null || d1.userId === null || d1.userId === d.userId));
+					(d1.slideType === DeadLineSlideType.All ||
+						//d.slideType === DeadLineSlideType.All ||
+						d1.slideType === d.slideType && d1.slideValue === d.slideValue) &&
+					(//d.userIds === null ||
+						d1.userIds === null ||
+						d1.userIds.every(u => d.userIds?.includes(u))));
 			d.isOverlappedByOtherDeadLine = overlappingDeadLines.length > 1
-				&& getDeadLineForStudent(overlappingDeadLines as DeadLineInfo[],
-					d.userId)?.id !== d.id;
+				&& getDeadLineForStudent(overlappingDeadLines as DeadLineInfo[], d.userIds)?.id !== d.id;
 		});
 	}
 
@@ -233,7 +254,7 @@ function GroupDeadLines({
 	}
 
 	function addDeadLine() {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -245,8 +266,36 @@ function GroupDeadLines({
 			unitId: state.unitsMarkup[0][0],
 			groupId,
 			scorePercent: 0,
-			slideId: null,
-			userId: null,
+			slideType: DeadLineSlideType.All,
+			slideValue: null,
+			userIds: null,
+		};
+
+		addOverlappingErrorInfoTo(Object.values(newDeadLines));
+
+		setState({
+			...state,
+			actualDeadLines: newDeadLines,
+		});
+	}
+
+	function copyDeadLinesForNextModule(id: string) {
+		if(!state || state === isLoading) {
+			return;
+		}
+
+		const newDeadLines = clone(state.actualDeadLines);
+		const deadLine = newDeadLines[id];
+		const nextUnitIndex = state.unitsMarkup.findIndex(u => u[0] === deadLine.unitId) + 1;
+		if(nextUnitIndex >= state.unitsMarkup.length) {
+			return;
+		}
+
+		newDeadLines[notFoundId] = {
+			...deadLine,
+			id: notFoundId,
+			unitId: state.unitsMarkup[nextUnitIndex][0],
+			date: momentToDateInputFormat(moment(deadLine.date, 'DD.MM.YYYY').add(1, 'w')),
 		};
 
 		addOverlappingErrorInfoTo(Object.values(newDeadLines));
@@ -266,7 +315,7 @@ function GroupDeadLines({
 	}
 
 	function validateDate(value: string, id: string,) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -280,7 +329,7 @@ function GroupDeadLines({
 			delete errors[id];
 		}
 
-		setState(prevState => (prevState && prevState !== 'isLoading'
+		setState(prevState => (prevState && prevState !== isLoading
 			? {
 				...prevState,
 				errors,
@@ -291,7 +340,7 @@ function GroupDeadLines({
 	}
 
 	function validateTime(value: string, id: string) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -304,7 +353,7 @@ function GroupDeadLines({
 			delete errors[id];
 		}
 
-		setState(prevState => (prevState && prevState !== 'isLoading'
+		setState(prevState => (prevState && prevState !== isLoading
 			? {
 				...prevState,
 				errors,
@@ -327,20 +376,29 @@ function GroupDeadLines({
 		value: string,
 	) {
 		changeDeadLine(id, (deadLineInfo) => {
-			if(!state || state === 'isLoading') {
+			if(!state || state === isLoading) {
 				return;
 			}
 
 			deadLineInfo.unitId = value;
-			deadLineInfo.slideId = null;
+			deadLineInfo.slideValue = null;
+			deadLineInfo.slideType = DeadLineSlideType.All;
 		});
 	}
 
 	function changeSlide(
 		id: string,
-		value: string,
+		value: SlidesMarkupValue,
 	) {
-		changeDeadLine(id, (deadLineInfo) => deadLineInfo.slideId = (value === notFoundId ? null : value));
+		changeDeadLine(id, (deadLineInfo) => {
+			if(value.id === notFoundId) {
+				deadLineInfo.slideValue = null;
+				deadLineInfo.slideType = DeadLineSlideType.All;
+			} else {
+				deadLineInfo.slideValue = value.id;
+				deadLineInfo.slideType = value.isScoringGroup ? DeadLineSlideType.ScoringGroupId : DeadLineSlideType.SlideId;
+			}
+		});
 	}
 
 	function changePercent(
@@ -354,11 +412,11 @@ function GroupDeadLines({
 		id: string,
 		value: string,
 	) {
-		changeDeadLine(id, (deadLineInfo) => deadLineInfo.userId = (value === notFoundId ? null : value));
+		changeDeadLine(id, (deadLineInfo) => deadLineInfo.userIds = (value === notFoundId ? null : [value]));
 	}
 
 	function changeDeadLine(id: string, update: (deadLine: StateDeadLineInfo) => void) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -369,7 +427,7 @@ function GroupDeadLines({
 			addOverlappingErrorInfoTo(Object.values(deadlines));
 		}
 
-		setState(prevState => (prevState && prevState !== 'isLoading'
+		setState(prevState => (prevState && prevState !== isLoading
 			? {
 				...prevState,
 				actualDeadLines: deadlines,
@@ -378,7 +436,7 @@ function GroupDeadLines({
 	}
 
 	function deleteDeadLine(id: string,) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -396,7 +454,7 @@ function GroupDeadLines({
 	}
 
 	async function saveDeadLine(id: string,) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -423,7 +481,7 @@ function GroupDeadLines({
 	}
 
 	function cancelChanges(id: string,) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 		const newState = clone(state);
@@ -442,6 +500,7 @@ function DeadLine(
 	{
 		deadLineInfo,
 		stateDeadLine,
+		isNewDeadLineAddedButNotSaved,
 
 		units,
 		slides,
@@ -458,24 +517,27 @@ function DeadLine(
 		saveDeadLine,
 		deleteDeadLine,
 		cancelChanges,
+		copyDeadLinesForNextModule,
 	}: {
 		deadLineInfo: StateDeadLineInfo,
 		stateDeadLine: StateDeadLineInfo,
+		isNewDeadLineAddedButNotSaved?: boolean,
 
-		units: Markup[],
-		slides: Markup[],
-		students: Markup[],
+		units: Markup<string>[],
+		slides: Markup<SlidesMarkupValue>[],
+		students: Markup<string>[],
 
 		error: ValidationErrorType | undefined,
 
 		changeDate: (id: string, date: string) => void,
 		changeTime: (id: string, time: string) => void,
 		changeUnit: (id: string, unitId: string) => void,
-		changeSlide: (id: string, slideId: string) => void,
+		changeSlide: (id: string, slideValue: SlidesMarkupValue) => void,
 		changeStudent: (id: string, studentId: string) => void,
 		changePercent: (id: string, percent: ScorePercent) => void,
 		saveDeadLine: (id: string) => void,
 		deleteDeadLine: (id: string) => void,
+		copyDeadLinesForNextModule: (id: string) => void,
 		cancelChanges: (id: string) => void,
 	}
 ) {
@@ -488,6 +550,13 @@ function DeadLine(
 
 	const dateValidationInfo = (error === 'date' || error === 'time&date') ? { message: texts.wrongDate } : null;
 	const timeValidationInfo = (error === 'time' || error === 'time&date') ? { message: texts.wrongTime } : null;
+
+	const slideItem = deadLineInfo.slideValue &&
+		slides.find(s => s[0].id === deadLineInfo.slideValue)?.[0] ||
+		slides.find(s => s[0].id === notFoundId)?.[0];
+
+	const unitIndex = units.findIndex(u => u[0] === deadLineInfo.unitId);
+	const isNextModuleExists = unitIndex + 1 < units.length;
 
 	return (
 		<React.Fragment>
@@ -526,11 +595,11 @@ function DeadLine(
 						onValueChange={ changeUnitWithId }/>
 				</span>
 			<span>
-					<Select<string>
+					<Select<SlidesMarkupValue>
 						maxWidth={ '100%' }
 						width={ '100%' }
 						items={ slides }
-						value={ deadLineInfo.slideId || notFoundId }
+						value={ slideItem }
 						onValueChange={ changeSlideWithId }/>
 				</span>
 			<span>
@@ -538,7 +607,7 @@ function DeadLine(
 						maxWidth={ '100%' }
 						width={ '100%' }
 						items={ students }
-						value={ deadLineInfo.userId || notFoundId }
+						value={ deadLineInfo.userIds && deadLineInfo.userIds[0] || notFoundId }
 						onValueChange={ changeStudentWithId }/>
 				</span>
 			<span>
@@ -562,27 +631,28 @@ function DeadLine(
 								{ texts.saveButtonText }
 							</Button>
 						</Hint>
-						{
-							!pendingCreation && <Hint text={ pendingChanges ? texts.cancel : null }>
-								<Button
-									use={ 'link' }
-									onClick={ cancelChangesWithId }
-									size={ "medium" }
-									disabled={ !pendingChanges }
-								>
-									<Undo/>
-								</Button>
-							</Hint>
-						}
-						<Hint text={ texts.delete }>
-							<Button
-								use={ 'link' }
-								onClick={ deleteDeadLineWithId }
-								size={ "medium" }
-							>
-								<Delete className={ styles.deleteButtonText }/>
-							</Button>
-						</Hint>
+						<DropdownMenu caption={ <Kebab size={ 'medium' }/> }>
+							{
+								!pendingCreation &&
+								<MenuItem disabled={ !pendingChanges } onClick={ cancelChangesWithId } icon={ <Undo/> }>
+									{ texts.cancel }
+								</MenuItem>
+							}
+							<MenuItem onClick={ deleteDeadLineWithId }
+									  icon={ <Delete className={ styles.deleteButtonText }/> }>
+								 { texts.delete }
+							</MenuItem>
+							{ isNextModuleExists &&
+							<MenuItem
+								disabled={ isNewDeadLineAddedButNotSaved }
+								onClick={ copyDeadLinesForNextModuleWithId }
+								icon={ <Copy/> }>
+								<Hint text={ isNewDeadLineAddedButNotSaved && texts.saveBeforeAdding }>
+									{ texts.copyForNextUnit }
+								</Hint>
+							</MenuItem>
+							}
+						</DropdownMenu>
 					</Gapped>
 				</span>
 		</React.Fragment>
@@ -591,8 +661,12 @@ function DeadLine(
 	function isDifferent(d1: StateDeadLineInfo, d2: StateDeadLineInfo) {
 		return d1.time !== d2.time
 			|| d1.date !== d2.date
-			|| d1.userId !== d2.userId
-			|| d1.slideId !== d2.slideId
+			|| d1.userIds !== null && d2.userIds === null
+			|| d1.userIds === null && d2.userIds !== null
+			|| d1.userIds !== null && d2.userIds !== null && d1.userIds.some(
+				userId => d2.userIds?.indexOf(userId) === -1)
+			|| d1.slideType !== d2.slideType
+			|| d1.slideValue !== d2.slideValue
 			|| d1.scorePercent !== d2.scorePercent
 			|| d1.unitId !== d2.unitId;
 	}
@@ -609,8 +683,8 @@ function DeadLine(
 		changeUnit(deadLineInfo.id, unitId);
 	}
 
-	function changeSlideWithId(slideId: string) {
-		changeSlide(deadLineInfo.id, slideId);
+	function changeSlideWithId(slideValue: SlidesMarkupValue) {
+		changeSlide(deadLineInfo.id, slideValue);
 	}
 
 	function changeStudentWithId(studentId: string) {
@@ -627,6 +701,10 @@ function DeadLine(
 
 	function deleteDeadLineWithId() {
 		deleteDeadLine(deadLineInfo.id);
+	}
+
+	function copyDeadLinesForNextModuleWithId() {
+		copyDeadLinesForNextModule(deadLineInfo.id);
 	}
 
 	function cancelChangesWithId() {

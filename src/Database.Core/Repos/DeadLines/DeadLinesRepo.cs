@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Ulearn.Core.Courses.Slides;
 
 namespace Database.Repos
 {
@@ -21,40 +23,55 @@ namespace Database.Repos
 			return await db.DeadLines.FindAsync(deadLineId);
 		}
 
-		public async Task<List<DeadLine>> GetDeadLines(string courseId, HashSet<int> groupIds, Guid? unitId = null, Guid? slideId = null, Guid? userId = null)
+		public async Task<List<DeadLine>> GetDeadLines(
+			string courseId,
+			HashSet<int> groupIds,
+			Slide slide = null,
+			Guid? userId = null)
 		{
 			var query = db.DeadLines
 				.Where(d => d.CourseId == courseId && groupIds.Contains(d.GroupId));
 
-			if (unitId != null)
-			{
-				query = query
-					.Where(d => d.UnitId == unitId);
-			}
-
-			if (slideId != null )
-				if (unitId != null)
-					query = query
-						.Where(d => d.SlideId == null || d.SlideId == slideId);
-				else
-					query = query
-						.Where(d => d.SlideId == slideId);
-
 			if (userId != null)
 			{
 				query = query
-					.Where(d => d.UserId == null || d.UserId == userId);
+					.Where(d => d.UserIds == null || d.UserIds.Contains(userId.Value));
+			}
+
+			if (slide != null)
+			{
+				query = query
+					.Where(d => d.UnitId == slide.Unit.Id);
+
+				if (slide.ScoringGroup != string.Empty)
+					query = query
+						.Where(d => d.SlideType == DeadLineSlideType.All ||
+									d.SlideType == DeadLineSlideType.SlideId && d.SlideValue == slide.Id.ToString() ||
+									d.SlideType == DeadLineSlideType.ScoringGroupId && d.SlideValue == slide.ScoringGroup);
+				else
+					query = query
+						.Where(d => d.SlideType == DeadLineSlideType.All ||
+									d.SlideType == DeadLineSlideType.SlideId && d.SlideValue == slide.Id.ToString());
 			}
 
 			return await query.ToListAsync();
 		}
 
-		public async Task<List<DeadLine>> GetDeadLines(string courseId, int groupId, Guid? unitId = null, Guid? slideId = null, Guid? userId = null)
+		public async Task<List<DeadLine>> GetDeadLines(
+			string courseId,
+			int groupId,
+			Slide slide = null,
+			Guid? userId = null
+		)
 		{
-			return await GetDeadLines(courseId, new HashSet<int> { groupId }, unitId, slideId, userId);
+			return await GetDeadLines(courseId, new HashSet<int> { groupId }, slide, userId);
 		}
 
-		public async Task<List<DeadLine>> GetDeadLinesForUser(string courseId, Guid userId, Guid? unitId = null, Guid? slideId = null)
+		public async Task<List<DeadLine>> GetDeadLinesForUser(
+			string courseId,
+			Guid userId,
+			Slide slide = null
+		)
 		{
 			var groups = db.Groups
 				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
@@ -65,18 +82,27 @@ namespace Database.Repos
 				.Select(m => m.GroupId)
 				.ToListAsync();
 
-			return await GetDeadLines(courseId, userGroupsIds.ToHashSet(), unitId, slideId, userId);
+			return await GetDeadLines(courseId, userGroupsIds.ToHashSet(), slide, userId);
 		}
 
-		public async Task<DeadLine> AddDeadLine(string courseId, int groupId, Guid unitId, Guid? slideId, Guid? userId, DateTime date, int scorePercent)
+		public async Task<DeadLine> AddDeadLine(
+			string courseId,
+			int groupId,
+			Guid unitId,
+			DeadLineSlideType slideType,
+			string slideValue,
+			List<Guid> userIds,
+			DateTime date,
+			int scorePercent)
 		{
 			var deadLine = new DeadLine
 			{
 				CourseId = courseId,
 				GroupId = groupId,
 				UnitId = unitId,
-				SlideId = slideId,
-				UserId = userId,
+				SlideType = slideType,
+				SlideValue = slideValue,
+				UserIds = userIds,
 				Date = date,
 				ScorePercent = scorePercent
 			};

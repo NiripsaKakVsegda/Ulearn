@@ -15,17 +15,15 @@ interface CourseInfo {
 }
 
 interface ScoringInfo {
-	id: string;
-	name: string;
-	abbr: string | null;
-	description: string | null;
-	weight: number; // decimal
 	groups: ScoringGroup[];
 }
 
 interface ScoringGroup {
-	id: ScoringGroupsIds;
-	weight: number;
+	id: ScoringGroupsIds | string;
+	weight: number; // decimal
+	name: string;
+	abbr: string | null;
+	description: string | null;
 }
 
 interface UnitInfo {

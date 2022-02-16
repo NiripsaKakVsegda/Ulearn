@@ -1,6 +1,6 @@
 import api from "./index";
 import { buildQuery } from "src/utils";
-import { DeadLineInfo, DeadLinesResponse, } from "src/models/deadLines";
+import { DeadLineInfo, DeadLineSlideType, DeadLinesResponse, } from "src/models/deadLines";
 import { Dispatch } from "redux";
 import { deadLinesLoadFailAction, deadLinesLoadStartAction, deadLinesLoadSuccessAction, } from "src/actions/deadLines";
 import { deadLines } from "src/consts/routes";
@@ -22,9 +22,11 @@ export function getDeadLinesForCurrentUser(courseId: string): Promise<DeadLinesR
 export function changeDeadLine(deadLine: DeadLineInfo): Promise<Response> {
 	return api.patch(`${ deadLines }/${ deadLine.id }` + buildQuery({
 		...deadLine,
-		userId: deadLine.userId === null ? undefined : deadLine.userId,
-		slideId: deadLine.slideId === null ? undefined : deadLine.slideId,
-		error: undefined,
+		userIds: deadLine.userIds === null ? undefined : deadLine.userIds,
+		slideType: deadLine.slideType === null ? DeadLineSlideType.All : deadLine.slideType,
+		slideValue: deadLine.slideValue === null ? undefined : deadLine.slideValue,
+		isOverlappedByOtherDeadLine: undefined,
+		time: undefined,
 		id: undefined,
 	}));
 }
@@ -33,9 +35,11 @@ export function createDeadLine(courseId: string, deadLine: DeadLineInfo): Promis
 	return api.post(deadLines + buildQuery({
 		...deadLine,
 		courseId,
-		userId: deadLine.userId === null ? undefined : deadLine.userId,
-		slideId: deadLine.slideId === null ? undefined : deadLine.slideId,
-		error: undefined,
+		userIds: deadLine.userIds === null ? undefined : deadLine.userIds,
+		slideType: deadLine.slideType === null ? DeadLineSlideType.All : deadLine.slideType,
+		slideValue: deadLine.slideValue === null ? undefined : deadLine.slideValue,
+		isOverlappedByOtherDeadLine: undefined,
+		time: undefined,
 		id: undefined,
 	}));
 }

@@ -1,13 +1,13 @@
-import { DeadLineInfo } from "src/models/deadLines";
+import { DeadLineInfo, DeadLineSlideType } from "src/models/deadLines";
 import { momentFromServer, } from "./momentUtils";
 import moment from "moment";
 
 export function getDeadLineForStudent(
 	deadLines: DeadLineInfo[],
-	studentId: string | null,
+	studentIds: string[] | null,
 ): DeadLineInfo | null {
 	deadLines = deadLines.filter(
-		d => d.userId === null || d.userId === studentId);
+		d => d.userIds === null || d.userIds.every(userId => studentIds?.includes(userId)));
 
 	if(deadLines.length === 0) {
 		return null;
@@ -16,9 +16,17 @@ export function getDeadLineForStudent(
 	return getDeadLine(deadLines);
 }
 
-export function getDeadLineForSlide(deadLines: DeadLineInfo[], slideId: string, unitId: string): DeadLineInfo | null {
+export function getDeadLineForSlide(
+	deadLines: DeadLineInfo[],
+	slideScoringGroupId: string | null,
+	slideId: string,
+	unitId: string
+): DeadLineInfo | null {
 	deadLines = deadLines.filter(
-		d => d.unitId === unitId && (d.slideId === null || d.slideId === slideId));
+		d => d.unitId === unitId && (
+			d.slideType === DeadLineSlideType.All ||
+			d.slideType === DeadLineSlideType.ScoringGroupId && d.slideValue === slideScoringGroupId ||
+			d.slideType === DeadLineSlideType.SlideId && d.slideValue === slideId));
 
 	if(deadLines.length === 0) {
 		return null;

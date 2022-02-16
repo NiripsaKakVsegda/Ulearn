@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -68,8 +70,9 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			[FromQuery] string courseId,
 			[FromQuery] int groupId,
 			[FromQuery] Guid unitId,
-			[FromQuery] [CanBeNull] Guid? slideId,
-			[FromQuery] [CanBeNull] Guid? userId,
+			[FromQuery] DeadLineSlideType slideType,
+			[FromQuery] string slideValue,
+			[FromQuery] [CanBeNull] List<Guid> userIds,
 			[FromQuery] DateTime date,
 			[FromQuery] int scorePercent)
 		{
@@ -77,7 +80,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			if (!isInstructor)
 				return Forbid($"You do not have an access to add dead lines in course {courseId}");
 
-			var deadLine = await deadLinesRepo.AddDeadLine(courseId, groupId, unitId, slideId, userId, date, scorePercent);
+			var deadLine = await deadLinesRepo.AddDeadLine(courseId, groupId, unitId, slideType, slideValue, userIds?.Count == 0 ? null : userIds, date, scorePercent);
 
 			return deadLine;
 		}
@@ -88,8 +91,9 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 		public async Task<ActionResult> UpdateDeadLine(
 			[FromRoute] Guid deadLineId,
 			[FromQuery] Guid unitId,
-			[FromQuery] [CanBeNull] Guid? slideId,
-			[FromQuery] [CanBeNull] Guid? userId,
+			[FromQuery] DeadLineSlideType slideType,
+			[FromQuery] string slideValue,
+			[FromQuery] [CanBeNull] List<Guid> userIds,
 			[FromQuery] DateTime date,
 			[FromQuery] int scorePercent)
 		{
@@ -104,9 +108,13 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			if (!isInstructor)
 				return Forbid($"You do not have an access to update dead lines in course {deadLine.CourseId}");
 
+			if (userIds != null && userIds.Distinct().ToList().Count != userIds.Count)
+				return BadRequest("User ids should contain only uniq ids");
+
 			deadLine.UnitId = unitId;
-			deadLine.SlideId = slideId;
-			deadLine.UserId = userId;
+			deadLine.UserIds = userIds?.Count == 0 ? null : userIds;
+			deadLine.SlideType = slideType;
+			deadLine.SlideValue = slideValue;
 			deadLine.Date = date;
 			deadLine.ScorePercent = scorePercent;
 

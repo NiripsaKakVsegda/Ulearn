@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Database.Migrations
@@ -17,8 +18,10 @@ namespace Database.Migrations
                         .Annotation("Npgsql:DefaultColumnCollation", "case_insensitive"),
                     GroupId = table.Column<int>(type: "integer", nullable: false),
                     UnitId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SlideId = table.Column<Guid>(type: "uuid", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SlideType = table.Column<int>(type: "integer", nullable: false),
+                    SlideValue = table.Column<string>(type: "text", nullable: true)
+                        .Annotation("Npgsql:DefaultColumnCollation", "case_insensitive"),
+                    UserIds = table.Column<List<Guid>>(type: "uuid[]", nullable: true),
                     ScorePercent = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -32,14 +35,14 @@ namespace Database.Migrations
                 columns: new[] { "CourseId", "GroupId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeadLines_CourseId_GroupId_UnitId_SlideId_UserId",
+                name: "IX_DeadLines_CourseId_GroupId_UnitId_SlideType_SlideValue_User~",
                 table: "DeadLines",
-                columns: new[] { "CourseId", "GroupId", "UnitId", "SlideId", "UserId" });
+                columns: new[] { "CourseId", "GroupId", "UnitId", "SlideType", "SlideValue", "UserIds" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeadLines_CourseId_UserId",
+                name: "IX_DeadLines_CourseId_GroupId_UserIds",
                 table: "DeadLines",
-                columns: new[] { "CourseId", "UserId" });
+                columns: new[] { "CourseId", "GroupId", "UserIds" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

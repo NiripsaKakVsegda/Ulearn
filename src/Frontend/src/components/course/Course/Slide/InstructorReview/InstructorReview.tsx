@@ -458,7 +458,7 @@ class InstructorReview extends React.Component<Props, State> {
 			return <CourseLoader/>;
 		}
 
-		const deadLine = getDeadLineForSlide(deadLines ?? [], slideContext.slideId, slideContext.unitId);
+		const deadLine = getDeadLineForSlide(deadLines ?? [], slideContext.slideInfo.navigationInfo?.current.scoringGroup || null, slideContext.slideId, slideContext.unitId);
 		const isDeadLineViolated = !lastCheckedSubmissionId && deadLine
 			&& moment(studentSubmissions[0].timestamp).diff(moment(deadLine.date)) > 0;
 

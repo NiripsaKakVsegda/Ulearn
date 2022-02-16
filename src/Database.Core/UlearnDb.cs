@@ -399,8 +399,8 @@ namespace Database
 			AddIndex<AdditionalContentPublication>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideId });
 
 			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, });
-			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideId, c.UserId });
-			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.UserId });
+			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UserIds });
+			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideType, c.SlideValue, c.UserIds });
 		}
 
 		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class

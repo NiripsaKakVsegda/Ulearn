@@ -3,9 +3,16 @@ export interface DeadLineInfo {
 	date: string;
 	groupId: number;
 	unitId: string;
-	slideId: string | null;
-	userId: string | null;
+	slideType: DeadLineSlideType;
+	slideValue: string | null;
+	userIds: string[] | null;
 	scorePercent: ScorePercent;
+}
+
+export enum DeadLineSlideType {
+	All = "All",
+	SlideId = "SlideId",
+	ScoringGroupId = "ScoringGroupId"
 }
 
 export interface DeadLinesResponse {

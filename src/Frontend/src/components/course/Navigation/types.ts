@@ -1,5 +1,6 @@
 import { SlideType } from 'src/models/slide';
 import { AdditionalContentInfo } from "src/models/additionalContent";
+import { DeadLineInfo } from "../../../models/deadLines";
 
 export interface MenuItem<T extends SlideType> {
 	type: T;
@@ -17,6 +18,7 @@ export interface MenuItem<T extends SlideType> {
 	visited: boolean;
 	hide?: boolean;
 	additionalContentInfo: AdditionalContentInfo;
+	deadLineInfo?: DeadLineInfo;
 
 	status: SlideProgressStatus;
 }
@@ -32,7 +34,7 @@ export interface Progress {
 }
 
 export interface UnitProgress extends Progress {
-	statusesBySlides: { [slideId: string]: SlideProgressStatus };
+	additionalInfoBySlide: { [slideId: string]: SlideAdditionalInfo };
 }
 
 export interface StartupSlideInfo {
@@ -43,6 +45,11 @@ export interface StartupSlideInfo {
 
 export interface UnitProgressWithLastVisit extends UnitProgress {
 	startupSlide: StartupSlideInfo | null;
+}
+
+export interface SlideAdditionalInfo {
+	status: SlideProgressStatus;
+	deadLine?: DeadLineInfo;
 }
 
 export enum SlideProgressStatus {

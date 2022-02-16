@@ -138,7 +138,7 @@ namespace Database.Repos
 		{
 			var maxSlideScore = slide.MaxScore;
 
-			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, Guid.Parse(userId), slide.Unit.Id, slide.Id);
+			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, Guid.Parse(userId), slide);
 			var deadLineScorePercent = 100;
 			if (deadLines.Count > 0)
 			{

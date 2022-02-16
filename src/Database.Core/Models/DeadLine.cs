@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JetBrains.Annotations;
 
 namespace Database.Models
 {
@@ -23,11 +25,23 @@ namespace Database.Models
 		[Required]
 		public Guid UnitId { get; set; }
 
-		public Guid? SlideId { get; set; }
-
-		public Guid? UserId { get; set; }
+		[Required]
+		public DeadLineSlideType SlideType { get; set; }
+		
+		[CanBeNull]
+		public string SlideValue { get; set; }
+		
+		[CanBeNull]
+		public List<Guid> UserIds { get; set; }
 
 		[Required]
 		public int ScorePercent { get; set; }
+	}
+
+	public enum DeadLineSlideType
+	{
+		All,
+		SlideId,
+		ScoringGroupId
 	}
 }

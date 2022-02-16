@@ -97,12 +97,15 @@ namespace Database.DataContexts
 				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
 				.Select(m => m.GroupId)
 				.ToList();
+			var userIdGuid = new Guid(userId);
 			var deadLines = db.DeadLines.Where(d =>
 					d.CourseId == courseId
 					&& userGroupsIds.Contains(d.GroupId)
 					&& d.UnitId == slide.Unit.Id
-					&& (d.SlideId == null || d.SlideId == slide.Id)
-					&& (d.UserId == null || d.UserId.ToString() == userId))
+					&& d.SlideType == DeadLineSlideType.All ||
+					(slide.ScoringGroup != string.Empty && d.SlideType == DeadLineSlideType.ScoringGroupId && d.SlideValue == slide.ScoringGroup
+					|| d.SlideType == DeadLineSlideType.SlideId && d.SlideValue == slide.Id.ToString())
+					&& (d.UserIds == null || d.UserIds.Contains(userIdGuid)))
 				.ToList();
 			var deadLineScorePercent = 100;
 			if (deadLines.Count > 0)
@@ -115,14 +118,14 @@ namespace Database.DataContexts
 			var newScore = slide is ExerciseSlide ex
 				? slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent).Score
 				: slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent);
-			
+
 			newScore = Math.Min(newScore, maxSlideScore);
 			var isPassed = slideCheckingsRepo.IsSlidePassed(courseId, slide.Id, userId);
 			if (IsSkipped(courseId, slide.Id, userId))
 				newScore = 0;
 			log.Info($"Обновляю количество баллов пользователя {userId} за слайд {slide.Id} в курсе \"{courseId}\". " +
 					$"Новое количество баллов: {newScore}, слайд пройден: {isPassed}");
-			
+
 			return UpdateAttempts(courseId, slide.Id, userId, visit =>
 			{
 				if (visit.Score < newScore)
