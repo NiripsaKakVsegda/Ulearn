@@ -88,29 +88,31 @@
 		</div>
 	}
 }
-
-<div class="row">
-	<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-		<div class="scoring-groups-filters">
-			<h3>Ведомость в Google Sheets</h3>
-			@foreach (var cortege in Model.GroupNamesToGoogleSheetLink.Take(3))
-			{
-				<p>
-					<a target="_blank" rel="noopener noreferrer nofollower" href=@cortege.Link>@cortege.GroupsNames</a>
-					@if (Model.IsInstructor)
-					{
-						<span> @(cortege.IsVisibleForStudents ? "(видна студентам)" : "(не видна студентам)")</span>
-					}
-				</p>
-			}
-			@if (Model.IsInstructor)
-			{
-				<a href="/@Model.CourseId/google-sheet-tasks">Настроить выгрузки в Google Sheets</a>
-			}
+@if (Model.GroupNamesToGoogleSheetLink.Count > 0)
+{
+	<div class="row">
+		<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+			<div class="scoring-groups-filters">
+				<h3>Ведомость в Google Sheets</h3>
+				@foreach (var cortege in Model.GroupNamesToGoogleSheetLink.Take(3))
+				{
+					<p>
+						<a target="_blank" rel="noopener noreferrer nofollower" href=@cortege.Link>@cortege.GroupsNames</a>
+						@if (Model.IsInstructor)
+						{
+							<span> @(cortege.IsVisibleForStudents ? "(видна студентам)" : "(не видна студентам)")</span>
+						}
+					</p>
+				}
+				@if (Model.IsInstructor)
+				{
+					<a href="/@Model.CourseId/google-sheet-tasks">Настроить выгрузки в Google Sheets</a>
+				}
+			</div>
 		</div>
+		<br>
 	</div>
-	<br>
-</div>
+}
 
 <div class="row">
 	@if (Model.ScoringGroups.Count > 1)

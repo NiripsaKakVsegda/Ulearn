@@ -36,13 +36,16 @@ namespace Database.Repos
 			if (groups == null)
 				return null;
 			var userId = user.Identity.GetUserId();
+			var isInstructor = user.HasAccessFor(courseId, CourseRole.Instructor);
 			var groupsIds = groups.Select(g => g.Id);
 
-			var accessibleAsMemberGroupsIds = db.GroupMembers.Where(a => a.UserId == userId)
-				.Select(g => g.GroupId).ToHashSet();
-			var accessibleCourseGroupsIds = user.HasAccessFor(courseId, CourseRole.Instructor)
-				? groupsRepo.GetAvailableForUserGroups(courseId, user).Select(g => g.Id)
-				: new int[0];
+			var accessibleAsMemberGroupsIds = db.GroupMembers
+				.Where(a => a.UserId == userId)
+				.Select(g => g.GroupId)
+				.ToHashSet();
+			var accessibleCourseGroupsIds = groupsRepo
+				.GetAvailableForUserGroups(courseId, user)
+				.Select(g => g.Id);
 
 			accessibleAsMemberGroupsIds.UnionWith(accessibleCourseGroupsIds);
 			accessibleAsMemberGroupsIds.IntersectWith(groupsIds);
@@ -51,15 +54,20 @@ namespace Database.Repos
 
 			var tasksIds = db.GoogleSheetExportTaskGroups
 				.Where(g => accessibleAsMemberGroupsIds.Contains(g.GroupId))
-				.Select(g => g.TaskId).ToHashSet();
+				.Select(g => g.TaskId)
+				.ToHashSet();
 
 			var currentUtcTime = DateTime.UtcNow;
-			return db.GoogleSheetExportTasks
+			var query = db.GoogleSheetExportTasks
 				.Include(t => t.Author)
 				.Include(t => t.Groups.Select(g => g.Group))
 				.Where(t => tasksIds.Contains(t.Id))
-				.Where(t => t.RefreshStartDate <= currentUtcTime)
-				.GroupBy(t => t.Author.Id)
+				.Where(t => t.RefreshStartDate <= currentUtcTime);
+
+			if (!isInstructor)
+				query = query.Where(t => t.IsVisibleForStudents);
+
+			return query.GroupBy(t => t.Author.Id)
 				.OrderBy(t => t.Key == userId)
 				.SelectMany(t => t)
 				.OrderBy(t => t.RefreshEndDate)
