@@ -67,9 +67,9 @@ function NavigationItem({
 								<EyeClosed/>
 							</Hint>
 						</span> }
-						{ deadLineInfo && !anyAdditionalInfoExist &&
+						{ deadLineInfo && deadLineInfo.next && !anyAdditionalInfoExist && score === 0 &&
 						<span className={ styles.isHiddenIcon }>
-							<Hint text={ texts.getDeadLineInfo(deadLineInfo, maxScore) }>
+							<Hint text={ texts.getDeadLineInfo(deadLineInfo.next, maxScore) }>
 								<Clock/>
 							</Hint>
 						</span> }

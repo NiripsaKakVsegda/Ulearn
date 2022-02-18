@@ -1,5 +1,6 @@
 export interface DeadLineInfo {
 	id: string;
+	//format YYYY-MM-DDTHH:mm:ss, should be in server timezone
 	date: string;
 	groupId: number;
 	unitId: string;

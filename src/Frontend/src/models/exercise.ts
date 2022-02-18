@@ -31,6 +31,7 @@ export interface SubmissionInfo {
 	id: number;
 	code: string;
 	language: Language;
+	//should be in server timezone
 	timestamp: string;
 	automaticChecking: ExerciseAutomaticCheckingResponse | null; // null если задача не имеет автоматических тестов, это не отменяет возможности ревью.
 	manualChecking: ExerciseManualCheckingResponse | null;  // null, если у submission нет ManualExerciseChecking

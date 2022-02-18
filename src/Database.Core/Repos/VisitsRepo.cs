@@ -144,7 +144,8 @@ namespace Database.Repos
 			{
 				var currentDate = DateTime.Now;
 				var deadLine = DeadLinesUtils.GetCurrentDeadLine(deadLines, currentDate);
-				deadLineScorePercent = deadLine.ScorePercent;
+				if (deadLine.Date <= currentDate)
+					deadLineScorePercent = deadLine.ScorePercent;
 			}
 
 			var newScore = slide is ExerciseSlide ex

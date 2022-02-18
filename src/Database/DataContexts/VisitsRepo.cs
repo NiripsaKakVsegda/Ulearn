@@ -106,14 +106,15 @@ namespace Database.DataContexts
 					(slide.ScoringGroup != string.Empty && d.SlideType == DeadLineSlideType.ScoringGroupId && d.SlideValue == slide.ScoringGroup
 					|| d.SlideType == DeadLineSlideType.SlideId && d.SlideValue == slide.Id.ToString()))
 				.ToList()
-				.Where(d=> d.UserIds == null || d.UserIds.Contains(userIdGuid))
+				.Where(d => d.UserIds == null || d.UserIds.Contains(userIdGuid))
 				.ToList();
 			var deadLineScorePercent = 100;
 			if (deadLines.Count > 0)
 			{
 				var currentDate = DateTime.Now;
 				var deadLine = DeadLinesUtils.GetCurrentDeadLine(deadLines, currentDate);
-				deadLineScorePercent = deadLine.ScorePercent;
+				if (deadLine.Date <= currentDate)
+					deadLineScorePercent = deadLine.ScorePercent;
 			}
 
 			var newScore = slide is ExerciseSlide ex

@@ -18,12 +18,12 @@ import Slide from './Slide/Slide.redux';
 
 import { UrlError } from "src/components/common/Error/NotFoundErrorBoundary";
 import Error404 from "src/components/common/Error/Error404";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Edit, HelpDot, } from "icons";
 import CourseLoader from "./CourseLoader";
 
-import { findNextUnit, findUnitIdBySlideId, getCourseStatistics, SlideInfo, } from "./CourseUtils";
+import { findNextUnit, findUnitIdBySlideId, getCourseStatistics, } from "./CourseUtils";
 import { buildQuery } from "src/utils";
 import { UserInfo, UserRoles } from "src/utils/courseRoles";
 import documentReadyFunctions from "src/legacy/legacy";
@@ -32,16 +32,13 @@ import runLegacy from "src/legacy/legacyRunner";
 import { adminCheckingQueuePath, constructPathToSlide, signalrWS, } from 'src/consts/routes';
 import { ShortSlideInfo, SlideType, } from 'src/models/slide';
 import Meta from "src/consts/Meta";
-import { CourseInfo, UnitInfo, UnitsInfo } from "src/models/course";
+import { CourseInfo, UnitInfo, } from "src/models/course";
 import { SlideUserProgress, } from "src/models/userProgress";
-import { AccountState } from "src/redux/account";
 import { CourseRoleType } from "src/consts/accessType";
 import { ShortUserInfo } from "src/models/users";
-import { DeadLineInfo } from "src/models/deadLines";
-import { isTimeArrived, momentFromServerToLocal } from "src/utils/momentUtils";
+import { isTimeArrived } from "src/utils/momentUtils";
 import { Gapped, Hint, Toast } from "ui";
 import {
-	CourseStatistics,
 	FlashcardsStatistics,
 	MenuItem,
 	Progress,
@@ -50,54 +47,14 @@ import {
 	UnitProgress,
 } from "../Navigation/types";
 
+import { CourseProps, State } from "./Course.types";
+import texts from "./Course.texts";
 import styles from "./Course.less";
 
-interface State {
-	Page: React.ComponentType | React.ElementType;
-	title?: string;
-	highlightedUnit: string | null;
-	currentCourseId: string;
-	currentSlideId?: string;
-	currentSlideType?: SlideType;
-	meta: Meta;
-
-	openedUnit?: UnitInfo;
-
-	courseStatistics: CourseStatistics;
-}
-
-interface CourseProps extends RouteComponentProps {
-	courseId: string;
-	slideInfo: SlideInfo;
-
-	courseInfo: CourseInfo;
-	user: AccountState;
-	progress: { [p: string]: SlideUserProgress };
-	units: UnitsInfo | null;
-	courseLoadingErrorStatus: string | null;
-	courseLoading: boolean;
-	loadedCourseIds: Record<string, unknown>;
-	flashcardsStatisticsByUnits?: { [unitId: string]: FlashcardsStatistics },
-	flashcardsLoading: boolean;
-	deadLines?: DeadLineInfo[];
-
-	isStudentMode: boolean;
-	navigationOpened: boolean;
-	isSlideReady: boolean;
-	isHijacked: boolean;
-
-	enterToCourse: (courseId: string) => void;
-	loadCourse: (courseId: string) => void;
-	loadFlashcards: (courseId: string) => void;
-	loadCourseErrors: (courseId: string) => void;
-	loadUserProgress: (courseId: string, userId: string) => void;
-	updateVisitedSlide: (courseId: string, slideId: string) => void;
-	loadDeadLines: (courseId: string) => void;
-}
 
 const defaultMeta: Meta = {
-	title: 'Ulearn',
-	description: 'Интерактивные учебные онлайн-курсы по программированию',
+	title: texts.ulearnTitle,
+	description: texts.ulearnDescription,
 	keywords: [],
 	imageUrl: '',
 };
@@ -326,15 +283,15 @@ class Course extends Component<CourseProps, State> {
 	};
 
 	static getTitle = (currentSlideTitle: string | undefined): string => {
-		return currentSlideTitle ? currentSlideTitle : "Вопросы для самопроверки";
+		return currentSlideTitle ? currentSlideTitle : texts.flashcardsTitle;
 	};
 
 	updateWindowMeta = (slideTitle: string | undefined, courseTitle: string): void => {
 		if(slideTitle) {
 			this.setState({
 				meta: {
-					title: `${ courseTitle }: ${ slideTitle } на ulearn.me`,
-					description: 'Интерактивные учебные онлайн-курсы по программированию',
+					title: `${ courseTitle }: ${ slideTitle } на Ulearn.me`,
+					description: texts.ulearnDescription,
 					keywords: [],
 					imageUrl: '',
 				}
@@ -383,7 +340,7 @@ class Course extends Component<CourseProps, State> {
 	}
 
 	renderSlide(): React.ReactElement {
-		const { user, courseId, isStudentMode, slideInfo, deadLines, } = this.props;
+		const { user, courseId, isStudentMode, slideInfo, } = this.props;
 		const { Page, title, openedUnit, } = this.state;
 
 		const { isNavigationVisible, isReview, isLti } = slideInfo;
@@ -416,7 +373,7 @@ class Course extends Component<CourseProps, State> {
 						group: slideInfo.query.group || undefined,
 						done: slideInfo.query.done,
 					}) }>
-						← Код-ревью и проверка тестов
+						{ texts.codeReviewLink }
 					</Link>
 				</label> }
 				{ (isNavigationVisible || isReview) && title &&
@@ -430,21 +387,7 @@ class Course extends Component<CourseProps, State> {
 						: title }
 					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 				</h1> }
-				{
-					slideInfo.deadLineInfo && currentSlideInfo
-					&& !isReview
-					&& (currentSlideInfo.type === SlideType.Exercise || currentSlideInfo.type === SlideType.Quiz)
-					&& <p className={ styles.deadLine }>
-						<Gapped gap={ 5 }>
-							Дедлайн для сдачи { momentFromServerToLocal(slideInfo.deadLineInfo.date).format(
-							'DD.MM.YYYY HH:mm') }
-							<Hint text={ `Если сдать после срока, вы получите ${ Math.ceil(
-								slideInfo.deadLineInfo.scorePercent * currentSlideInfo.maxScore / 100) } баллов за авто-проверку` }>
-								<HelpDot/>
-							</Hint>
-						</Gapped>
-					</p>
-				}
+				{ this.renderDeadLineScheduleForCurrentPage() }
 				<div className={ styles.slide }>
 					{ isNavigationVisible && !isStudentMode &&
 					<SlideHeader
@@ -466,6 +409,58 @@ class Course extends Component<CourseProps, State> {
 			</main>
 		);
 	}
+
+	renderDeadLineScheduleForCurrentPage = (): React.ReactNode => {
+		const { slideInfo, } = this.props;
+		const { courseStatistics, } = this.state;
+		const { isReview, } = slideInfo;
+
+		const currentSlideInfo = slideInfo.navigationInfo
+			? slideInfo.navigationInfo.current
+			: null;
+
+		if(!currentSlideInfo) {
+			return null;
+		}
+
+		const isCurrentPageIsSlideWithDeadLine = slideInfo.deadLineInfo
+			&& !isReview
+			&& (currentSlideInfo.type === SlideType.Exercise || currentSlideInfo.type === SlideType.Quiz);
+
+		if(courseStatistics.byUnits[currentSlideInfo.unitId]?.additionalInfoBySlide[currentSlideInfo.id].status === SlideProgressStatus.done) {
+			return null;
+		}
+
+		return (
+			<>
+				{
+					slideInfo && isCurrentPageIsSlideWithDeadLine && slideInfo.deadLineInfo?.current
+					&& <p className={ styles.deadLine }>
+						<Gapped gap={ 5 }>
+							{ texts.renderDeadLineInfo(slideInfo.deadLineInfo.current) }
+							<Hint
+								text={ texts.afterDeadLine(slideInfo.deadLineInfo.current, currentSlideInfo.maxScore) }>
+								<HelpDot/>
+							</Hint>
+						</Gapped>
+					</p>
+				}
+				{
+					slideInfo && isCurrentPageIsSlideWithDeadLine && slideInfo.deadLineInfo?.next
+					&& <p className={ styles.deadLine }>
+						<Gapped gap={ 5 }>
+							{ texts.renderDeadLineInfo(slideInfo.deadLineInfo.next,
+								slideInfo.deadLineInfo.current !== null) }
+							<Hint
+								text={ texts.afterDeadLine(slideInfo.deadLineInfo.next, currentSlideInfo.maxScore) }>
+								<HelpDot/>
+							</Hint>
+						</Gapped>
+					</p>
+				}
+			</>
+		);
+	};
 
 	renderGitEditLink = (slideInfo: ShortSlideInfo): React.ReactElement => {
 		return (
@@ -507,13 +502,7 @@ class Course extends Component<CourseProps, State> {
 	renderFooter(): React.ReactElement {
 		return (
 			<footer className={ styles.footer }>
-				<p><Link to="/Home/Terms">Условия использования платформы</Link></p>
-				<p>
-					Вопросы и пожеланиями пишите на <a href="mailto:support@ulearn.me">support@ulearn.me</a>
-				</p>
-				<p>
-					Сделано в <a href="https://kontur.ru/career">Контуре</a>
-				</p>
+				{ texts.renderFooter() }
 			</footer>
 		);
 	}
@@ -522,7 +511,6 @@ class Course extends Component<CourseProps, State> {
 		const { courseInfo, navigationOpened, } = this.props;
 		const { openedUnit, courseStatistics, } = this.state;
 		const { byUnits, courseProgress, flashcardsStatisticsByUnits, flashcardsStatistics, } = courseStatistics;
-
 		const props = {
 			navigationOpened,
 			courseTitle: courseInfo.title,
@@ -562,13 +550,13 @@ class Course extends Component<CourseProps, State> {
 					...u,
 					onClick: !u.additionalContentInfo.isAdditionalContent
 					|| u.additionalContentInfo.publicationDate && isTimeArrived(u.additionalContentInfo.publicationDate,
-						'DD.MM.YYYY HH:mm:ss')
+						texts.additionalContentTimeFormat)
 						? u.onClick
 						: this.unitUnavailableClickHandle,
 					additionalContentInfo: {
 						...u.additionalContentInfo,
 						isPublished: u.additionalContentInfo.publicationDate && isTimeArrived(
-							u.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss') || false,
+							u.additionalContentInfo.publicationDate, texts.additionalContentTimeFormat) || false,
 						hideInfo: true,
 					}
 				}));
@@ -608,7 +596,7 @@ class Course extends Component<CourseProps, State> {
 					additionalContentInfo: {
 						...s.additionalContentInfo,
 						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(
-							s.additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss') || false,
+							s.additionalContentInfo.publicationDate, texts.additionalContentTimeFormat) || false,
 						hideInfo: true,
 					}
 				}));
@@ -677,11 +665,11 @@ class Course extends Component<CourseProps, State> {
 	};
 
 	unitUnavailableClickHandle = (): void => {
-		Toast.push('Модуль ещё не опубликован');
+		Toast.push(texts.unitIsNotPublished);
 	};
 
 	slideUnavailableClickHandle = (): void => {
-		Toast.push('Слайд ещё не опубликован');
+		Toast.push(texts.slideIsNotPublished);
 	};
 
 	returnInUnitsMenu = (): void => {

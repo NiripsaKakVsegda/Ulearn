@@ -16,7 +16,7 @@ import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
 import { SubmissionInfo } from "src/models/exercise";
 import { getDataIfLoaded } from "src/redux";
 import { DeadLineInfo } from "src/models/deadLines";
-import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
+import { DeadLineSchedule, getDeadLineForSlide } from "src/utils/deadLinesUtils";
 import { isTimeArrived } from "src/utils/momentUtils";
 
 
@@ -31,7 +31,7 @@ export interface SlideInfo {
 	isLti: boolean;
 	isNavigationVisible: boolean;
 	query: UlearnQueryParams;
-	deadLineInfo: DeadLineInfo | null;
+	deadLineInfo: DeadLineSchedule | null;
 
 	//navigation
 	navigationInfo?: SlideNavigationInfo;
@@ -98,9 +98,9 @@ export const getUnitStatistics = (
 		additionalInfoBySlide[id] = { status: SlideProgressStatus.notVisited, };
 		if(deadLines && deadLines.length > 0 && (type === SlideType.Exercise || type === SlideType.Quiz)) {
 			const deadLine = getDeadLineForSlide(deadLines, scoringGroup, id, unit.id);
-			if(deadLine) {
-				scoreAfterDeadLine = Math.ceil(deadLine.scorePercent * maxScore / 100);
-				additionalInfoBySlide[id].deadLine = deadLine;
+			additionalInfoBySlide[id].deadLine = deadLine;
+			if(deadLine.current) {
+				scoreAfterDeadLine = Math.ceil(deadLine.current.scorePercent * maxScore / 100);
 			}
 		}
 		const slideProgress = progress[id];

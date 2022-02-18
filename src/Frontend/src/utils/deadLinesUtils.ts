@@ -1,17 +1,19 @@
 import { DeadLineInfo, DeadLineSlideType } from "src/models/deadLines";
-import { momentFromServer, } from "./momentUtils";
+import { momentFromServerToLocal, momentToServerFormat, } from "./momentUtils";
 import moment from "moment";
+
+export function isDeadLineOverlappedByAnother(deadLine: DeadLineInfo, deadLines: DeadLineInfo[]): boolean {
+	const currentDeadLine = getDeadLine(deadLines, momentFromServerToLocal(deadLine.date));
+
+	return currentDeadLine.current?.id !== deadLine.id;
+}
 
 export function getDeadLineForStudent(
 	deadLines: DeadLineInfo[],
 	studentIds: string[] | null,
-): DeadLineInfo | null {
+): DeadLineSchedule {
 	deadLines = deadLines.filter(
 		d => d.userIds === null || d.userIds.every(userId => studentIds?.includes(userId)));
-
-	if(deadLines.length === 0) {
-		return null;
-	}
 
 	return getDeadLine(deadLines);
 }
@@ -20,24 +22,33 @@ export function getDeadLineForSlide(
 	deadLines: DeadLineInfo[],
 	slideScoringGroupId: string | null,
 	slideId: string,
-	unitId: string
-): DeadLineInfo | null {
+	unitId: string,
+	curMoment = moment(),
+): DeadLineSchedule {
 	deadLines = deadLines.filter(
 		d => d.unitId === unitId && (
 			d.slideType === DeadLineSlideType.All ||
 			d.slideType === DeadLineSlideType.ScoringGroupId && d.slideValue === slideScoringGroupId ||
 			d.slideType === DeadLineSlideType.SlideId && d.slideValue === slideId));
 
-	if(deadLines.length === 0) {
-		return null;
-	}
-
-	return getDeadLine(deadLines);
+	return getDeadLine(deadLines, curMoment);
 }
 
-export function getDeadLine(deadLines: DeadLineInfo[],): DeadLineInfo | null {
+export interface DeadLineSchedule {
+	current: DeadLineInfo | null;
+	next: DeadLineInfo | null;
+}
+
+export function getDeadLine(deadLines: DeadLineInfo[], curMoment = moment()): DeadLineSchedule {
+	if(deadLines.length === 0) {
+		return {
+			current: null,
+			next: null,
+		};
+	}
+
 	const convertedDeadLines = deadLines
-		.map(d => ({ ...d, date: momentFromServer(d.date) }))
+		.map(d => ({ ...d, date: momentFromServerToLocal(d.date) }))
 		.sort((d1, d2) => {
 			const diff = d2.date.diff(d1.date);
 
@@ -48,36 +59,31 @@ export function getDeadLine(deadLines: DeadLineInfo[],): DeadLineInfo | null {
 			return d2.scorePercent - d1.scorePercent;
 		});
 
-	const curMoment = moment();
 	const inactiveDeadLines = convertedDeadLines
 		.filter(d => d.date.diff(curMoment) > 0);
 	const lastActiveWithMoment = convertedDeadLines
 		.filter(d => d.date.diff(curMoment) <= 0)
 		?.[0];
 
-	let inactive = null;
-	let lastActive = null;
+	let next = null;
+	let current = null;
 
 	if(lastActiveWithMoment) {
-		lastActive = { ...lastActiveWithMoment, date: lastActiveWithMoment.date.format() };
+		current = { ...lastActiveWithMoment, date: momentToServerFormat(lastActiveWithMoment.date) };
 	}
 
 	if(inactiveDeadLines.length > 0) {
 		const maxScoreAmongInActive = Math.max(...inactiveDeadLines.map(d => d.scorePercent));
-		inactive = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive)!;
-		if(inactive) {
-			inactive = { ...inactive, date: inactive.date.format() };
+		next = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive)!;
+		if(next) {
+			next = { ...next, date: momentToServerFormat(next.date) };
 		}
 	}
 
-	if(inactive === null) {
-		return lastActive;
-	}
-	if(lastActive === null) {
-		return inactive;
-	}
+	const isCurrentOverlapped = current && next && next.scorePercent >= current.scorePercent;
 
-	return inactive.scorePercent > lastActive.scorePercent
-		? inactive
-		: lastActive;
+	return {
+		current: isCurrentOverlapped ? null : current,
+		next: next,
+	};
 }

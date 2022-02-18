@@ -5,16 +5,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { constructPathToGroupsPage } from "src/consts/routes";
 import { buildQuery } from "src/utils";
+import texts from "src/components/course/Course/Course.texts";
 
 export default {
 	hiddenSlide: 'Этот слайд скрыт',
 	getDeadLineInfo: (
 		deadLineInfo: DeadLineInfo,
 		maxScore: number
-	) => `На этот слайд установлен дедлайн на ${ momentFromServerToLocal(
-		deadLineInfo.date).format(
-		'DD.MM.YYYY HH:mm') }. Если сдать после срока, вы получите ${ Math.ceil(
-		deadLineInfo.scorePercent * maxScore / 100) } баллов за авто-проверку`,
+	): React.ReactText => {
+		return `На этот слайд установлен дедлайн на ${ momentFromServerToLocal(
+			deadLineInfo.date).format(
+			'DD.MM.YYYY HH:mm') }. ${ texts.afterDeadLine(deadLineInfo, maxScore) }`;
+	},
 	slideNotPublished: 'Слайд ещё не опубликован',
 	getAdditionalContentPublicationDate: (additionalContentInfo: AdditionalContentInfo) => additionalContentInfo.publicationDate && `Этот слайд будет опубликован ${ momentFromServerToLocal(
 		additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss').format(

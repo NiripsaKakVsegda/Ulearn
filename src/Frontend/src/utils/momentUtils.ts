@@ -1,6 +1,8 @@
 import moment, { Moment } from "moment-timezone";
 import { DEFAULT_TIMEZONE } from "src/consts/defaultTimezone";
 
+export const serverFormat = 'YYYY-MM-DDTHH:mm:ss';
+
 export function getMoment(time: string): string {
 	return moment(moment.tz(time, DEFAULT_TIMEZONE).format()).fromNow();
 }
@@ -22,7 +24,7 @@ export function momentToTimeInputFormat(moment: Moment | null): string | undefin
 }
 
 export function momentToServerFormat(moment: Moment): string {
-	return moment.local().tz(DEFAULT_TIMEZONE).format('YYYY-MM-DDTHH:mm:ss');
+	return moment.local().tz(DEFAULT_TIMEZONE).format(serverFormat);
 }
 
 export function momentFromServerToLocal(timeInServer: string, format?: string): Moment {
@@ -30,7 +32,7 @@ export function momentFromServerToLocal(timeInServer: string, format?: string): 
 }
 
 export function momentFromServer(timeInServer: string, format?: string): Moment {
-	return moment(timeInServer, format || 'YYYY-MM-DDTHH:mm:ss');
+	return moment(timeInServer, format || serverFormat);
 }
 
 export function isTimeArrived(timeInServer: string, format?: string): boolean {

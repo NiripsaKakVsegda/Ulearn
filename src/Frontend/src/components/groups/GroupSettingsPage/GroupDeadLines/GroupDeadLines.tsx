@@ -6,8 +6,13 @@ import { ValidationContainer, ValidationWrapper } from "@skbkontur/react-ui-vali
 import { Copy, Delete, Undo, Warning } from "icons";
 
 import { clone } from "src/utils/jsonExtensions";
-import { convertDefaultTimezoneToLocal, momentToDateInputFormat, momentToTimeInputFormat } from "src/utils/momentUtils";
-import { getDeadLineForStudent, } from "src/utils/deadLinesUtils";
+import {
+	convertDefaultTimezoneToLocal,
+	momentToDateInputFormat,
+	momentToTimeInputFormat,
+	serverFormat
+} from "src/utils/momentUtils";
+import { isDeadLineOverlappedByAnother, } from "src/utils/deadLinesUtils";
 
 import { DEFAULT_TIMEZONE } from "src/consts/defaultTimezone";
 
@@ -235,13 +240,12 @@ function GroupDeadLines({
 			const overlappingDeadLines = deadlines
 				.filter(d1 => d1.unitId === d.unitId &&
 					(d1.slideType === DeadLineSlideType.All ||
-						//d.slideType === DeadLineSlideType.All ||
 						d1.slideType === d.slideType && d1.slideValue === d.slideValue) &&
-					(//d.userIds === null ||
-						d1.userIds === null ||
-						d1.userIds.every(u => d.userIds?.includes(u))));
+					(d1.userIds === null ||
+						d1.userIds.every(u => d.userIds?.includes(u))))
+				.map(buildDeadLineFromStateDeadLine);
 			d.isOverlappedByOtherDeadLine = overlappingDeadLines.length > 1
-				&& getDeadLineForStudent(overlappingDeadLines as DeadLineInfo[], d.userIds)?.id !== d.id;
+				&& isDeadLineOverlappedByAnother(buildDeadLineFromStateDeadLine(d), overlappingDeadLines);
 		});
 	}
 
@@ -453,16 +457,26 @@ function GroupDeadLines({
 		}
 	}
 
+	function buildDeadLineFromStateDeadLine(deadLine: StateDeadLineInfo): DeadLineInfo {
+		return {
+			...deadLine,
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
+			time: undefined,
+			date: moment(`${ deadLine.date }T${ deadLine.time }`, 'DD.MM.YYYYTHH:mm')
+				.local()
+				.tz(DEFAULT_TIMEZONE)
+				.format(serverFormat)
+		};
+	}
+
 	async function saveDeadLine(id: string,) {
 		if(!state || state === isLoading) {
 			return;
 		}
 
 		const newState = clone(state);
-		const deadLine = { ...newState.actualDeadLines[id] };
-		deadLine.date = moment(`${ deadLine.date }T${ deadLine.time }`, 'DD.MM.YYYYTHH:ss')
-			.local().tz(DEFAULT_TIMEZONE)
-			.format('YYYY-MM-DDTHH:mm:ss');
+		const deadLine = buildDeadLineFromStateDeadLine(newState.actualDeadLines[id]);
 
 		if(id === notFoundId) {
 			deadLine.id = (await api.createDeadLine(courseId, deadLine as DeadLineInfo)

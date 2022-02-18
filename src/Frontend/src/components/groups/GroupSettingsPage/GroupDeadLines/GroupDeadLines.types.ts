@@ -52,7 +52,9 @@ export interface DeadLineSlideInfo {
 }
 
 export interface StateDeadLineInfo extends Omit<DeadLineInfo, 'date'> {
+	//format DD.MM.YYYY
 	date?: string;
+	//format HH:mm
 	time?: string;
 	isOverlappedByOtherDeadLine?: boolean;
 }
