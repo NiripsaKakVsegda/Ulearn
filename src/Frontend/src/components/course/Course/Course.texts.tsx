@@ -45,7 +45,7 @@ export default {
 	},
 	renderDeadLineInfo: (deadLineInfo: DeadLineInfo, isAnyDeadLineArrivedBefore = false): React.ReactText => {
 		if(isTimeArrived(deadLineInfo.date)) {
-			return `Дедлайн для сдачи наступил`;
+			return `Дедлайн для сдачи прошёл`;
 		}
 		if(isAnyDeadLineArrivedBefore) {
 			return `Следующий дедлайн для сдачи ${ momentFromServerToLocal(deadLineInfo.date).format(
