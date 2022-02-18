@@ -7,7 +7,7 @@ import { Copy, Delete, Undo, Warning } from "icons";
 
 import { clone } from "src/utils/jsonExtensions";
 import {
-	convertDefaultTimezoneToLocal,
+	convertDefaultTimezoneToLocal, momentFromServerToLocal,
 	momentToDateInputFormat,
 	momentToTimeInputFormat,
 	serverFormat
@@ -158,8 +158,8 @@ function GroupDeadLines({
 
 			deadLinesResponse.deadLines
 				.sort((d1, d2) => {
-					const a = moment(d1.date, 'YYYY-MM-DDTHH:mm:ss');
-					const b = moment(d2.date, 'YYYY-MM-DDTHH:mm:ss');
+					const a = moment(d1.date, serverFormat);
+					const b = moment(d2.date, serverFormat);
 					return a.diff(b);
 				});
 
@@ -250,7 +250,7 @@ function GroupDeadLines({
 	}
 
 	function parseTime(dateString: string) {
-		const publicationMoment = convertDefaultTimezoneToLocal(dateString);
+		const publicationMoment = momentFromServerToLocal(dateString);
 		const date = momentToDateInputFormat(publicationMoment);
 		const time = momentToTimeInputFormat(publicationMoment);
 

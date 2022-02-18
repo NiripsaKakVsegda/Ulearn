@@ -698,4 +698,4 @@ class Course extends Component<CourseProps, State> {
 	};
 }
 
-export { Course, CourseProps };
+export { Course, };
