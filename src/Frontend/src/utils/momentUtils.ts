@@ -28,7 +28,7 @@ export function momentToServerFormat(moment: Moment): string {
 }
 
 export function momentFromServerToLocal(timeInServer: string, format?: string): Moment {
-	return moment.tz(momentFromServer(timeInServer, format), DEFAULT_TIMEZONE).local();
+	return moment.tz(timeInServer, format || serverFormat, DEFAULT_TIMEZONE).local();
 }
 
 export function momentFromServer(timeInServer: string, format?: string): Moment {
