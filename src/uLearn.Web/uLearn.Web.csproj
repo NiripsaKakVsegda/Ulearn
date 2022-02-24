@@ -981,6 +981,7 @@
 	  <Content Include="Content\loading.gif" />
 	  <Content Include="Content\logo.png" />
 	  <Content Include="Content\StartPageJumbotron.png" />
+	  <Content Include="Content\ulearn.yml" />
     <Content Include="Global.asax" />
     <None Include="Hunspellx64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
