@@ -6,6 +6,7 @@ export default {
 	allTestPassedProhibitFurtherReview: 'Все тесты пройдены, по этой задаче код-ревью больше не проводится',
 	noTestsPendingReview: 'Решение ожидает код-ревью',
 	noTestsWasReviewed: 'Решение прошло код-ревью',
+	noTestsNotLast: 'Задача сдана',
 	noTestsProhibitFurtherReview: 'По этой задаче код-ревью больше не проводится',
 	notCheckedAtAll: 'Эта задача проверяется только вручную преподавателем, но вы не принадлежите к студенческой группе',
 	running: 'Решение проверяется',

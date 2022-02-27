@@ -8,7 +8,7 @@
 .table {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: 240px 220px 220px 150px 70px 141px;
+  grid-template-columns: 240px 220px 220px auto 70px 141px;
   grid-template-rows: auto;
   grid-template-areas: "TimeAndDate Module Slide User Score Controls";
   column-gap: 12px;
@@ -19,6 +19,11 @@
 
 .tableHeader {
   font-weight: 600;
+}
+
+.iconInButtonAsSelectIcon {
+  left: 7px;
+  position: relative;
 }
 
 .conflictHint {

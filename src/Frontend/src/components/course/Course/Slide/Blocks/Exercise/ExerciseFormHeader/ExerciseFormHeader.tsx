@@ -158,9 +158,11 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 		return exerciseTexts.allTestsPassed || texts.allTestPassed;
 	}
 
-	static getTextNoTests(waitingForManualChecking: boolean | undefined,
+	static getTextNoTests(
+		waitingForManualChecking: boolean | undefined,
 		prohibitFurtherManualChecking: boolean | undefined,
-		manualCheckingPassed: boolean, selectedSubmissionIsLastSuccess: boolean | undefined
+		manualCheckingPassed: boolean,
+		selectedSubmissionIsLastSuccess: boolean | undefined
 	): string | null {
 		if(manualCheckingPassed) {
 			return texts.noTestsWasReviewed;
@@ -170,6 +172,9 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 		}
 		if(prohibitFurtherManualChecking && selectedSubmissionIsLastSuccess) {
 			return texts.noTestsProhibitFurtherReview;
+		}
+		if(waitingForManualChecking) {
+			return texts.noTestsNotLast;
 		}
 		return texts.notCheckedAtAll;
 	}

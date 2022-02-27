@@ -457,10 +457,11 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
 		}
+		const firstSubmission = studentSubmissions[studentSubmissions.length - 1];
 
 		const deadLine = getDeadLineForSlide(deadLines ?? [],
 			slideContext.slideInfo.navigationInfo?.current.scoringGroup || null, slideContext.slideId,
-			slideContext.unitId, moment(studentSubmissions[0].timestamp));
+			slideContext.unitId, moment(firstSubmission.timestamp));
 
 		return (
 			<>
@@ -471,7 +472,7 @@ class InstructorReview extends React.Component<Props, State> {
 								!lastCheckedSubmissionId && deadLine.current &&
 								<span className={ styles.solvedAfterDeadLineWrapper }>
 									<Hint text={ texts.getDeadLineViolationInfo(
-										studentSubmissions[0], deadLine.current) }>
+										firstSubmission, deadLine.current) }>
 										<span className={ styles.solvedAfterDeadLineToken }>После дедлайна</span>
 									</Hint>
 								</span>

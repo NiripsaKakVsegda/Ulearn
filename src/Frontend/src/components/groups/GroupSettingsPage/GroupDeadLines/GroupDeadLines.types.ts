@@ -1,6 +1,7 @@
 import { GroupStudentInfo } from "src/models/groups";
 import { CourseInfo } from "src/models/course";
 import { DeadLineInfo, DeadLinesResponse } from "src/models/deadLines";
+import { AccountState } from "src/redux/account";
 
 export interface Props {
 	getDeadLines: (courseId: string, groupId: number) => Promise<DeadLinesResponse>;
@@ -10,8 +11,10 @@ export interface Props {
 
 	getStudents: (groupId: number) => Promise<{ students: GroupStudentInfo[] }>;
 	getCourse: (courseId: string) => Promise<CourseInfo>;
+
 	courseId: string;
 	groupId: number;
+	user: AccountState;
 }
 
 export interface State {
@@ -20,13 +23,19 @@ export interface State {
 	errors: ValidationErrorsContainer;
 
 	unitsMarkup: Markup<string>[];
-	studentsMarkup: Markup<string>[];
+	studentsMarkup: Markup<string, StudentValueMarkup | string>[];
 	slidesMarkupByUnit: {
 		[unitId: string]: Markup<SlidesMarkupValue>[];
 	};
+	studentsModal: {
+		deadLineId: DeadLineInfo['id'];
+		userIds: DeadLineInfo['userIds'];
+	} | undefined;
 }
 
-export type Markup<T> = [value: T, title: string];
+export type StudentValueMarkup = { visibleName: string, avatarUrl: string | null, };
+
+export type Markup<T, V = string> = [value: T, title: V];
 
 export interface SlidesMarkupValue {
 	id: string;

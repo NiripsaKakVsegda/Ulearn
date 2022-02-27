@@ -1,13 +1,30 @@
 import React, { useState } from "react";
 import moment from "moment/moment";
 
-import { Button, DatePicker, DropdownMenu, Gapped, Hint, Input, Kebab, Loader, MenuItem, Select, Toast } from "ui";
+import {
+	Button,
+	Checkbox,
+	DatePicker,
+	DropdownMenu,
+	Gapped,
+	Hint,
+	Input,
+	Kebab,
+	Loader,
+	MenuItem,
+	Modal,
+	Select,
+	Toast,
+} from "ui";
 import { ValidationContainer, ValidationWrapper } from "@skbkontur/react-ui-validations";
-import { Copy, Delete, Undo, Warning } from "icons";
+import { ArrowChevronDown, Copy, Delete, Undo, Warning } from "icons";
+import Avatar from "src/components/common/Avatar/Avatar";
+import { Profile } from 'src/components/groups/GroupSettingsPage/GroupMembers/Profile.js';
 
 import { clone } from "src/utils/jsonExtensions";
+import getPluralForm from "src/utils/getPluralForm";
 import {
-	convertDefaultTimezoneToLocal, momentFromServerToLocal,
+	momentFromServerToLocal,
 	momentToDateInputFormat,
 	momentToTimeInputFormat,
 	serverFormat
@@ -16,6 +33,7 @@ import { isDeadLineOverlappedByAnother, } from "src/utils/deadLinesUtils";
 
 import { DEFAULT_TIMEZONE } from "src/consts/defaultTimezone";
 
+import { ShortUserInfo } from "src/models/users";
 import { DeadLineInfo, DeadLineSlideType, ScorePercent } from "src/models/deadLines";
 import {
 	DeadLineModuleInfo,
@@ -24,6 +42,7 @@ import {
 	SlidesMarkupValue,
 	State,
 	StateDeadLineInfo,
+	StudentValueMarkup,
 	ValidationErrorType
 } from "./GroupDeadLines.types";
 
@@ -42,9 +61,12 @@ const timeFormatChars = {
 const notFoundId = '-1';
 const isLoading = 'isLoading';
 
+const GetNameWithSecondNameFirst = (user: ShortUserInfo) => user.lastName && user.firstName ? `${ user.lastName } ${ user.firstName }` : user.visibleName;
+
 function GroupDeadLines({
 	courseId,
 	groupId,
+	user,
 	...api
 }: Props): React.ReactElement {
 	const [state, setState] = useState<State | null | typeof isLoading>(null);
@@ -89,6 +111,7 @@ function GroupDeadLines({
 								{ texts.score }
 							</span>
 							{ renderDeadLines() }
+							{ renderChooseStudentsModal() }
 						</div>
 					}
 				</ValidationContainer>
@@ -121,11 +144,111 @@ function GroupDeadLines({
 				cancelChanges={ cancelChanges }
 				changePercent={ changePercent }
 				changeSlide={ changeSlide }
-				changeStudent={ changeStudent }
+				openChooseStudentsModal={ openChooseStudentsModal }
 				changeTime={ changeTime }
 				changeUnit={ changeUnit }
 				copyDeadLinesForNextModule={ copyDeadLinesForNextModule }
 			/>);
+	}
+
+	function renderChooseStudentsModal() {
+		if(!state || state === isLoading || !state.studentsModal) {
+			return;
+		}
+		const studentsModal = state.studentsModal;
+		const deadLine = state.actualDeadLines[studentsModal.deadLineId];
+		const allStudentsChecked = !deadLine.userIds;
+
+		return (
+			<Modal width={ 600 } onClose={ cancelAndCloseChooseStudentsModal }>
+				<Modal.Header>Выбор студентов</Modal.Header>
+				<Modal.Body>
+					<Gapped vertical gap={ 8 }>
+						{ state.studentsMarkup
+							.filter(s => s[0] !== notFoundId)
+							.map(([id, value]) => {
+									const checked = deadLine.userIds?.includes(id) || false;
+									const markup = value as StudentValueMarkup;
+									const fullName = markup.visibleName ? markup.visibleName : value as string;
+									const avatarUrl = markup.avatarUrl ? markup.avatarUrl : null;
+
+									return (
+										<div key={ id }>
+											<Checkbox
+												checked={ checked }
+												onValueChange={ (value) =>
+													changeStudent(studentsModal.deadLineId, id, value ? 'add' : 'delete') }>
+												<Avatar user={ {
+													id: id,
+													visibleName: fullName,
+													avatarUrl: avatarUrl,
+													firstName: fullName,
+													lastName: fullName
+												} } size={ "small" }/>
+												<Profile
+													user={ { visibleName: fullName, id, } }
+													systemAccesses={ user.systemAccesses }
+													isSysAdmin={ user.isSystemAdministrator }/>
+											</Checkbox>
+										</div>);
+								}
+							)
+						}
+					</Gapped>
+				</Modal.Body>
+				<Modal.Footer>
+					<Gapped vertical gap={ 8 }>
+						<Checkbox
+							disabled={ allStudentsChecked }
+							checked={ allStudentsChecked }
+							onValueChange={ (value) => changeStudent(studentsModal.deadLineId, notFoundId) }>
+							Выбрать всех студентов
+						</Checkbox>
+						<Gapped gap={ 8 }>
+							<Button use={ 'primary' } onClick={ closeChooseStudentsModal }>ОК</Button>
+							<Button onClick={ cancelAndCloseChooseStudentsModal }>Отменить</Button>
+						</Gapped>
+					</Gapped>
+				</Modal.Footer>
+			</Modal>
+		);
+	}
+
+	function openChooseStudentsModal(id: string,) {
+		if(!state || state === isLoading) {
+			return;
+		}
+
+		const deadLine = state.actualDeadLines[id];
+		setState({
+			...state,
+			studentsModal: { deadLineId: deadLine.id, userIds: deadLine.userIds ? [...deadLine.userIds] : null }
+		});
+	}
+
+	function closeChooseStudentsModal() {
+		if(!state || state === isLoading) {
+			return;
+		}
+
+		setState({ ...state, studentsModal: undefined });
+	}
+
+	function cancelAndCloseChooseStudentsModal() {
+		if(!state || state === isLoading || !state.studentsModal) {
+			return;
+		}
+
+		const studentsModal = state.studentsModal;
+		const newState = clone(state);
+		const deadLine = { ...newState.actualDeadLines[studentsModal.deadLineId] };
+		newState.studentsModal = undefined;
+
+		newState.actualDeadLines[deadLine.id].userIds = studentsModal.userIds ? [...studentsModal.userIds] : null;
+
+		addOverlappingErrorInfoTo(Object.values(newState.actualDeadLines));
+
+		setState(newState);
 	}
 
 	function loadData() {
@@ -178,8 +301,16 @@ function GroupDeadLines({
 							.concat([[{ id: notFoundId }, texts.allSlides]]),
 					};
 				}, {});
-			const studentsMarkup: Markup<string>[] = studentsResponse.students
-				.map(s => [s.user.id, s.user.visibleName]);
+			const studentsMarkup: Markup<string, StudentValueMarkup | string>[] = studentsResponse.students
+				.map(
+					s => [s.user.id, {
+						visibleName: GetNameWithSecondNameFirst(s.user),
+						avatarUrl: s.user.avatarUrl,
+					}]);
+
+			studentsMarkup.sort((a, b) =>
+				(a[1] as StudentValueMarkup).visibleName.localeCompare((b[1] as StudentValueMarkup).visibleName));
+
 			studentsMarkup.push([notFoundId, texts.allStudents]);
 
 			const unitsIds = new Set(unitsValues.map(u => u.id));
@@ -204,7 +335,7 @@ function GroupDeadLines({
 							cv.slideValue) ||
 						cv.slideType === DeadLineSlideType.SlideId && cv.slideValue !== null && !slidesIdsByUnitId[cv.unitId].has(
 							cv.slideValue) ||
-						cv.userIds !== null && cv.userIds.some(userId => !studentsIds.has(userId))
+						cv.userIds !== null && cv.userIds.every(userId => !studentsIds.has(userId))
 					) {
 						return pv;
 					}
@@ -231,6 +362,7 @@ function GroupDeadLines({
 				unitsMarkup,
 				slidesMarkupByUnit,
 				studentsMarkup,
+				studentsModal: undefined,
 			});
 		});
 	}
@@ -415,8 +547,28 @@ function GroupDeadLines({
 	function changeStudent(
 		id: string,
 		value: string,
+		addOrDelete: 'add' | 'delete' = 'add',
 	) {
-		changeDeadLine(id, (deadLineInfo) => deadLineInfo.userIds = (value === notFoundId ? null : [value]));
+		changeDeadLine(id, (deadLineInfo) => {
+			if(addOrDelete === 'add') {
+				if(value === notFoundId) {
+					deadLineInfo.userIds = null;
+					return;
+				}
+				if(deadLineInfo.userIds === null) {
+					deadLineInfo.userIds = [value];
+				} else {
+					deadLineInfo.userIds = [...deadLineInfo.userIds, value];
+				}
+			}
+			if(addOrDelete === 'delete') {
+				if(deadLineInfo.userIds?.length === 1) {
+					deadLineInfo.userIds = null;
+				} else {
+					deadLineInfo.userIds = deadLineInfo.userIds?.filter(id => id !== value) || null;
+				}
+			}
+		});
 	}
 
 	function changeDeadLine(id: string, update: (deadLine: StateDeadLineInfo) => void) {
@@ -518,7 +670,6 @@ function DeadLine(
 
 		units,
 		slides,
-		students,
 
 		error,
 
@@ -526,7 +677,7 @@ function DeadLine(
 		changeTime,
 		changeUnit,
 		changeSlide,
-		changeStudent,
+		openChooseStudentsModal,
 		changePercent,
 		saveDeadLine,
 		deleteDeadLine,
@@ -539,7 +690,7 @@ function DeadLine(
 
 		units: Markup<string>[],
 		slides: Markup<SlidesMarkupValue>[],
-		students: Markup<string>[],
+		students: Markup<string, StudentValueMarkup | string>[],
 
 		error: ValidationErrorType | undefined,
 
@@ -547,7 +698,7 @@ function DeadLine(
 		changeTime: (id: string, time: string) => void,
 		changeUnit: (id: string, unitId: string) => void,
 		changeSlide: (id: string, slideValue: SlidesMarkupValue) => void,
-		changeStudent: (id: string, studentId: string) => void,
+		openChooseStudentsModal: (id: string) => void,
 		changePercent: (id: string, percent: ScorePercent) => void,
 		saveDeadLine: (id: string) => void,
 		deleteDeadLine: (id: string) => void,
@@ -617,12 +768,18 @@ function DeadLine(
 						onValueChange={ changeSlideWithId }/>
 				</span>
 			<span>
-					<Select<string>
-						maxWidth={ '100%' }
-						width={ '100%' }
-						items={ students }
-						value={ deadLineInfo.userIds && deadLineInfo.userIds[0] || notFoundId }
-						onValueChange={ changeStudentWithId }/>
+				<Button onClick={ openChooseStudentsModalWithId }>
+					{
+						deadLineInfo.userIds && deadLineInfo.userIds.length > 0
+							? <>{ getPluralForm(deadLineInfo.userIds.length,
+								'Выбран', 'Выбраны', 'Выбрано') } { deadLineInfo.userIds.length } { getPluralForm(
+								deadLineInfo.userIds.length,
+								'студент', 'студента', 'студентов') }</>
+							: <>Выбраны все студенты </>
+					}
+					<ArrowChevronDown className={ styles.iconInButtonAsSelectIcon }
+									  color={ '#a6a6a6' }/>
+				</Button>
 				</span>
 			<span>
 					<Select<ScorePercent>
@@ -677,8 +834,8 @@ function DeadLine(
 			|| d1.date !== d2.date
 			|| d1.userIds !== null && d2.userIds === null
 			|| d1.userIds === null && d2.userIds !== null
-			|| d1.userIds !== null && d2.userIds !== null && d1.userIds.some(
-				userId => d2.userIds?.indexOf(userId) === -1)
+			|| d1.userIds !== null && d2.userIds !== null && (d1.userIds.length !== d2.userIds.length || d1.userIds.some(
+				userId => d2.userIds?.indexOf(userId) === -1))
 			|| d1.slideType !== d2.slideType
 			|| d1.slideValue !== d2.slideValue
 			|| d1.scorePercent !== d2.scorePercent
@@ -701,9 +858,13 @@ function DeadLine(
 		changeSlide(deadLineInfo.id, slideValue);
 	}
 
-	function changeStudentWithId(studentId: string) {
-		changeStudent(deadLineInfo.id, studentId);
+	function openChooseStudentsModalWithId() {
+		openChooseStudentsModal(deadLineInfo.id);
 	}
+
+	/*	function changeStudentWithId(studentId: string) {
+			changeStudent(deadLineInfo.id, studentId);
+		}*/
 
 	function changePercentWithId(percent: ScorePercent) {
 		changePercent(deadLineInfo.id, percent);
