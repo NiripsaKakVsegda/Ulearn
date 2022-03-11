@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
@@ -204,7 +205,7 @@ namespace Ulearn.Web.Api.Controllers
 					if (publishedUnits.ContainsKey(u.Id))
 					{
 						var unitPublication = publishedUnits[u.Id];
-						u.AdditionalContentInfo.PublicationDate = unitPublication.Date.ToString();
+						u.AdditionalContentInfo.PublicationDate = unitPublication.Date.ToString("yyyy-MM-DDTHH:mm:ss");
 						if (!isTester && unitPublication.Date > DateTime.Now)
 							u.Slides = new List<ShortSlideInfo>();
 					}
@@ -215,7 +216,7 @@ namespace Ulearn.Web.Api.Controllers
 						.Select(s =>
 						{
 							if (publishedSlides.ContainsKey(s.Id))
-								s.AdditionalContentInfo.PublicationDate = publishedSlides[s.Id].Date.ToString();
+								s.AdditionalContentInfo.PublicationDate = publishedSlides[s.Id].Date.ToString("yyyy-MM-DDTHH:mm:ss");
 							else if (!isTester && s.AdditionalContentInfo.IsAdditionalContent)
 								return null;
 							return s;

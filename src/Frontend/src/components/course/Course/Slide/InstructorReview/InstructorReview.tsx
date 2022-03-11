@@ -50,6 +50,7 @@ import styles from './InstructorReview.less';
 import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
 import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
 import moment from "moment";
+import { momentFromServerToLocal } from "../../../../../utils/momentUtils";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -439,7 +440,6 @@ class InstructorReview extends React.Component<Props, State> {
 			curScore,
 			prevScore,
 			deadLines,
-			lastCheckedSubmissionId,
 			slideContext,
 		} = this.props;
 		const {
@@ -460,8 +460,10 @@ class InstructorReview extends React.Component<Props, State> {
 		const firstSubmission = studentSubmissions[studentSubmissions.length - 1];
 
 		const deadLine = getDeadLineForSlide(deadLines ?? [],
-			slideContext.slideInfo.navigationInfo?.current.scoringGroup || null, slideContext.slideId,
-			slideContext.unitId, moment(firstSubmission.timestamp));
+			slideContext.slideInfo.navigationInfo?.current.scoringGroup || null,
+			slideContext.slideId,
+			slideContext.unitId,
+			momentFromServerToLocal(firstSubmission.timestamp));
 
 		return (
 			<>
@@ -469,7 +471,7 @@ class InstructorReview extends React.Component<Props, State> {
 					<h3 className={ styles.reviewHeader }>
 						<span className={ styles.reviewStudentName }>
 							{
-								!lastCheckedSubmissionId && deadLine.current &&
+								deadLine.current &&
 								<span className={ styles.solvedAfterDeadLineWrapper }>
 									<Hint text={ texts.getDeadLineViolationInfo(
 										firstSubmission, deadLine.current) }>

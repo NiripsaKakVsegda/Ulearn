@@ -47,7 +47,7 @@ namespace Database.Repos.DeadLines
 			if (inactive == null) return lastActive;
 			if (lastActive == null) return inactive;
 
-			return inactive.ScorePercent > lastActive.ScorePercent
+			return inactive.ScorePercent >= lastActive.ScorePercent
 				? inactive
 				: lastActive;
 		}

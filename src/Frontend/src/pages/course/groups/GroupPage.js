@@ -279,8 +279,14 @@ class GroupPage extends Component {
 		const { group, updatedFields, checkedScoresSettingsIds } = this.state;
 		e.preventDefault();
 
+		const mapToServerName = {
+			groupScores: 'areAdditionalScoresEnabledInThisGroup',
+			allGroupScores: 'areAdditionalScoresEnabledForAllGroups',
+			unitScores: 'canInstructorSetAdditionalScoreInSomeUnit',
+		};
+
 		const saveGroup = api.groups.saveGroupSettings(group.id, updatedFields);
-		const saveScores = api.groups.saveScoresSettings(group.id, checkedScoresSettingsIds);
+		const saveScores = api.groups.saveScoresSettings(group.id, checkedScoresSettingsIds.filter(s => !(s[mapToServerName.allGroupScores] || !s[mapToServerName.unitScores])));
 
 		Promise
 			.all([saveGroup, saveScores])
