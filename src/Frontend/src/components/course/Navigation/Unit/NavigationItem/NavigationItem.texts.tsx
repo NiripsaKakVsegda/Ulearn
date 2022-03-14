@@ -18,9 +18,8 @@ export default {
 			'DD.MM.YYYY HH:mm') }. ${ texts.afterDeadLine(deadLineInfo, maxScore) }`;
 	},
 	slideNotPublished: 'Слайд ещё не опубликован',
-	getAdditionalContentPublicationDate: (additionalContentInfo: AdditionalContentInfo) => additionalContentInfo.publicationDate && `Этот слайд будет опубликован ${ momentFromServerToLocal(
-		additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss').format(
-		'DD.MM.YYYY в HH:mm') }`,
+	getAdditionalContentPublicationDate: (additionalContentInfo: AdditionalContentInfo) => additionalContentInfo.publicationDate &&
+		`Этот слайд будет опубликован ${ momentFromServerToLocal(additionalContentInfo.publicationDate).format('DD.MM.YYYY в HH:mm') }`,
 	additionalContentPublicationInfoForInstructor: (courseId: string) => <>
 		Этот слайд является дополнительным контентом.<br/>
 		По умолчанию студенты его не видят.<br/>

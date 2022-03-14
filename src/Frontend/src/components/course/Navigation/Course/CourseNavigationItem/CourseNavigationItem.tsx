@@ -2,17 +2,17 @@ import React from "react";
 import classnames from "classnames";
 
 import { getDateDDMMYY, momentFromServerToLocal } from "src/utils/momentUtils";
+import { buildQuery } from "src/utils";
 
 import { Calendar, EyeClosed, } from "icons";
 import { Link, } from "react-router-dom";
 import { Hint, Tooltip, } from "ui";
 import ProgressBarCircle from "../../ProgressBar/ProgressBarCircle";
 
+import { constructPathToGroupsPage } from "src/consts/routes";
 import { CourseMenuItem, UnitProgress } from "../../types";
 
 import styles from "./CourseNavigationItem.less";
-import { buildQuery } from "../../../../../utils";
-import { constructPathToGroupsPage } from "../../../../../consts/routes";
 
 export interface Props extends CourseMenuItem {
 	getRefToActive?: React.RefObject<HTMLLIElement>;
@@ -58,7 +58,7 @@ function CourseNavigationItem({
 						{ additionalContentInfo.publicationDate && additionalContentInfo.hideInfo && !additionalContentInfo.isPublished &&
 						<span className={ styles.isNotPublishedIcon } onClick={ hintClickHandle }>
 							<Hint text={ `Этот модуль будет опубликован ${ momentFromServerToLocal(
-								additionalContentInfo.publicationDate, 'DD.MM.YYYY HH:mm:ss').format(
+								additionalContentInfo.publicationDate).format(
 								'DD.MM.YYYY в HH:mm') }` }>
 								<Calendar/>
 							</Hint>
