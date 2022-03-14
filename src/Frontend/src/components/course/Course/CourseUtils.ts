@@ -271,8 +271,8 @@ function filterUnitsAndSlidesByAdditionalPublication(
 			const isAdditionalContent = u.additionalContentInfo.isAdditionalContent;
 			const additionalContentPublicationDate = u.additionalContentInfo.publicationDate;
 
-			return !(!isUserCanSeeNotPublishedContent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
-				additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+			return !(!isUserCanSeeNotPublishedContent && isAdditionalContent
+				&& (!additionalContentPublicationDate || !isTimeArrived(additionalContentPublicationDate)));
 		}).map(u => {
 				return {
 					...u,
@@ -280,8 +280,8 @@ function filterUnitsAndSlidesByAdditionalPublication(
 						const isAdditionalContent = s.additionalContentInfo.isAdditionalContent;
 						const additionalContentPublicationDate = s.additionalContentInfo.publicationDate;
 
-						return !(!isUserCanSeeNotPublishedContent && isAdditionalContent && (!additionalContentPublicationDate || !isTimeArrived(
-							additionalContentPublicationDate, 'DD.MM.YYYY HH:mm:ss')));
+						return !(!isUserCanSeeNotPublishedContent && isAdditionalContent
+							&& (!additionalContentPublicationDate || !isTimeArrived(additionalContentPublicationDate)));
 					})
 				};
 			}

@@ -25,7 +25,6 @@ export default {
 	},
 
 	//additional content
-	additionalContentTimeFormat: 'DD.MM.YYYY HH:mm:ss',
 	unitIsNotPublished: 'Модуль ещё не опубликован',
 	slideIsNotPublished: 'Слайд ещё не опубликован',
 

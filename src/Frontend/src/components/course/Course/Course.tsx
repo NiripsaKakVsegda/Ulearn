@@ -546,20 +546,22 @@ class Course extends Component<CourseProps, State> {
 
 		if(!user.isSystemAdministrator && (!user.roleByCourse[courseId] || user.roleByCourse[courseId] === CourseRoleType.student)) {
 			units = units
-				.map(u => ({
-					...u,
-					onClick: !u.additionalContentInfo.isAdditionalContent
-					|| u.additionalContentInfo.publicationDate && isTimeArrived(u.additionalContentInfo.publicationDate,
-						texts.additionalContentTimeFormat)
-						? u.onClick
-						: this.unitUnavailableClickHandle,
-					additionalContentInfo: {
-						...u.additionalContentInfo,
-						isPublished: u.additionalContentInfo.publicationDate && isTimeArrived(
-							u.additionalContentInfo.publicationDate, texts.additionalContentTimeFormat) || false,
-						hideInfo: true,
-					}
-				}));
+				.map(u => {
+					const isPublished = u.additionalContentInfo.publicationDate && isTimeArrived(
+						u.additionalContentInfo.publicationDate) || false;
+					return {
+						...u,
+						onClick: !u.additionalContentInfo.isAdditionalContent
+						|| u.additionalContentInfo.publicationDate && isPublished
+							? u.onClick
+							: this.unitUnavailableClickHandle,
+						additionalContentInfo: {
+							...u.additionalContentInfo,
+							isPublished,
+							hideInfo: true,
+						}
+					};
+				});
 		}
 
 		return {
@@ -595,8 +597,7 @@ class Course extends Component<CourseProps, State> {
 					...s,
 					additionalContentInfo: {
 						...s.additionalContentInfo,
-						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(
-							s.additionalContentInfo.publicationDate, texts.additionalContentTimeFormat) || false,
+						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(s.additionalContentInfo.publicationDate) || false,
 						hideInfo: true,
 					}
 				}));
