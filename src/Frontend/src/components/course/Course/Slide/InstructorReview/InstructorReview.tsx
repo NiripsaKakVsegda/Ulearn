@@ -49,7 +49,6 @@ import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
 import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
 import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
-import moment from "moment";
 import { momentFromServerToLocal } from "../../../../../utils/momentUtils";
 
 

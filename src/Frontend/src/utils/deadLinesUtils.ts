@@ -46,7 +46,6 @@ export function getDeadLine(deadLines: DeadLineInfo[], curMoment = moment()): De
 			next: null,
 		};
 	}
-
 	const convertedDeadLines = deadLines
 		.map(d => ({ ...d, date: momentFromServerToLocal(d.date) }))
 		.sort((d1, d2) => {
@@ -61,9 +60,9 @@ export function getDeadLine(deadLines: DeadLineInfo[], curMoment = moment()): De
 
 	const inactiveDeadLines = convertedDeadLines
 		.filter(d => d.date.diff(curMoment) > 0);
-	const lastActiveWithMoment = convertedDeadLines
-		.filter(d => d.date.diff(curMoment) <= 0)
-		?.[0];
+	const activeDeadLines = convertedDeadLines
+		.filter(d => d.date.diff(curMoment) <= 0);
+	const lastActiveWithMoment = activeDeadLines ? activeDeadLines[0] : undefined;
 
 	let next = null;
 	let current = null;
