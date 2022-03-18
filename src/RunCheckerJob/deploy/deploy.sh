@@ -21,7 +21,7 @@ sudo systemctl restart runcheckerjob
 
 (
 	# Временно sandboxes - рабочая папка
-	cd sandboxes/
+	#cd sandboxes/
 	# Выполним build.sh всех docker-контейнеров
-	sh build.sh
+	#sh build.sh
 )
