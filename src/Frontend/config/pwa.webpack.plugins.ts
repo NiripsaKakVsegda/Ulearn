@@ -45,7 +45,7 @@ module.exports = [
 		swDest: 'sw',
 		exclude: [/\.map$/, /asset-manifest\.json$/, /\.(?:png|jpg|jpeg|svg)/],
 		navigateFallbackAllowlist: [/^(?!\/__).*/],
-		maximumFileSizeToCacheInBytes: 1024 * 1024 * 4,
+		maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
 		skipWaiting: true,
 		// Define runtime caching rules.
 		runtimeCaching: [{
