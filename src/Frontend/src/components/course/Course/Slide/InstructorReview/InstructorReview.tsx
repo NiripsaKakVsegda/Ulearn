@@ -31,6 +31,9 @@ import {
 } from "../Blocks/Exercise/ExerciseUtils";
 import { clone } from "src/utils/jsonExtensions";
 import { DiffInfo, getDataFromReviewToCompareChanges, getDiffInfo, getReviewAnchorTop } from "./utils";
+import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
+import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
+import { momentFromServerToLocal } from "src/utils/momentUtils";
 
 import { InstructorReviewTabs } from "./InstructorReviewTabs";
 import { ExerciseOutput } from "../Blocks/Exercise/ExerciseOutput/ExerciseOutput";
@@ -47,9 +50,6 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
-import { loadFromCache, reviewPreviousReviewToggle, saveToCache } from "src/utils/localStorageManager";
-import { getDeadLineForSlide } from "src/utils/deadLinesUtils";
-import { momentFromServerToLocal } from "../../../../../utils/momentUtils";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -456,13 +456,17 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
 		}
-		const firstSubmission = studentSubmissions[studentSubmissions.length - 1];
+		const firstSubmission = studentSubmissions
+			.map(s => s)
+			.sort((s1, s2) => {
+				return momentFromServerToLocal(s2.timestamp).diff(momentFromServerToLocal(s1.timestamp));
+			});
 
 		const deadLine = getDeadLineForSlide(deadLines ?? [],
 			slideContext.slideInfo.navigationInfo?.current.scoringGroup || null,
 			slideContext.slideId,
 			slideContext.unitId,
-			momentFromServerToLocal(firstSubmission.timestamp));
+			momentFromServerToLocal(firstSubmission[0].timestamp));
 
 		return (
 			<>
@@ -472,8 +476,7 @@ class InstructorReview extends React.Component<Props, State> {
 							{
 								deadLine.current &&
 								<span className={ styles.solvedAfterDeadLineWrapper }>
-									<Hint text={ texts.getDeadLineViolationInfo(
-										firstSubmission, deadLine.current) }>
+									<Hint text={ texts.getDeadLineViolationInfo(firstSubmission[0], deadLine.current) }>
 										<span className={ styles.solvedAfterDeadLineToken }>После дедлайна</span>
 									</Hint>
 								</span>
