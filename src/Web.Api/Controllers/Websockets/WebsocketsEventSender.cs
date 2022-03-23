@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Database;
 using Database.Models;
 using Database.Repos;
 using Database.Repos.Users;

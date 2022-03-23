@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace uLearn.CSharp.ArrayGetLengthValidation.TestData.Correct
+﻿namespace uLearn.CSharp.ArrayGetLengthValidation.TestData.Correct
 {
 	public class GetLengthInInitializersPartOfFor
 	{

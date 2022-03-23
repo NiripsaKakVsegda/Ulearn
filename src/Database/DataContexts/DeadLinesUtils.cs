@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Database.Models;
-using NUnit.Framework;
 
 namespace Database.DataContexts.DeadLines
 {

@@ -1,13 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using Ulearn.Core.Courses;
-using Ulearn.Core.Courses.Slides;
-using Ulearn.Core.Courses.Slides.Quizzes;
-using Ulearn.Core.Courses.Units;
-
-namespace Database.Models
+﻿namespace Database.Models
 {
 	/*
 	public class QuizVersion

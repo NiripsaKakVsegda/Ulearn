@@ -6,7 +6,6 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Database.Extensions;
 using Database.Models;
-using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Microsoft.AspNet.Identity;
 using Ulearn.Common;

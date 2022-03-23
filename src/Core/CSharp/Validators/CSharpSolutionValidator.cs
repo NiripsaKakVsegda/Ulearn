@@ -7,7 +7,6 @@ using Vostok.Logging.Abstractions;
 using uLearn.CSharp.Validators;
 using Ulearn.Core.CSharp.Validators.IndentsValidation;
 using Ulearn.Core.CSharp.Validators.VerbInMethodNameValidation;
-using uLearn.CSharp.Validators.SpellingValidator;
 
 namespace Ulearn.Core.CSharp.Validators
 {

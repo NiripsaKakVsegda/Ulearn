@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using Database.Models;
 using Database.Models.Comments;
 using Ulearn.Common.Api.Models.Responses;
 

@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Database.Models.Comments;
 using Ulearn.Common.Api.Models.Validations;
-using Ulearn.Web.Api.Authorization;
 
 namespace Ulearn.Web.Api.Models.Parameters.Comments
 {

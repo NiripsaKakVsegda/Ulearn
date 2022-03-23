@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Principal;
 using Database.DataContexts;
 using Microsoft.AspNet.Identity;
-using Ulearn.Core.Courses.Slides;
 
 namespace Database.Models
 {

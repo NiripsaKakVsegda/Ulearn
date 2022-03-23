@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Extensions;
 
 namespace Database.Repos

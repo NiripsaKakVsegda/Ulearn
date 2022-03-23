@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.IO;
 using System.Xml.Serialization;
-using Component = Ulearn.Core.Model.Edx.EdxComponents.Component;
 
 namespace Ulearn.Core.Courses.Slides
 {

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
 using NHunspell;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.CSharp;
 using Ulearn.Core.Properties;
 
 namespace uLearn.CSharp.Validators.SpellingValidator

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Database.Models;
 using Database.Models.Comments;
 
 namespace Ulearn.Web.Api.Controllers.Notifications

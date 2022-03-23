@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Database.Models;
 using Database.Models.Comments;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Vostok.Logging.Abstractions;
 

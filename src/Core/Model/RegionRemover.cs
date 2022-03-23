@@ -2,7 +2,6 @@
 using System.Linq;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.CSharp;
 

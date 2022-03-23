@@ -1,9 +1,5 @@
-using System;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using Ulearn.Core.Courses.Slides.Blocks;
-using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 {

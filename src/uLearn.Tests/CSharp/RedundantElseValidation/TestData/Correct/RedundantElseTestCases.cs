@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace uLearn.CSharp.RedundantElseValidation.TestData.Correct
+﻿namespace uLearn.CSharp.RedundantElseValidation.TestData.Correct
 {
 	public class RedundantElseTestCases
 	{

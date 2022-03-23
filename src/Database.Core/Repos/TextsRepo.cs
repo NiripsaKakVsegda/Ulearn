@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Database.Extensions;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
-using Ulearn.Common.Extensions;
 
 namespace Database.Repos
 {

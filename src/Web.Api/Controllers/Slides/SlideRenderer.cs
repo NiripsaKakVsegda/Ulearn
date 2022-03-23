@@ -6,7 +6,6 @@ using AngleSharp.Html.Parser;
 using Database.Models;
 using Database.Repos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;

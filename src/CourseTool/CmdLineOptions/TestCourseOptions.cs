@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using CommandLine;
-using Ulearn.Core;
 using uLearn.CourseTool.Validating;
 using Ulearn.Core.Courses;
 

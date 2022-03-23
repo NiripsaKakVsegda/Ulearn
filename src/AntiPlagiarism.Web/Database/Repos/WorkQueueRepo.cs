@@ -6,7 +6,6 @@ using AntiPlagiarism.Web.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
-using Ulearn.Common;
 using Vostok.Logging.Abstractions;
 using static AntiPlagiarism.Web.Database.Models.WorkQueueItem;
 using IsolationLevel = System.Transactions.IsolationLevel;

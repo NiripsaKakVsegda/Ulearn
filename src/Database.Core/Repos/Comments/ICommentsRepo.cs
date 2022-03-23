@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Database.Models;
 using Database.Models.Comments;
 using JetBrains.Annotations;
 using Ulearn.Common;

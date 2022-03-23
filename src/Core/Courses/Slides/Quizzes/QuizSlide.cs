@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 

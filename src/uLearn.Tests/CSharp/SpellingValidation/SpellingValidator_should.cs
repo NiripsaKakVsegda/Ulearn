@@ -7,7 +7,6 @@ using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using FluentAssertions;
 using NUnit.Framework;
-using uLearn.CSharp.Validators.SpellingValidator;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.CSharp.Validators.SpellingValidator;
 

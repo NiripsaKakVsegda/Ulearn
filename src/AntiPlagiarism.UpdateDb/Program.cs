@@ -8,11 +8,8 @@ using AntiPlagiarism.Web.Database;
 using AntiPlagiarism.Web.Database.Repos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Vostok.Logging.Abstractions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Logging;
-using Vostok.Logging.Microsoft;
 
 namespace AntiPlagiarism.UpdateDb
 {

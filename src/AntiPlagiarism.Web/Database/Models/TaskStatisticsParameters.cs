@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using Ulearn.Common;
 
 namespace AntiPlagiarism.Web.Database.Models

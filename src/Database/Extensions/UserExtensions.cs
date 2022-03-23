@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Database.DataContexts;
 using Database.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Database.Extensions
 {

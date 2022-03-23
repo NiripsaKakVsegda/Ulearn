@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using System.Web.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Ulearn.Core.Configuration;

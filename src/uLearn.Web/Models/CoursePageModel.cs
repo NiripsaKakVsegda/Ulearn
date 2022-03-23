@@ -1,5 +1,4 @@
-﻿using System;
-using Database.Models;
+﻿using Database.Models;
 using Ulearn.Core.Courses.Slides;
 
 namespace uLearn.Web.Models

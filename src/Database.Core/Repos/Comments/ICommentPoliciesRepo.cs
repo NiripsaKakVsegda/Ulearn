@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Database.Models;
 using Database.Models.Comments;
 
 namespace Database.Repos.Comments

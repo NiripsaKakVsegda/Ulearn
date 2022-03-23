@@ -1,4 +1,3 @@
-using System;
 using System.Web;
 using Serilog;
 using SerilogWeb.Classic;

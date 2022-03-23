@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 using Ulearn.Common;
-using Ulearn.Core;
 using Ulearn.Core.RunCheckerJobApi;
 
 namespace RunCheckerJob

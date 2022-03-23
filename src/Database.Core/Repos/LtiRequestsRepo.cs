@@ -4,7 +4,6 @@ using Database.Extensions;
 using Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
-using Ulearn.Common.Extensions;
 
 namespace Database.Repos
 {

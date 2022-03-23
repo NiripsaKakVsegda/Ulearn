@@ -5,7 +5,6 @@ using System.Linq;
 using AntiPlagiarism.Web.Database;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
-using Z.EntityFramework.Plus;
 
 namespace ManualUtils.AntiPlagiarism
 {

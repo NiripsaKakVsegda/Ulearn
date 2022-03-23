@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Database.Models;
 using Ulearn.Core.Courses;
-using uLearn.Web.Controllers;
 
 namespace uLearn.Web.Models
 {

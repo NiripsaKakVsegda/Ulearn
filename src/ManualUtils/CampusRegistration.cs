@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Database;
 using Database.Models;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace ManualUtils

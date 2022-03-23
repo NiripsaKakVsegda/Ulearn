@@ -1,5 +1,4 @@
 ﻿using System;
-using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 
 namespace uLearn.Web.Models

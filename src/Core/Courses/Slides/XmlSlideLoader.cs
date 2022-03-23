@@ -3,15 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using System.Xml.Schema;
 using System.Xml.Serialization;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Slides.Exercises;
-using Ulearn.Core.Courses.Slides.Exercises.Blocks;
-using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Slides.Quizzes;
-using Ulearn.Core.Courses.Units;
 
 namespace Ulearn.Core.Courses.Slides
 {

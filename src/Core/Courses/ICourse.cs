@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using JetBrains.Annotations;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Units;
