@@ -117,7 +117,7 @@ namespace Ulearn.Web.Api.Utils
 				s.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 				s.Font.Size = 10;
 			});
-			builder.AddCell("Максимум:", 3);
+			builder.AddCell("Максимум:", exportEmails? 3 : 4);
 			foreach (var scoringGroup in model.ScoringGroups.Values)
 				builder.AddCell(model.Units.Sum(unit => model.GetMaxScoreForUnitByScoringGroup(unit, scoringGroup)));
 			foreach (var unit in model.Units)
