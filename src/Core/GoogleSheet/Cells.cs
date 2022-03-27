@@ -35,4 +35,14 @@ namespace Ulearn.Core.GoogleSheet
 			Value = value;
 		}
 	}
+	
+	public class IntGoogleSheetCell : IGoogleSheetCell
+	{
+		public readonly int Value;
+
+		public IntGoogleSheetCell(int value)
+		{
+			Value = value;
+		}
+	}
 }

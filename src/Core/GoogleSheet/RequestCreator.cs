@@ -18,6 +18,7 @@ namespace Ulearn.Core.GoogleSheet
 				requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, values, rowNumber));
 				rowNumber++;
 			}
+
 			return requests;
 		}
 
@@ -50,6 +51,7 @@ namespace Ulearn.Core.GoogleSheet
 				StringGoogleSheetCell stringCell => CreateCellDataForString(stringCell.Value, data),
 				DateGoogleSheetCell dateCell => CreateCellDataForDate(dateCell.Value, data),
 				NumberGoogleSheetCell numberCell => CreateCellDataForNumber(numberCell.Value, data),
+				IntGoogleSheetCell intCell => CreateCellDataForIntNumber(intCell.Value, data),
 				_ => data
 			};
 			return data;
@@ -70,12 +72,19 @@ namespace Ulearn.Core.GoogleSheet
 			return cellData;
 		}
 
+		private static CellData CreateCellDataForIntNumber(int value, CellData cellData)
+		{
+			cellData.UserEnteredValue.NumberValue = value;
+			cellData.UserEnteredFormat.NumberFormat = new NumberFormat { Pattern = "####0", Type = "NUMBER" };
+			return cellData;
+		}
+
 		private static CellData CreateCellDataForString(string value, CellData cellData)
 		{
 			cellData.UserEnteredValue.StringValue = value;
 			return cellData;
 		}
-		
+
 		private static double? GetDateValue(DateTime dateTimeInUtc)
 		{
 			const int secondInDay = 60 * 60 * 24;

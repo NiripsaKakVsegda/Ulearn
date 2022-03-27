@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AngleSharp.Common;
 using Database;
 using Database.Models;
 using Database.Repos;
@@ -31,7 +32,7 @@ namespace Ulearn.Web.Api.Utils
 		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly ICourseStorage courseStorage;
 		private readonly UlearnDb db;
-		
+
 		public StatisticModelUtils(ICourseRolesRepo courseRolesRepo, IGroupMembersRepo groupMembersRepo,
 			IUnitsRepo unitsRepo, IGroupsRepo groupsRepo, ControllerUtils controllerUtils,
 			IVisitsRepo visitsRepo, IAdditionalScoresRepo additionalScoresRepo,
@@ -58,7 +59,7 @@ namespace Ulearn.Web.Api.Utils
 			FillStatisticModelBuilder(builder, model);
 			return builder.Build();
 		}
-		
+
 		public void FillStatisticModelBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
 		{
 			builder.AddStyleRule(s => s.Font.Bold = true);
@@ -84,6 +85,7 @@ namespace Ulearn.Web.Api.Utils
 			builder.GoToNewLine();
 
 			builder.AddCell("Фамилия Имя");
+			builder.AddCell("Ulearn id");
 			if (exportEmails) builder.AddCell("Эл. почта");
 			builder.AddCell("Группа");
 			foreach (var scoringGroup in model.ScoringGroups.Values)
@@ -136,13 +138,20 @@ namespace Ulearn.Web.Api.Utils
 			builder.GoToNewLine();
 
 			builder.AddStyleRule(s => s.Font.Bold = false);
-			
-			foreach (var user in model.VisitedUsers)
+
+			var groupsByUser = model.VisitedUsers.ToDictionary(
+				u => u.UserId,
+				u => model.Groups.Where(g => model.VisitedUsersGroups[u.UserId].Contains(g.Id)).ToList());
+			foreach (var user in model.VisitedUsers
+				.OrderBy(u => groupsByUser[u.UserId].Count)
+				.ThenBy(u => string.Join(", ", groupsByUser[u.UserId].Select(g => g.Id)))
+				.ThenBy(u => u.UserLastName))
 			{
 				builder.AddCell(user.UserVisibleName);
+				builder.AddCell(user.UserId);
 				if (exportEmails) builder.AddCell(user.UserEmail);
-				var userGroups = model.Groups.Where(g => model.VisitedUsersGroups[user.UserId].Contains(g.Id)).Select(g => g.Name).ToList();
-				builder.AddCell(string.Join(", ", userGroups));
+				var userGroupsNames = groupsByUser[user.UserId].Select(g => g.Name);
+				builder.AddCell(string.Join(", ", userGroupsNames));
 				foreach (var scoringGroup in model.ScoringGroups.Values)
 				{
 					var scoringGroupScore = model.Units.Sum(unit => model.GetTotalScoreForUserInUnitByScoringGroup(user.UserId, unit, scoringGroup));
@@ -169,10 +178,11 @@ namespace Ulearn.Web.Api.Utils
 							builder.AddCell(model.AdditionalScores[Tuple.Create(user.UserId, unit.Id, scoringGroup.Id)]);
 					}
 				}
+
 				builder.GoToNewLine();
 			}
 		}
-		
+
 		// Be careful! This method is not full copy from AnalyticsController in Web
 		public async Task<CourseStatisticPageModel> GetCourseStatisticsModel(int usersLimit, string userId, string courseId, List<string> groupsIds)
 		{
@@ -215,7 +225,7 @@ namespace Ulearn.Web.Api.Utils
 			var visitedUsersIds = visitedUsers.Select(v => v.UserId).ToList();
 
 			// var visitedUsersGroups = groupsRepo.GetUsersActualGroupsIds(new List<string> { courseId }, visitedUsersIds, User, 10).ToDefaultDictionary();
-			var visitedUsersGroups = 
+			var visitedUsersGroups =
 				(await groupMembersRepo.GetUsersGroupsIdsAsync(courseId, visitedUsersIds)).ToDefaultDictionary();
 
 			/* From now fetch only filtered users' statistics */
@@ -271,7 +281,7 @@ namespace Ulearn.Web.Api.Utils
 			};
 			return model;
 		}
-		
+
 		private async Task<bool> CanStudentViewGroupsStatistics(string userId, List<string> groupsIds)
 		{
 			foreach (var groupId in groupsIds)
@@ -282,6 +292,7 @@ namespace Ulearn.Web.Api.Utils
 				if (!usersIds.Contains(userId))
 					return false;
 			}
+
 			return true;
 		}
 
@@ -312,8 +323,8 @@ namespace Ulearn.Web.Api.Utils
 			Dictionary<Guid, Guid> unitBySlide, Course course)
 		{
 			return (await visitsRepo.GetVisitsInPeriod(filterOptions)
-				.Select(v => new { v.UserId, v.SlideId, v.Score })
-				.ToListAsync())
+					.Select(v => new { v.UserId, v.SlideId, v.Score })
+					.ToListAsync())
 				.Where(v => slides.Contains(v.SlideId))
 				.GroupBy(v => Tuple.Create(v.UserId, unitBySlide[v.SlideId], course.FindSlideByIdNotSafe(v.SlideId)?.ScoringGroup))
 				.ToDictionary(g => g.Key, g => g.Sum(v => v.Score))
@@ -332,8 +343,8 @@ namespace Ulearn.Web.Api.Utils
 			HashSet<Guid> shouldBeSolvedSlidesIds)
 		{
 			return (await visitsRepo.GetVisitsInPeriod(filterOptions)
-				.Select(v => new { v.UserId, v.SlideId, v.Score })
-				.ToListAsync())
+					.Select(v => new { v.UserId, v.SlideId, v.Score })
+					.ToListAsync())
 				.Where(e => shouldBeSolvedSlidesIds.Contains(e.SlideId))
 				.GroupBy(v => Tuple.Create(v.UserId, v.SlideId))
 				.ToDictionary(g => g.Key, g => g.Sum(v => v.Score))
@@ -354,7 +365,7 @@ namespace Ulearn.Web.Api.Utils
 			return (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(courseId))
 				.GroupBy(e => e.GroupId)
 				.ToDictionary(g => g.Key,
-				 g => g.Select(e => e.ScoringGroupId).ToList());
+					g => g.Select(e => e.ScoringGroupId).ToList());
 		}
 	}
 }
