@@ -458,6 +458,7 @@ class InstructorReview extends React.Component<Props, State> {
 		}
 		const firstSubmission = studentSubmissions
 			.map(s => s)
+			.filter(s=>!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			.sort((s1, s2) => {
 				return momentFromServerToLocal(s2.timestamp).diff(momentFromServerToLocal(s1.timestamp));
 			});
