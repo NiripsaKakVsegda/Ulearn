@@ -456,18 +456,18 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
 		}
-		const firstSubmission = studentSubmissions
+		const submissionsOrderedByTimeAsc = studentSubmissions
 			.map(s => s)
 			.filter(s=>!s.automaticChecking || s.automaticChecking?.result === AutomaticExerciseCheckingResult.RightAnswer)
 			.sort((s1, s2) => {
-				return momentFromServerToLocal(s2.timestamp).diff(momentFromServerToLocal(s1.timestamp));
+				return momentFromServerToLocal(s1.timestamp).diff(momentFromServerToLocal(s2.timestamp));
 			});
 
 		const deadLine = getDeadLineForSlide(deadLines ?? [],
 			slideContext.slideInfo.navigationInfo?.current.scoringGroup || null,
 			slideContext.slideId,
 			slideContext.unitId,
-			momentFromServerToLocal(firstSubmission[0].timestamp));
+			momentFromServerToLocal(submissionsOrderedByTimeAsc[0].timestamp));
 
 		return (
 			<>
