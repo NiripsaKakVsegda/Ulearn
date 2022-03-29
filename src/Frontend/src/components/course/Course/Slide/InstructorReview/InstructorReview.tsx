@@ -477,7 +477,7 @@ class InstructorReview extends React.Component<Props, State> {
 							{
 								deadLine.current &&
 								<span className={ styles.solvedAfterDeadLineWrapper }>
-									<Hint text={ texts.getDeadLineViolationInfo(firstSubmission[0], deadLine.current) }>
+									<Hint text={ texts.getDeadLineViolationInfo(submissionsOrderedByTimeAsc[0], deadLine.current) }>
 										<span className={ styles.solvedAfterDeadLineToken }>После дедлайна</span>
 									</Hint>
 								</span>
