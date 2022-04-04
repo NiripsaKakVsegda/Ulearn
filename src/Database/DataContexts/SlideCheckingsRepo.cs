@@ -122,7 +122,7 @@ namespace Database.DataContexts
 
 		#region Slide Score Calculating
 
-		public (int Score, int? Percent) GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId, int maxAutomaticScorePercent = 100)
+		public (int Score, int? Percent, bool IsReviewScore) GetExerciseSlideScoreAndPercent(string courseId, ExerciseSlide slide, string userId, int maxAutomaticScorePercent = 100)
 		{
 			var hasAutomaticChecking = slide.Exercise.HasAutomaticChecking();
 			if (hasAutomaticChecking)
@@ -130,14 +130,14 @@ namespace Database.DataContexts
 				var isRightAnswer = GetSlideCheckingsByUser<AutomaticExerciseChecking>(courseId, slide.Id, userId)
 					.Any(c => c.IsRightAnswer);
 				if (!isRightAnswer)
-					return (0, null);
+					return (0, null, false);
 			}
 
 			var percent = GetLastReviewPercentForExerciseSlide(courseId, slide.Id, userId);
 			var automaticScore = slide.Scoring.PassedTestsScore;
 			return percent == null
-				? (ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent), null)
-				: (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent);
+				? (ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent), null, false)
+				: (ConvertExerciseManualCheckingPercentToScore(percent.Value, slide.Scoring.ScoreWithCodeReview), percent, true);
 		}
 		
 		public static int ConvertAutomaticScoreWithDeadLinePercentToScore(int automaticScore, int maxAutomaticScorePercent)

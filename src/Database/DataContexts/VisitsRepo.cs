@@ -114,10 +114,14 @@ namespace Database.DataContexts
 				if (deadLine.Date <= currentDate)
 					deadLineScorePercent = deadLine.ScorePercent;
 			}
+			
+			var exerciseScore = slide is ExerciseSlide ex
+				? (slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent))
+				: (-1, null, false);
 
-			var newScore = slide is ExerciseSlide ex
-				? slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent).Score
-				: slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent);
+			var newScore = exerciseScore.Score == -1
+				? slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent)
+				: exerciseScore.Score;
 
 			newScore = Math.Min(newScore, maxSlideScore);
 			var isPassed = slideCheckingsRepo.IsSlidePassed(courseId, slide.Id, userId);
@@ -128,7 +132,7 @@ namespace Database.DataContexts
 
 			return UpdateAttempts(courseId, slide.Id, userId, visit =>
 			{
-				if (visit.Score < newScore)
+				if (visit.Score < newScore || exerciseScore.IsReviewScore)
 					visit.Score = newScore;
 				visit.IsPassed = isPassed;
 			});

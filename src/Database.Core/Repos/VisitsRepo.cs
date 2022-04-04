@@ -145,9 +145,14 @@ namespace Database.Repos
 					deadLineScorePercent = deadLine.ScorePercent;
 			}
 
-			var newScore = slide is ExerciseSlide ex
-				? (await slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent)).Score
-				: await slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent);
+			var exerciseScore = slide is ExerciseSlide ex
+				? (await slideCheckingsRepo.GetExerciseSlideScoreAndPercent(courseId, ex, userId, deadLineScorePercent))
+				: (-1, null, false);
+
+			var newScore = exerciseScore.Score == -1
+				? await slideCheckingsRepo.GetUserScoreForQuizSlide(courseId, slide.Id, userId, deadLineScorePercent)
+				: exerciseScore.Score;
+			
 			newScore = Math.Min(newScore, maxSlideScore);
 			var isPassed = await slideCheckingsRepo.IsSlidePassed(courseId, slide.Id, userId);
 			if (await IsSkipped(courseId, slide.Id, userId))
@@ -156,7 +161,7 @@ namespace Database.Repos
 					$"Новое количество баллов: {newScore}, слайд пройден: {isPassed}");
 			await UpdateAttempts(courseId, slide.Id, userId, visit =>
 			{
-				if (visit.Score < newScore)
+				if (visit.Score < newScore || exerciseScore.IsReviewScore)
 					visit.Score = newScore;
 				visit.IsPassed = isPassed;
 			});
