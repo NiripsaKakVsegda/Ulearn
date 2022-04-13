@@ -27,6 +27,7 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
+using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Utils.Courses;
 using Ulearn.Web.Api.Utils.LTI;
 using Vostok.Logging.Abstractions;
@@ -1057,5 +1058,43 @@ namespace ManualUtils
 				await db.SaveChangesAsync();
 			}
 		}
+		
+		/*
+		private async Task<List<ExtendedUserInfo>> GetExtendedUserInfo(UlearnDb db)
+		{
+			var groupsIds = new HashSet<int> {2198,2197, 2200 };
+			var users = await db.GroupMembers
+				.Include(m => m.User)
+				.Where(m => !m.User.IsDeleted && m.GroupId)
+				.Select(m => m.User)
+				.ToListAsync();
+
+			var result = new List<ExtendedUserInfo>();
+			foreach (var user in users)
+			{
+				var info = new ExtendedUserInfo
+				{
+					Email = user.Email,
+					VkUrl = GetVk(db,user),
+					Telegram = user.TelegramChatTitle,
+					VisibleName = user.VisibleName,
+					Gender = user.Gender,
+				};
+				result.Add(info);
+			}
+			return result;
+		}
+		
+		private class ExtendedUserInfo : ShortUserInfo
+		{
+			public string VkUrl;
+			public string Telegram;
+		}
+		
+		private string GetVk(UlearnDb db, ApplicationUser user)
+		{
+			var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == "ВКонтакте" && l.UserId == user.Id);
+			return vkLogin != null ? $"https://vk.com/id{vkLogin.ProviderKey}" : null;
+		}*/
 	}
 }
