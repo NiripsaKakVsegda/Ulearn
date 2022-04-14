@@ -217,9 +217,11 @@ class InstructorReview extends React.Component<Props, State> {
 
 		if(prevProps.slideContext.slideInfo.query.userId !== slideContext.slideInfo.query.userId
 			|| prevProps.slideContext.slideInfo.query.submissionId !== slideContext.slideInfo.query.submissionId) {
+			const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 			this.loadData();
 			this.hideAddCommentForm();
 			this.setState({
+				showDiff : toggleInCache === undefined ? showDiff : toggleInCache,
 				currentSubmission: undefined,
 				selectedReviewId: -1,
 			});
