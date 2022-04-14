@@ -31,6 +31,7 @@ import { ShortUserInfo } from "src/models/users";
 import { AntiPlagiarismStatusResponse, FavouriteReview } from "src/models/instructor";
 import { ReduxData } from "./index";
 import { DeadLineInfo } from "src/models/deadLines";
+import { loadFromCache, studentMode } from "src/utils/localStorageManager";
 
 export interface InstructorState {
 	isStudentMode: boolean;
@@ -67,7 +68,7 @@ export interface LastUsedReview {
 }
 
 const initialInstructorState: InstructorState = {
-	isStudentMode: false,
+	isStudentMode: loadFromCache<boolean>(studentMode, 'current') || false,
 	studentsById: {},
 	antiPlagiarismStatusBySubmissionId: {},
 	prohibitFurtherManualCheckingByCourseIdBySlideIdByUserId: {},

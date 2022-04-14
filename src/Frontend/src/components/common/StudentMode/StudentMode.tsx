@@ -4,10 +4,11 @@ import { connect } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import cn from "classnames";
 
-import { Toggle } from "ui";
+import { Toggle, } from "ui";
 
 import { parseKnownQueryParams } from "../../course/Course/CourseUtils";
 import { studentModeToggleAction, } from "src/actions/instructor";
+import { saveToCache, studentMode, } from "src/utils/localStorageManager";
 
 import { MatchParams } from "src/models/router";
 import { RootState } from "src/models/reduxState";
@@ -46,11 +47,12 @@ function StudentMode({ isStudentMode, setStudentMode, deviceType, containerClass
 
 	function showForStudentToggleChanged(value: boolean) {
 		setStudentMode(value);
+		saveToCache(studentMode, 'current', value);
 	}
 
 	function onClick(e: React.MouseEvent) {
 		if(e.target === refButton.current || e.target === refSpan.current) {
-			setStudentMode(!isStudentMode);
+			showForStudentToggleChanged(!isStudentMode);
 		}
 	}
 }
