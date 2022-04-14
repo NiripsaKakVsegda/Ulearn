@@ -29,6 +29,7 @@ namespace GitCourseUpdater
 				RedirectStandardError = true,
 				CreateNoWindow = false,
 				UseShellExecute = false,
+				Verb = "runas",
 			};
 			cmd.OutputDataReceived += (process, output) => Console.WriteLine(output.Data);
 			cmd.Start();
@@ -52,7 +53,7 @@ namespace GitCourseUpdater
 				//exiting sh.exe
 				$" && exit";
 
-			cmd.StandardInput.WriteLine($"{launchBash} -c \"{bashCommands}\"");
+			cmd.StandardInput.WriteLine($"{launchBash} --login -c \"{bashCommands}\"");
 
 			//exiting cmd.exe
 			cmd.StandardInput.WriteLine("exit");
