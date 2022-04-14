@@ -41,6 +41,8 @@ namespace GitCourseUpdater
 				$"cd \'{repoDir}\'" +
 				//start ssh-agent for ssh keys holding, also prints process PID and keeps it
 				$" && eval $(ssh-agent -s)" +
+				//adding git to known hosts
+				$"ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts" +
 				//add identity to ssh-agent
 				$" && ssh-add \'{pathToPEMKey}\' " +
 				//clone repo
