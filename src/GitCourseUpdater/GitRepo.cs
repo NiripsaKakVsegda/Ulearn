@@ -249,7 +249,7 @@ namespace GitCourseUpdater
 			repoDirName = Url2Name() + "@" + DateTime.Now.ToSortable();
 			var repoPath = reposBaseDir.GetSubdirectory(repoDirName);
 			log.Info($"Start clone '{url}' into '{repoDirName}'");
-			GitBashCmdWorker.Clone(repoPath.FullName, privateKeyPath, url);
+			GitShWorker.Clone(repoPath.FullName, privateKeyPath, url);
 			//Repository.Clone(url, repoPath.FullName, new CloneOptions { CredentialsProvider = credentialsHandler });
 			repo = new Repository(repoPath.FullName);
 			log.Info($"Successfully clone '{url}' into '{repoDirName}'");
@@ -277,7 +277,7 @@ namespace GitCourseUpdater
 			foreach (var remote in repo.Network.Remotes)
 			{
 				var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification).Join("");
-				GitBashCmdWorker.Fetch(refSpecs, repoPath.FullName, privateKeyPath, url);
+				GitShWorker.Fetch(refSpecs, repoPath.FullName, privateKeyPath, url);
 				//Commands.Fetch(repo, remote.Name, refSpecs, options, logMessage);
 			}
  

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace GitCourseUpdater
 {
-	public static class GitBashCmdWorker
+	public static class GitShWorker
 	{
 		public static void PerformOperation(
 			string gitOperation,
