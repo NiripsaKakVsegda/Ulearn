@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Vostok.Logging.Abstractions;
 
 namespace GitCourseUpdater
 {
 	public static class GitShWorker
 	{
+		private static ILog log => LogProvider.Get().ForContext(typeof(GitRepo));
+		
 		public static void PerformOperation(
 			string gitOperation,
 			string gitOperationAdditionalFlags,
@@ -14,49 +17,64 @@ namespace GitCourseUpdater
 			string gitRepoUrl
 		)
 		{
-			if (!Directory.Exists(repoDir))
-			{
-				Directory.CreateDirectory(repoDir);
-			}
+            if (!Directory.Exists(repoDir))
+            {
+                Directory.CreateDirectory(repoDir);
+            }
+            
+            var pathToProgramFiles = Environment.GetEnvironmentVariable("PROGRAMFILES");
 
-			var shProcess = new Process();
-			var pathToProgramFiles = Environment.GetEnvironmentVariable("PROGRAMFILES");
-			shProcess.StartInfo = new ProcessStartInfo
-			{
-				FileName = $"{pathToProgramFiles}\\Git\\bin\\sh.exe",
-				RedirectStandardOutput = true,
-				RedirectStandardInput = true,
-				RedirectStandardError = true,
-				UseShellExecute = false,
-				CreateNoWindow = true,
-				Verb = "runas",
-			};
-			shProcess.OutputDataReceived += (process, output) => Console.WriteLine(output.Data);
-			shProcess.Start();
-			shProcess.BeginOutputReadLine();
+            var shProcess = new Process();
+            shProcess.StartInfo = new ProcessStartInfo
+            {
+                FileName = $"{pathToProgramFiles}\\Git\\bin\\sh.exe",
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Verb = "runas",
+            };
+            
+            shProcess.OutputDataReceived += (process, output) => log.Info(output.Data);
+            
+            var error = "";
+            shProcess.ErrorDataReceived += (process, output) =>
+            {
+                if(shProcess.HasExited) return;
+                error += output.Data;
+                //exitting process
+                shProcess.StandardInput.WriteLine("exit");
+            };
+            
+            shProcess.Start();
+            shProcess.BeginOutputReadLine();
+            shProcess.BeginErrorReadLine();
 			
-			var bashCommands =
-				// get into repo directory
-				$"cd \'{repoDir}\'" +
-				//start ssh-agent for ssh keys holding, also prints process PID and keeps it
-				$" && eval $(ssh-agent -s)" +
-				//add identity to ssh-agent
-				$" && ssh-add \'{pathToPEMKey}\' " +
-				//clone repo without checkinh known_hosts with GIT_SSH_COMMAND hack
-				$" && GIT_SSH_COMMAND=\"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" git {gitOperation} {gitRepoUrl} {gitOperationAdditionalFlags}" +
-				// removing GIT_SSH_COMMAND hack just in case
-				$" && GIT_SSH_COMMAND=\"\"" +
-				//stop ssh-agent using PID generated before
-				$" && eval $(ssh-agent -k)" +
-				//exiting sh.exe
-				$" && exit";
+            var bashCommands =
+                // get into repo directory
+                $"cd \'{repoDir}\'" +
+                //start ssh-agent for ssh keys holding, also prints process PID and keeps it
+                $" && eval $(ssh-agent -s)" +
+                //add identity to ssh-agent
+                $" && ssh-add \'{pathToPEMKey}\' " +
+                //clone repo without checkinh known_hosts with GIT_SSH_COMMAND hack
+                $" && GIT_SSH_COMMAND=\"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" git {gitOperation} {gitRepoUrl} \'{gitOperationAdditionalFlags}\'" +
+                // removing GIT_SSH_COMMAND hack just in case
+                $" && GIT_SSH_COMMAND=\"\"" +
+                //stop ssh-agent using PID generated before
+                $" && eval $(ssh-agent -k)" +
+                //exiting sh.exe
+                $" && exit";
 
-			shProcess.StandardInput.WriteLine($"{bashCommands}");
+            shProcess.StandardInput.WriteLine($"{bashCommands}");
+            
+            shProcess.WaitForExit();
+            shProcess.CancelOutputRead();
+            shProcess.CancelErrorRead();
 
-			shProcess.WaitForExit();
-
-			if (shProcess.ExitCode != 0)
-				throw new Exception(shProcess.StandardError.ReadToEnd());
+            if (shProcess.ExitCode != 0)
+                throw new Exception(error);
 		}
 
 		public static void Fetch(

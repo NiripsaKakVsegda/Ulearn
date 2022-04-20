@@ -6,8 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using JetBrains.Annotations;
 using LibGit2Sharp;
-using LibGit2Sharp.Handlers;
-//using LibGit2Sharp.Ssh;
 using Newtonsoft.Json;
 using Ulearn.Common;
 using Vostok.Logging.Abstractions;
@@ -62,32 +60,19 @@ namespace GitCourseUpdater
 			publicKeyPath = privateKeyPath + ".pub";
 			File.WriteAllText(privateKeyPath, privateKey);
 			File.WriteAllText(publicKeyPath, publicKey);
-			
-			/*credentialsHandler = (_, __, ___) => new SshUserKeyCredentials
-			{
-				Username = "git",
-				Passphrase = "",
-				PublicKey = publicKeyPath,
-				PrivateKey = privateKeyPath,
-			};*/
 
 			try
 			{
 				if (!TryUpdateExistingRepo())
 					Clone();
 			}
-			catch (LibGit2SharpException ex)
-			{
-				Dispose(); // Если объект не создан, извне Dispose не вызовут
-				if (ex.Message.Contains("SSH"))
-					throw new GitException(ex.Message, ex) { MayBeSSHException = true };
-				throw;
-			}
 			catch (Exception ex)
 			{
 				Dispose(); // Если объект не создан, извне Dispose не вызовут
+				if (ex.Message.Contains("Permission denied"))
+					throw new GitException(ex.Message, ex) { MayBeSSHException = true };
 				throw;
-			}
+			} 
 		}
 
 		public (MemoryStream zip, string courseXmlSubdirectoryInRepo) GetCurrentStateAsZip(string courseSubdirectoryInRepo = "")
@@ -250,7 +235,6 @@ namespace GitCourseUpdater
 			var repoPath = reposBaseDir.GetSubdirectory(repoDirName);
 			log.Info($"Start clone '{url}' into '{repoDirName}'");
 			GitShWorker.Clone(repoPath.FullName, privateKeyPath, url);
-			//Repository.Clone(url, repoPath.FullName, new CloneOptions { CredentialsProvider = credentialsHandler });
 			repo = new Repository(repoPath.FullName);
 			log.Info($"Successfully clone '{url}' into '{repoDirName}'");
 		}
@@ -270,15 +254,12 @@ namespace GitCourseUpdater
 
 		private void FetchAll()
 		{
-			//var logMessage = "";
-			//var options = new FetchOptions { CredentialsProvider = credentialsHandler };
 			log.Info($"Start fetch all '{url}' in '{repoDirName}'");
 			var repoPath = reposBaseDir.GetSubdirectory(repoDirName);
 			foreach (var remote in repo.Network.Remotes)
 			{
 				var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification).Join("");
 				GitShWorker.Fetch(refSpecs, repoPath.FullName, privateKeyPath, url);
-				//Commands.Fetch(repo, remote.Name, refSpecs, options, logMessage);
 			}
  
 			log.Info($"Successfully fetch all '{url}' in '{repoDirName}'");
