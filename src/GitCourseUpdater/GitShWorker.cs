@@ -39,8 +39,14 @@ namespace GitCourseUpdater
             shProcess.OutputDataReceived += (process, output) => log.Info(output.Data);
             
             var error = "";
+			var isSSHagenStopped = false;
             shProcess.ErrorDataReceived += (process, output) =>
             {
+				if (!isSSHagenStopped)
+				{
+					shProcess.StandardInput.WriteLine("eval $(ssh-agent -k)");
+					isSSHagenStopped = true;
+				}
                 if(shProcess.HasExited) return;
                 error += output.Data;
                 //exitting process
