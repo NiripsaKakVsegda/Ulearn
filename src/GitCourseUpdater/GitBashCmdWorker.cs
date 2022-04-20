@@ -19,49 +19,44 @@ namespace GitCourseUpdater
 				Directory.CreateDirectory(repoDir);
 			}
 
-			var cmd = new Process();
-
-			cmd.StartInfo = new ProcessStartInfo
+			var shProcess = new Process();
+			var pathToProgramFiles = Environment.GetEnvironmentVariable("PROGRAMFILES");
+			shProcess.StartInfo = new ProcessStartInfo
 			{
-				FileName = "cmd.exe",
+				FileName = $"{pathToProgramFiles}\\Git\\bin\\sh.exe",
 				RedirectStandardOutput = true,
 				RedirectStandardInput = true,
 				RedirectStandardError = true,
-				CreateNoWindow = false,
 				UseShellExecute = false,
+				CreateNoWindow = true,
 				Verb = "runas",
 			};
-			cmd.OutputDataReceived += (process, output) => Console.WriteLine(output.Data);
-			cmd.Start();
-			cmd.BeginOutputReadLine();
-
-			var launchBash = "\"%PROGRAMFILES%\\Git\\bin\\sh.exe\"";
-
+			shProcess.OutputDataReceived += (process, output) => Console.WriteLine(output.Data);
+			shProcess.Start();
+			shProcess.BeginOutputReadLine();
+			
 			var bashCommands =
 				// get into repo directory
 				$"cd \'{repoDir}\'" +
 				//start ssh-agent for ssh keys holding, also prints process PID and keeps it
 				$" && eval $(ssh-agent -s)" +
-				//adding git to known hosts
-				$"ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts" +
 				//add identity to ssh-agent
 				$" && ssh-add \'{pathToPEMKey}\' " +
-				//clone repo
-				$" && git {gitOperation} {gitRepoUrl} {gitOperationAdditionalFlags}" +
+				//clone repo without checkinh known_hosts with GIT_SSH_COMMAND hack
+				$" && GIT_SSH_COMMAND=\"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" git {gitOperation} {gitRepoUrl} {gitOperationAdditionalFlags}" +
+				// removing GIT_SSH_COMMAND hack just in case
+				$" && GIT_SSH_COMMAND=\"\"" +
 				//stop ssh-agent using PID generated before
 				$" && eval $(ssh-agent -k)" +
 				//exiting sh.exe
 				$" && exit";
 
-			cmd.StandardInput.WriteLine($"{launchBash} --login -c \"{bashCommands}\"");
+			shProcess.StandardInput.WriteLine($"{bashCommands}");
 
-			//exiting cmd.exe
-			cmd.StandardInput.WriteLine("exit");
+			shProcess.WaitForExit();
 
-			cmd.WaitForExit();
-
-			if (cmd.ExitCode != 0)
-				throw new Exception(cmd.StandardError.ReadToEnd());
+			if (shProcess.ExitCode != 0)
+				throw new Exception(shProcess.StandardError.ReadToEnd());
 		}
 
 		public static void Fetch(
