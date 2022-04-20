@@ -1144,6 +1144,7 @@ class InstructorReview extends React.Component<Props, State> {
 					outdatedReviews,
 					doc,
 					styles.defaultMarker,
+					diffInfo ? diffInfo.addedLinesSet : undefined,
 				),
 			};
 		}

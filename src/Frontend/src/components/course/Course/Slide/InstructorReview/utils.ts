@@ -57,6 +57,7 @@ export interface DiffInfo {
 	addedLinesCount: number;
 	removedLinesCount: number;
 	deletedLinesSet: Set<number>;
+	addedLinesSet: Set<number>;
 	oldCodeNewLineIndex: number[];
 	newCodeNewLineIndex: number[];
 	code: string;
@@ -67,7 +68,7 @@ export const getDiffInfo = (submissionCode: string, prevSubmissionCode: string)
 	: DiffInfo => {
 	const diffByBlocks = [];
 	const oldCodeNewLineIndex: number[] = [];
-	const newCodeNewLineIndex = [];
+	const newCodeNewLineIndex: number[] = [];
 	let addedCount = 0;
 	let removedCount = 0;
 
@@ -133,11 +134,16 @@ export const getDiffInfo = (submissionCode: string, prevSubmissionCode: string)
 		.filter(b => (b as BlockDiff).type === 'removed')
 		.map(b => oldCodeNewLineIndex[b.line - 1] + 1);
 	const deletedLinesSet = new Set(deletedLines);
+	const addedLines = diffByBlocks
+		.filter(b => (b as BlockDiff).type === 'added')
+		.map(b => newCodeNewLineIndex[b.line - 1] + 1);
+	const addedLinesSet = new Set(addedLines);
 
 	return {
 		addedLinesCount: addedCount,
 		removedLinesCount: removedCount,
 		deletedLinesSet,
+		addedLinesSet,
 		diffByBlocks,
 		oldCodeNewLineIndex,
 		newCodeNewLineIndex,
