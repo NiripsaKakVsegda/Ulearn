@@ -80,7 +80,7 @@ namespace Database.DataContexts
 			{
 				var checkings = GetSlideCheckingsByUser<T>(courseId, slideId, userId, noTracking: false)
 					.AsEnumerable()
-					.Where(c => !c.IsChecked && c.LockedById != null)
+					.Where(c => !c.IsChecked && c.LockedById == null)
 					.ToList();
 				foreach (var checking in checkings)
 				{
