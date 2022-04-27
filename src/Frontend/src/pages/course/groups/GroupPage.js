@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from "prop-types";
 import connect from "react-redux/es/connect/connect";
 import { Redirect, withRouter } from 'react-router-dom';
-import { Helmet } from "react-helmet";
 import api from "src/api";
 import { Button, Link, Tabs, Toast } from "ui";
 import GroupMembers from "src/components/groups/GroupSettingsPage/GroupMembers/GroupMembers";
@@ -106,10 +105,7 @@ class GroupPage extends Component {
 		}
 
 		return (
-			<Page>
-				<Helmet defer={ true }>
-					<title>{ `Группа ${ group.name }` }</title>
-				</Helmet>
+			<Page metaTitle={`Группа ${ group.name }`}>
 				{ this.renderHeader() }
 				<div className={ styles.content }>
 					{ groupPage === "settings" &&

@@ -1,5 +1,6 @@
 ﻿import React, { useState } from "react";
 import moment from "moment";
+import { connect } from "react-redux";
 
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { Button, Gapped, Loader, Toast, } from "ui";
@@ -19,10 +20,12 @@ import {
 	texts as baseTexts
 } from "../utils";
 
+import { RootState } from "src/redux/reducers";
+
 import styles from './unloadingSettings.less';
 import texts from './UnloadingSettings.texts';
 
-export type Props = GoogleSheetApiInObject & RouteComponentProps<MatchParams>;
+export type Props = { courseTitle: string; } & GoogleSheetApiInObject & RouteComponentProps<MatchParams>;
 
 export interface State extends PartialBy<GoogleSheetsExportTaskUpdateParams, 'spreadsheetId' | 'listId'> {
 	link: string;
@@ -35,7 +38,9 @@ function UnloadingSettings({
 	api = Api,
 	match,
 	history,
+	courseTitle,
 }: Props): React.ReactElement {
+	const courseTitleInMeta = `Выгрузки в курсе ${ courseTitle }`;
 	const [
 		state,
 		setState,
@@ -67,11 +72,11 @@ function UnloadingSettings({
 	}
 
 	if(!state.task) {
-		return <Page><Loader/></Page>;
+		return <Page metaTitle={ courseTitleInMeta }><Loader/></Page>;
 	}
 
 	return (
-		<Page>
+		<Page metaTitle={ courseTitleInMeta }>
 			<Gapped gap={ 8 } vertical>
 				{ renderInfoInEditMode(state.task) }
 				<h3>{ texts.settings }</h3>
@@ -253,4 +258,10 @@ function UnloadingSettings({
 	}
 }
 
-export default withRouter(UnloadingSettings);
+const mapStateToProps = (state: RootState, params: RouteComponentProps<MatchParams>) => {
+	return {
+		courseTitle: state.courses?.courseById[params.match.params.courseId]?.title?.toLowerCase() ?? '',
+	};
+};
+
+export default withRouter(connect(mapStateToProps)(UnloadingSettings));

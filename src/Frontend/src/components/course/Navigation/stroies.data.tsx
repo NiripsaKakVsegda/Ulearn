@@ -4,10 +4,10 @@ import { Props } from "./Navigation";
 import { mock } from "src/storiesUtils";
 import { DeviceType } from "src/consts/deviceType";
 import React, { CSSProperties } from "react";
-import { getDeviceType } from "../../../utils/getDeviceType";
+import { getDeviceType } from "src/utils/getDeviceType";
 import { connect } from "react-redux";
-import { deviceChangeAction } from "../../../actions/device";
-import { RootState } from "../../../redux/reducers";
+import { deviceChangeAction } from "src/actions/device";
+import { RootState } from "src/redux/reducers";
 
 export const DesktopWrapper: React.FunctionComponent = ({ children }) => (
 	<div style={ { width: '360px', } }>

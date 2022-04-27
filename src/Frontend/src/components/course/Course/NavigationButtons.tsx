@@ -14,13 +14,13 @@ import {
 } from "src/consts/routes";
 import { buildQuery, } from "src/utils";
 import classnames from "classnames";
+import { connect } from "react-redux";
+import { RootState } from "src/redux/reducers";
 
 import { ReviewQueueResponse } from "src/models/instructor";
 
 import styles from "./Course.less";
 import texts from "./NavigationButtons.texts";
-import { connect } from "react-redux";
-import { RootState } from "../../../redux/reducers";
 
 
 interface Props {

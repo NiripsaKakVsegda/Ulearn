@@ -16,7 +16,7 @@ import { Toast } from "ui";
 import { MatchParams } from "src/models/router";
 import { GroupInfo } from "src/models/groups";
 import { CourseState } from "src/redux/course";
-import { RootState } from "../../../redux/reducers";
+import { RootState } from "src/redux/reducers";
 import { Dispatch } from "redux";
 
 interface Props extends RouteComponentProps<MatchParams> {
@@ -141,10 +141,7 @@ class GroupListPage extends Component<Props, State> {
 		}
 
 		return (
-			<Page>
-				<Helmet defer={ false }>
-					<title>{ `Группы в курсе ${ course.title.toLowerCase() }` }</title>
-				</Helmet>
+			<Page metaTitle={ `Группы в курсе ${ course.title.toLowerCase() }` }>
 				<GroupHeader
 					onTabChange={ this.onTabChange }
 					filter={ this.state.filter }

@@ -17,7 +17,8 @@ import {
 import { GroupInfo } from "src/models/groups";
 import { MatchParams } from "src/models/router";
 import { Api, texts as toastTexts } from '../utils';
-
+import { RootState } from "src/redux/reducers";
+import { connect } from "react-redux";
 import styles from "./unloadingList.less";
 import texts from "./UnloadingList.texts";
 
@@ -40,6 +41,7 @@ export interface GoogleSheetApi {
 
 interface Props extends GoogleSheetApiInObject, RouteComponentProps<MatchParams> {
 	userId?: string | null;
+	courseTitle: string;
 }
 
 interface State {
@@ -53,9 +55,11 @@ function UnloadingList({
 	userId,
 	match,
 	api = Api,
+	courseTitle,
 }: Props): React.ReactElement {
 	const { courseId, } = match.params;
 	const [{ loading, tasks, error, ...state }, setState] = useState<State>({ courseId });
+	const courseTitleInMeta = `Выгрузки в курсе ${ courseTitle }`;
 	const apiToProvide: GoogleSheetApi = {
 		...api,
 		createTask: addTask,
@@ -91,13 +95,13 @@ function UnloadingList({
 	}
 
 	return (
-		<Page>
+		<Page metaTitle={ courseTitleInMeta }>
 			<UnloadingHeader courseId={ courseId } api={ apiToProvide }/>
 			<section className={ styles.wrapper }>
 				{ loading &&
-				<div className={ styles.loaderWrapper }>
-					<Loader type={ "big" } active={ true }/>
-				</div>
+					<div className={ styles.loaderWrapper }>
+						<Loader type={ "big" } active={ true }/>
+					</div>
 				}
 				{
 					tasks && tasks.length > 0 &&
@@ -113,11 +117,11 @@ function UnloadingList({
 					</div>
 				}
 				{ !loading
-				&& tasks
-				&& tasks.length === 0
-				&& <div className={ styles.noTasks }>
-					{ texts.noTasks }
-				</div>
+					&& tasks
+					&& tasks.length === 0
+					&& <div className={ styles.noTasks }>
+						{ texts.noTasks }
+					</div>
 				}
 			</section>
 		</Page>
@@ -214,4 +218,8 @@ function UnloadingList({
 	}
 }
 
-export default withRouter(UnloadingList);
+const mapStateToProps = (state: RootState, params: RouteComponentProps<MatchParams>) => ({
+	courseTitle: state.courses?.courseById[params.match.params.courseId]?.title?.toLowerCase() ?? '',
+});
+
+export default withRouter(connect(mapStateToProps)(UnloadingList));
