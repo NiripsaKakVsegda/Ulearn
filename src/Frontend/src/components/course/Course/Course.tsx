@@ -146,12 +146,14 @@ class Course extends Component<CourseProps, State> {
 
 	componentDidUpdate(prevProps: CourseProps, prevState: State): void {
 		const {
-			loadUserProgress,
 			courseId,
+			courseLoadingErrorStatus,
+			courseLoading,
 			loadCourse,
-			user,
 			courseInfo,
 			loadCourseErrors,
+			loadUserProgress,
+			user,
 			progress,
 			isHijacked,
 			updateVisitedSlide,
@@ -159,7 +161,6 @@ class Course extends Component<CourseProps, State> {
 			flashcardsLoading,
 			flashcardsStatisticsByUnits,
 			slideInfo,
-			courseLoading,
 		} = this.props;
 		const { title, } = this.state;
 		const { isAuthenticated, } = user;
@@ -171,7 +172,9 @@ class Course extends Component<CourseProps, State> {
 		}
 
 		if(!courseInfo && !courseLoading) {
-			loadCourse(courseId);
+			if(!courseLoadingErrorStatus) {
+				loadCourse(courseId);
+			}
 			return;
 		}
 
@@ -366,35 +369,35 @@ class Course extends Component<CourseProps, State> {
 		return (
 			<main className={ wrapperClassName }>
 				{ isReview &&
-				<label className={ styles.reviewReturnToQueueLink }>
-					<Link to={ adminCheckingQueuePath + buildQuery({
-						courseId,
-						slideId: slideInfo.query.queueSlideId || undefined,
-						group: slideInfo.query.group || undefined,
-						done: slideInfo.query.done,
-					}) }>
-						{ texts.codeReviewLink }
-					</Link>
-				</label> }
-				{ (isNavigationVisible || isReview) && title &&
-				<h1 className={ styles.title }>
-					{ currentSlideInfo
-					&& isReview
-					&& currentSlideInfo.type === SlideType.Exercise
-						? <Link to={ constructPathToSlide(courseId, currentSlideInfo.id) }>
-							{ title }
+					<label className={ styles.reviewReturnToQueueLink }>
+						<Link to={ adminCheckingQueuePath + buildQuery({
+							courseId,
+							slideId: slideInfo.query.queueSlideId || undefined,
+							group: slideInfo.query.group || undefined,
+							done: slideInfo.query.done,
+						}) }>
+							{ texts.codeReviewLink }
 						</Link>
-						: title }
-					{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
-				</h1> }
+					</label> }
+				{ (isNavigationVisible || isReview) && title &&
+					<h1 className={ styles.title }>
+						{ currentSlideInfo
+						&& isReview
+						&& currentSlideInfo.type === SlideType.Exercise
+							? <Link to={ constructPathToSlide(courseId, currentSlideInfo.id) }>
+								{ title }
+							</Link>
+							: title }
+						{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
+					</h1> }
 				{ this.renderDeadLineScheduleForCurrentPage() }
 				<div className={ styles.slide }>
 					{ isNavigationVisible && !isStudentMode &&
-					<SlideHeader
-						slideInfo={ slideInfo }
-						userRoles={ userRoles }
-						openUnitId={ openedUnit?.id }
-					/> }
+						<SlideHeader
+							slideInfo={ slideInfo }
+							userRoles={ userRoles }
+							openUnitId={ openedUnit?.id }
+						/> }
 					{
 						Page === Slide
 							? slideInfo && <Slide slideInfo={ slideInfo }/>
@@ -597,7 +600,8 @@ class Course extends Component<CourseProps, State> {
 					...s,
 					additionalContentInfo: {
 						...s.additionalContentInfo,
-						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(s.additionalContentInfo.publicationDate) || false,
+						isPublished: s.additionalContentInfo.publicationDate && isTimeArrived(
+							s.additionalContentInfo.publicationDate) || false,
 						hideInfo: true,
 					}
 				}));
