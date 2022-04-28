@@ -39,13 +39,13 @@ namespace GitCourseUpdater
             shProcess.OutputDataReceived += (process, output) => log.Info(output.Data);
             
             var error = "";
-			var isSSHagenStopped = false;
+			var isSSHagentStopped = false;
             shProcess.ErrorDataReceived += (process, output) =>
             {
-				if (!isSSHagenStopped)
+				if (!isSSHagentStopped)
 				{
 					shProcess.StandardInput.WriteLine("eval $(ssh-agent -k)");
-					isSSHagenStopped = true;
+					isSSHagentStopped = true;
 				}
                 if(shProcess.HasExited) return;
                 error += output.Data;
