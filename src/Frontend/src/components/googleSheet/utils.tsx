@@ -108,25 +108,27 @@ export const renderEditableFields = (
 	showLinkHint?: boolean,
 ): React.ReactElement[] => {
 	return [
-		<Gapped gap={ 8 } wrap>
+		<Gapped gap={ 8 } wrap key={ 'isVisibleForStudents' }>
 			<Checkbox checked={ isVisibleForStudents } onValueChange={ changeVisibility }>
 				{ texts.task.isVisibleForStudents }
 			</Checkbox>
 		</Gapped>,
-		<div className={ styles.inputWrapper }>
+		<div className={ styles.inputWrapper } key={ 'refreshStartDate' }>
 			<DatePicker
+				width={ '125px' }
 				onValueChange={ changeRefreshStartDate }
 				value={ moment(refreshStartDate).format('DD.MM.yyyy') }/>
 			{ texts.task.refreshStartDate }
 		</div>,
-		<div className={ styles.inputWrapper }>
+		<div className={ styles.inputWrapper } key={ 'refreshEndDate' }>
 			<DatePicker
+				width={ '125px' }
 				minDate={ moment(refreshStartDate).format('DD.MM.yyyy') }
 				onValueChange={ changeRefreshEndDate }
 				value={ moment(refreshEndDate).format('DD.MM.yyyy') }/>
 			{ texts.task.refreshEndDate }
 		</div>,
-		<Gapped gap={ 8 } vertical>
+		<Gapped gap={ 8 } vertical key={ 'linkInput' }>
 			<Input
 				className={ styles.linkInput }
 				selectAllOnFocus
