@@ -1,7 +1,7 @@
 import React, { CSSProperties, RefObject } from "react";
 import { Button, Gapped, Hint, ScrollContainer, } from "ui";
 import MarkdownEditor from "src/components/comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
-
+import { LastUsedReview } from "src/redux/instructor";
 import { MarkdownDescription } from "src/consts/comments";
 
 import Review from "../../Blocks/Exercise/Review";
@@ -15,7 +15,6 @@ import reviewPolicyChecker from "../reviewPolicyChecker";
 
 import texts from './AddCommentForm.texts';
 import styles from './AddCommentForm.less';
-import { LastUsedReview } from "../../../../../../redux/instructor";
 
 export interface FavouriteComment {
 	id: number;

@@ -22,5 +22,7 @@ namespace Database.Repos
 			DateTime? refreshEndDate, int? refreshTimeInMinutes, string spreadsheetId, int listId);
 
 		Task DeleteTask(GoogleSheetExportTask exportTask);
+
+		Task SaveTaskUploadResult(GoogleSheetExportTask exportTask, DateTime lastUpdateTime, string error = null);
 	}
 }

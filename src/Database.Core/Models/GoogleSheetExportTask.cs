@@ -31,6 +31,10 @@ namespace Database.Models
 		
 		public DateTime? RefreshEndDate { get; set; }
 		
+		public DateTime? LastUpdateDate { get; set; }
+		
+		public string LastUpdateErrorMessage { get; set; }
+		
 		public int? RefreshTimeInMinutes { get; set; }
 		
 		[Required]

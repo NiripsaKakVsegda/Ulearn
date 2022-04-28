@@ -3,6 +3,8 @@ import { Checkbox, DatePicker, Gapped, Input, Switcher } from "ui";
 import React from "react";
 import moment from "moment";
 import styles from "./utils.less";
+import { getDateDDMMYY, serverFormat } from "../../utils/momentUtils";
+import { GoogleSheetsExportTaskResponse } from "../../models/googleSheet";
 
 export const sheetRegex = /^https:\/\/docs.google.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)\/edit#gid=(\d)+$/;
 export const linkExample = 'https://docs.google.com/spreadsheets/d/{spreadsheet-id}/edit#gid={list-id}';
@@ -20,6 +22,11 @@ export const texts = {
 		export: 'Выгрузить сейчас',
 		delete: 'Удалить',
 		create: 'Создать',
+	},
+	extra: {
+		buildLastUploadDate: (lastUpdateDate: string): React.ReactText => `Последняя выгрузка была произведена ${ getDateDDMMYY(
+			moment.tz(lastUpdateDate, serverFormat, 'UTC').local().format()) }`,
+		buildErrorWhileUploading: (errMessage: string): React.ReactText => `Во время последней выгрузки произошла ошибка: ${ errMessage }`,
 	},
 	toast: {
 		add: 'Выгрузка успешно создана',
@@ -129,7 +136,7 @@ export const renderEditableFields = (
 				placeholder={ linkExample }
 			/>
 			{ showLinkHint &&
-			<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span> }
+				<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span> }
 		</Gapped>
 	];
 };

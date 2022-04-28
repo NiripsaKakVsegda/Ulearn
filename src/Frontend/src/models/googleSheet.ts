@@ -9,6 +9,9 @@ export interface GoogleSheetsExportTaskResponse {
 	refreshStartDate?: string;
 	refreshEndDate?: string;
 	refreshTimeInMinutes: number;
+	//time in UTC
+	lastUpdateDate: string | null;
+	lastUpdateErrorMessage: string | null;
 	spreadsheetId: string;
 	listId: number;
 }

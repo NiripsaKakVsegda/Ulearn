@@ -15,12 +15,7 @@ namespace Ulearn.Core.GoogleSheet
 		}
 
 		public void GoToNewLine() => Cells.Add(new List<IGoogleSheetCell>());
-
-		public void AddCell(int row, string value) => Cells[row].Add(new StringGoogleSheetCell(value));
-
-		public void AddCell(int row, double value) => Cells[row].Add(new NumberGoogleSheetCell(value));
-		public void AddCell(int row, int value) => Cells[row].Add(new IntGoogleSheetCell(value));
-
-		public void AddCell(int row, DateTime value) => Cells[row].Add(new DateGoogleSheetCell(value));
+		
+		public void AddCell<T>(int row, T value) => Cells[row].Add(new GoogleSheetCell<T>(value));
 	}
 }

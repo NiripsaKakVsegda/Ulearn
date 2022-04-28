@@ -6,6 +6,7 @@ using Vostok.Hosting.Abstractions;
 using Vostok.Logging.Abstractions;
 using System.Threading.Tasks;
 using Database.Repos;
+using Google;
 using Microsoft.Extensions.Options;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.GoogleSheet;
@@ -39,7 +40,7 @@ namespace Ulearn.Web.Api.Workers
 
 		private async Task RefreshGoogleSheets()
 		{
-			log.Info("RefreshGoogleSheets");
+			log.Info("RefreshGoogleSheets started");
 			using (var scope = serviceScopeFactory.CreateScope())
 			{
 				var googleSheetExportTasksRepo = scope.ServiceProvider.GetService<IGoogleSheetExportTasksRepo>();
@@ -47,42 +48,43 @@ namespace Ulearn.Web.Api.Workers
 				var tasks = (await googleSheetExportTasksRepo.GetAllTasks())
 					.Where(t =>
 						t.RefreshStartDate != null
-						&& t.RefreshStartDate >= timeNow
+						&& t.RefreshStartDate.Value <= timeNow
 						&& t.RefreshEndDate != null
-						&& t.RefreshEndDate <= timeNow);
+						&& t.RefreshEndDate.Value >= timeNow);
 				foreach (var task in tasks)
 				{
-					var deltaTime = timeNow - task.RefreshStartDate.Value;
-					//Добавить refreshTime в таблицу in minutes в таску, времени должно быть >= RefreshTimeInMinutes
-					if ((int)deltaTime.TotalMinutes % task.RefreshTimeInMinutes == 0)
+					if (task.LastUpdateDate != null && (timeNow - task.LastUpdateDate.Value).TotalMinutes < task.RefreshTimeInMinutes)
+						continue;
+
+					log.Info($"Start refreshing task {task.Id}");
+					var courseStatisticsParams = new CourseStatisticsParams
 					{
-						log.Info($"Start refreshing task {task.Id}");
-						var courseStatisticsParams = new CourseStatisticsParams
-						{
-							CourseId = task.CourseId,
-							ListId = task.ListId,
-							GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
-						};
+						CourseId = task.CourseId,
+						ListId = task.ListId,
+						GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
+					};
 
-						try
-						{
-							var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, task.AuthorId);
-							var credentialsJson = configuration.GoogleAccessCredentials;
-							var client = new GoogleApiClient(credentialsJson);
-							client.FillSpreadSheet(task.SpreadsheetId, sheet);
-						}
-						catch (Exception e)
-						{
-							//TODO обновлять дату последней выгрузки, добавить поле "последняя ошибка"?
-							log.Warn($"Error while filling spread sheed for task {task.Id}");
-						}
-
-						log.Info($"Refreshed task {task.Id}");
+					GoogleApiException exception = null;
+					try
+					{
+						var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, task.AuthorId, timeNow);
+						var credentialsJson = configuration.GoogleAccessCredentials;
+						var client = new GoogleApiClient(credentialsJson);
+						client.FillSpreadSheet(task.SpreadsheetId, sheet);
 					}
+					catch (GoogleApiException e)
+					{
+						exception = e;
+						log.Warn($"Error while filling spread sheed for task {task.Id}, error message {e.Error.Message}");
+					}
+
+					await googleSheetExportTasksRepo.SaveTaskUploadResult(task, timeNow, exception == null ? null : $"{exception.Error.Code} {exception.Error.Message}");
+
+					log.Info($"Ended refreshing task {task.Id}");
 				}
 			}
 
-			log.Info("End RefreshGoogleSheets");
+			log.Info("RefreshGoogleSheets ended");
 		}
 	}
 }

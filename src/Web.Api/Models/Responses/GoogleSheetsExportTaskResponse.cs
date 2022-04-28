@@ -29,6 +29,12 @@ namespace Ulearn.Web.Api.Models.Responses
 
 		[DataMember]
 		public int? RefreshTimeInMinutes { get; set; }
+		
+		[DataMember]
+		public DateTime? LastUpdateDate { get; set; }
+		
+		[DataMember]
+		public string LastUpdateErrorMessage { get; set; }
 
 		[DataMember]
 		public string SpreadsheetId { get; set; }

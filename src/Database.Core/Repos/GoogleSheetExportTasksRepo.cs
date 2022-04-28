@@ -88,6 +88,13 @@ namespace Database.Repos
 			exportTask.ListId = listId;
 			await db.SaveChangesAsync();
 		}
+		
+		public async Task SaveTaskUploadResult(GoogleSheetExportTask exportTask, DateTime lastUpdateTime, string error = null)
+		{
+			exportTask.LastUpdateDate = lastUpdateTime;
+			exportTask.LastUpdateErrorMessage = error;
+			await db.SaveChangesAsync();
+		}
 
 		public async Task DeleteTask(GoogleSheetExportTask exportTask)
 		{

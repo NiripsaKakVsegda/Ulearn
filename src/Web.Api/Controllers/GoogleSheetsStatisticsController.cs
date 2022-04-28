@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -57,7 +59,7 @@ namespace Ulearn.Web.Api.Controllers
 					context.Result = new JsonResult(new ErrorResponse($"Course {courseId} not found"));
 					return;
 				}
-				
+
 				if (!await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor))
 				{
 					context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
@@ -65,7 +67,7 @@ namespace Ulearn.Web.Api.Controllers
 					return;
 				}
 			}
-			
+
 			if (context.ActionArguments.TryGetValue("taskId", out var taskIdObj))
 			{
 				var taskId = (int)taskIdObj;
@@ -83,7 +85,7 @@ namespace Ulearn.Web.Api.Controllers
 					context.Result = new JsonResult(new ErrorResponse($"You don't have access to course {task.CourseId}"));
 					return;
 				}
-				
+
 				var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, task.CourseId, CourseRoleType.CourseAdmin);
 
 				if (!isCourseAdmin && task.AuthorId != UserId)
@@ -147,7 +149,9 @@ namespace Ulearn.Web.Api.Controllers
 				RefreshEndDate = task.RefreshEndDate,
 				RefreshTimeInMinutes = task.RefreshTimeInMinutes,
 				SpreadsheetId = task.SpreadsheetId,
-				ListId = task.ListId
+				ListId = task.ListId,
+				LastUpdateDate = task.LastUpdateDate,
+				LastUpdateErrorMessage = task.LastUpdateErrorMessage,
 			};
 			return result;
 		}
@@ -193,12 +197,33 @@ namespace Ulearn.Web.Api.Controllers
 				GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
 				SpreadsheetId = task.SpreadsheetId,
 			};
-			var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId);
 
-			var credentialsJson = configuration.GoogleAccessCredentials;
-			var client = new GoogleApiClient(credentialsJson);
-			client.FillSpreadSheet(courseStatisticsParams.SpreadsheetId, sheet);
-			
+			GoogleApiException exception = null;
+			var utcNow = DateTime.UtcNow;
+			try
+			{
+				var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, UserId, utcNow);
+
+				var credentialsJson = configuration.GoogleAccessCredentials;
+				var client = new GoogleApiClient(credentialsJson);
+				client.FillSpreadSheet(courseStatisticsParams.SpreadsheetId, sheet);
+			}
+			catch (GoogleApiException e)
+			{
+				exception = e;
+			}
+
+			var errMessage = exception == null ? null : $"{exception.Error.Code} {exception.Error.Message}";
+			await googleSheetExportTasksRepo.SaveTaskUploadResult(task, utcNow, errMessage);
+
+			if (exception != null)
+			{
+				return exception.Error.Code switch
+				{
+					_ => BadRequest(errMessage)
+				};
+			}
+
 			return Ok($"Task with id {taskId} successfully exported to google sheet");
 		}
 
@@ -212,7 +237,7 @@ namespace Ulearn.Web.Api.Controllers
 				param.IsVisibleForStudents, param.RefreshStartDate,
 				param.RefreshEndDate, param.RefreshTimeInMinutes,
 				param.SpreadsheetId, param.ListId);
-			
+
 			return Ok($"Task {taskId} successfully updated");
 		}
 
@@ -223,7 +248,7 @@ namespace Ulearn.Web.Api.Controllers
 			var task = await googleSheetExportTasksRepo.GetTaskById(taskId);
 
 			await googleSheetExportTasksRepo.DeleteTask(task);
-			
+
 			return NoContent();
 		}
 

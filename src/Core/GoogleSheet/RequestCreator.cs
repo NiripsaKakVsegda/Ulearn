@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Google.Apis.Sheets.v4.Data;
 
 namespace Ulearn.Core.GoogleSheet
 {
 	public static class RequestCreator
 	{
-		public static List<Request> GetRequests(GoogleSheetModel googleSheetModel)
+		public static List<Request> GetRequests(GoogleSheetModel googleSheetModel, (int lastColumnIndex, int lastRowIndex)? sizes = null)
 		{
 			var requests = new List<Request>();
 			var rowNumber = 0;
@@ -15,12 +16,35 @@ namespace Ulearn.Core.GoogleSheet
 				var values = new List<CellData>();
 				foreach (var cell in row)
 					values.Add(CreateCellData(cell));
+
+				if (sizes.HasValue && values.Count < sizes.Value.lastColumnIndex) //clear all unfilled cells
+					values = values
+						.Concat(CreateEmptyCells(sizes.Value.lastColumnIndex - values.Count))
+						.ToList();
+
 				requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, values, rowNumber));
 				rowNumber++;
 			}
 
+			if (sizes.HasValue && googleSheetModel.Cells.Count < sizes.Value.lastRowIndex) //clear all unfilled rows
+				for (var i = 0; i < Math.Max(sizes.Value.lastRowIndex - googleSheetModel.Cells.Count, 2); i++)
+				{
+					requests.Add(CreateRowUpdateRequest(googleSheetModel.ListId, CreateEmptyCells(sizes.Value.lastColumnIndex), rowNumber));
+					rowNumber++;
+				}
+
 			return requests;
 		}
+
+		private static List<CellData> CreateEmptyCells(int count) =>
+			Enumerable
+				.Range(0, count)
+				.Select(_ => CreateCellDataForString("", new CellData
+				{
+					UserEnteredValue = new ExtendedValue(),
+					UserEnteredFormat = new CellFormat(),
+				}))
+				.ToList();
 
 		private static Request CreateRowUpdateRequest(int listId, IList<CellData> values, int rowIndex, string fields = "*")
 		{
@@ -48,10 +72,10 @@ namespace Ulearn.Core.GoogleSheet
 			};
 			data = googleSheetCell switch
 			{
-				StringGoogleSheetCell stringCell => CreateCellDataForString(stringCell.Value, data),
-				DateGoogleSheetCell dateCell => CreateCellDataForDate(dateCell.Value, data),
-				NumberGoogleSheetCell numberCell => CreateCellDataForNumber(numberCell.Value, data),
-				IntGoogleSheetCell intCell => CreateCellDataForIntNumber(intCell.Value, data),
+				GoogleSheetCell<string> stringCell => CreateCellDataForString(stringCell.Value, data),
+				GoogleSheetCell<DateTime> dateCell => CreateCellDataForDate(dateCell.Value, data),
+				GoogleSheetCell<double> numberCell => CreateCellDataForNumber(numberCell.Value, data),
+				GoogleSheetCell<int> intCell => CreateCellDataForIntNumber(intCell.Value, data),
 				_ => data
 			};
 			return data;
@@ -61,7 +85,7 @@ namespace Ulearn.Core.GoogleSheet
 		{
 			cellData.UserEnteredValue.NumberValue = GetDateValue(value);
 			cellData.UserEnteredFormat.NumberFormat =
-				new NumberFormat { Pattern = "dd.MM.yyyy HH:mm:ss", Type = "DATE_TIME" };
+				new NumberFormat { Pattern = "dd.MM.yyyy HH:mm:ss \"UTC\"", Type = "DATE_TIME" };
 			return cellData;
 		}
 
@@ -85,15 +109,13 @@ namespace Ulearn.Core.GoogleSheet
 			return cellData;
 		}
 
-		private static double? GetDateValue(DateTime dateTimeInUtc)
+		private static double? GetDateValue(DateTime dateTimeInLocal)
 		{
-			const int secondInDay = 60 * 60 * 24;
-			var dateTime = TimeZoneInfo.ConvertTimeFromUtc(dateTimeInUtc, TimeZoneInfo.FindSystemTimeZoneById(
-				"West Asia Standard Time")); // Время по Екатеринбургу
-			var startTime = new DateTime(1899, 11, 30, 0, 0, 0, 0, DateTimeKind.Utc);
-			var tsInterval = dateTime.Subtract(startTime);
-			var time = Convert.ToDouble(tsInterval.TotalSeconds) / secondInDay;
-			return time;
+			var localZone = TimeZone.CurrentTimeZone;
+			var currentUtc = localZone.ToUniversalTime(dateTimeInLocal);
+			var startTime = new DateTime(1899, 12, 30, 0, 0, 0, 0, DateTimeKind.Utc);
+			var tsInterval = currentUtc.Subtract(startTime);
+			return tsInterval.TotalDays;
 		}
 	}
 }

@@ -5,8 +5,7 @@ namespace Ulearn.Web.Api.Utils
 {
 	public interface ISheetBuilder
 	{
-		void AddCell(string value, int colspan = 1);
-		void AddCell(int value, int colspan = 1);
+		void AddCell<T>(T value, int colspan = 1);
 		void GoToNewLine();
 		void AddStyleRule(Action<ExcelStyle> styleFunction);
 		void PopStyleRule();

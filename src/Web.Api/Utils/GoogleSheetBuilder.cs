@@ -8,7 +8,9 @@ namespace Ulearn.Web.Api.Utils
 	{
 		private readonly GoogleSheetModel googleSheetModel;
 		private int currentRow;
+
 		private int currentColumn;
+
 		// private readonly List<Action<ExcelStyle>> styleRules = new List<Action<ExcelStyle>>();
 		private bool isLastStyleRuleForOneCellOnly = false;
 
@@ -22,21 +24,7 @@ namespace Ulearn.Web.Api.Utils
 			ColumnsCount = 0;
 		}
 
-		public void AddCell(string value, int colspan = 1)
-		{
-			if (colspan < 1)
-				return;
-			googleSheetModel.AddCell(currentRow, value); 
-			for (var i = 1; i < colspan; i++)
-			{
-				googleSheetModel.AddCell(currentRow,"");
-			}
-			
-			currentColumn += colspan;
-			ColumnsCount = Math.Max(ColumnsCount, currentColumn);
-		}
-		
-		public void AddCell(int value, int colspan = 1)
+		public void AddCell<T>(T value, int colspan = 1)
 		{
 			if (colspan < 1)
 				return;
@@ -45,7 +33,7 @@ namespace Ulearn.Web.Api.Utils
 			{
 				googleSheetModel.AddCell(currentRow, "");
 			}
-			
+
 			currentColumn += colspan;
 			ColumnsCount = Math.Max(ColumnsCount, currentColumn);
 		}

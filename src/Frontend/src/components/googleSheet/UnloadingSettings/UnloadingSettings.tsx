@@ -10,8 +10,12 @@ import Error404 from "../../common/Error/Error404";
 import { GoogleSheetApiInObject } from "../UnloadingsList/UnloadingList";
 import { GoogleSheetsExportTaskResponse, GoogleSheetsExportTaskUpdateParams } from "src/models/googleSheet";
 import { MatchParams } from "src/models/router";
+import { UTC } from "src/consts/defaultTimezone";
 
-import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
+import {
+	convertDefaultTimezoneToLocal,
+	serverFormat
+} from "src/utils/momentUtils";
 import {
 	Api,
 	isLinkMatchRegexp,
@@ -24,6 +28,7 @@ import { RootState } from "src/redux/reducers";
 
 import styles from './unloadingSettings.less';
 import texts from './UnloadingSettings.texts';
+import { RequestError } from "../../../api";
 
 export type Props = { courseTitle: string; } & GoogleSheetApiInObject & RouteComponentProps<MatchParams>;
 
@@ -109,6 +114,18 @@ function UnloadingSettings({
 					.join(', ') }
 			</h2>
 			<p> { baseTexts.task.buildAuthor(task.authorInfo.visibleName) }</p>
+			{
+				task.lastUpdateDate &&
+				<p>
+					{ baseTexts.extra.buildLastUploadDate(task.lastUpdateDate) }
+				</p>
+			}
+			{
+				task.lastUpdateErrorMessage &&
+				<p className={ styles.errorMessage }>
+					{ baseTexts.extra.buildErrorWhileUploading(task.lastUpdateErrorMessage) }
+				</p>
+			}
 		</header>;
 	}
 
@@ -241,8 +258,32 @@ function UnloadingSettings({
 	function exportTask(): void {
 		if(state.task) {
 			api.exportTaskNow(state.task.id)
-				.then(() => Toast.push(baseTexts.toast.export))
-				.catch(() => Toast.push(baseTexts.toast.exportFail));
+				.then(() => {
+					Toast.push(baseTexts.toast.export);
+					setState({
+						...state,
+						task: state.task && {
+							...state.task,
+							lastUpdateDate: moment().local().tz(UTC).format(serverFormat),
+							lastUpdateErrorMessage: null,
+						},
+					});
+				})
+				.catch((err) => {
+					Toast.push(baseTexts.toast.exportFail);
+					(err as RequestError)
+						.response.text()
+						.then(text=>{
+							setState({
+								...state,
+								task: state.task && {
+									...state.task,
+									lastUpdateDate: moment().local().tz(UTC).format(serverFormat),
+									lastUpdateErrorMessage: `${text}`,
+								},
+							});
+						})
+				});
 		}
 	}
 

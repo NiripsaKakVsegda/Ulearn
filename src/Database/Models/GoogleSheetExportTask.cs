@@ -35,6 +35,10 @@ namespace Database.Models
 		
 		public int? RefreshTimeInMinutes { get; set; }
 		
+		public DateTime? LastUpdateDate { get; set; }
+		
+		public string LastUpdateErrorMessage { get; set; }
+		
 		[Required]
 		public string SpreadsheetId { get; set; }
 		

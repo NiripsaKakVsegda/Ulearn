@@ -50,21 +50,25 @@ namespace Ulearn.Web.Api.Utils
 			this.db = db;
 		}
 
-		public async Task<GoogleSheetModel> GetFilledGoogleSheetModel(CourseStatisticsParams courseStatisticsParams, int userLimits, string userId)
+		public async Task<GoogleSheetModel> GetFilledGoogleSheetModel(CourseStatisticsParams courseStatisticsParams, int userLimits, string userId, DateTime lastUpdateTime)
 		{
 			var model = await GetCourseStatisticsModel(userLimits, userId, courseStatisticsParams.CourseId, courseStatisticsParams.GroupsIds);
 			var listId = courseStatisticsParams.ListId;
 			var sheet = new GoogleSheetModel(listId);
 			var builder = new GoogleSheetBuilder(sheet);
-			FillStatisticModelBuilder(builder, model);
+			FillStatisticModelBuilder(builder, model, false, false, lastUpdateTime);
 			return builder.Build();
 		}
 
-		public void FillStatisticModelBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+		public void FillUnitNames(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false, DateTime? lastUpdateTime = null)
 		{
+			if (lastUpdateTime != null)
+				builder.AddCell(lastUpdateTime.Value);
+
 			builder.AddStyleRule(s => s.Font.Bold = true);
 
-			builder.AddCell("", 3);
+			// 2 or 3 is summ of columns in FillColumnNames
+			builder.AddCell("", lastUpdateTime != null ? 2 : 3);
 			builder.AddCell("За весь курс", model.ScoringGroups.Count);
 			builder.AddStyleRule(s => s.Border.Left.Style = ExcelBorderStyle.Thin);
 			foreach (var unit in model.Units)
@@ -83,7 +87,10 @@ namespace Ulearn.Web.Api.Utils
 
 			builder.PopStyleRule(); // Border.Left
 			builder.GoToNewLine();
+		}
 
+		public void FillColumnNames(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+		{
 			builder.AddCell("Фамилия Имя");
 			builder.AddCell("Ulearn id");
 			if (exportEmails) builder.AddCell("Эл. почта");
@@ -110,14 +117,17 @@ namespace Ulearn.Web.Api.Utils
 			}
 
 			builder.GoToNewLine();
+		}
 
+		public void FillMaxsRow(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+		{
 			builder.AddStyleRule(s => s.Border.Bottom.Style = ExcelBorderStyle.Thin);
 			builder.AddStyleRuleForOneCell(s =>
 			{
 				s.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 				s.Font.Size = 10;
 			});
-			builder.AddCell("Максимум:", exportEmails? 3 : 4);
+			builder.AddCell("Максимум:", exportEmails ? 4 : 3);
 			foreach (var scoringGroup in model.ScoringGroups.Values)
 				builder.AddCell(model.Units.Sum(unit => model.GetMaxScoreForUnitByScoringGroup(unit, scoringGroup)));
 			foreach (var unit in model.Units)
@@ -136,16 +146,19 @@ namespace Ulearn.Web.Api.Utils
 
 			builder.PopStyleRule(); // Bottom.Border
 			builder.GoToNewLine();
+		}
 
+		public void FillUserLines(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false)
+		{
 			builder.AddStyleRule(s => s.Font.Bold = false);
 
 			var groupsByUser = model.VisitedUsers.ToDictionary(
 				u => u.UserId,
 				u => model.Groups.Where(g => model.VisitedUsersGroups[u.UserId].Contains(g.Id)).ToList());
 			foreach (var user in model.VisitedUsers
-				.OrderBy(u => groupsByUser[u.UserId].Count)
-				.ThenBy(u => string.Join(", ", groupsByUser[u.UserId].Select(g => g.Id)))
-				.ThenBy(u => u.UserLastName))
+						.OrderBy(u => groupsByUser[u.UserId].Count)
+						.ThenBy(u => string.Join(", ", groupsByUser[u.UserId].Select(g => g.Id)))
+						.ThenBy(u => u.UserLastName))
 			{
 				builder.AddCell(user.UserVisibleName);
 				builder.AddCell(user.UserId);
@@ -181,6 +194,14 @@ namespace Ulearn.Web.Api.Utils
 
 				builder.GoToNewLine();
 			}
+		}
+
+		public void FillStatisticModelBuilder(ISheetBuilder builder, CourseStatisticPageModel model, bool exportEmails = false, bool onlyFullScores = false, DateTime? lastUpdateTime = null)
+		{
+			FillUnitNames(builder, model, exportEmails, onlyFullScores, lastUpdateTime); // За весь курс - Модуль 1 - Модуль 2 - ... - Модуль N
+			FillColumnNames(builder, model, exportEmails, onlyFullScores); // ФИО - Id - Группа - ScoringGroup 1 - Scoring group 2 - SG: SlideName - ...
+			FillMaxsRow(builder, model, exportEmails, onlyFullScores); // Максимум ... ... ...
+			FillUserLines(builder, model, exportEmails, onlyFullScores); // filling all lines
 		}
 
 		// Be careful! This method is not full copy from AnalyticsController in Web
