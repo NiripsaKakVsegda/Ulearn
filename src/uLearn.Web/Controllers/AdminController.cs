@@ -661,7 +661,9 @@ namespace uLearn.Web.Controllers
 			filterOptions = GetManualCheckingFilterOptionsByGroup(course.Id, groupsIds);
 			filterOptions.OnlyChecked = null;
 			var allCheckingsSlidesIds = GetMergedCheckingQueueSlideIds(filterOptions);
-			var slideId2Index = course.GetSlidesNotSafe().Select((s, i) => (s.Id, i))
+			// +1 to prevent first slide in course to be AFTER emptySlideMock below
+			// GetOrDefault will return 0 for mock slide, so if slide indexed with 0 it can lead to bad ordering below
+			var slideId2Index = course.GetSlidesNotSafe().Select((s, i) => (s.Id, i + 1)) 
 				.ToDictionary(p => p.Item1, p => p.Item2);
 
 			var emptySlideMock = new Slide { Title = "", Id = Guid.Empty };
@@ -674,7 +676,7 @@ namespace uLearn.Web.Controllers
 					new KeyValuePair<Guid, Slide>(Guid.Empty, emptySlideMock)
 				})
 				.OrderBy(s => usedSlidesIds.Contains(s.Key) ? 0 : 1)
-				.ThenBy(s => slideId2Index.GetOrDefault(s.Value.Id))
+				.ThenBy(s => slideId2Index.GetOrDefault(s.Key))
 				.Select(s => new KeyValuePair<Guid, Slide>(s.Key, s.Value))
 				.ToList();
 
