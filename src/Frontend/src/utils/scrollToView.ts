@@ -10,7 +10,7 @@ export default function scrollToView(
 	} = {
 		animationDuration: 500,
 		behavior: 'smooth',
-		additionalTopOffset: 0,
+		additionalTopOffset: 50, // equals to header height
 	}
 ): Promise<void> {
 	const {
@@ -23,13 +23,10 @@ export default function scrollToView(
 	const elemPos = curElem?.getBoundingClientRect();
 
 	if(curElem) {
-		const getToPosition = () =>
-			offsetTop(curElem, scrollingElement)
-			- (curElem.parentElement?.getBoundingClientRect().height || 0)
-			- additionalTopOffset;
+		const getCurrentPosition = () => getElementOffsetFromTop(curElem, scrollingElement) - additionalTopOffset;
 		if(elemPos.top > 0) {
 			return new Promise(r => animate(
-				getToPosition,
+				getCurrentPosition,
 				animationDuration,
 				behavior,
 				scrollingElement,
@@ -42,23 +39,23 @@ export default function scrollToView(
 	return Promise.reject(`Elements wasn't found`);
 }
 
-function getScrollTop(scrollingElement?: HTMLElement) {
-	if(!scrollingElement) {
+function getElementTop(element?: HTMLElement) {
+	if(!element) {
 		return window.pageYOffset || document.documentElement.scrollTop;
 	}
 
-	return scrollingElement.getBoundingClientRect().top;
+	return element.getBoundingClientRect().top;
 }
 
-function offsetTop(el: Element, scrollingElement?: HTMLElement) {
+function getElementOffsetFromTop(el: Element, scrollingElement?: HTMLElement) {
 	const { top } = el.getBoundingClientRect();
-	const scrollingElementTop = getScrollTop(scrollingElement);
+	const scrollingElementTop = getElementTop(scrollingElement);
 
 	return top + scrollingElementTop;
 }
 
 function animate(
-	getToPosition: () => number,
+	getCurrentPosition: () => number,
 	duration: number,
 	behavior: ScrollBehavior,
 	scrollingElement?: HTMLElement,
@@ -68,8 +65,8 @@ function animate(
 	let currentTime = 0;
 	const animateScroll = function () {
 		currentTime += increment;
-		const scrollPosition = easeInOutQuad(currentTime, getScrollTop(scrollingElement),
-			getToPosition() - getScrollTop(scrollingElement), duration);
+		const scrollTop = getElementTop(scrollingElement);
+		const scrollPosition = easeInOutQuad(currentTime, scrollTop, getCurrentPosition() - scrollTop, duration);
 		(scrollingElement || window).scrollTo({
 			left: 0,
 			top: scrollPosition,
@@ -88,11 +85,11 @@ function animate(
 //b = start value
 //c = change in value
 //d = duration
-function easeInOutQuad(t: number, b: number, c: number, d: number): number {
-	t /= d / 2;
-	if(t < 1) {
-		return c / 2 * t * t + b;
+function easeInOutQuad(time: number, current: number, needed: number, duration: number): number {
+	time /= duration / 2;
+	if(time < 1) {
+		return needed / 2 * time * time + current;
 	}
-	t--;
-	return -c / 2 * (t * (t - 2) - 1) + b;
+	time--;
+	return -needed / 2 * (time * (time - 2) - 1) + current;
 }
