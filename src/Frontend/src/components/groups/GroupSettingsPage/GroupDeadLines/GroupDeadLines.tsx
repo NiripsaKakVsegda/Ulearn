@@ -397,6 +397,7 @@ function GroupDeadLines({
 		const newDeadLines = clone(state.actualDeadLines);
 		newDeadLines[notFoundId] = {
 			id: notFoundId,
+			courseId,
 			date: momentToDateInputFormat(moment()),
 			time: defaultTime,
 			unitId: state.unitsMarkup[0][0],

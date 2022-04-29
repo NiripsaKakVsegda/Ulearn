@@ -1,7 +1,6 @@
 import { SlideType } from 'src/models/slide';
 import { AdditionalContentInfo } from "src/models/additionalContent";
-import { DeadLineInfo } from "../../../models/deadLines";
-import { DeadLineSchedule } from "../../../utils/deadLinesUtils";
+import { DeadLineSchedule } from "src/utils/deadLinesUtils";
 
 export interface MenuItem<T extends SlideType> {
 	type: T;
@@ -12,8 +11,8 @@ export interface MenuItem<T extends SlideType> {
 	score: number;
 	maxScore: number;
 	containsVideo: boolean;
-	questionsCount: number,
-	quizMaxTriesCount: number,
+	questionsCount: number;
+	quizMaxTriesCount: number;
 
 	isActive: boolean;
 	visited: boolean;
