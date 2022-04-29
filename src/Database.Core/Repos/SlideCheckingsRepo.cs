@@ -196,6 +196,17 @@ namespace Database.Repos
 		public async Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
+			query = query.GroupBy(
+				c => c.UserId,
+				c => c,
+				(s, items) => items
+					.GroupBy(
+						i => i.SlideId,
+						i => i,
+						(guid, checkings) => checkings
+							.OrderByDescending(c => c.Timestamp)
+							.FirstOrDefault())
+			).SelectMany(c => c);
 			query = query.OrderByDescending(c => c.Timestamp);
 
 			const int reserveForStartedOrDoubleCheckedReviews = 100;
