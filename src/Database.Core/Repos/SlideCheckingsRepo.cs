@@ -89,7 +89,7 @@ namespace Database.Repos
 			{
 				var checkings = (await GetSlideCheckingsByUser<T>(courseId, slideId, userId)
 						.ToListAsync())
-					.Where(c => !c.IsChecked && c.LockedById != null)
+					.Where(c => !c.IsChecked && c.LockedById == null)
 					.ToList();
 				foreach (var checking in checkings)
 				{
