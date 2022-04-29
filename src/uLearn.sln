@@ -74,6 +74,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseToolHotReloader.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Api.Client", "Web.Api.Client\Web.Api.Client.csproj", "{BEA02A48-3D9E-47CE-A005-F96601D07BBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiPlagiarism.ConsoleApp", "AntiPlagiarism.ConsoleApp\AntiPlagiarism.ConsoleApp.csproj", "{6DCAB8AE-DD7B-4E72-8FBB-DFF47445A6CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -216,6 +218,10 @@ Global
 		{BEA02A48-3D9E-47CE-A005-F96601D07BBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEA02A48-3D9E-47CE-A005-F96601D07BBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEA02A48-3D9E-47CE-A005-F96601D07BBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DCAB8AE-DD7B-4E72-8FBB-DFF47445A6CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DCAB8AE-DD7B-4E72-8FBB-DFF47445A6CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DCAB8AE-DD7B-4E72-8FBB-DFF47445A6CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DCAB8AE-DD7B-4E72-8FBB-DFF47445A6CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

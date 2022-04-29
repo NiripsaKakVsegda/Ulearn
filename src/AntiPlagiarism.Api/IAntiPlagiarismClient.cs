@@ -12,5 +12,6 @@ namespace AntiPlagiarism.Api
 		Task<GetMostSimilarSubmissionsResponse> GetMostSimilarSubmissionsAsync(GetMostSimilarSubmissionsParameters parameters);
 		Task<GetSuspicionLevelsResponse> GetSuspicionLevelsAsync(GetSuspicionLevelsParameters parameters);
 		Task<GetSuspicionLevelsResponse> SetSuspicionLevelsAsync(SetSuspicionLevelsParameters parameters);
+		Task<GetProcessingStatusResponse> GetProcessingStatusAsync(GetProcessingStatusParameters parameters);
 	}
 }

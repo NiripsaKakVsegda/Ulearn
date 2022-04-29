@@ -79,5 +79,10 @@ namespace AntiPlagiarism.Api
 		{
 			return MakeRequestAsync<SetSuspicionLevelsParameters, GetSuspicionLevelsResponse>(HttpMethod.Post, Urls.SetSuspicionLevels, parameters);
 		}
+
+		public Task<GetProcessingStatusResponse> GetProcessingStatusAsync(GetProcessingStatusParameters parameters)
+		{
+			return MakeRequestAsync<GetProcessingStatusParameters, GetProcessingStatusResponse>(HttpMethod.Post, Urls.GetProcessingStatus, parameters);
+		}
 	}
 }

@@ -10,5 +10,6 @@
 		public const string GetMostSimilarSubmissions = "get-most-similar-submissions";
 		public const string GetSuspicionLevels = "get-suspicion-levels";
 		public const string SetSuspicionLevels = "set-suspicion-levels";
+		public const string GetProcessingStatus = "get-processing-status";
 	}
 }

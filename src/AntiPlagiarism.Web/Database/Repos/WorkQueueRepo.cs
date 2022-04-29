@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -15,6 +16,7 @@ namespace AntiPlagiarism.Web.Database.Repos
 	public interface IWorkQueueRepo
 	{
 		Task Add(QueueIds queueId, string itemId);
+		Task<List<WorkQueueItem>> GetItemsAsync();
 		Task<WorkQueueItem> TakeNoTracking(QueueIds queueId, TimeSpan? timeLimit = null);
 		Task Remove(int id);
 	}
@@ -42,6 +44,11 @@ namespace AntiPlagiarism.Web.Database.Repos
 				db.WorkQueueItems.Remove(itemToRemove);
 				await db.SaveChangesAsync().ConfigureAwait(false);
 			}
+		}
+
+		public async Task<List<WorkQueueItem>> GetItemsAsync()
+		{
+			return await db.WorkQueueItems.ToListAsync();
 		}
 
 		// https://habr.com/ru/post/481556/

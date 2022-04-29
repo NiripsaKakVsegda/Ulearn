@@ -373,5 +373,25 @@ namespace AntiPlagiarism.Web.Controllers
 			var result = new GetSuspicionLevelsResponse { SuspicionLevels = suspicionLevels };
 			return result;
 		}
+
+		/// <summary>
+		/// Возвращает состояние проверки антиплагиатом Submission по SubmissionId
+		/// </summary>
+		[HttpPost(Api.Urls.GetProcessingStatus)]
+		public async Task<ActionResult<GetProcessingStatusResponse>> GetProcessingStatusAsync(GetProcessingStatusParameters parameters)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+			
+			var workQueueItems = await workQueueRepo.GetItemsAsync().ConfigureAwait(false);
+
+			return new GetProcessingStatusResponse
+			{
+				InQueueSubmissionIds = workQueueItems
+					.Select(item => item.Id)
+					.Where(id => parameters.SubmissionIds.Contains(id))
+					.ToArray()
+			};
+		}
 	}
 }
