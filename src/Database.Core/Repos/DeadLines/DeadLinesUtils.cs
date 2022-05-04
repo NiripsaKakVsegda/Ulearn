@@ -8,6 +8,8 @@ namespace Database.Repos.DeadLines
 	public static class DeadLinesUtils
 	{
 		/*
+		 * Don't forget to make similar changes in Database.DataContexts's copy
+		 *
 		 * Most freed for the user is deadline with highest score among non overlapped deadlines
 		 * 
 		 * For example, we have 3 scores 0, 50, 100
@@ -23,6 +25,12 @@ namespace Database.Repos.DeadLines
 		 * [100 0*]  [50]  -> 50  (100 is overlapped by active 0, 0 overlapped by future 50)
 		 * [100 50] [0]   -> 50  (100 is overlapped by active 50, in future 0)
 		 */
+		/// <summary>
+		/// Returns current active deadline
+		/// </summary>
+		/// <param name="deadLines"> Already filtered by course/slide deadlines</param>
+		/// <param name="currentTime">Time which will be used to finding</param>
+		/// <returns>Active deadline</returns>
 		public static DeadLine GetCurrentDeadLine(List<DeadLine> deadLines, DateTime? currentTime = null)
 		{
 			if (deadLines.Count == 0) return null;

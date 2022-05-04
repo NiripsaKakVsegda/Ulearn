@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Database.DataContexts.DeadLines;
+using Database.DataContexts;
 using Database.Models;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Slides;
