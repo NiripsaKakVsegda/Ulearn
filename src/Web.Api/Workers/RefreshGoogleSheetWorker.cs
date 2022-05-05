@@ -33,9 +33,8 @@ namespace Ulearn.Web.Api.Workers
 
 		public override void Setup(IScheduledActionsBuilder builder, IVostokHostingEnvironment environment)
 		{
-			var scheduler = Scheduler.Multi(Scheduler.Periodical(TimeSpan.FromMinutes(1)), Scheduler.OnDemand(out var refreshGoogleSheets));
+			var scheduler = Scheduler.Periodical(TimeSpan.FromMinutes(1));
 			builder.Schedule("RefreshGoogleSheets", scheduler, RefreshGoogleSheets);
-			refreshGoogleSheets();
 		}
 
 		private async Task RefreshGoogleSheets()
@@ -64,7 +63,7 @@ namespace Ulearn.Web.Api.Workers
 						GroupsIds = task.Groups.Select(g => g.GroupId.ToString()).ToList(),
 					};
 
-					GoogleApiException exception = null;
+					string exceptionMessage = null;
 					try
 					{
 						var sheet = await statisticModelUtils.GetFilledGoogleSheetModel(courseStatisticsParams, 3000, task.AuthorId, timeNow);
@@ -74,11 +73,17 @@ namespace Ulearn.Web.Api.Workers
 					}
 					catch (GoogleApiException e)
 					{
-						exception = e;
-						log.Warn($"Error while filling spread sheed for task {task.Id}, error message {e.Error.Message}");
+						exceptionMessage = $"{e.Error.Code} {e.Error.Message}";
+					}
+					catch (Exception e)
+					{
+						exceptionMessage = e.Message;
 					}
 
-					await googleSheetExportTasksRepo.SaveTaskUploadResult(task, timeNow, exception == null ? null : $"{exception.Error.Code} {exception.Error.Message}");
+					if (exceptionMessage != null)
+						log.Warn($"Error while filling spread sheed for task {task.Id}, error message {exceptionMessage}");
+
+					await googleSheetExportTasksRepo.SaveTaskUploadResult(task, timeNow, exceptionMessage);
 
 					log.Info($"Ended refreshing task {task.Id}");
 				}
