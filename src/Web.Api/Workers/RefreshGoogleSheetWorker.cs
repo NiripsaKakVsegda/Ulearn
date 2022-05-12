@@ -73,7 +73,7 @@ namespace Ulearn.Web.Api.Workers
 					}
 					catch (GoogleApiException e)
 					{
-						exceptionMessage = $"{e.Error.Code} {e.Error.Message}";
+						exceptionMessage = $"Google Api ERROR: {e.Error.Code} {e.Error.Message}";
 					}
 					catch (Exception e)
 					{
@@ -81,7 +81,7 @@ namespace Ulearn.Web.Api.Workers
 					}
 
 					if (exceptionMessage != null)
-						log.Warn($"Error while filling spread sheed for task {task.Id}, error message {exceptionMessage}");
+						log.Warn($"Error while filling spread sheet for task {task.Id}, error message {exceptionMessage}");
 
 					await googleSheetExportTasksRepo.SaveTaskUploadResult(task, timeNow, exceptionMessage);
 

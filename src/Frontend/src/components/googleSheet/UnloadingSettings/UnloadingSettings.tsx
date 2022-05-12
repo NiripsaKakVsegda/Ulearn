@@ -122,8 +122,10 @@ function UnloadingSettings({
 			}
 			{
 				task.lastUpdateErrorMessage &&
-				<p className={ styles.errorMessage }>
-					{ baseTexts.extra.buildErrorWhileUploading(task.lastUpdateErrorMessage) }
+				<p className={ styles.errorMessage }
+				   dangerouslySetInnerHTML={ {
+					   __html: baseTexts.extra.buildErrorWhileUploading(task.lastUpdateErrorMessage)
+				   } }>
 				</p>
 			}
 		</header>;
@@ -273,16 +275,16 @@ function UnloadingSettings({
 					Toast.push(baseTexts.toast.exportFail);
 					(err as RequestError)
 						.response.text()
-						.then(text=>{
+						.then(text => {
 							setState({
 								...state,
 								task: state.task && {
 									...state.task,
 									lastUpdateDate: moment().local().tz(UTC).format(serverFormat),
-									lastUpdateErrorMessage: `${text}`,
+									lastUpdateErrorMessage: `${ text }`,
 								},
 							});
-						})
+						});
 				});
 		}
 	}

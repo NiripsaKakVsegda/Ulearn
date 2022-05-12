@@ -26,7 +26,7 @@ export const texts = {
 	extra: {
 		buildLastUploadDate: (lastUpdateDate: string): React.ReactText => `Последняя выгрузка была произведена ${ getDateDDMMYY(
 			moment.tz(lastUpdateDate, serverFormat, 'UTC').local().format()) }`,
-		buildErrorWhileUploading: (errMessage: string): React.ReactText => `Во время последней выгрузки произошла ошибка: ${ errMessage }`,
+		buildErrorWhileUploading: (errMessage: string): string => `Во время последней выгрузки произошла ошибка: ${ errMessage }`,
 	},
 	toast: {
 		add: 'Выгрузка успешно создана',
@@ -105,7 +105,6 @@ export const renderEditableFields = (
 	changeRefreshEndDate: (date: string) => void,
 	link: string,
 	changeLink: (newLink: string) => void,
-	showLinkHint?: boolean,
 ): React.ReactElement[] => {
 	return [
 		<Gapped gap={ 8 } wrap key={ 'isVisibleForStudents' }>
@@ -137,8 +136,7 @@ export const renderEditableFields = (
 				onValueChange={ changeLink }
 				placeholder={ linkExample }
 			/>
-			{ showLinkHint &&
-				<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span> }
+			<span className={ styles.aboutAccessAccount }>В настройках должен быть предоставлен доступ для ulearn@testproject-318905.iam.gserviceaccount.com в качестве редактора</span>
 		</Gapped>
 	];
 };

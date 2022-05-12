@@ -198,7 +198,7 @@ namespace Ulearn.Web.Api.Controllers
 				SpreadsheetId = task.SpreadsheetId,
 			};
 
-			GoogleApiException exception = null;
+			string exceptionMessage = null;
 			var utcNow = DateTime.UtcNow;
 			try
 			{
@@ -210,19 +210,17 @@ namespace Ulearn.Web.Api.Controllers
 			}
 			catch (GoogleApiException e)
 			{
-				exception = e;
+				exceptionMessage = $"Google Api ERROR: {e.Error.Code} {e.Error.Message}";
 			}
-
-			var errMessage = exception == null ? null : $"{exception.Error.Code} {exception.Error.Message}";
-			await googleSheetExportTasksRepo.SaveTaskUploadResult(task, utcNow, errMessage);
-
-			if (exception != null)
+			catch (Exception e)
 			{
-				return exception.Error.Code switch
-				{
-					_ => BadRequest(errMessage)
-				};
+				exceptionMessage = e.ToString();
 			}
+			
+			await googleSheetExportTasksRepo.SaveTaskUploadResult(task, utcNow, exceptionMessage);
+
+			if (exceptionMessage != null)
+				return BadRequest(exceptionMessage);
 
 			return Ok($"Task with id {taskId} successfully exported to google sheet");
 		}
