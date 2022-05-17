@@ -81,6 +81,11 @@ namespace Ulearn.Common
 		[Lexer("py3")]
 		[CommentSymbols("#")]
 		Mikrokosmos = 13, // https://mroman42.github.io/mikrokosmos/userguide.html
+		
+		[XmlEnum("hdl")]
+		[Lexer("text")]
+		[CommentSymbols("//")]
+		Hdl = 14, // https://www.nand2tetris.org/project01 https://drive.google.com/file/d/1dPj4XNby9iuAs-47U9k3xtYy9hJ-ET0T/view
 
 		[XmlEnum("text")]
 		[Lexer("text")]
@@ -124,6 +129,7 @@ namespace Ulearn.Common
 			{ ".cpp", Language.Cpp },
 			{ ".sql", Language.PgSql },
 			{ ".mkr", Language.Mikrokosmos },
+			{ ".hdl", Language.Hdl },
 			{ ".txt", Language.Text },
 		};
 
