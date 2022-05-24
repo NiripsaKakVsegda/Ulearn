@@ -41,15 +41,11 @@ namespace Ulearn.Web.Api.Controllers
 			var isTester = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester).ConfigureAwait(false);
 
 			if (!isTester)
-			{
 				return Forbid($"You have no access to course {courseId}");
-			}
 			
-			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
+			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
 			if (group == null)
-			{
 				return NotFound($"Group with id {groupId} not found");
-			}
 			
 			var publications = await additionalContentPublicationsRepo.GetAdditionalContentPublications(courseId, groupId);
 			var userIds = publications.Select(p => p.AuthorId).Distinct().ToList();
@@ -92,7 +88,7 @@ namespace Ulearn.Web.Api.Controllers
 					return NotFound($"Slide with id {slideId} not found");
 			}
 
-			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
+			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
 
 			if (group == null)
 				return NotFound($"Group with id {groupId} not found");
@@ -117,7 +113,6 @@ namespace Ulearn.Web.Api.Controllers
 			var course = courseStorage.FindCourse(publicationToUpdate.CourseId);
 			if (course == null)
 				return NotFound($"Course {publicationToUpdate.CourseId} not found");
-			
 			var isTester = await courseRolesRepo.HasUserAccessToCourse(UserId, publicationToUpdate.CourseId, CourseRoleType.Tester).ConfigureAwait(false);
 
 			if (!isTester)
@@ -136,10 +131,8 @@ namespace Ulearn.Web.Api.Controllers
 		{
 			var publication = await additionalContentPublicationsRepo.GetAdditionalContentPublicationById(publicationId);
 			if (publication == null)
-			{
 				return NotFound($"Publication with id {publicationId} not found");
-			}
-			
+
 			var course = courseStorage.FindCourse(publication.CourseId);
 			if (course == null)
 				return NotFound($"Course {publication.CourseId} not found");
