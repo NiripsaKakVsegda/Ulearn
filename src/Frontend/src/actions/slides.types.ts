@@ -14,20 +14,21 @@ export interface SlideReadyAction {
 	isSlideReady: boolean;
 }
 
-export interface SlideLoadStartAction {
-	type: typeof SLIDE_LOAD_START;
+interface SlideBaseAction {
 	courseId: string;
 	slideId: string;
 }
 
-export interface SlideLoadSuccessAction {
+export interface SlideLoadStartAction extends SlideBaseAction {
+	type: typeof SLIDE_LOAD_START;
+}
+
+export interface SlideLoadSuccessAction extends SlideBaseAction {
 	type: typeof SLIDE_LOAD_SUCCESS;
-	courseId: string;
-	slideId: string;
 	slideBlocks: Block[];
 }
 
-export interface SlideLoadFailAction {
+export interface SlideLoadFailAction extends SlideBaseAction {
 	type: typeof SLIDE_LOAD_FAIL;
 	error: string;
 }

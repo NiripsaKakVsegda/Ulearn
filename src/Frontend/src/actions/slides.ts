@@ -31,8 +31,10 @@ export const loadSlideSuccessAction = (
 	slideBlocks,
 });
 
-export const loadSlideFailAction = (error: string): SlideAction => ({
+export const loadSlideFailAction = (courseId: string, slideId: string, error: string): SlideAction => ({
 	type: SLIDE_LOAD_FAIL,
+	courseId,
+	slideId,
 	error,
 });
 
@@ -52,7 +54,7 @@ export const loadSlide = (courseId: string, slideId: string): (dispatch: Dispatc
 				dispatch(loadSlideSuccessAction(courseId, slideId, slideBlocks));
 			})
 			.catch(err => {
-				dispatch(loadSlideFailAction(err));
+				dispatch(loadSlideFailAction(courseId, slideId, err));
 			});
 	};
 };

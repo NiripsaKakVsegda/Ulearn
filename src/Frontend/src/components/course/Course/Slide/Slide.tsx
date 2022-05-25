@@ -14,17 +14,17 @@ import InstructorReview from "./InstructorReview/InstructorReview.redux";
 
 class Slide extends React.Component<Props> {
 	componentDidMount(): void {
-		const { slideBlocks, } = this.props;
+		const { isSlideBlocksLoaded, } = this.props;
 
-		if(slideBlocks.length === 0) {
+		if(!isSlideBlocksLoaded) {
 			this.loadSlide();
 		}
 	}
 
 	componentDidUpdate(): void {
-		const { slideBlocks, slideLoading, slideError, } = this.props;
+		const { slideLoading, slideError, isSlideBlocksLoaded, } = this.props;
 
-		if(slideBlocks.length === 0 && !slideLoading && !slideError) {
+		if(!isSlideBlocksLoaded && !slideLoading && !slideError) {
 			this.loadSlide();
 		}
 	}
@@ -47,6 +47,7 @@ class Slide extends React.Component<Props> {
 			slideInfo,
 			slideError,
 			slideLoading,
+			isSlideBlocksLoaded,
 		} = this.props;
 		const { courseId, slideId, navigationInfo, isReview, isLti, } = slideInfo;
 
@@ -58,6 +59,7 @@ class Slide extends React.Component<Props> {
 			slideBlocks: clone(slideBlocks),
 			slideError,
 			slideLoading,
+			isSlideBlocksLoaded,
 			slideContext: {
 				slideId,
 				courseId,
@@ -107,6 +109,7 @@ export const DefaultSlide = ({
 	slideBlocks,
 	slideError,
 	slideContext,
+	isSlideBlocksLoaded,
 }: SlidePropsWithContext): React.ReactElement => {
 	if(slideError) {
 		return <BlocksWrapper>
@@ -114,7 +117,7 @@ export const DefaultSlide = ({
 		</BlocksWrapper>;
 	}
 
-	if(slideBlocks.length === 0) {
+	if(!isSlideBlocksLoaded) {
 		return (<CourseLoader/>);
 	}
 
@@ -135,10 +138,9 @@ export const StudentModeSlide = ({
 		return <p>slideError</p>;
 	}
 
-	if(slideBlocks.length === 0) {
+	if(!slideBlocks) {
 		return (<CourseLoader/>);
 	}
-
 
 	if(isHiddenSlide) {
 		return renderHiddenSlide();
@@ -189,7 +191,7 @@ export const LtiExerciseSlide = ({
 		return <p>{ slideError }</p>;
 	}
 
-	if(slideBlocks.length === 0) {
+	if(!slideBlocks) {
 		return (<CourseLoader/>);
 	}
 
@@ -207,8 +209,8 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 	slideError,
 	slideContext,
 }): React.ReactElement => {
-	if(slideError) {
-		return <p>slideError</p>;
+	if(slideError || !slideBlocks) {
+		return <p>{ slideError }</p>;
 	}
 
 	const exerciseSlideBlockIndex = slideBlocks.findIndex(sb => sb.$type === BlockTypes.exercise);

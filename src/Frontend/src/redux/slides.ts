@@ -12,18 +12,15 @@ import {
 	SlideLoadFailAction,
 } from 'src/actions/slides.types';
 import { Block, } from "src/models/slide";
+import { ReduxData } from "./index";
 
 interface SlidesState {
 	isSlideReady: boolean;
-	slideLoading: { courseId: string; slideId: string; } | false;
-	slidesByCourses: { [courseId: string]: { [slideId: string]: Block[] } };
-	slideError: string | null;
+	slidesByCourses: { [courseId: string]: { [slideId: string]: Block[] | ReduxData } };
 }
 
 const initialCoursesSlidesState: SlidesState = {
 	isSlideReady: false,
-	slideLoading: false,
-	slideError: null,
 	slidesByCourses: {},
 };
 
@@ -39,11 +36,17 @@ export default function slides(state = initialCoursesSlidesState, action: SlideA
 
 		case SLIDE_LOAD_START: {
 			const { courseId, slideId, } = action as SlideLoadStartAction;
+			const { slidesByCourses } = state;
 
 			return {
 				...state,
-				slideLoading: { courseId, slideId, },
-				slideError: null,
+				slidesByCourses: {
+					...slidesByCourses,
+					[courseId]: {
+						...slidesByCourses[courseId],
+						[slideId]: { isLoading: true },
+					}
+				}
 			};
 		}
 		case SLIDE_LOAD_SUCCESS: {
@@ -52,8 +55,6 @@ export default function slides(state = initialCoursesSlidesState, action: SlideA
 
 			return {
 				...state,
-				slideLoading: false,
-				slideError: null,
 				slidesByCourses: {
 					...slidesByCourses,
 					[courseId]: {
@@ -64,12 +65,19 @@ export default function slides(state = initialCoursesSlidesState, action: SlideA
 			};
 		}
 		case SLIDE_LOAD_FAIL: {
-			const { error } = action as SlideLoadFailAction;
+			const { slideId, courseId, error, } = action as SlideLoadFailAction;
+
+			const { slidesByCourses } = state;
 
 			return {
 				...state,
-				slideLoading: false,
-				slideError: error,
+				slidesByCourses: {
+					...slidesByCourses,
+					[courseId]: {
+						...slidesByCourses[courseId],
+						[slideId]: { error },
+					}
+				}
 			};
 		}
 		default:

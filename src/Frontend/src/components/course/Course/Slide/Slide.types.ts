@@ -1,5 +1,6 @@
 import { SlideInfo } from "../CourseUtils";
 import { Block } from "src/models/slide";
+import { ReduxData } from "../../../../redux";
 
 export interface SlideContext {
 	courseId: string;
@@ -16,8 +17,8 @@ export interface PropsFromRedux extends SlideProps {
 export interface SlideProps {
 	slideBlocks: Block[];
 	slideError: string | null;
-
 	slideLoading: boolean;
+	isSlideBlocksLoaded: boolean;
 }
 
 export interface SlidePropsWithContext extends SlideProps {
