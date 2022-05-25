@@ -68,7 +68,10 @@ namespace Ulearn.Web.Api.Utils
 			builder.AddStyleRule(s => s.Font.Bold = true);
 
 			// 2 or 3 is summ of columns in FillColumnNames
-			builder.AddCell("", lastUpdateTime != null ? 2 : 3);
+			var startColumn = 3;
+			if (lastUpdateTime != null) startColumn--;
+			if (exportEmails) startColumn++;
+			builder.AddCell("", startColumn);
 			builder.AddCell("За весь курс", model.ScoringGroups.Count);
 			builder.AddStyleRule(s => s.Border.Left.Style = ExcelBorderStyle.Thin);
 			foreach (var unit in model.Units)
