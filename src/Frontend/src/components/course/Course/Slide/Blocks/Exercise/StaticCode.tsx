@@ -70,14 +70,13 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 				{ texts.controls.showAllCode.text }
 			</button>
 			}
-			{ hide && <div
+			<div
 				className={ lines.length > 1 ? styles.copyCodeButton : styles.copyCodeButtonSingleLine }
 				onClick={ copyCodeButtonClicked }>
 				<Hint text={ texts.controls.copyCode.text }>
 					<Copy size={ 20 }/>
 				</Hint>
 			</div>
-			}
 		</div>
 	);
 
