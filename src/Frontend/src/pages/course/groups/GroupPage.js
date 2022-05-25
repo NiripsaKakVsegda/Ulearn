@@ -105,50 +105,50 @@ class GroupPage extends Component {
 		}
 
 		return (
-			<Page metaTitle={`Группа ${ group.name }`}>
+			<Page metaTitle={ `Группа ${ group.name }` }>
 				{ this.renderHeader() }
 				<div className={ styles.content }>
 					{ groupPage === "settings" &&
-					this.renderSettings() }
+						this.renderSettings() }
 					{ groupPage === "members" &&
-					<GroupMembers
-						addGroupAccesses={ api.groups.addGroupAccesses }
-						getGroupAccesses={ api.groups.getGroupAccesses }
-						changeGroupOwner={ api.groups.changeGroupOwner }
-						deleteStudents={ api.groups.deleteStudents }
-						removeAccess={ api.groups.removeAccess }
-						getStudents={ api.groups.getStudents }
-						courseId={ courseId }
-						account={ this.props.account }
-						role={ courseRole }
-						isSysAdmin={ this.props.account.isSystemAdministrator }
-						systemAccesses={ systemAccesses }
-						group={ group }
-						onChangeGroupOwner={ this.onChangeGroupOwner }/>
+						<GroupMembers
+							addGroupAccesses={ api.groups.addGroupAccesses }
+							getGroupAccesses={ api.groups.getGroupAccesses }
+							changeGroupOwner={ api.groups.changeGroupOwner }
+							deleteStudents={ api.groups.deleteStudents }
+							removeAccess={ api.groups.removeAccess }
+							getStudents={ api.groups.getStudents }
+							courseId={ courseId }
+							account={ this.props.account }
+							role={ courseRole }
+							isSysAdmin={ this.props.account.isSystemAdministrator }
+							systemAccesses={ systemAccesses }
+							group={ group }
+							onChangeGroupOwner={ this.onChangeGroupOwner }/>
 					}
 					{ groupPage === "additional-content" &&
-					<GroupAdditionalContent
-						courseId={ courseId }
-						groupId={ groupId }
-						getAdditionalContent={ api.additionalContent.getAdditionalContent }
-						deletePublication={ api.additionalContent.deletePublication }
-						updatePublication={ api.additionalContent.updatePublication }
-						addPublication={ api.additionalContent.addPublication }
-						user={ this.props.account }
-					/>
+						<GroupAdditionalContent
+							courseId={ courseId }
+							groupId={ groupId }
+							getAdditionalContent={ api.additionalContent.getAdditionalContent }
+							deletePublication={ api.additionalContent.deletePublication }
+							updatePublication={ api.additionalContent.updatePublication }
+							addPublication={ api.additionalContent.addPublication }
+							user={ this.props.account }
+						/>
 					}
 					{ groupPage === "dead-lines" &&
-					<GroupDeadLines
-						courseId={ courseId }
-						groupId={ groupId }
-						getStudents={ api.groups.getStudents }
-						getCourse={ api.courses.getCourse }
-						getDeadLines={ api.deadLines.getDeadLines }
-						changeDeadLine={ api.deadLines.changeDeadLine }
-						createDeadLine={ api.deadLines.createDeadLine }
-						deleteDeadLine={ api.deadLines.deleteDeadLine }
-						user={ this.props.account }
-					/>
+						<GroupDeadLines
+							courseId={ courseId }
+							groupId={ groupId }
+							getStudents={ api.groups.getStudents }
+							getCourse={ api.courses.getCourse }
+							getDeadLines={ api.deadLines.getDeadLines }
+							changeDeadLine={ api.deadLines.changeDeadLine }
+							createDeadLine={ api.deadLines.createDeadLine }
+							deleteDeadLine={ api.deadLines.deleteDeadLine }
+							user={ this.props.account }
+						/>
 					}
 				</div>
 			</Page>
@@ -272,7 +272,7 @@ class GroupPage extends Component {
 	};
 
 	sendSettings = (e) => {
-		const { group, updatedFields, checkedScoresSettingsIds } = this.state;
+		const { group, updatedFields, checkedScoresSettingsIds, scores, } = this.state;
 		e.preventDefault();
 
 		const mapToServerName = {
@@ -282,7 +282,11 @@ class GroupPage extends Component {
 		};
 
 		const saveGroup = api.groups.saveGroupSettings(group.id, updatedFields);
-		const saveScores = api.groups.saveScoresSettings(group.id, checkedScoresSettingsIds.filter(s => !(s[mapToServerName.allGroupScores] || !s[mapToServerName.unitScores])));
+		const saveScores = api.groups.saveScoresSettings(group.id, checkedScoresSettingsIds
+			.filter(s => {
+				const score = scores.find(score => score.id === s);
+				return !(score[mapToServerName.allGroupScores] || !score[mapToServerName.unitScores])
+			}));
 
 		Promise
 			.all([saveGroup, saveScores])
