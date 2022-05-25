@@ -33,6 +33,7 @@ interface Props {
 
 interface State {
 	text: string;
+	isCodePresented?: boolean;
 	error: null | string;
 	status?: string;
 }
@@ -50,7 +51,7 @@ class CommentSendForm extends Component<Props, State> {
 
 	render(): React.ReactElement {
 		const { author, isShowFocus: { inSendForm, inEditForm, inReplyForm, }, className } = this.props;
-		const { error, text } = this.state;
+		const { error, text, isCodePresented, } = this.state;
 
 		const classes = classNames(className, styles.formContainer);
 
@@ -64,7 +65,15 @@ class CommentSendForm extends Component<Props, State> {
 						hasError={ error !== null }
 						text={ text }
 						handleChange={ this.handleChange }
-						handleSubmit={ this.handleSubmit }>
+						handleSubmit={ this.handleSubmit }
+						beforeButtonsElement={ isCodePresented &&
+							<p className={ styles.dontLeakCodeMessage }>
+								Не публикуйте свои решения задач в комментариях! Кажется, ваш комментарий содержит
+								что-то
+								похожее на код. Если хотите поделиться с другими своим ходом мыслей, поделитесь на
+								русском
+								языке, без готового кода — пусть остальные решат задачу самостоятельно
+							</p> }>
 						<Gapped gap={ 10 } className={ styles.buttons }>
 							{ this.renderSubmitButton() }
 							{ this.renderCancelButton() }
@@ -76,7 +85,19 @@ class CommentSendForm extends Component<Props, State> {
 	}
 
 	renderSubmitButton(): React.ReactElement {
-		const { submitTitle = "Оставить комментарий", sending } = this.props;
+		const { sending } = this.props;
+		const { isCodePresented, } = this.state;
+		let { submitTitle } = this.props;
+		const defaultTitle = "Оставить комментарий";
+
+		if(!submitTitle) {
+			submitTitle = defaultTitle;
+		}
+		if(isCodePresented) {
+			submitTitle = submitTitle === defaultTitle
+				? "Всё равно оставить"
+				: "Всё равно отправить";
+		}
 
 		return (
 			<Button
@@ -129,7 +150,10 @@ class CommentSendForm extends Component<Props, State> {
 	};
 
 	handleChange = (text: string, callback?: () => void): void => {
-		this.setState({ text, error: null }, callback);
+		const codeRegex = /return|{|}|=>/;
+		const isCodePresented = codeRegex.test(text);
+
+		this.setState({ text, error: null, isCodePresented }, callback);
 	};
 }
 

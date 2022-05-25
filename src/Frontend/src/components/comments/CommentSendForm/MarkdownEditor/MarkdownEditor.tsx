@@ -59,6 +59,7 @@ interface Props {
 	handleSubmit: (event: React.KeyboardEvent) => void;
 
 	children?: React.ReactNode;
+	beforeButtonsElement?: React.ReactNode;
 }
 
 interface Range {
@@ -121,6 +122,7 @@ class MarkdownEditor extends Component<Props> {
 			hidePlaceholder,
 			className,
 			lengthCounter,
+			beforeButtonsElement,
 			width = '100%',
 		} = this.props;
 
@@ -142,6 +144,7 @@ class MarkdownEditor extends Component<Props> {
 					lengthCounter={ lengthCounter }
 					showLengthCounter={ !!lengthCounter }
 					placeholder={ hidePlaceholder ? undefined : "Комментарий" }/>
+				{ beforeButtonsElement }
 				<div className={ styles.formFooter }>
 					{ children }
 					<MarkdownButtons
