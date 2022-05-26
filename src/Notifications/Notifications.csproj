@@ -41,7 +41,7 @@
     </Content>
   <Content Include="deploy\**">
     <Link>deploy\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>None</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
   </Content>
   </ItemGroup>

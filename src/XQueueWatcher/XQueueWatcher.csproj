@@ -36,11 +36,11 @@
     </Content>
     <Content Include="appsettings.local.json">
       <DependentUpon>appsettings.json</DependentUpon>
-      <CopyToOutputDirectory>Newer</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="deploy\**">
       <Link>deploy\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>None</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>

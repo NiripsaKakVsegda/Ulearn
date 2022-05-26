@@ -37,7 +37,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Content Update="appsettings.local.json">
-			<CopyToPublishDirectory>Newer</CopyToPublishDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<DependentUpon>appsettings.json</DependentUpon>
 		</Content>
