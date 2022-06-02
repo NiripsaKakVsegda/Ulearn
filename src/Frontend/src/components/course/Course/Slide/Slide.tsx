@@ -132,13 +132,14 @@ export const StudentModeSlide = ({
 	slideBlocks,
 	slideError,
 	isHiddenSlide,
+	isSlideBlocksLoaded,
 	slideContext,
 }: StudentModeProps): React.ReactElement => {
 	if(slideError) {
 		return <p>slideError</p>;
 	}
 
-	if(!slideBlocks) {
+	if(!slideBlocks || !isSlideBlocksLoaded) {
 		return (<CourseLoader/>);
 	}
 
@@ -186,12 +187,13 @@ export const LtiExerciseSlide = ({
 	slideBlocks,
 	slideError,
 	slideContext,
+	isSlideBlocksLoaded,
 }: SlidePropsWithContext): React.ReactElement => {
 	if(slideError) {
 		return <p>{ slideError }</p>;
 	}
 
-	if(!slideBlocks) {
+	if(!slideBlocks || !isSlideBlocksLoaded) {
 		return (<CourseLoader/>);
 	}
 
@@ -208,8 +210,9 @@ export const ReviewSlide: React.FC<SlidePropsWithContext> = ({
 	slideBlocks,
 	slideError,
 	slideContext,
+	isSlideBlocksLoaded,
 }): React.ReactElement => {
-	if(slideError || !slideBlocks) {
+	if(slideError || !slideBlocks || !isSlideBlocksLoaded) {
 		return <p>{ slideError }</p>;
 	}
 
