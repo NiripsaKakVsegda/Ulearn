@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<package>
+	<metadata>
+		<id>Kontur.Ulearn.AntiPlagiarism.ConsoleApp</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>SKB Kontur</authors>
+		<owners>SKB Kontur</owners>
+		<licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+		<projectUrl>https://ulearn.me</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>AntiPlagiarism.ConsoleApp.exe tool for eternal use of ulearn's antiplagiarism</description>
+		<releaseNotes></releaseNotes>
+		<copyright>Copyright 2022 SKB Kontur</copyright>
+		<tags>ulearn education mooc</tags>
+	</metadata>
+	<files>
+		<file src="bin\*\*\AntiPlagiarismConsoleApp.zip" />
+	</files>
+</package>
