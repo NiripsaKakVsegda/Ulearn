@@ -4,7 +4,7 @@ import {
 	CopyGroupResponse,
 	GroupAccessesResponse,
 	GroupInfo,
-	GroupScoringGroupsResponse, GroupsInfoResponse,
+	GroupScoringGroupsResponse, GroupsInfoResponse, GroupsListParameters,
 	GroupStudentsResponse
 } from "src/models/groups";
 import { buildQuery } from "src/utils";
@@ -33,8 +33,10 @@ export function getCourseGroupsRedux(courseId: string, userId: string, archived?
 	};
 }
 
-export function getCourseArchivedGroups(courseId: string): Promise<{ groups: GroupInfo[] }> {
-	const url = groups + buildQuery({ courseId, archived: true, });
+export function getCourseArchivedGroups(courseId: string,
+	params: Partial<GroupsListParameters>
+): Promise<{ groups: GroupInfo[] }> {
+	const url = groups + buildQuery({ courseId, archived: true, ...params, });
 	return api.get(url);
 }
 

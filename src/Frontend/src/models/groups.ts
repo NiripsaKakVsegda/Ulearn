@@ -69,3 +69,11 @@ export interface CopyGroupResponse {
 	id: string;
 	apiUrl: string;
 }
+
+export interface GroupsListParameters {
+	courseId: string;
+	archived: boolean;
+	userId: string;
+	offset: number;
+	count: number;
+}
