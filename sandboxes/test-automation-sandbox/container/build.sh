@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t test-automation-sandbox . --no-cache
+docker build -t test-automation-sandbox .
