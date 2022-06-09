@@ -452,11 +452,21 @@ namespace uLearn.Web.Controllers
 			{
 				var visibleCourses = unitsRepo.GetVisibleCourses();
 				var coursesInWhichUserHasAnyRole = userRolesRepo.GetCoursesWhereUserIsInRole(userId, CourseRole.Tester);
+				var coursesInWhichUserHasVisit = db.LastVisits
+					.Where(v => visibleCourses.Contains(v.CourseId) && v.UserId == userId)
+					.Select(v => v.CourseId)
+					.Distinct()
+					.Select(i => db.LastVisits
+						.Where(v => v.CourseId == i && v.UserId == userId)
+						.OrderByDescending(v => v.Timestamp)
+						.FirstOrDefault())
+					.ToDictionary(v => v!.CourseId, v => v.Timestamp != null, StringComparer.OrdinalIgnoreCase);
 				var coursesWhereIAmStudent = groupsRepo.GetUserGroups(userId)
 					.Select(g => g.CourseId)
 					.Distinct(StringComparer.OrdinalIgnoreCase)
 					.Where(c => visibleCourses.Contains(c)).ToList();
-				courses = courses.Where(c => coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase)
+				courses = courses.Where(c => coursesInWhichUserHasVisit[c.Id]
+											|| coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase)
 											|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 			}
 

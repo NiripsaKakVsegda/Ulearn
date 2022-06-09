@@ -10,37 +10,41 @@ import { CourseAccessType, CourseRoleType, } from "src/consts/accessType";
 import { DeviceType } from "src/consts/deviceType";
 import { buildQuery } from "src/utils";
 
-const lastVisitedCoursesMaxCount = 4;
-const controllableCoursesMaxCount = 10;
+const maxCoursesCount = 14;
 
 export function getCourseMenuItems(
 	controllableCourseIds: string[],
 	courseById: { [courseId: string]: CourseInfo },
 	isSystemAdministrator: boolean
 ): React.ReactElement[] {
-	controllableCourseIds = controllableCourseIds.filter(item => courseById[item] !== undefined);
+	controllableCourseIds = controllableCourseIds
+		.filter(item => courseById[item] !== undefined)
+	;
 	const controllableCourses = controllableCourseIds
 		.filter(courseId => courseById[courseId])
 		.map(courseId => courseById[courseId])
-		.sort(sortCoursesByTimestamp)
-		.slice(0, controllableCoursesMaxCount);
-	const controllableCoursesIds = new Set(controllableCourses.map(c => c.id));
+	;
+	const controllableCoursesWithoutVisits = controllableCourses
+		.filter(course => course.timestamp === null)
+		.sort(sortCoursesByTitle)
+	;
 	const lastVisitedCourses = Object.values(courseById)
-		.filter(course => !controllableCoursesIds.has(course.id) && course.timestamp !== null)
-		.sort(sortCoursesByTimestamp)
-		.slice(0, lastVisitedCoursesMaxCount);
+		.filter(course => course.timestamp !== null)
+		.sort(sortCoursesByTimestamp)  
+	;
 
 	const items = [
-		...controllableCourses,
-		...lastVisitedCourses,
-	].map(
-		courseInfo =>
-			<MenuItem
-				href={ `/${ coursePath }/${ courseInfo.id }` }
-				key={ courseInfo.id }
-				component={ LinkComponent }>{ courseInfo.title }
-			</MenuItem>
-	);
+		...controllableCoursesWithoutVisits,
+		...lastVisitedCourses
+	]
+		.map(
+			courseInfo =>
+				<MenuItem
+					href={ `/${ coursePath }/${ courseInfo.id }` }
+					key={ courseInfo.id }
+					component={ LinkComponent }>{ courseInfo.title }
+				</MenuItem>
+		);
 	if(controllableCourseIds.length > controllableCourses.length || isSystemAdministrator) {
 		items.push(
 			<MenuItem href={ coursesPath } key="-course-list" component={ LinkComponent }>
