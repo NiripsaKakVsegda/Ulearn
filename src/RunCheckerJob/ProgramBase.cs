@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Metrics;
@@ -39,7 +40,7 @@ namespace RunCheckerJob
 				var runCheckerJobConfiguration = ApplicationConfiguration.Read<RunCheckerJobConfiguration>().RunCheckerJob;
 				sleep = TimeSpan.FromSeconds(runCheckerJobConfiguration.SleepSeconds ?? 1);
 				agentName = runCheckerJobConfiguration.AgentName;
-				supportedSandboxes = runCheckerJobConfiguration.SupportedSandboxes;
+				supportedSandboxes = GetSupportedSandboxes();
 				if (string.IsNullOrEmpty(agentName))
 				{
 					agentName = Environment.MachineName;
@@ -51,6 +52,53 @@ namespace RunCheckerJob
 				log.Error(e, "Root error");
 				throw;
 			}
+		}
+
+		string[] GetSupportedSandboxes()
+		{
+			var supportedSandboxes = new List<string>();
+			string error = null;
+				
+			var dockerProc = new Process
+			{
+				StartInfo =
+				{
+					Arguments = "image ls --format '{{.Repository}}'",
+					FileName = "docker",
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					CreateNoWindow = true,
+					UseShellExecute = false
+				}
+			};
+			
+			dockerProc.Start();
+
+			dockerProc.OutputDataReceived += (process, output) =>
+			{
+				if (output.Data == null)
+				{
+					dockerProc.Kill();
+					return;
+				}
+				supportedSandboxes.Add(output.Data);
+			};
+			
+			dockerProc.ErrorDataReceived += (process, output) =>
+			{
+				dockerProc.Kill();
+				error = output.Data;
+			};
+
+			dockerProc.BeginOutputReadLine();
+			dockerProc.BeginErrorReadLine();
+			
+			dockerProc.WaitForExit();
+
+			if (error != null)
+				throw new Exception(error);
+			
+			return supportedSandboxes.ToArray();
 		}
 
 		protected void Run(bool joinAllThreads = true)
