@@ -58,7 +58,6 @@ namespace RunCheckerJob
 		{
 			var supportedSandboxes = new List<string>();
 			string error = null;
-				
 			var dockerProc = new Process
 			{
 				StartInfo =
@@ -71,7 +70,7 @@ namespace RunCheckerJob
 					UseShellExecute = false
 				}
 			};
-			
+
 			dockerProc.Start();
 
 			dockerProc.OutputDataReceived += (process, output) =>
@@ -81,9 +80,13 @@ namespace RunCheckerJob
 					dockerProc.Kill();
 					return;
 				}
+
+				if (output.Data == "<none>")
+					return;
+
 				supportedSandboxes.Add(output.Data);
 			};
-			
+
 			dockerProc.ErrorDataReceived += (process, output) =>
 			{
 				dockerProc.Kill();
@@ -92,12 +95,12 @@ namespace RunCheckerJob
 
 			dockerProc.BeginOutputReadLine();
 			dockerProc.BeginErrorReadLine();
-			
+
 			dockerProc.WaitForExit();
 
 			if (error != null)
 				throw new Exception(error);
-			
+
 			return supportedSandboxes.ToArray();
 		}
 
