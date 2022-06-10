@@ -81,10 +81,10 @@ namespace RunCheckerJob
 					return;
 				}
 
-				if (output.Data == "<none>")
+				if (output.Data.Contains("<none>"))
 					return;
 
-				supportedSandboxes.Add(output.Data);
+				supportedSandboxes.Add(output.Data.Substring(1, output.Data.Length - 2));// all string are "'name'", so we need to remove "'"
 			};
 
 			dockerProc.ErrorDataReceived += (process, output) =>
