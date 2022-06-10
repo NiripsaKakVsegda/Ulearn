@@ -325,7 +325,7 @@ namespace Database.DataContexts
 
 		public Group FindGroupByInviteHash(Guid hash)
 		{
-			return db.Groups.FirstOrDefault(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
+			return db.Groups.FirstOrDefault(g => g.InviteHash == hash && !g.IsDeleted);
 		}
 
 		public IQueryable<Group> GetGroups(string courseId, bool includeArchived = false)

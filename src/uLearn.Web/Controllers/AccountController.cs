@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Configuration;
+using System.Web.Http.Results;
 using System.Web.Mvc;
 using Database;
 using Database.DataContexts;
@@ -37,7 +38,7 @@ namespace uLearn.Web.Controllers
 		private readonly CoursesRepo coursesRepo;
 		private readonly SystemAccessesRepo systemAccessesRepo;
 		private readonly TempCoursesRepo tempCoursesRepo;
-		private readonly SlideCheckingsRepo slideCheckingsRepo; 
+		private readonly SlideCheckingsRepo slideCheckingsRepo;
 
 		private readonly string telegramSecret;
 		private static readonly WebApiConfiguration configuration;
@@ -183,17 +184,22 @@ namespace uLearn.Web.Controllers
 
 		public async Task<ActionResult> JoinGroup(Guid hash)
 		{
+			var userId = User.Identity.GetUserId();
 			var group = groupsRepo.FindGroupByInviteHash(hash);
-			if (group == null)
+
+			if (group != null && group.Members.Any(u => u.UserId == userId))
+				return Redirect(Url.RouteUrl("Course.Slide", new { courseId = group.CourseId }));
+			
+			if (group is not { IsInviteLinkEnabled: true })
 				return new HttpStatusCodeResult(HttpStatusCode.NotFound);
 
 			if (Request.HttpMethod == "POST")
 			{
-				var alreadyInGroup = await groupsRepo.AddUserToGroup(group.Id, User.Identity.GetUserId()) == null;
+				var alreadyInGroup = await groupsRepo.AddUserToGroup(group.Id, userId) == null;
 				if (!alreadyInGroup)
-					await NotifyAboutUserJoinedToGroup(group, User.Identity.GetUserId());
+					await NotifyAboutUserJoinedToGroup(group, userId);
 
-				await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, User.Identity.GetUserId()).ConfigureAwait(false);
+				await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, userId).ConfigureAwait(false);
 
 				return View("JoinedToGroup", group);
 			}
@@ -753,6 +759,7 @@ namespace uLearn.Web.Controllers
 					IsEnabled = true,
 				}).ConfigureAwait(false);
 			}
+
 			return RedirectToAction("Manage", new { Message = ManageMessageId.TelegramAdded });
 		}
 
@@ -764,7 +771,7 @@ namespace uLearn.Web.Controllers
 			var realUserId = string.IsNullOrEmpty(userId) ? User.Identity.GetUserId() : userId;
 			if (string.IsNullOrEmpty(realUserId))
 				return HttpNotFound();
-			
+
 			var correctSignature = GetEmailConfirmationSignature(email, realUserId);
 			if (signature != correctSignature)
 			{
@@ -907,7 +914,7 @@ namespace uLearn.Web.Controllers
 		public Dictionary<string, Course> AllCourses { get; set; }
 		public Dictionary<string, string> CourseGroups { get; set; }
 		public Dictionary<string, string> CourseArchivedGroups { get; set; }
-		
+
 		public Dictionary<string, TempCourse> AllTempCourses { get; set; }
 
 		public List<string> CoursesWithRoles;
