@@ -24,19 +24,22 @@ export function getCourseMenuItems(
 		.filter(courseId => courseById[courseId])
 		.map(courseId => courseById[courseId])
 	;
-	const controllableCoursesWithoutVisits = controllableCourses
-		.filter(course => course.timestamp === null)
-		.sort(sortCoursesByTitle)
+	const controllableCoursesWithoutVisits = isSystemAdministrator
+		? []
+		: controllableCourses
+			.filter(course => course.timestamp === null)
+			.sort(sortCoursesByTitle)
 	;
 	const lastVisitedCourses = Object.values(courseById)
 		.filter(course => course.timestamp !== null)
-		.sort(sortCoursesByTimestamp)  
+		.sort(sortCoursesByTimestamp)
 	;
 
 	const items = [
 		...controllableCoursesWithoutVisits,
 		...lastVisitedCourses
 	]
+		.slice(0, maxCoursesCount)
 		.map(
 			courseInfo =>
 				<MenuItem
