@@ -50,7 +50,7 @@ namespace RunCsJob
 		}
 
 		private Program([CanBeNull] DirectoryInfo сompilerDirectory, ManualResetEvent externalShutdownEvent = null)
-			: base(serviceName, externalShutdownEvent)
+			: base(serviceName, externalShutdownEvent, true)
 		{
 			if (сompilerDirectory != null)
 				CsSandboxRunnerSettings.MsBuildSettings.CompilerDirectory = сompilerDirectory;

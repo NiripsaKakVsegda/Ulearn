@@ -26,7 +26,7 @@ namespace RunCheckerJob
 		private readonly string[] supportedSandboxes;
 		private readonly string serviceName;
 
-		protected ProgramBase(string serviceName, ManualResetEvent externalShutdownEvent = null)
+		protected ProgramBase(string serviceName, ManualResetEvent externalShutdownEvent = null, bool isSandboxesInAppSettings = false)
 		{
 			this.serviceName = serviceName;
 			if (externalShutdownEvent != null)
@@ -40,7 +40,7 @@ namespace RunCheckerJob
 				var runCheckerJobConfiguration = ApplicationConfiguration.Read<RunCheckerJobConfiguration>().RunCheckerJob;
 				sleep = TimeSpan.FromSeconds(runCheckerJobConfiguration.SleepSeconds ?? 1);
 				agentName = runCheckerJobConfiguration.AgentName;
-				supportedSandboxes = GetSupportedSandboxes();
+				supportedSandboxes = isSandboxesInAppSettings ? runCheckerJobConfiguration.SupportedSandboxes : GetSupportedSandboxes();
 				if (string.IsNullOrEmpty(agentName))
 				{
 					agentName = Environment.MachineName;
