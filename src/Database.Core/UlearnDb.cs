@@ -220,6 +220,20 @@ namespace Database
 			modelBuilder.Entity<ExerciseUsersWithRightAnswerCount>()
 				.ToView(ExerciseUsersWithRightAnswerCount.ViewName)
 				.HasNoKey();
+			
+			modelBuilder.Entity<DeadLine>(builder =>
+			{
+				if (!Database.IsNpgsql())
+				{
+					builder.Property(p => p.UserIds)
+						.HasConversion(
+							v => string.Join("'", v),
+							v => v
+								.Split(',', StringSplitOptions.RemoveEmptyEntries)
+								.Select(Guid.Parse)
+								.ToList());
+				}
+			});
 
 			CreateIndexes(modelBuilder);
 		}
