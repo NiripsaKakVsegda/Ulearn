@@ -1,4 +1,4 @@
-import CommentSendForm from "../CommentSendForm";
+import MarkdownEditor from "./MarkdownEditor";
 
 describe('CommentSendForm.wrapRangeWithMarkdown', () => {
 	test.each([
@@ -14,13 +14,13 @@ describe('CommentSendForm.wrapRangeWithMarkdown', () => {
 		["hello", 1, 2, "```", "h```e```llo", 1, 8],
 	])('%s with selection, %i, %i %s -> %s with selection, %i, %i',
 		(text, selectionStart, selectionEnd, markup, expectedText, expectedSelectionStart, expectedSelectionEnd) => {
-			const result = CommentSendForm.wrapRangeWithMarkdown(text, {
+			const result = MarkdownEditor.wrapRangeWithMarkdown(text, {
 				start: selectionStart,
 				end: selectionEnd
-			}, {markup: markup});
+			}, { markup: markup, description: '', hotkey: { asText: '', key: [] }, icon: <></> });
 			expect(result).toEqual({
 				finalText: expectedText,
-				finalSelectionRange: {end: expectedSelectionEnd, start: expectedSelectionStart}
+				finalSelectionRange: { end: expectedSelectionEnd, start: expectedSelectionStart }
 			});
 		});
 });

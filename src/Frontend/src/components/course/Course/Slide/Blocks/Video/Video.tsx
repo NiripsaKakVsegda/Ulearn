@@ -1,16 +1,15 @@
 import React from 'react';
-import queryString from "query-string";
 
-import YouTube, { Options } from 'react-youtube';
+import YouTube from 'react-youtube';
 import { Link, } from "ui";
 import { BlocksWrapper, Text, } from "src/components/course/Course/Slide/Blocks";
 import { ArrowChevronDown, ArrowChevronUp, } from "icons";
+import { BlockRenderContext } from "../../BlocksRenderer";
 
 import classNames from 'classnames';
 import { Cookies, withCookies } from 'react-cookie';
 
 import styles from './Video.less';
-import { BlockRenderContext } from "../../BlocksRenderer";
 
 const videoCookieName = 'youtube-video-rate';
 
@@ -37,7 +36,6 @@ interface Props {
 
 interface State {
 	showedAnnotation: boolean;
-	autoplay: boolean;
 	removeBottomPaddings: boolean;
 }
 
@@ -48,10 +46,9 @@ class Video extends React.Component<Props, State> {
 		super(props);
 
 		const { renderContext, } = props;
-		const { autoplay } = queryString.parse(window.location.search);
+
 
 		this.state = {
-			autoplay: renderContext.previous === undefined ? !!autoplay : false,
 			showedAnnotation: renderContext.previous === undefined && renderContext.next === undefined,
 			removeBottomPaddings: !renderContext.hide &&
 				(renderContext.next !== undefined
@@ -61,8 +58,12 @@ class Video extends React.Component<Props, State> {
 		};
 	}
 
-	componentDidUpdate() {
-		const { cookies, } = this.props;
+	componentDidUpdate(prevProps: Readonly<Props>) {
+		const { cookies, videoId } = this.props;
+
+		if(videoId !== prevProps.videoId) {
+			this.ytPlayer = null;
+		}
 
 		if(this.ytPlayer) {
 			const newVideoRate = parseFloat(cookies.get(videoCookieName) || '1');
@@ -78,15 +79,15 @@ class Video extends React.Component<Props, State> {
 			containerClassName,
 			googleDocLink,
 			hide,
+			renderContext,
 		} = this.props;
-		const {
-			autoplay,
-		} = this.state;
+		const params = new URLSearchParams(window.location.search);
+		const autoplay = renderContext.previous === undefined ? !!params.get('autoplay') : false;
 
 		const containerClassNames = classNames(styles.videoContainer, { [containerClassName]: containerClassName });
 		const frameClassNames = classNames(styles.frame, { [className]: className });
 
-		const opts: Options = {
+		const opts = {
 			playerVars: {
 				autoplay: autoplay ? 1 : 0,
 				/* Disable related videos */
@@ -97,8 +98,8 @@ class Video extends React.Component<Props, State> {
 		return (
 			<React.Fragment>
 				<YouTube
-					containerClassName={ containerClassNames }
-					className={ frameClassNames }
+					iframeClassName={ frameClassNames }
+					className={ containerClassNames }
 					videoId={ videoId }
 					opts={ opts }
 					onReady={ this.onReady }
@@ -114,15 +115,7 @@ class Video extends React.Component<Props, State> {
 		);
 	}
 
-	onRateChange = (rate: number): void => {
-		const { cookies } = this.props;
-		cookies.set(videoCookieName, rate);
-	};
-
-	onReady = (event: {
-			target: YT.Player
-		}
-	): void => {
+	onReady = (event: { target: YT.Player }): void => {
 		const { cookies } = this.props;
 
 		this.ytPlayer = event.target;
@@ -175,33 +168,36 @@ class Video extends React.Component<Props, State> {
 					</span>
 				</h3>
 				{ showedAnnotation &&
-				<React.Fragment>
-					<p>{ annotation.text }</p>
-					{ annotation.fragments.map(({ text, offset }) => {
-						const [hours, minutes, seconds] = offset.split(':');
-						const [hoursAsInt, minutesAsInt, secondsAsInt] = [hours, minutes, seconds].map(
-							t => Number.parseInt(t));
-						const timeInSeconds = hoursAsInt * 60 * 60 + minutesAsInt * 60 + secondsAsInt;
-						return (
-							<p key={ offset }>
-								<Link onClick={ () => this.setVideoTime(timeInSeconds) }>
-									{ hoursAsInt > 0 && `${ hours }:` }
-									{ `${ minutes }:` }
-									{ seconds }
-								</Link>
-								{ ` — ${ text }` }
-							</p>
-						);
-					})
-					}
-					<p>
-						Ошибка в содержании? <Link target="_blank" href={ googleDocLink }>Предложите
-						исправление!</Link>
-					</p>
-				</React.Fragment>
+					<React.Fragment>
+						<p>{ annotation.text }</p>
+						{ this.renderAnnotationFragments(annotation) }
+						<p>
+							Ошибка в содержании? <Link target="_blank" href={ googleDocLink }>Предложите
+							исправление!</Link>
+						</p>
+					</React.Fragment>
 				}
 			</React.Fragment>
 		);
+	};
+
+	renderAnnotationFragments = (annotation: Annotation) => {
+		return annotation.fragments.map(({ text, offset }) => {
+			const [hours, minutes, seconds] = offset.split(':');
+			const [hoursAsInt, minutesAsInt, secondsAsInt] = [hours, minutes, seconds].map(
+				t => Number.parseInt(t));
+			const timeInSeconds = hoursAsInt * 60 * 60 + minutesAsInt * 60 + secondsAsInt;
+			return (
+				<p key={ offset }>
+					<Link data-tid={ timeInSeconds.toString() } onClick={ this.setVideoTime }>
+						{ hoursAsInt > 0 && `${ hours }:` }
+						{ `${ minutes }:` }
+						{ seconds }
+					</Link>
+					{ ` — ${ text }` }
+				</p>
+			);
+		});
 	};
 
 	toggleAnnotation = () => {
@@ -210,7 +206,13 @@ class Video extends React.Component<Props, State> {
 		});
 	};
 
-	setVideoTime = (seconds: number) => {
+	setVideoTime = (e: React.MouseEvent) => {
+		const element = e.currentTarget as HTMLElement;
+		const seconds = parseInt(element.dataset.tid || '-1');
+		if(seconds === -1) {
+			console.error('[Youtube.Annotation] Time was not defined');
+			return;
+		}
 		this.ytPlayer?.seekTo(seconds, true);
 	};
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { Story } from "@storybook/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 
@@ -50,10 +51,10 @@ export const parameters = {
 		viewports: viewports,
 		defaultViewport: 'desktop',
 	},
-}
+};
 
 export const decorators = [
-	(Story) => (
+	(Story: Story) => (
 		<Provider store={ reduxStore }>
 			<ThemeContext.Provider value={ theme }>
 				<BrowserRouter>

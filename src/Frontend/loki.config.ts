@@ -1,5 +1,9 @@
-module.exports = {
-	fileNameFormatter: ({ configurationName, kind, story }) => {
+export default {
+	fileNameFormatter: ({
+		configurationName,
+		kind,
+		story
+	}: { configurationName: string, kind: string, story: string }) => {
 		return `${ configurationName }/${ kind } ${ story }`.toLowerCase();
 	},
 	configurations: {

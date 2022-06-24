@@ -15,6 +15,8 @@ const mapNumberToRateType = {
 
 describe('flashcardsStirrer course flashcards getter should', () => {
 	test('built good sequence ( !!!NOT AUTO VALIDATION, NEEDS MANUAL CHECK!!! )', () => {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
 		const getRandomRate = () => mapNumberToRateType[Math.ceil(Math.random() * 5)];
 		const sequence = [
 			new Flashcard(getRandomRate(), 1),
@@ -30,15 +32,26 @@ describe('flashcardsStirrer course flashcards getter should', () => {
 
 		for (let i = 0; i < 15; i++) {
 			const flashcard = getNextFlashcardRandomly(sequence, maxTLast);
+			if(flashcard === '') {
+				continue;
+			}
 			const historyInfo = { ...flashcard };
 			const flashcardInSequence = sequence.find(fc => fc.id === flashcard.id);
+
+			if(!flashcardInSequence) {
+				continue;
+			}
 
 			maxTLast++;
 
 			flashcardInSequence.lastRateIndex = maxTLast;
 			flashcardInSequence.rate = getRandomRate();
 
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			historyInfo.newRate = flashcardInSequence.rate;
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			historyInfo.newRateIndex = flashcardInSequence.lastRateIndex;
 
 			builtedSequenceHistory.push(historyInfo);

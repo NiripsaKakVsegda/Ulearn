@@ -3,7 +3,7 @@ declare global {
 	declare module '*.jpg';
 
 	declare module '*.less' {
-		const classes: {[key: string]: string};
+		const classes: { [key: string]: string };
 		export default classes;
 	}
 
@@ -22,6 +22,9 @@ declare global {
 	interface Window {
 		config: {
 			api: {
+				endpoint: string
+			},
+			web: {
 				endpoint: string
 			}
 		},

@@ -56,7 +56,7 @@ describe('buildQuery should', () => {
 		[{ a: true, b: false, NaN: NaN, null: null }, '?a=true&b=false&NaN=nan&null=null'],
 		[{ undefined: undefined }, null],
 		[{ a: undefined, b: undefined, c: undefined }, null],
-		[{ array: ['1', 2, true, null, NaN, undefined] }, '?array=1%2c2%2ctrue%2c%2cnan%2c'],
+		[{ array: ['1', 2, true, null, NaN, undefined] }, '?array=1&array=2&array=true&array=null&array=NaN&array=undefined'],
 	])('%o params to be %s',
 		(params, expectedResult) => {
 			const result = buildQuery(params);

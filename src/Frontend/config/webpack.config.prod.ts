@@ -1,53 +1,22 @@
-const autoprefixer = require('autoprefixer');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
-const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const paths = require('./paths');
-const getClientEnvironment = require('./env');
-const pwaPlugins = require('./pwa.webpack.plugins.ts');
+import autoprefixer from "autoprefixer";
+import webpack, { Configuration } from "webpack";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import { WebpackManifestPlugin } from "webpack-manifest-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import paths from "./paths";
+import pwaPlugins from "./pwa.webpack.plugins";
+import base from './webpack.config.base';
+import { merge } from "webpack-merge";
 
-// Webpack uses `publicPath` to determine where the app is being served from.
-// It requires a trailing slash, or the file assets will get an incorrect path.
-const publicPath = paths.servedPath;
-// Some apps do not use client-side routing with pushState.
-// For these, "homepage" can be set to "." to enable relative asset paths.
-const shouldUseRelativeAssetPaths = publicPath === './';
-// Source maps are resource heavy and can cause out of memory issue for large source files.
-const shouldUseSourceMap = true;//process.env.GENERATE_SOURCEMAP !== 'false';
-// `publicUrl` is just like `publicPath`, but we will provide it to our app
-// as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
-// Omit trailing slash as %PUBLIC_URL%/xyz looks better than %PUBLIC_URL%xyz.
-const publicUrl = publicPath.slice(0, -1);
-// Get environment variables to inject into our app.
-const env = getClientEnvironment(publicUrl);
-
-// Assert this just to be safe.
-// Development builds of React are slow and not intended for production.
-if(env.stringified['process.env'].NODE_ENV !== '"production"') {
-	throw new Error('Production builds must have NODE_ENV=production.');
-}
-
-// Note: defined here because it will be used more than once.
+const shouldUseSourceMap = true;
 const cssFilename = paths.static.css + '/[name].[contenthash:8].css';
 const chunkCssFilename = paths.static.css + '/[id].[contenthash:8].css';
 
-// ExtractTextPlugin expects the build output to be flat.
-// (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
-// However, our output is structured with css, js and media folders.
-// To have this structure working with relative paths, we have to use custom options.
-const miniCssExtractPluginOptions = shouldUseRelativeAssetPaths
-	? // Making sure that the publicPath goes back to to build folder.
-	{ publicPath: Array(cssFilename.split('/').length).join('../') }
-	: {};
-
-let base = require('./webpack.config.base');
-const { merge } = require('webpack-merge');
 // This is the production configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
 // The development configuration is different and lives in a separate file.
-module.exports = merge([base, {
+
+const config: Configuration = {
 	mode: 'production',
 	bail: true,
 	entry: {
@@ -58,7 +27,7 @@ module.exports = merge([base, {
 		path: paths.appBuild,
 		filename: paths.static.js + '/[name].[chunkhash:8].js',
 		chunkFilename: paths.static.js + '/[name].[chunkhash:8].chunk.js',
-		publicPath: publicPath,
+		publicPath: '/',
 		clean: true,
 	},
 	resolve: {
@@ -82,7 +51,7 @@ module.exports = merge([base, {
 						loader: 'babel-loader',
 						include: paths.appSrc,
 						options: {
-							configFile: "./babel.config.js",
+							configFile: "./babel.config.cjs",
 							cacheDirectory: true,
 							compact: true,
 						},
@@ -92,7 +61,7 @@ module.exports = merge([base, {
 						use: [
 							{
 								loader: MiniCssExtractPlugin.loader,
-								options: miniCssExtractPluginOptions,
+								options: {},
 							},
 							{
 								loader: "css-loader",
@@ -137,7 +106,7 @@ module.exports = merge([base, {
 								options: {
 									esModule: false,
 									modules: {
-										auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
+										auto: (resourcePath: string) => !resourcePath.endsWith('.global.css'),
 										mode: 'global',
 									},
 									importLoaders: 1,
@@ -173,12 +142,6 @@ module.exports = merge([base, {
 		],
 	},
 	plugins: [
-		// Makes some environment variables available in index.html.
-		// The public URL is available as %PUBLIC_URL% in index.html, e.g.:
-		// <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-		// In production, it will be an empty string unless you specify "homepage"
-		// in `package.json`, in which case it will be the pathname of that URL.
-		new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
 		// Generates an `index.html` file with the <script> injected.
 		new HtmlWebpackPlugin({
 			inject: true,
@@ -199,16 +162,15 @@ module.exports = merge([base, {
 			chunksSortMode: (chunk1, chunk2) => {
 				/* oldBrowser.js should be the first bundle. For more complex cases see solution
 				   at https://github.com/jantimon/html-webpack-plugin/issues/481#issuecomment-287370259*/
-				if(chunk1 === 'oldBrowser') return -1;
-				if(chunk2 === 'oldBrowser') return 1;
+				if(chunk1 === 'oldBrowser') {
+					return -1;
+				}
+				if(chunk2 === 'oldBrowser') {
+					return 1;
+				}
 				return 0;
 			},
 		}),
-		// Makes some environment variables available to the JS code, for example:
-		// if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
-		// It is absolutely essential that NODE_ENV was set to production here.
-		// Otherwise React will be compiled in the very slow development mode.
-		//new webpack.DefinePlugin(env.stringified),
 		new webpack.ProvidePlugin({
 			process: 'process/browser',
 			$: 'jquery',
@@ -244,4 +206,6 @@ module.exports = merge([base, {
 		minimize: true,
 		runtimeChunk: 'single',
 	},
-}]);
+};
+
+export default merge([base, config]);

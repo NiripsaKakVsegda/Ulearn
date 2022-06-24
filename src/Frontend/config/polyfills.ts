@@ -1,7 +1,7 @@
 // Adding Element.remove() for DOM elements, suggested in the Mozilla documentation. https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
 (function (arr) {
 	arr.forEach(function (item) {
-		if (item.hasOwnProperty('remove')) {
+		if(Object.hasOwn(item, 'remove')) {
 			return;
 		}
 		Object.defineProperty(item, 'remove', {
@@ -14,3 +14,5 @@
 		});
 	});
 })([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+
+export {};

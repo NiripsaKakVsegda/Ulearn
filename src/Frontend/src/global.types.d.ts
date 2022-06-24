@@ -4,6 +4,9 @@ declare global {
 			api: {
 				endpoint: string
 			}
+			web: {
+				endpoint: string
+			}
 		},
 		legacy: {
 			//legacy scripts

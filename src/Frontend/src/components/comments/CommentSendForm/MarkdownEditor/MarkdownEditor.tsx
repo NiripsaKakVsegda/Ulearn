@@ -8,7 +8,7 @@ import { MarkdownDescription, MarkdownOperation } from "src/consts/comments";
 
 import styles from "./MarkdownEditor.less";
 
-const markupByOperationDefault: MarkdownDescription = {
+export const markupByOperationDefault: MarkdownDescription = {
 	bold: {
 		markup: "**",
 		description: "жирный",

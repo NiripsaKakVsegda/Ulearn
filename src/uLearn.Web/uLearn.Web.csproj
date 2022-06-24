@@ -1,1262 +1,1235 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props')" />
-  <Import Project="..\packages\NUnit.3.10.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.0\build\NUnit.props')" />
-  <Import Project="..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props" Condition="Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props')" />
-  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
-  <Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>
-    </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>uLearn.Web</RootNamespace>
-    <AssemblyName>uLearn.Web</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort>44300</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <AllowedReferenceRelatedFileExtensions>
-			.pdb
-		</AllowedReferenceRelatedFileExtensions>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <UseGlobalApplicationHostFile />
-    <TargetFrameworkProfile />
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Use64BitIISExpress />
-    <LangVersion>default</LangVersion>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DeployEncryptKey>Encryption password is used only if any deployment setting is marked as secure</DeployEncryptKey>
-    <PublishDatabaseSettings>
-      <Objects>
-        <ObjectGroup Name="DefaultConnection-Deployment" Order="1">
-          <Destination Path="" />
-          <Object Type="DbFullSql">
-            <PreSource Path="Data Source=%28LocalDb%29\v11.0%3bAttachDbFilename=|DataDirectory|\aspnet-web-20140520030726.mdf%3bInitial Catalog=aspnet-web-20140520030726%3bIntegrated Security=True" ScriptSchema="True" ScriptData="False" CopyAllFullTextCatalogs="False" DriDefaults="True" />
-            <Source Path="obj\Debug\AutoScripts\DefaultConnection-Deployment_SchemaOnly.sql" Transacted="True" />
-          </Object>
-        </ObjectGroup>
-      </Objects>
-    </PublishDatabaseSettings>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PublishDatabases>false</PublishDatabases>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="AjaxMin, Version=5.14.5506.26196, Culture=neutral, PublicKeyToken=21ef50ce11b5d80f, processorArchitecture=MSIL">
-      <HintPath>..\packages\AjaxMin.5.14.5506.26202\lib\net40\AjaxMin.dll</HintPath>
-    </Reference>
-    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f">
-      <HintPath>..\packages\ApprovalTests.5.4.5\lib\net461\ApprovalTests.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f">
-      <HintPath>..\packages\ApprovalUtilities.5.4.5\lib\net461\ApprovalUtilities.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="AspNetBundling, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AspNetBundling.3.0.0\lib\net45\AspNetBundling.dll</HintPath>
-    </Reference>
-    <Reference Include="DiffEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c7a34512ecd69090">
-      <HintPath>..\packages\DiffEngine.6.5.5\lib\net461\DiffEngine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="DotNetZip, Version=1.15.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
-      <HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Elmah, Version=1.2.14706.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\elmah.corelibrary.1.2.2\lib\Elmah.dll</HintPath>
-    </Reference>
-    <Reference Include="Elmah.Contrib.WebApi, Version=1.0.10.25, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elmah.Contrib.WebApi.1.0.10.25\lib\net45\Elmah.Contrib.WebApi.dll</HintPath>
-    </Reference>
-    <Reference Include="Elmah.Mvc, Version=2.1.2.1389, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elmah.Mvc.2.1.2\lib\net40\Elmah.Mvc.dll</HintPath>
-    </Reference>
-    <Reference Include="EmptyFiles, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c7a34512ecd69090">
-      <HintPath>..\packages\EmptyFiles.2.6.0\lib\net461\EmptyFiles.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework6.Npgsql, Version=6.4.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
-      <HintPath>..\packages\EntityFramework6.Npgsql.6.4.3\lib\net461\EntityFramework6.Npgsql.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EPPlus, Version=5.5.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1">
-      <HintPath>..\packages\EPPlus.5.5.4\lib\net45\EPPlus.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Graphite, Version=1.3.0.0, Culture=neutral, PublicKeyToken=db1870846884bbb9, processorArchitecture=MSIL">
-      <HintPath>..\packages\Graphite.1.3.0.0\lib\net40-Client\Graphite.dll</HintPath>
-    </Reference>
-    <Reference Include="Graphite.Elmah, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Graphite.Elmah.1.0.3.0\lib\net40\Graphite.Elmah.dll</HintPath>
-    </Reference>
-    <Reference Include="Graphite.Web, Version=1.0.0.0, Culture=neutral, PublicKeyToken=db1870846884bbb9">
-      <HintPath>..\ThirdParty\Graphite.Web.1.0.0.0\Graphite.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="IdentityModel, Version=5.0.1.0, Culture=neutral, PublicKeyToken=e7877f4675df049f">
-      <HintPath>..\packages\IdentityModel.5.0.1\lib\net472\IdentityModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="JetBrains.Annotations, Version=2020.3.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
-      <HintPath>..\packages\JetBrains.Annotations.2020.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Kontur.Lz4, Version=0.1.14.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Kontur.Lz4.0.1.14\lib\netstandard2.0\Kontur.Lz4.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Kontur.Spam.Client, Version=1.3.3.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Spam.Api.Client.1.3.3.1\lib\Kontur.Spam.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="LtiLibrary.Core, Version=1.6.6154.21256, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\LtiLibrary.Core.1.6.2\lib\net45\LtiLibrary.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="LtiLibrary.Owin.Security.Lti, Version=1.0.6125.27254, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\LtiLibrary.Owin.Security.Lti.1.0.0-beta\lib\net45\LtiLibrary.Owin.Security.Lti.dll</HintPath>
-    </Reference>
-    <Reference Include="MarkdownDeep.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MarkdownDeep.NET.Core.1.5.0.4\lib\netstandard2.0\MarkdownDeep.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Owin.2.2.3\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Authentication.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Authentication.Core.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Authorization, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.Authorization.5.0.3\lib\net461\Microsoft.AspNetCore.Authorization.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Authorization.Policy, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Authorization.Policy.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.Policy.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.Cryptography.Internal.5.0.3\lib\net461\Microsoft.AspNetCore.Cryptography.Internal.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.DataProtection, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.DataProtection.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.DataProtection.Abstractions.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.DataProtection.Extensions.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Html.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Html.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Http, Version=2.2.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.Http.2.2.2\lib\netstandard2.0\Microsoft.AspNetCore.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Http.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Http.Extensions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Http.Features, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.Http.Features.5.0.3\lib\net461\Microsoft.AspNetCore.Http.Features.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Metadata, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.AspNetCore.Metadata.5.0.3\lib\net461\Microsoft.AspNetCore.Metadata.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Mvc.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.ResponseCaching.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.ResponseCaching.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Routing, Version=2.2.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Routing.2.2.2\lib\netstandard2.0\Microsoft.AspNetCore.Routing.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.Routing.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Routing.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Build, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\Microsoft.Build.16.11.0\lib\net472\Microsoft.Build.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\Microsoft.Build.Framework.16.11.0\lib\net472\Microsoft.Build.Framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Build.Utilities.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\Microsoft.Build.Utilities.Core.16.11.0\lib\net472\Microsoft.Build.Utilities.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CodeAnalysis, Version=3.11.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.3.11.0\lib\netstandard2.0\Microsoft.CodeAnalysis.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=3.11.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.3.11.0\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=3.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.5.0.0\lib\net461\Microsoft.Extensions.Configuration.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.5.0.0\lib\net461\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.Json.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=5.0.0.1, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.5.0.1\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyModel, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyModel.5.0.0\lib\net461\Microsoft.Extensions.DependencyModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.5.0.0\lib\net461\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.5.0.0\lib\net461\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Hosting.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Logging, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.5.0.0\lib\net461\Microsoft.Extensions.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.ObjectPool, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.ObjectPool.5.0.3\lib\net461\Microsoft.Extensions.ObjectPool.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Options, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Options.5.0.0\lib\net461\Microsoft.Extensions.Options.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Primitives, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Primitives.5.0.0\lib\net461\Microsoft.Extensions.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.6.8.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.6.8.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.40306.1554, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.4.403061554\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Protocols, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IdentityModel.Protocols.6.8.0\lib\net461\Microsoft.IdentityModel.Protocols.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.6.8.0\lib\net461\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.6.8.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=2.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.2.1.3\lib\net462\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Net.Http.Headers, Version=2.2.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Net.Http.Headers.2.2.8\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.NET.StringTools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\Microsoft.NET.StringTools.1.0.0\lib\net472\Microsoft.NET.StringTools.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.4.2.0\lib\net45\Microsoft.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.4.2.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.Security.4.2.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Cookies, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.4.2.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Interop, Version=2.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.Interop.2.1.2\lib\net461\Microsoft.Owin.Security.Interop.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.OAuth, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.4.2.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.OpenIdConnect, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.Owin.Security.OpenIdConnect.4.2.0\lib\net45\Microsoft.Owin.Security.OpenIdConnect.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Microsoft.VisualStudio.Setup.Configuration.Interop, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.VisualStudio.Setup.Configuration.Interop.1.16.30\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NHunspell, Version=1.2.5554.16953, Culture=neutral, PublicKeyToken=1ac793ea843b4366, processorArchitecture=MSIL">
-      <HintPath>..\packages\NHunspell.1.2.5554.16953\lib\net\NHunspell.dll</HintPath>
-    </Reference>
-    <Reference Include="Npgsql, Version=5.0.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
-      <HintPath>..\packages\Npgsql.5.0.7\lib\netstandard2.0\Npgsql.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.10.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
-      <HintPath>..\packages\NUnit.3.10.0\lib\net45\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="RazorGenerator.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
-      <HintPath>..\packages\RazorGenerator.Mvc.2.4.9\lib\net40\RazorGenerator.Mvc.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
-      <HintPath>..\packages\Serilog.2.10.0\lib\net46\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SerilogWeb.Classic, Version=5.0.0.0, Culture=neutral, PublicKeyToken=9462ddd55fbc0e7f">
-      <HintPath>..\packages\SerilogWeb.Classic.5.0.61\lib\net45\SerilogWeb.Classic.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Configuration.ConfigurationManager.4.7.0\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.OracleClient" />
-    <Reference Include="System.Data.SqlClient, Version=4.6.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Data.SqlClient.4.8.2\lib\net461\System.Data.SqlClient.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.5.0.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Drawing.Common.5.0.1\lib\net461\System.Drawing.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.6.8.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Pipelines, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.IO.Pipelines.5.0.1\lib\net461\System.IO.Pipelines.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Linq" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Reflection.Metadata.5.0.0\lib\net461\System.Reflection.Metadata.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.InteropServices" />
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Xml, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Security.Cryptography.Xml.5.0.0\lib\net461\System.Security.Cryptography.Xml.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Permissions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Security.Permissions.5.0.0\lib\net461\System.Security.Permissions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Text.Encodings.Web.5.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Text.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Text.Json.5.0.0\lib\net461\System.Text.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Threading.Channels, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Threading.Channels.4.7.0\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Threading.Tasks.Dataflow, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Threading.Tasks.Dataflow.5.0.0\lib\net461\System.Threading.Tasks.Dataflow.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Threading.Thread" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.DynamicData" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.Owin, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.7\lib\net45\System.Web.Http.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Routing" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Telegram.Bot, Version=16.0.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Telegram.Bot.16.0.2\lib\net45\Telegram.Bot.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="TextCopy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1ca091877d12ca03">
-      <HintPath>..\packages\TextCopy.4.3.0\lib\net461\TextCopy.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="UnidecodeSharpCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\UnidecodeSharpCore.2.0.1\lib\net45\UnidecodeSharpCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Vostok.Applications.Scheduled, Version=0.2.7.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Applications.Scheduled.0.2.7\lib\netstandard2.0\Vostok.Applications.Scheduled.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Context, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Context.0.1.4\lib\netstandard2.0\Vostok.ClusterClient.Context.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Core, Version=0.1.26.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Core.0.1.26\lib\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Datacenters, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Datacenters.0.1.2\lib\netstandard2.0\Vostok.ClusterClient.Datacenters.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Topology.CC, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Topology.CC.0.1.2\lib\netstandard2.0\Vostok.ClusterClient.Topology.CC.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Tracing, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Tracing.0.1.4\lib\netstandard2.0\Vostok.ClusterClient.Tracing.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterClient.Transport, Version=0.1.17.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterClient.Transport.0.1.17\lib\netstandard2.0\Vostok.ClusterClient.Transport.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterConfig.Client, Version=0.1.10.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterConfig.Client.0.1.10\lib\netstandard2.0\Vostok.ClusterConfig.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ClusterConfig.Client.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ClusterConfig.Client.Abstractions.0.1.0\lib\netstandard2.0\Vostok.ClusterConfig.Client.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Configuration, Version=0.1.24.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Configuration.0.1.24\lib\netstandard2.0\Vostok.Configuration.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Configuration.Abstractions, Version=0.1.9.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Configuration.Abstractions.0.1.9\lib\netstandard2.0\Vostok.Configuration.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Configuration.Logging, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Configuration.Logging.0.1.1\lib\netstandard2.0\Vostok.Configuration.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Configuration.Sources, Version=0.1.13.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Configuration.Sources.0.1.13\lib\netstandard2.0\Vostok.Configuration.Sources.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Configuration.Sources.ClusterConfig, Version=0.1.6.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Configuration.Sources.ClusterConfig.0.1.6\lib\netstandard2.0\Vostok.Configuration.Sources.ClusterConfig.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Context, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Context.0.1.4\lib\netstandard2.0\Vostok.Context.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Datacenters, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Datacenters.0.1.4\lib\netstandard2.0\Vostok.Datacenters.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Datacenters.Kontur, Version=1.0.36.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Datacenters.Kontur.1.0.36\lib\netstandard2.0\Vostok.Datacenters.Kontur.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Hercules.Client, Version=0.1.13.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Hercules.Client.0.1.13\lib\netstandard2.0\Vostok.Hercules.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Hercules.Client.Abstractions, Version=0.1.7.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Hercules.Client.Abstractions.0.1.7\lib\netstandard2.0\Vostok.Hercules.Client.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Hosting.Abstractions, Version=0.3.5.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Hosting.Abstractions.0.3.5\lib\netstandard2.0\Vostok.Hosting.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Abstractions, Version=1.0.20.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Abstractions.1.0.20\lib\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Context, Version=1.0.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Context.1.0.1\lib\netstandard2.0\Vostok.Logging.Context.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.File, Version=1.0.12.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.File.1.0.12\lib\netstandard2.0\Vostok.Logging.File.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Formatting, Version=1.0.5.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Formatting.1.0.5\lib\netstandard2.0\Vostok.Logging.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Hercules, Version=0.1.7.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Hercules.0.1.7\lib\netstandard2.0\Vostok.Logging.Hercules.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Serilog, Version=1.0.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Serilog.1.0.2\lib\netstandard2.0\Vostok.Logging.Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Logging.Tracing, Version=0.1.5.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Logging.Tracing.0.1.5\lib\netstandard2.0\Vostok.Logging.Tracing.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Metrics, Version=0.2.19.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Metrics.0.2.19\lib\netstandard2.0\Vostok.Metrics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Metrics.Hercules, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Metrics.Hercules.0.1.2\lib\netstandard2.0\Vostok.Metrics.Hercules.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.ServiceDiscovery.Abstractions, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.ServiceDiscovery.Abstractions.0.1.4\lib\netstandard2.0\Vostok.ServiceDiscovery.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Telemetry.Kontur, Version=1.0.52.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Telemetry.Kontur.1.0.52\lib\netstandard2.0\Vostok.Telemetry.Kontur.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Tracing, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Tracing.0.1.1\lib\netstandard2.0\Vostok.Tracing.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Tracing.Abstractions, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Tracing.Abstractions.0.1.4\lib\netstandard2.0\Vostok.Tracing.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Tracing.Extensions, Version=0.1.5.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Tracing.Extensions.0.1.5\lib\netstandard2.0\Vostok.Tracing.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Tracing.Hercules, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Tracing.Hercules.0.1.4\lib\netstandard2.0\Vostok.Tracing.Hercules.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Vostok.Tracing.Kontur, Version=1.0.14.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Vostok.Tracing.Kontur.1.0.14\lib\netstandard2.0\Vostok.Tracing.Kontur.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
-    </Reference>
-    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
-    </Reference>
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AntiPlagiarismUsage\AntiPlagiarismAdditionalInfo.cs" />
-    <Compile Include="App_Start\ErrorLogModule.cs" />
-    <Compile Include="App_Start\GraphiteMetricsPipeStart.cs" />
-    <Compile Include="App_Start\RazorGeneratorMvcStart.cs" />
-    <Compile Include="App_Start\SameSite\BrowserDetection.cs" />
-    <Compile Include="App_Start\SameSite\SameSiteCookieManager.cs" />
-    <Compile Include="App_Start\SameSite\SameSiteCookieRewriter.cs" />
-    <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="CertificateGenerator.cs" />
-    <Compile Include="Clients\UlearnVideoAnnotationsClient.cs" />
-    <Compile Include="Controllers\AntiPlagiarismController.cs" />
-    <Compile Include="Controllers\BaseController.cs" />
-    <Compile Include="Controllers\CertificatesController.cs" />
-    <Compile Include="Controllers\ErrorsController.cs" />
-    <Compile Include="Controllers\FeedController.cs" />
-    <Compile Include="Controllers\GitWebhookController.cs" />
-    <Compile Include="Controllers\JsonDataContractController.cs" />
-    <Compile Include="Controllers\JsonDataContractHelpers.cs" />
-    <Compile Include="Controllers\NotificationsController.cs" />
-    <Compile Include="Controllers\SpaController.cs" />
-    <Compile Include="Controllers\StaticFilesController.cs" />
-    <Compile Include="Controllers\StepikController.cs" />
-    <Compile Include="Controllers\TelegramController.cs" />
-    <Compile Include="Controllers\BaseUserController.cs" />
-    <Compile Include="Extensions\HtmlExtensions_should.cs" />
-    <Compile Include="Extensions\HtmlStringExtensions.cs" />
-    <Compile Include="Extensions\OwinRequestExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions_should.cs" />
-    <Compile Include="Extensions\UserExtensions.cs" />
-    <Compile Include="Helpers\TelegramHelper.cs" />
-    <Compile Include="Kontur.Passport\KonturPassportConstants.cs" />
-    <Compile Include="Kontur.Passport\KonturPassportAuthenticationExtensions.cs" />
-    <Compile Include="Kontur.Passport\KonturPassportAuthenticationHandler.cs" />
-    <Compile Include="Kontur.Passport\KonturPassportAuthenticationMiddleware.cs" />
-    <Compile Include="Kontur.Passport\KonturPassportAuthenticationOptions.cs" />
-    <Compile Include="Kontur.Passport\AuthenticationResult.cs" />
-    <Compile Include="Kontur.Passport\PassportClient.cs" />
-    <Compile Include="Kontur.Passport\Provider\KonturPassportReturnEndpointContext.cs" />
-    <Compile Include="Kontur.Passport\SigningKeysProvider.cs" />
-    <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\AnalyticsTablePageModel.cs" />
-    <Compile Include="Models\BlockRenderContext.cs" />
-    <Compile Include="Models\ChoiceGroupPageModel.cs" />
-    <Compile Include="Models\CodeModel.cs" />
-    <Compile Include="Models\CommentViewModel.cs" />
-    <Compile Include="Models\CoursePageModel.cs" />
-    <Compile Include="Models\CourseStatisticsJsonModel.cs" />
-    <Compile Include="Models\ExerciseBlockData.cs" />
-    <Compile Include="Models\ExerciseCodeReviewModel.cs" />
-    <Compile Include="Models\ExternalLoginsListModel.cs" />
-    <Compile Include="Models\GroupsFilterViewModel.cs" />
-    <Compile Include="Models\HintPageModel.cs" />
-    <Compile Include="Models\IntructorNoteModel.cs" />
-    <Compile Include="Models\LtiQuizModel.cs" />
-    <Compile Include="Models\QuizBlockData.cs" />
-    <Compile Include="Models\QuizModel.cs" />
-    <Compile Include="Models\QuizState.cs" />
-    <Compile Include="Models\RestorePasswordModels.cs" />
-    <Compile Include="Models\RunSolutionResult.cs" />
-    <Compile Include="Models\StatisticPagesModels.cs" />
-    <Compile Include="Models\SubmissionListModel.cs" />
-    <Compile Include="Models\SubmissionsModel.cs" />
-    <Compile Include="Models\SwitchablePanelModel.cs" />
-    <Compile Include="Models\UserCourseToggleHistoryModel.cs" />
-    <Compile Include="Models\UserCourseModel.cs" />
-    <Compile Include="Models\UserModel.cs" />
-    <Compile Include="Extensions\ControllerExtensions.cs" />
-    <Compile Include="Controllers\AuthenticationManager.cs" />
-    <Compile Include="Controllers\CommentsController.cs" />
-    <Compile Include="Controllers\ControllerUtils.cs" />
-    <Compile Include="Extensions\RequestExtensions.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
-    <Compile Include="Extensions\HtmlExtensions.cs" />
-    <Compile Include="Controllers\LoginController.cs" />
-    <Compile Include="Controllers\RestorePasswordController.cs" />
-    <Compile Include="Controllers\SandboxController.cs" />
-    <Compile Include="Controllers\AdminController.cs" />
-    <Compile Include="Controllers\AnalyticsController.cs" />
-    <Compile Include="Controllers\QuizController.cs" />
-    <Compile Include="Controllers\ExerciseController.cs" />
-    <Compile Include="Controllers\VisitsController.cs" />
-    <Compile Include="FilterAttributes\ULearnAuthorizeAttribute.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="App_Start\UlearnLogger.cs" />
-    <Compile Include="LTI\LtiAuthenticationExtensions.cs" />
-    <Compile Include="LTI\LtiUtils.cs" />
-    <Compile Include="LTI\SecurityHandler.cs" />
-    <Compile Include="CreateListOfUsedTokens.cs" />
-    <Compile Include="Views\Course\SlideHtml.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SlideHtml.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Shared\Helpers\SwitchablePanel.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SwitchablePanel.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Shared\Notifications.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Notifications.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Shared\UserAvatar.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>UserAvatar.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="App_Start\FilterConfig.cs" />
-    <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\CourseController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
-    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationConstants.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\Provider\IVkAuthenticationProvider.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticatedContext.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticationProvider.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\Provider\VkReturnEndpointContext.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\Resources.Designer.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationExtensions.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationHandler.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationMiddleware.cs" />
-    <Compile Include="Owin.VkontakteMiddleware\VkAuthenticationOptions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="appsettings.local.json">
-      <DependentUpon>appsettings.json</DependentUpon>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="appsettings.json">
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Hack to copy Microsoft.Win32.Registry.dll. Without this Content item dll is not copying. I think it's bug
-         in Framework + netstandard compatibility. Maybe it's related to https://github.com/dotnet/corefx/issues/24483 -->
-    <!--<Content Include="..\packages\Microsoft.Win32.Registry.4.5.0\lib\net461\Microsoft.Win32.Registry.dll">-->
-    <!--<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
-    <!--</Content>-->
-    <Content Include="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\ref\netstandard.dll">
-      <Link>netstandard.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="appsettings.json" />
-    <Content Include="appsettings.local.json">
-      <DependentUpon>appsettings.json</DependentUpon>
-    </Content>
-	  <Content Include="Content\loading-ring.gif" />
-	  <Content Include="Content\loading.gif" />
-	  <Content Include="Content\logo.png" />
-	  <Content Include="Content\StartPageJumbotron.png" />
-	  <Content Include="Content\ulearn.yml" />
-    <Content Include="Global.asax" />
-    <None Include="Hunspellx64.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Hunspellx86.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="Content\certificate-template.zip" />
-    <None Include="encoding.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\ulearn - FTP.pubxml" />
-    <None Include="Properties\PublishProfiles\ulearn - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\ulearn-dev.pubxml" />
-    <None Include="Properties\PublishProfiles\ulearn.pubxml" />
-    <Content Include="Properties\webjobs-list.json" />
-    <Content Include="..\schema.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Views\Account\JoinedToGroup.cshtml" />
-    <Content Include="Views\Account\ToggleRolesHistory.cshtml" />
-    <Content Include="Views\Admin\StyleValidations.cshtml" />
-    <Content Include="Views\Analytics\RatingByPoints.cshtml" />
-    <Content Include="Views\Analytics\UnitStatistics.cshtml" />
-    <Content Include="Views\AntiPlagiarism\Details.cshtml" />
-    <Content Include="Views\Certificates\ListPartial.cshtml" />
-    <Content Include="Views\Course\Courses.cshtml" />
-    <Content Include="Views\Errors\404.cshtml" />
-    <Content Include="Views\Errors\Error.cshtml" />
-    <Content Include="Views\Exercise\StudentSubmissions.cshtml" />
-    <Content Include="Views\Exercise\StudentSubmissionsTable.cshtml" />
-    <Content Include="Views\Exercise\_ExerciseLastReviewComments.cshtml" />
-    <Content Include="Views\Exercise\_ExerciseReviewComment.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Shared\_Retargeting.cshtml" />
-    <Content Include="Web.config" />
-    <Content Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="Views\Web.config" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
-    <Content Include="Views\Login\ExternalLoginsListPartial.cshtml" />
-    <Content Include="Views\Account\_RemoveAccountPartial.cshtml" />
-    <Content Include="Views\Login\ExternalLoginConfirmation.cshtml" />
-    <Content Include="Views\Login\ExternalLoginFailure.cshtml" />
-    <Content Include="Views\Login\Index.cshtml" />
-    <Content Include="Views\Account\Manage.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Course\Slide.cshtml" />
-    <Content Include="Views\Account\List.cshtml" />
-    <Content Include="Views\Admin\Units.cshtml" />
-    <Content Include="Views\Analytics\UnitSheet.cshtml" />
-    <Content Include="Views\Course\InstructorNote.cshtml" />
-    <Content Include="Views\Analytics\UsersProgress.cshtml" />
-    <Content Include="Views\Analytics\UserSolutions.cshtml" />
-    <Content Include="Views\Account\ChangeDetailsPartial.cshtml" />
-    <Content Include="Views\Quiz\Quiz.cshtml" />
-    <Content Include="Views\Account\Info.cshtml" />
-    <Content Include="Views\Account\CourseInfo.cshtml" />
-    <Content Include="Views\Course\SlideHtml.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>SlideHtml.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Sandbox\Index.cshtml" />
-    <Content Include="Views\Sandbox\GetDetails.cshtml" />
-    <Content Include="Views\Course\LtiQuizSlide.cshtml" />
-    <Content Include="Views\Course\LtiSlide.cshtml" />
-    <Content Include="Views\Account\StudentInfo.cshtml" />
-    <Content Include="Views\Shared\_GroupsPrompt.cshtml" />
-    <Content Include="Views\Admin\SpellingErrors.cshtml" />
-    <Content Include="Views\RestorePassword\Index.cshtml" />
-    <Content Include="Views\RestorePassword\SetNewPassword.cshtml" />
-    <Content Include="Views\Course\_LoginForContinue.cshtml" />
-    <Content Include="Views\Shared\Helpers\SwitchablePanel.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>SwitchablePanel.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Admin\Packages.cshtml" />
-    <Content Include="Views\Shared\_UserListPartial.cshtml" />
-    <Content Include="Views\Admin\Users.cshtml" />
-    <Content Include="Views\Admin\Diagnostics.cshtml" />
-    <Content Include="Views\Comments\SlideComments.cshtml" />
-    <Content Include="Views\Comments\_Comment.cshtml" />
-    <Content Include="Views\Shared\UserAvatar.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>UserAvatar.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Comments\_CommentText.cshtml" />
-    <Content Include="Views\Admin\Comments.cshtml" />
-    <Content Include="Views\Account\JoinGroup.cshtml" />
-    <Content Include="Views\Admin\CheckingQueue.cshtml" />
-    <Content Include="Views\Admin\_ManualCheckingQueueFilterForm.cshtml" />
-    <Content Include="Views\Exercise\_ExerciseReview.cshtml" />
-    <Content Include="Views\Exercise\SubmissionsPanel.cshtml" />
-    <Content Include="Views\Exercise\Submission.cshtml" />
-    <Content Include="Views\Exercise\_ExerciseScoreForm.cshtml" />
-    <Content Include="Views\Analytics\UserUnitStatistics.cshtml" />
-    <Content Include="Views\Analytics\UnitSheetList.cshtml" />
-    <Content Include="Views\Home\Terms.cshtml" />
-    <Content Include="Web.Kontur.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="Views\Certificates\Certificate.cshtml" />
-    <Content Include="Views\Admin\Certificates.cshtml" />
-    <Content Include="Views\Certificates\List.cshtml" />
-    <Content Include="Views\Account\UserMenuPartial.cshtml" />
-    <Content Include="Views\Admin\PreviewCertificates.cshtml" />
-    <Content Include="Views\Admin\GenerateCertificatesError.cshtml" />
-    <Content Include="Views\Analytics\CourseStatistics.cshtml" />
-    <Content Include="Views\Shared\_GroupsFilter.cshtml" />
-    <Content Include="Views\Exercise\_TopUserReviewComments.cshtml" />
-    <Content Include="Views\Exercise\_SlideCodeReviewComments.cshtml" />
-    <Content Include="Views\Notifications\SuggestMailTransport.cshtml" />
-    <Content Include="Views\Notifications\Settings.cshtml" />
-    <Content Include="Views\Feed\NotificationsTopbarPartial.cshtml" />
-    <Content Include="Views\Feed\NotificationsPartial.cshtml" />
-    <Content Include="Views\Login\LinkLogin.cshtml" />
-    <Content Include="Views\Login\EnsureKonturProfileLogin.cshtml" />
-    <Content Include="Views\Login\AddKonturProfileLogin.cshtml" />
-    <Content Include="Views\Login\_LoginForm.cshtml" />
-    <Content Include="Views\Feed\Index.cshtml" />
-    <Content Include="Views\Shared\Notifications.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>Notifications.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Stepik\ConnectError.cshtml" />
-    <Content Include="Views\Stepik\SelectTarget.cshtml" />
-    <Content Include="Views\Stepik\InitialExportOptions.cshtml" />
-    <Content Include="Views\Stepik\ExportStarted.cshtml" />
-    <Content Include="Views\Stepik\UpdateOptions.cshtml" />
-    <Content Include="Views\Stepik\UpdateStarted.cshtml" />
-    <Content Include="Views\Stepik\Process.cshtml" />
-    <Content Include="Views\Account\Profile.cshtml" />
-    <Content Include="Views\Shared\_Footer.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Owin.VkontakteMiddleware\Resources.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AntiPlagiarism.Api\AntiPlagiarism.Api.csproj">
-      <Project>{a019580a-4cf2-475e-bd57-7f57f411b64f}</Project>
-      <Name>AntiPlagiarism.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Common.Api\Common.Api.csproj">
-      <Project>{295dc817-74c6-432b-ad1e-349644f1ac59}</Project>
-      <Name>Common.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Common\Common.csproj">
-      <Project>{3CC038A1-6AA0-49B0-9485-DB9589626BC3}</Project>
-      <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Core\Core.csproj">
-      <Project>{803c067a-5553-467d-9470-116fe2430255}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Database\Database.csproj">
-      <Project>{95510835-0b21-4d99-a4d2-b8fc87761a3c}</Project>
-      <Name>Database</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GitCourseUpdater\GitCourseUpdater.csproj">
-      <Project>{add8b9ba-7d5b-42d8-bfbd-3d60fb766e33}</Project>
-      <Name>GitCourseUpdater</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Stepik.Api\Stepik.Api.csproj">
-      <Project>{60247c0a-b6ee-46e2-ab66-c7285f5f1345}</Project>
-      <Name>Stepik.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VideoAnnotations.Api\VideoAnnotations.Api.csproj">
-      <Project>{8dbf67fc-f88e-4f33-bf81-8033ff597c91}</Project>
-      <Name>VideoAnnotations.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Web.Api.Client\Web.Api.Client.csproj">
-      <Project>{bea02a48-3d9e-47ce-a005-f96601d07bbb}</Project>
-      <Name>Web.Api.Client</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
-  </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v12.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
-    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
-  </Target>
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>53834</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44300/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <Target Name="CompileFrontend" BeforeTargets="BeforeBuild;OctoPack">
-	  <!-- If you adding others files be careful of OctoPack, because OctoPack will copy ONLY project files
-	   (such as <Content Include ...>) and files described in uLearn.Web.nuspec
-	   OctoPack doesn't run in local build but does in production bt Octopus
-	   -->
-    <Exec Command="yarn build" WorkingDirectory="..\Frontend" />
-    <Exec Command="if not exist static mkdir static" WorkingDirectory="$(MSBuildProjectDirectory)" />
-    <!-- Robocopy always exits with code 1: https://social.msdn.microsoft.com/Forums/en-US/d599833c-dcea-46f5-85e9-b1f028a0fefe/robocopy-exits-with-error-code-1?forum=tfsbuild -->
-    <Exec Command="robocopy /s ..\Frontend\build\ . || exit 0" WorkingDirectory="$(MSBuildProjectDirectory)" />
-  </Target>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
-    <Error Condition="!Exists('..\packages\OctoPack.3.6.5\build\OctoPack.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OctoPack.3.6.5\build\OctoPack.targets'))" />
-    <Error Condition="!Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props'))" />
-    <Error Condition="!Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets'))" />
-    <Error Condition="!Exists('..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets'))" />
-    <Error Condition="!Exists('..\packages\NUnit.3.10.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.0\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props'))" />
-  </Target>
-  <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets')" />
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')" />
-  <Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')" />
-  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
-  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
-  <Import Project="..\packages\OctoPack.3.6.5\build\OctoPack.targets" Condition="Exists('..\packages\OctoPack.3.6.5\build\OctoPack.targets')" />
-  <Import Project="..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets" Condition="Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets')" />
-  <Import Project="..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets" Condition="Exists('..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target> -->
+	<Import Project="..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props')"/>
+	<Import Project="..\packages\NUnit.3.10.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.0\build\NUnit.props')"/>
+	<Import Project="..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props" Condition="Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props')"/>
+	<Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')"/>
+	<Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')"/>
+	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+	<PropertyGroup>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<SchemaVersion>2.0</SchemaVersion>
+		<ProjectGuid>{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}</ProjectGuid>
+		<ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+		<OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<RootNamespace>uLearn.Web</RootNamespace>
+		<AssemblyName>uLearn.Web</AssemblyName>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<MvcBuildViews>false</MvcBuildViews>
+		<UseIISExpress>true</UseIISExpress>
+		<Use64BitIISExpress/>
+		<IISExpressSSLPort/>
+		<IISExpressAnonymousAuthentication/>
+		<IISExpressWindowsAuthentication/>
+		<IISExpressUseClassicPipelineMode/>
+		<UseGlobalApplicationHostFile/>
+		<NuGetPackageImportStamp/>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<OutputPath>bin\</OutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<OutputPath>bin\</OutputPath>
+		<DefineConstants>TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="AjaxMin, Version=5.14.5506.26196, Culture=neutral, PublicKeyToken=21ef50ce11b5d80f, processorArchitecture=MSIL">
+			<HintPath>..\packages\AjaxMin.5.14.5506.26202\lib\net40\AjaxMin.dll</HintPath>
+		</Reference>
+		<Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+			<HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+		</Reference>
+		<Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f">
+			<HintPath>..\packages\ApprovalTests.5.4.5\lib\net461\ApprovalTests.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f">
+			<HintPath>..\packages\ApprovalUtilities.5.4.5\lib\net461\ApprovalUtilities.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="AspNetBundling, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\AspNetBundling.3.0.0\lib\net45\AspNetBundling.dll</HintPath>
+		</Reference>
+		<Reference Include="DiffEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c7a34512ecd69090">
+			<HintPath>..\packages\DiffEngine.6.5.5\lib\net461\DiffEngine.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="DotNetZip, Version=1.15.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
+			<HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Elmah, Version=1.2.14706.0, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\elmah.corelibrary.1.2.2\lib\Elmah.dll</HintPath>
+		</Reference>
+		<Reference Include="Elmah.Contrib.WebApi, Version=1.0.10.25, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\Elmah.Contrib.WebApi.1.0.10.25\lib\net45\Elmah.Contrib.WebApi.dll</HintPath>
+		</Reference>
+		<Reference Include="Elmah.Mvc, Version=2.1.2.1389, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\Elmah.Mvc.2.1.2\lib\net40\Elmah.Mvc.dll</HintPath>
+		</Reference>
+		<Reference Include="EmptyFiles, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c7a34512ecd69090">
+			<HintPath>..\packages\EmptyFiles.2.6.0\lib\net461\EmptyFiles.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+			<HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+			<HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="EntityFramework6.Npgsql, Version=6.4.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
+			<HintPath>..\packages\EntityFramework6.Npgsql.6.4.3\lib\net461\EntityFramework6.Npgsql.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="EPPlus, Version=5.5.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1">
+			<HintPath>..\packages\EPPlus.5.5.4\lib\net45\EPPlus.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Graphite, Version=1.3.0.0, Culture=neutral, PublicKeyToken=db1870846884bbb9, processorArchitecture=MSIL">
+			<HintPath>..\packages\Graphite.1.3.0.0\lib\net40-Client\Graphite.dll</HintPath>
+		</Reference>
+		<Reference Include="Graphite.Elmah, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\Graphite.Elmah.1.0.3.0\lib\net40\Graphite.Elmah.dll</HintPath>
+		</Reference>
+		<Reference Include="Graphite.Web, Version=1.0.0.0, Culture=neutral, PublicKeyToken=db1870846884bbb9">
+			<HintPath>..\ThirdParty\Graphite.Web.1.0.0.0\Graphite.Web.dll</HintPath>
+		</Reference>
+		<Reference Include="IdentityModel, Version=5.0.1.0, Culture=neutral, PublicKeyToken=e7877f4675df049f">
+			<HintPath>..\packages\IdentityModel.5.0.1\lib\net472\IdentityModel.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="JetBrains.Annotations, Version=2020.3.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
+			<HintPath>..\packages\JetBrains.Annotations.2020.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Kontur.Lz4, Version=0.1.14.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Kontur.Lz4.0.1.14\lib\netstandard2.0\Kontur.Lz4.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Kontur.Spam.Client, Version=1.3.3.1, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Spam.Api.Client.1.3.3.1\lib\Kontur.Spam.Client.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="LtiLibrary.Core, Version=1.6.6154.21256, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\LtiLibrary.Core.1.6.2\lib\net45\LtiLibrary.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="LtiLibrary.Owin.Security.Lti, Version=1.0.6125.27254, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\LtiLibrary.Owin.Security.Lti.1.0.0-beta\lib\net45\LtiLibrary.Owin.Security.Lti.dll</HintPath>
+		</Reference>
+		<Reference Include="MarkdownDeep.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\MarkdownDeep.NET.Core.1.5.0.4\lib\netstandard2.0\MarkdownDeep.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.AspNet.Identity.Owin.2.2.3\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Authentication.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Authentication.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Authentication.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Authentication.Core.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Authorization, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.Authorization.5.0.3\lib\net461\Microsoft.AspNetCore.Authorization.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Authorization.Policy, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Authorization.Policy.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.Policy.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Cryptography.Internal, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.Cryptography.Internal.5.0.3\lib\net461\Microsoft.AspNetCore.Cryptography.Internal.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.DataProtection, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.DataProtection.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.DataProtection.Abstractions.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.DataProtection.Extensions, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.DataProtection.Extensions.5.0.3\lib\net461\Microsoft.AspNetCore.DataProtection.Extensions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Html.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Html.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Html.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Http, Version=2.2.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.Http.2.2.2\lib\netstandard2.0\Microsoft.AspNetCore.Http.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Http.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Http.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Http.Extensions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Http.Extensions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Http.Features, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.Http.Features.5.0.3\lib\net461\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Metadata, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.AspNetCore.Metadata.5.0.3\lib\net461\Microsoft.AspNetCore.Metadata.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Mvc.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Mvc.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.ResponseCaching.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.ResponseCaching.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Routing, Version=2.2.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Routing.2.2.2\lib\netstandard2.0\Microsoft.AspNetCore.Routing.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.Routing.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.Routing.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Routing.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Build, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\Microsoft.Build.16.11.0\lib\net472\Microsoft.Build.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\Microsoft.Build.Framework.16.11.0\lib\net472\Microsoft.Build.Framework.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Build.Utilities.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\Microsoft.Build.Utilities.Core.16.11.0\lib\net472\Microsoft.Build.Utilities.Core.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.CodeAnalysis, Version=3.11.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.CodeAnalysis.Common.3.11.0\lib\netstandard2.0\Microsoft.CodeAnalysis.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.CodeAnalysis.CSharp, Version=3.11.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.3.11.0\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=3.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.CSharp"/>
+		<Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Configuration, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Configuration.5.0.0\lib\net461\Microsoft.Extensions.Configuration.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Configuration.Binder, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.5.0.0\lib\net461\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Configuration.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Configuration.Json.5.0.0\lib\net461\Microsoft.Extensions.Configuration.Json.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.DependencyInjection, Version=5.0.0.1, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.DependencyInjection.5.0.1\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.DependencyModel, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.DependencyModel.5.0.0\lib\net461\Microsoft.Extensions.DependencyModel.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.5.0.0\lib\net461\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.5.0.0\lib\net461\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Hosting.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Logging, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Logging.5.0.0\lib\net461\Microsoft.Extensions.Logging.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.ObjectPool, Version=5.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.ObjectPool.5.0.3\lib\net461\Microsoft.Extensions.ObjectPool.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Options, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Options.5.0.0\lib\net461\Microsoft.Extensions.Options.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Extensions.Primitives, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Extensions.Primitives.5.0.0\lib\net461\Microsoft.Extensions.Primitives.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.6.8.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.Logging, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IdentityModel.Logging.6.8.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.40306.1554, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.4.403061554\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.Protocols, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IdentityModel.Protocols.6.8.0\lib\net461\Microsoft.IdentityModel.Protocols.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.6.8.0\lib\net461\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IdentityModel.Tokens, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IdentityModel.Tokens.6.8.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=2.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.2.1.3\lib\net462\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Net.Http.Headers, Version=2.2.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+			<HintPath>..\packages\Microsoft.Net.Http.Headers.2.2.8\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.NET.StringTools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\Microsoft.NET.StringTools.1.0.0\lib\net472\Microsoft.NET.StringTools.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.4.2.0\lib\net45\Microsoft.Owin.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Host.SystemWeb, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.4.2.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Security, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.Security.4.2.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Security.Cookies, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.Security.Cookies.4.2.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Security.Interop, Version=2.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Owin.Security.Interop.2.1.2\lib\net461\Microsoft.Owin.Security.Interop.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Security.OAuth, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.Security.OAuth.4.2.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Owin.Security.OpenIdConnect, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\Microsoft.Owin.Security.OpenIdConnect.4.2.0\lib\net45\Microsoft.Owin.Security.OpenIdConnect.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.VisualBasic"/>
+		<Reference Include="Microsoft.VisualStudio.Setup.Configuration.Interop, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.VisualStudio.Setup.Configuration.Interop.1.16.30\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
+			<EmbedInteropTypes>True</EmbedInteropTypes>
+		</Reference>
+		<Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
+			<Private>True</Private>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="mscorlib"/>
+		<Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+			<HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="NHunspell, Version=1.2.5554.16953, Culture=neutral, PublicKeyToken=1ac793ea843b4366, processorArchitecture=MSIL">
+			<HintPath>..\packages\NHunspell.1.2.5554.16953\lib\net\NHunspell.dll</HintPath>
+		</Reference>
+		<Reference Include="Npgsql, Version=5.0.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
+			<HintPath>..\packages\Npgsql.5.0.7\lib\netstandard2.0\Npgsql.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="nunit.framework, Version=3.10.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
+			<HintPath>..\packages\NUnit.3.10.0\lib\net45\nunit.framework.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+			<HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+		</Reference>
+		<Reference Include="PresentationCore"/>
+		<Reference Include="RazorGenerator.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+			<HintPath>..\packages\RazorGenerator.Mvc.2.4.9\lib\net40\RazorGenerator.Mvc.dll</HintPath>
+		</Reference>
+		<Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10">
+			<HintPath>..\packages\Serilog.2.10.0\lib\net46\Serilog.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="SerilogWeb.Classic, Version=5.0.0.0, Culture=neutral, PublicKeyToken=9462ddd55fbc0e7f">
+			<HintPath>..\packages\SerilogWeb.Classic.5.0.61\lib\net45\SerilogWeb.Classic.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System"/>
+		<Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.ComponentModel.Composition"/>
+		<Reference Include="System.ComponentModel.DataAnnotations"/>
+		<Reference Include="System.Configuration"/>
+		<Reference Include="System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Configuration.ConfigurationManager.4.7.0\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Core"/>
+		<Reference Include="System.Data"/>
+		<Reference Include="System.Data.OracleClient"/>
+		<Reference Include="System.Data.SqlClient, Version=4.6.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Data.SqlClient.4.8.2\lib\net461\System.Data.SqlClient.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Diagnostics.DiagnosticSource, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Diagnostics.DiagnosticSource.5.0.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Drawing"/>
+		<Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Drawing.Common.5.0.1\lib\net461\System.Drawing.Common.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.IdentityModel"/>
+		<Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+			<HintPath>..\packages\System.IdentityModel.Tokens.Jwt.6.8.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.IO.Compression"/>
+		<Reference Include="System.IO.Pipelines, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.IO.Pipelines.5.0.1\lib\net461\System.IO.Pipelines.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Linq"/>
+		<Reference Include="System.Management"/>
+		<Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Net"/>
+		<Reference Include="System.Net.Http"/>
+		<Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Numerics"/>
+		<Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Reflection.Metadata.5.0.0\lib\net461\System.Reflection.Metadata.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Runtime.InteropServices"/>
+		<Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+			<HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+			<Private>True</Private>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Runtime.Serialization"/>
+		<Reference Include="System.Security"/>
+		<Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Cryptography.Xml, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Security.Cryptography.Xml.5.0.0\lib\net461\System.Security.Cryptography.Xml.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Permissions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Security.Permissions.5.0.0\lib\net461\System.Security.Permissions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.ServiceProcess"/>
+		<Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Text.Encodings.Web, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Text.Encodings.Web.5.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Text.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Text.Json.5.0.0\lib\net461\System.Text.Json.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Threading.Channels, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Threading.Channels.4.7.0\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Threading.Tasks"/>
+		<Reference Include="System.Threading.Tasks.Dataflow, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+			<HintPath>..\packages\System.Threading.Tasks.Dataflow.5.0.0\lib\net461\System.Threading.Tasks.Dataflow.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="System.Threading.Thread"/>
+		<Reference Include="System.Transactions"/>
+		<Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+			<HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.ApplicationServices"/>
+		<Reference Include="System.Web.DynamicData"/>
+		<Reference Include="System.Web.Entity"/>
+		<Reference Include="System.Web.Extensions"/>
+		<Reference Include="System.Web"/>
+		<Reference Include="System.Web.Abstractions"/>
+		<Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Http.Owin, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.7\lib\net45\System.Web.Http.Owin.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.Routing"/>
+		<Reference Include="System.Net.Http.WebRequest"/>
+		<Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Xaml"/>
+		<Reference Include="System.Xml"/>
+		<Reference Include="System.Xml.Linq"/>
+		<Reference Include="Telegram.Bot, Version=16.0.2.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Telegram.Bot.16.0.2\lib\net45\Telegram.Bot.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="TextCopy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1ca091877d12ca03">
+			<HintPath>..\packages\TextCopy.4.3.0\lib\net461\TextCopy.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="UnidecodeSharpCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+			<HintPath>..\packages\UnidecodeSharpCore.2.0.1\lib\net45\UnidecodeSharpCore.dll</HintPath>
+		</Reference>
+		<Reference Include="Vostok.Applications.Scheduled, Version=0.2.7.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Applications.Scheduled.0.2.7\lib\netstandard2.0\Vostok.Applications.Scheduled.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Context, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Context.0.1.4\lib\netstandard2.0\Vostok.ClusterClient.Context.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Core, Version=0.1.26.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Core.0.1.26\lib\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Datacenters, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Datacenters.0.1.2\lib\netstandard2.0\Vostok.ClusterClient.Datacenters.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Topology.CC, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Topology.CC.0.1.2\lib\netstandard2.0\Vostok.ClusterClient.Topology.CC.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Tracing, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Tracing.0.1.4\lib\netstandard2.0\Vostok.ClusterClient.Tracing.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterClient.Transport, Version=0.1.17.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterClient.Transport.0.1.17\lib\netstandard2.0\Vostok.ClusterClient.Transport.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterConfig.Client, Version=0.1.10.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterConfig.Client.0.1.10\lib\netstandard2.0\Vostok.ClusterConfig.Client.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ClusterConfig.Client.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ClusterConfig.Client.Abstractions.0.1.0\lib\netstandard2.0\Vostok.ClusterConfig.Client.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Configuration, Version=0.1.24.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Configuration.0.1.24\lib\netstandard2.0\Vostok.Configuration.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Configuration.Abstractions, Version=0.1.9.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Configuration.Abstractions.0.1.9\lib\netstandard2.0\Vostok.Configuration.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Configuration.Logging, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Configuration.Logging.0.1.1\lib\netstandard2.0\Vostok.Configuration.Logging.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Configuration.Sources, Version=0.1.13.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Configuration.Sources.0.1.13\lib\netstandard2.0\Vostok.Configuration.Sources.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Configuration.Sources.ClusterConfig, Version=0.1.6.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Configuration.Sources.ClusterConfig.0.1.6\lib\netstandard2.0\Vostok.Configuration.Sources.ClusterConfig.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Context, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Context.0.1.4\lib\netstandard2.0\Vostok.Context.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Datacenters, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Datacenters.0.1.4\lib\netstandard2.0\Vostok.Datacenters.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Datacenters.Kontur, Version=1.0.36.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Datacenters.Kontur.1.0.36\lib\netstandard2.0\Vostok.Datacenters.Kontur.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Hercules.Client, Version=0.1.13.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Hercules.Client.0.1.13\lib\netstandard2.0\Vostok.Hercules.Client.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Hercules.Client.Abstractions, Version=0.1.7.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Hercules.Client.Abstractions.0.1.7\lib\netstandard2.0\Vostok.Hercules.Client.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Hosting.Abstractions, Version=0.3.5.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Hosting.Abstractions.0.3.5\lib\netstandard2.0\Vostok.Hosting.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Abstractions, Version=1.0.20.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Abstractions.1.0.20\lib\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Context, Version=1.0.1.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Context.1.0.1\lib\netstandard2.0\Vostok.Logging.Context.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.File, Version=1.0.12.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.File.1.0.12\lib\netstandard2.0\Vostok.Logging.File.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Formatting, Version=1.0.5.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Formatting.1.0.5\lib\netstandard2.0\Vostok.Logging.Formatting.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Hercules, Version=0.1.7.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Hercules.0.1.7\lib\netstandard2.0\Vostok.Logging.Hercules.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Serilog, Version=1.0.2.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Serilog.1.0.2\lib\netstandard2.0\Vostok.Logging.Serilog.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Logging.Tracing, Version=0.1.5.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Logging.Tracing.0.1.5\lib\netstandard2.0\Vostok.Logging.Tracing.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Metrics, Version=0.2.19.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Metrics.0.2.19\lib\netstandard2.0\Vostok.Metrics.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Metrics.Hercules, Version=0.1.2.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Metrics.Hercules.0.1.2\lib\netstandard2.0\Vostok.Metrics.Hercules.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.ServiceDiscovery.Abstractions, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.ServiceDiscovery.Abstractions.0.1.4\lib\netstandard2.0\Vostok.ServiceDiscovery.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Telemetry.Kontur, Version=1.0.52.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Telemetry.Kontur.1.0.52\lib\netstandard2.0\Vostok.Telemetry.Kontur.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Tracing, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Tracing.0.1.1\lib\netstandard2.0\Vostok.Tracing.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Tracing.Abstractions, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Tracing.Abstractions.0.1.4\lib\netstandard2.0\Vostok.Tracing.Abstractions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Tracing.Extensions, Version=0.1.5.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Tracing.Extensions.0.1.5\lib\netstandard2.0\Vostok.Tracing.Extensions.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Tracing.Hercules, Version=0.1.4.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Tracing.Hercules.0.1.4\lib\netstandard2.0\Vostok.Tracing.Hercules.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="Vostok.Tracing.Kontur, Version=1.0.14.0, Culture=neutral, PublicKeyToken=null">
+			<HintPath>..\packages\Vostok.Tracing.Kontur.1.0.14\lib\netstandard2.0\Vostok.Tracing.Kontur.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+		<Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+			<HintPath>..\packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
+		</Reference>
+		<Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+			<HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+		</Reference>
+		<Reference Include="WindowsBase"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="AntiPlagiarismUsage\AntiPlagiarismAdditionalInfo.cs"/>
+		<Compile Include="App_Start\ErrorLogModule.cs"/>
+		<Compile Include="App_Start\GraphiteMetricsPipeStart.cs"/>
+		<Compile Include="App_Start\RazorGeneratorMvcStart.cs"/>
+		<Compile Include="App_Start\SameSite\BrowserDetection.cs"/>
+		<Compile Include="App_Start\SameSite\SameSiteCookieManager.cs"/>
+		<Compile Include="App_Start\SameSite\SameSiteCookieRewriter.cs"/>
+		<Compile Include="App_Start\WebApiConfig.cs"/>
+		<Compile Include="CertificateGenerator.cs"/>
+		<Compile Include="Clients\UlearnVideoAnnotationsClient.cs"/>
+		<Compile Include="Controllers\AntiPlagiarismController.cs"/>
+		<Compile Include="Controllers\BaseController.cs"/>
+		<Compile Include="Controllers\CertificatesController.cs"/>
+		<Compile Include="Controllers\ErrorsController.cs"/>
+		<Compile Include="Controllers\FeedController.cs"/>
+		<Compile Include="Controllers\GitWebhookController.cs"/>
+		<Compile Include="Controllers\JsonDataContractController.cs"/>
+		<Compile Include="Controllers\JsonDataContractHelpers.cs"/>
+		<Compile Include="Controllers\NotificationsController.cs"/>
+		<Compile Include="Controllers\SpaController.cs"/>
+		<Compile Include="Controllers\StaticFilesController.cs"/>
+		<Compile Include="Controllers\StepikController.cs"/>
+		<Compile Include="Controllers\TelegramController.cs"/>
+		<Compile Include="Controllers\BaseUserController.cs"/>
+		<Compile Include="Extensions\HtmlExtensions_should.cs"/>
+		<Compile Include="Extensions\HtmlStringExtensions.cs"/>
+		<Compile Include="Extensions\OwinRequestExtensions.cs"/>
+		<Compile Include="Extensions\StringExtensions_should.cs"/>
+		<Compile Include="Extensions\UserExtensions.cs"/>
+		<Compile Include="Helpers\TelegramHelper.cs"/>
+		<Compile Include="Kontur.Passport\KonturPassportConstants.cs"/>
+		<Compile Include="Kontur.Passport\KonturPassportAuthenticationExtensions.cs"/>
+		<Compile Include="Kontur.Passport\KonturPassportAuthenticationHandler.cs"/>
+		<Compile Include="Kontur.Passport\KonturPassportAuthenticationMiddleware.cs"/>
+		<Compile Include="Kontur.Passport\KonturPassportAuthenticationOptions.cs"/>
+		<Compile Include="Kontur.Passport\AuthenticationResult.cs"/>
+		<Compile Include="Kontur.Passport\PassportClient.cs"/>
+		<Compile Include="Kontur.Passport\Provider\KonturPassportReturnEndpointContext.cs"/>
+		<Compile Include="Kontur.Passport\SigningKeysProvider.cs"/>
+		<Compile Include="Models\AccountViewModels.cs"/>
+		<Compile Include="Models\AnalyticsTablePageModel.cs"/>
+		<Compile Include="Models\BlockRenderContext.cs"/>
+		<Compile Include="Models\ChoiceGroupPageModel.cs"/>
+		<Compile Include="Models\CodeModel.cs"/>
+		<Compile Include="Models\CommentViewModel.cs"/>
+		<Compile Include="Models\CoursePageModel.cs"/>
+		<Compile Include="Models\CourseStatisticsJsonModel.cs"/>
+		<Compile Include="Models\ExerciseBlockData.cs"/>
+		<Compile Include="Models\ExerciseCodeReviewModel.cs"/>
+		<Compile Include="Models\ExternalLoginsListModel.cs"/>
+		<Compile Include="Models\GroupsFilterViewModel.cs"/>
+		<Compile Include="Models\HintPageModel.cs"/>
+		<Compile Include="Models\IntructorNoteModel.cs"/>
+		<Compile Include="Models\LtiQuizModel.cs"/>
+		<Compile Include="Models\QuizBlockData.cs"/>
+		<Compile Include="Models\QuizModel.cs"/>
+		<Compile Include="Models\QuizState.cs"/>
+		<Compile Include="Models\RestorePasswordModels.cs"/>
+		<Compile Include="Models\RunSolutionResult.cs"/>
+		<Compile Include="Models\StatisticPagesModels.cs"/>
+		<Compile Include="Models\SubmissionListModel.cs"/>
+		<Compile Include="Models\SubmissionsModel.cs"/>
+		<Compile Include="Models\SwitchablePanelModel.cs"/>
+		<Compile Include="Models\UserCourseToggleHistoryModel.cs"/>
+		<Compile Include="Models\UserCourseModel.cs"/>
+		<Compile Include="Models\UserModel.cs"/>
+		<Compile Include="Extensions\ControllerExtensions.cs"/>
+		<Compile Include="Controllers\AuthenticationManager.cs"/>
+		<Compile Include="Controllers\CommentsController.cs"/>
+		<Compile Include="Controllers\ControllerUtils.cs"/>
+		<Compile Include="Extensions\RequestExtensions.cs"/>
+		<Compile Include="Extensions\DateTimeExtensions.cs"/>
+		<Compile Include="Extensions\HtmlExtensions.cs"/>
+		<Compile Include="Controllers\LoginController.cs"/>
+		<Compile Include="Controllers\RestorePasswordController.cs"/>
+		<Compile Include="Controllers\SandboxController.cs"/>
+		<Compile Include="Controllers\AdminController.cs"/>
+		<Compile Include="Controllers\AnalyticsController.cs"/>
+		<Compile Include="Controllers\QuizController.cs"/>
+		<Compile Include="Controllers\ExerciseController.cs"/>
+		<Compile Include="Controllers\VisitsController.cs"/>
+		<Compile Include="FilterAttributes\ULearnAuthorizeAttribute.cs"/>
+		<Compile Include="Extensions\StringExtensions.cs"/>
+		<Compile Include="App_Start\UlearnLogger.cs"/>
+		<Compile Include="LTI\LtiAuthenticationExtensions.cs"/>
+		<Compile Include="LTI\LtiUtils.cs"/>
+		<Compile Include="LTI\SecurityHandler.cs"/>
+		<Compile Include="CreateListOfUsedTokens.cs"/>
+		<Compile Include="Views\Course\SlideHtml.generated.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>SlideHtml.cshtml</DependentUpon>
+		</Compile>
+		<Compile Include="Views\Shared\Helpers\SwitchablePanel.generated.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>SwitchablePanel.cshtml</DependentUpon>
+		</Compile>
+		<Compile Include="Views\Shared\Notifications.generated.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>Notifications.cshtml</DependentUpon>
+		</Compile>
+		<Compile Include="Views\Shared\UserAvatar.generated.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>UserAvatar.cshtml</DependentUpon>
+		</Compile>
+		<Compile Include="App_Start\FilterConfig.cs"/>
+		<Compile Include="App_Start\RouteConfig.cs"/>
+		<Compile Include="App_Start\Startup.Auth.cs"/>
+		<Compile Include="Controllers\AccountController.cs"/>
+		<Compile Include="Controllers\CourseController.cs"/>
+		<Compile Include="Controllers\HomeController.cs"/>
+		<Compile Include="Global.asax.cs">
+			<DependentUpon>Global.asax</DependentUpon>
+		</Compile>
+		<Compile Include="Owin.VkontakteMiddleware\VkAuthenticationConstants.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\Provider\IVkAuthenticationProvider.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticatedContext.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\Provider\VkAuthenticationProvider.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\Provider\VkReturnEndpointContext.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\Resources.Designer.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\VkAuthenticationExtensions.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\VkAuthenticationHandler.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\VkAuthenticationMiddleware.cs"/>
+		<Compile Include="Owin.VkontakteMiddleware\VkAuthenticationOptions.cs"/>
+		<Compile Include="Properties\AssemblyInfo.cs"/>
+		<Compile Include="Startup.cs"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="appsettings.json">
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<!-- Hack to copy Microsoft.Win32.Registry.dll. Without this Content item dll is not copying. I think it's bug
+			 in Framework + netstandard compatibility. Maybe it's related to https://github.com/dotnet/corefx/issues/24483 -->
+		<!--<Content Include="..\packages\Microsoft.Win32.Registry.4.5.0\lib\net461\Microsoft.Win32.Registry.dll">-->
+		<!--<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+		<!--</Content>-->
+		<Content Include="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\ref\netstandard.dll">
+			<Link>netstandard.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.json"/>
+		<Content Include="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+		</Content>
+		<Content Include="Content\loading-ring.gif"/>
+		<Content Include="Content\loading.gif"/>
+		<Content Include="Content\logo.png"/>
+		<Content Include="Content\StartPageJumbotron.png"/>
+		<Content Include="Content\ulearn.yml"/>
+		<Content Include="Global.asax"/>
+		<None Include="Hunspellx64.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Hunspellx86.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<Content Include="Content\certificate-template.zip"/>
+		<None Include="encoding.xsd">
+			<SubType>Designer</SubType>
+		</None>
+		<None Include="packages.config"/>
+		<None Include="Properties\PublishProfiles\ulearn - FTP.pubxml"/>
+		<None Include="Properties\PublishProfiles\ulearn - Web Deploy.pubxml"/>
+		<None Include="Properties\PublishProfiles\ulearn-dev.pubxml"/>
+		<None Include="Properties\PublishProfiles\ulearn.pubxml"/>
+		<Content Include="Properties\webjobs-list.json"/>
+		<Content Include="..\schema.xsd">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Views\Account\JoinedToGroup.cshtml"/>
+		<Content Include="Views\Account\ToggleRolesHistory.cshtml"/>
+		<Content Include="Views\Admin\StyleValidations.cshtml"/>
+		<Content Include="Views\Analytics\RatingByPoints.cshtml"/>
+		<Content Include="Views\Analytics\UnitStatistics.cshtml"/>
+		<Content Include="Views\AntiPlagiarism\Details.cshtml"/>
+		<Content Include="Views\Certificates\ListPartial.cshtml"/>
+		<Content Include="Views\Course\Courses.cshtml"/>
+		<Content Include="Views\Errors\404.cshtml"/>
+		<Content Include="Views\Errors\Error.cshtml"/>
+		<Content Include="Views\Exercise\StudentSubmissions.cshtml"/>
+		<Content Include="Views\Exercise\StudentSubmissionsTable.cshtml"/>
+		<Content Include="Views\Exercise\_ExerciseLastReviewComments.cshtml"/>
+		<Content Include="Views\Exercise\_ExerciseReviewComment.cshtml"/>
+		<Content Include="Views\Shared\Error.cshtml"/>
+		<Content Include="Views\Shared\_Retargeting.cshtml"/>
+		<Content Include="Web.config"/>
+		<Content Include="Web.Debug.config">
+			<DependentUpon>Web.config</DependentUpon>
+		</Content>
+		<Content Include="Web.Release.config">
+			<DependentUpon>Web.config</DependentUpon>
+		</Content>
+		<Content Include="Views\Web.config"/>
+		<Content Include="Views\_ViewStart.cshtml"/>
+		<Content Include="Views\Shared\_Layout.cshtml"/>
+		<Content Include="Views\Home\About.cshtml"/>
+		<Content Include="Views\Home\Contact.cshtml"/>
+		<Content Include="Views\Home\Index.cshtml"/>
+		<Content Include="Views\Account\_ChangePasswordPartial.cshtml"/>
+		<Content Include="Views\Login\ExternalLoginsListPartial.cshtml"/>
+		<Content Include="Views\Account\_RemoveAccountPartial.cshtml"/>
+		<Content Include="Views\Login\ExternalLoginConfirmation.cshtml"/>
+		<Content Include="Views\Login\ExternalLoginFailure.cshtml"/>
+		<Content Include="Views\Login\Index.cshtml"/>
+		<Content Include="Views\Account\Manage.cshtml"/>
+		<Content Include="Views\Account\Register.cshtml"/>
+		<Content Include="Views\Course\Slide.cshtml"/>
+		<Content Include="Views\Account\List.cshtml"/>
+		<Content Include="Views\Admin\Units.cshtml"/>
+		<Content Include="Views\Analytics\UnitSheet.cshtml"/>
+		<Content Include="Views\Course\InstructorNote.cshtml"/>
+		<Content Include="Views\Analytics\UsersProgress.cshtml"/>
+		<Content Include="Views\Analytics\UserSolutions.cshtml"/>
+		<Content Include="Views\Account\ChangeDetailsPartial.cshtml"/>
+		<Content Include="Views\Quiz\Quiz.cshtml"/>
+		<Content Include="Views\Account\Info.cshtml"/>
+		<Content Include="Views\Account\CourseInfo.cshtml"/>
+		<Content Include="Views\Course\SlideHtml.cshtml">
+			<Generator>RazorGenerator</Generator>
+			<LastGenOutput>SlideHtml.generated.cs</LastGenOutput>
+		</Content>
+		<Content Include="Views\Sandbox\Index.cshtml"/>
+		<Content Include="Views\Sandbox\GetDetails.cshtml"/>
+		<Content Include="Views\Course\LtiQuizSlide.cshtml"/>
+		<Content Include="Views\Course\LtiSlide.cshtml"/>
+		<Content Include="Views\Account\StudentInfo.cshtml"/>
+		<Content Include="Views\Shared\_GroupsPrompt.cshtml"/>
+		<Content Include="Views\Admin\SpellingErrors.cshtml"/>
+		<Content Include="Views\RestorePassword\Index.cshtml"/>
+		<Content Include="Views\RestorePassword\SetNewPassword.cshtml"/>
+		<Content Include="Views\Course\_LoginForContinue.cshtml"/>
+		<Content Include="Views\Shared\Helpers\SwitchablePanel.cshtml">
+			<Generator>RazorGenerator</Generator>
+			<LastGenOutput>SwitchablePanel.generated.cs</LastGenOutput>
+		</Content>
+		<Content Include="Views\Admin\Packages.cshtml"/>
+		<Content Include="Views\Shared\_UserListPartial.cshtml"/>
+		<Content Include="Views\Admin\Users.cshtml"/>
+		<Content Include="Views\Admin\Diagnostics.cshtml"/>
+		<Content Include="Views\Comments\SlideComments.cshtml"/>
+		<Content Include="Views\Comments\_Comment.cshtml"/>
+		<Content Include="Views\Shared\UserAvatar.cshtml">
+			<Generator>RazorGenerator</Generator>
+			<LastGenOutput>UserAvatar.generated.cs</LastGenOutput>
+		</Content>
+		<Content Include="Views\Comments\_CommentText.cshtml"/>
+		<Content Include="Views\Admin\Comments.cshtml"/>
+		<Content Include="Views\Account\JoinGroup.cshtml"/>
+		<Content Include="Views\Admin\CheckingQueue.cshtml"/>
+		<Content Include="Views\Admin\_ManualCheckingQueueFilterForm.cshtml"/>
+		<Content Include="Views\Exercise\_ExerciseReview.cshtml"/>
+		<Content Include="Views\Exercise\SubmissionsPanel.cshtml"/>
+		<Content Include="Views\Exercise\Submission.cshtml"/>
+		<Content Include="Views\Exercise\_ExerciseScoreForm.cshtml"/>
+		<Content Include="Views\Analytics\UserUnitStatistics.cshtml"/>
+		<Content Include="Views\Analytics\UnitSheetList.cshtml"/>
+		<Content Include="Views\Home\Terms.cshtml"/>
+		<Content Include="Web.Kontur.config">
+			<DependentUpon>Web.config</DependentUpon>
+		</Content>
+		<Content Include="Views\Certificates\Certificate.cshtml"/>
+		<Content Include="Views\Admin\Certificates.cshtml"/>
+		<Content Include="Views\Certificates\List.cshtml"/>
+		<Content Include="Views\Account\UserMenuPartial.cshtml"/>
+		<Content Include="Views\Admin\PreviewCertificates.cshtml"/>
+		<Content Include="Views\Admin\GenerateCertificatesError.cshtml"/>
+		<Content Include="Views\Analytics\CourseStatistics.cshtml"/>
+		<Content Include="Views\Shared\_GroupsFilter.cshtml"/>
+		<Content Include="Views\Exercise\_TopUserReviewComments.cshtml"/>
+		<Content Include="Views\Exercise\_SlideCodeReviewComments.cshtml"/>
+		<Content Include="Views\Notifications\SuggestMailTransport.cshtml"/>
+		<Content Include="Views\Notifications\Settings.cshtml"/>
+		<Content Include="Views\Feed\NotificationsTopbarPartial.cshtml"/>
+		<Content Include="Views\Feed\NotificationsPartial.cshtml"/>
+		<Content Include="Views\Login\LinkLogin.cshtml"/>
+		<Content Include="Views\Login\EnsureKonturProfileLogin.cshtml"/>
+		<Content Include="Views\Login\AddKonturProfileLogin.cshtml"/>
+		<Content Include="Views\Login\_LoginForm.cshtml"/>
+		<Content Include="Views\Feed\Index.cshtml"/>
+		<Content Include="Views\Shared\Notifications.cshtml">
+			<Generator>RazorGenerator</Generator>
+			<LastGenOutput>Notifications.generated.cs</LastGenOutput>
+		</Content>
+		<Content Include="Views\Stepik\ConnectError.cshtml"/>
+		<Content Include="Views\Stepik\SelectTarget.cshtml"/>
+		<Content Include="Views\Stepik\InitialExportOptions.cshtml"/>
+		<Content Include="Views\Stepik\ExportStarted.cshtml"/>
+		<Content Include="Views\Stepik\UpdateOptions.cshtml"/>
+		<Content Include="Views\Stepik\UpdateStarted.cshtml"/>
+		<Content Include="Views\Stepik\Process.cshtml"/>
+		<Content Include="Views\Account\Profile.cshtml"/>
+		<Content Include="Views\Shared\_Footer.cshtml"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="App_Data\"/>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Owin.VkontakteMiddleware\Resources.resx"/>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AntiPlagiarism.Api\AntiPlagiarism.Api.csproj">
+			<Project>{a019580a-4cf2-475e-bd57-7f57f411b64f}</Project>
+			<Name>AntiPlagiarism.Api</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Common.Api\Common.Api.csproj">
+			<Project>{295dc817-74c6-432b-ad1e-349644f1ac59}</Project>
+			<Name>Common.Api</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Common\Common.csproj">
+			<Project>{3CC038A1-6AA0-49B0-9485-DB9589626BC3}</Project>
+			<Name>Common</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Core\Core.csproj">
+			<Project>{803c067a-5553-467d-9470-116fe2430255}</Project>
+			<Name>Core</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Database\Database.csproj">
+			<Project>{95510835-0b21-4d99-a4d2-b8fc87761a3c}</Project>
+			<Name>Database</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\GitCourseUpdater\GitCourseUpdater.csproj">
+			<Project>{add8b9ba-7d5b-42d8-bfbd-3d60fb766e33}</Project>
+			<Name>GitCourseUpdater</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Stepik.Api\Stepik.Api.csproj">
+			<Project>{60247c0a-b6ee-46e2-ab66-c7285f5f1345}</Project>
+			<Name>Stepik.Api</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\VideoAnnotations.Api\VideoAnnotations.Api.csproj">
+			<Project>{8dbf67fc-f88e-4f33-bf81-8033ff597c91}</Project>
+			<Name>VideoAnnotations.Api</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Web.Api.Client\Web.Api.Client.csproj">
+			<Project>{bea02a48-3d9e-47ce-a005-f96601d07bbb}</Project>
+			<Name>Web.Api.Client</Name>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}"/>
+	</ItemGroup>
+	<ItemGroup>
+		<WCFMetadata Include="Service References\"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll"/>
+		<Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll"/>
+	</ItemGroup>
+	<PropertyGroup>
+		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+		<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+	</PropertyGroup>
+	<Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets"/>
+	<Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''"/>
+	<Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+		<AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)"/>
+	</Target>
+	<ProjectExtensions>
+		<VisualStudio>
+			<FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+				<WebProjectProperties>
+					<UseIIS>True</UseIIS>
+					<AutoAssignPort>True</AutoAssignPort>
+					<DevelopmentServerPort>53834</DevelopmentServerPort>
+					<DevelopmentServerVPath>/</DevelopmentServerVPath>
+					<IISUrl>https://localhost:44300/</IISUrl>
+					<NTLMAuthentication>False</NTLMAuthentication>
+					<UseCustomServer>False</UseCustomServer>
+					<CustomServerUrl>
+					</CustomServerUrl>
+					<SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+				</WebProjectProperties>
+			</FlavorProperties>
+		</VisualStudio>
+	</ProjectExtensions>
+	<PropertyGroup>
+		<PreBuildEvent>
+		</PreBuildEvent>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PostBuildEvent>
+		</PostBuildEvent>
+	</PropertyGroup>
+	<Target Name="CompileFrontend" BeforeTargets="BeforeBuild;OctoPack" Condition="'$(FrontRun)'!='true'">
+		<!-- If you adding others files be careful of OctoPack, because OctoPack will copy ONLY project files
+		 (such as <Content Include ...>) and files described in uLearn.Web.nuspec
+		 OctoPack doesn't run in local build but does in production bt Octopus
+		 -->
+		<Exec Command="yarn build" WorkingDirectory="..\Frontend"/>
+		<Exec Command="if not exist static mkdir static" WorkingDirectory="$(MSBuildProjectDirectory)"/>
+		<!-- Robocopy always exits with code 1: https://social.msdn.microsoft.com/Forums/en-US/d599833c-dcea-46f5-85e9-b1f028a0fefe/robocopy-exits-with-error-code-1?forum=tfsbuild -->
+		<Exec Command="robocopy /s ..\Frontend\build\ . || exit 0" WorkingDirectory="$(MSBuildProjectDirectory)"/>
+	</Target>
+	<Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+		<PropertyGroup>
+			<ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+		</PropertyGroup>
+		<Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))"/>
+		<Error Condition="!Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets'))"/>
+		<Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props'))"/>
+		<Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets'))"/>
+		<Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))"/>
+		<Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))"/>
+		<Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))"/>
+		<Error Condition="!Exists('..\packages\OctoPack.3.6.5\build\OctoPack.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OctoPack.3.6.5\build\OctoPack.targets'))"/>
+		<Error Condition="!Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ApprovalTests.5.4.5\build\ApprovalTests.props'))"/>
+		<Error Condition="!Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets'))"/>
+		<Error Condition="!Exists('..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets'))"/>
+		<Error Condition="!Exists('..\packages\NUnit.3.10.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.0\build\NUnit.props'))"/>
+		<Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.3.11.0\build\Microsoft.Net.Compilers.props'))"/>
+	</Target>
+	<Import Project="..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.1.0.13\tools\webjobs.targets')"/>
+	<Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')"/>
+	<Import Project="..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')"/>
+	<Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.targets')"/>
+	<Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')"/>
+	<Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')"/>
+	<Import Project="..\packages\OctoPack.3.6.5\build\OctoPack.targets" Condition="Exists('..\packages\OctoPack.3.6.5\build\OctoPack.targets')"/>
+	<Import Project="..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets" Condition="Exists('..\packages\ApprovalTests.5.4.5\build\ApprovalTests.targets')"/>
+	<Import Project="..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets" Condition="Exists('..\packages\EmptyFiles.2.6.0\build\EmptyFiles.targets')"/>
+	<!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+		 Other similar extension points exist, see Microsoft.Common.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target> -->
 </Project>

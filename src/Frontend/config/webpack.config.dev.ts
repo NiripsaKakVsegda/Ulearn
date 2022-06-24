@@ -1,34 +1,55 @@
-const autoprefixer = require('autoprefixer');
-const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
-const eslintFormatter = require('react-dev-utils/eslintFormatter');
-const getClientEnvironment = require('./env');
-const paths = require('./paths');
-const pwaPlugins = require('./pwa.webpack.plugins.ts');
+import autoprefixer from "autoprefixer";
+import path from "path";
+import webpack, { Configuration } from "webpack";
+import WebpackDevServer from "webpack-dev-server";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
+import paths from "./paths";
+import { merge } from "webpack-merge";
+import base from './webpack.config.base';
+import pwaWebpackPlugins from "./pwa.webpack.plugins";
 
-const publicPath = '/';
-const publicUrl = '';
-const env = getClientEnvironment(publicUrl);
+const devServerConfig: WebpackDevServer.Configuration = {
+	client: {
+		logging: "info",
+		overlay: false,
+		progress: false,
+	},
+	hot: true,
+	static: {
+		directory: paths.appPublic,
+	},
+	webSocketServer: "ws",
+	proxy: {
+		'/legacy/**': {
+			secure: false,
+			changeOrigin: true,
+			target: paths.webUrl,
+			pathRewrite: { '^/legacy/': '' }
+		}
+	},
+	historyApiFallback: {
+		disableDotRule: true,
+	},
+	devMiddleware: {
+		publicPath: '/',
+	},
+	setupExitSignals: true,
+};
 
-const base = require('./webpack.config.base');
-const { merge } = require('webpack-merge');
-
-module.exports = merge([base, {
+const config: Configuration = {
 	mode: 'development',
 	devtool: 'eval-cheap-module-source-map',
 	entry: {
-		oldBrowser: paths.oldBrowserJs,
+		//oldBrowser: paths.oldBrowserJs,
 		main: [paths.legacy, paths.appIndexTsx],
 	},
 	output: {
 		filename: '[name].[fullhash:8].js',
 		sourceMapFilename: '[name].[fullhash:8].map',
 		chunkFilename: 'chunk_[id].[fullhash:8].js',
-		publicPath: publicPath,
-		devtoolModuleFilenameTemplate: info =>
+		publicPath: '/',
+		devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string; }) =>
 			path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
 	},
 	resolve: {
@@ -37,16 +58,6 @@ module.exports = merge([base, {
 	module: {
 		strictExportPresence: true,
 		rules: [
-			{
-				test: /\.(js|jsx|mjs)$/,
-				include: paths.appSrc,
-				loader: 'eslint-loader',
-				enforce: 'pre',
-				options: {
-					formatter: eslintFormatter,
-					eslintPath: 'eslint',
-				},
-			},
 			{
 				oneOf: [
 					{
@@ -62,7 +73,7 @@ module.exports = merge([base, {
 						loader: 'babel-loader',
 						include: paths.appSrc,
 						options: {
-							configFile: "./babel.config.js",
+							configFile: "./babel.config.cjs",
 							cacheDirectory: true,
 						},
 					},
@@ -111,7 +122,7 @@ module.exports = merge([base, {
 								options: {
 									esModule: false,
 									modules: {
-										auto: (resourcePath) => !resourcePath.endsWith('.global.css'),
+										auto: (resourcePath: string) => !resourcePath.endsWith('.global.css'),
 										mode: 'global',
 									},
 									importLoaders: 1,
@@ -152,13 +163,15 @@ module.exports = merge([base, {
 			template: paths.appHtml,
 			favicon: paths.appPublic + '/favicon.ico',
 			chunksSortMode: (chunk1, chunk2) => {
-				if(chunk1 === 'oldBrowser') return -1;
-				if(chunk2 === 'oldBrowser') return 1;
+				if(chunk1 === 'oldBrowser') {
+					return -1;
+				}
+				if(chunk2 === 'oldBrowser') {
+					return 1;
+				}
 				return 0;
 			},
 		}),
-		new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-		new webpack.DefinePlugin(env.stringified),
 		new webpack.ProvidePlugin({
 			process: 'process/browser',
 			$: 'jquery',
@@ -171,9 +184,12 @@ module.exports = merge([base, {
 			resourceRegExp: /^\.\/locale$/,
 			contextRegExp: /moment$/,
 		}),
-		...pwaPlugins,
+		...pwaWebpackPlugins.slice(0, 1)
 	],
 	performance: {
 		hints: false,
 	},
-}]);
+	devServer: devServerConfig,
+};
+
+export default merge([base, config]);
