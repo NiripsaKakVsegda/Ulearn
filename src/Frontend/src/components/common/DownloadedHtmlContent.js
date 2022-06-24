@@ -56,8 +56,6 @@ let decodeHtmlEntities = (function () {
 })();
 
 class DownloadedHtmlContent extends Component {
-	BASE_URL = window.config.web.endpoint;
-
 	constructor(props) {
 		super(props);
 
@@ -105,7 +103,7 @@ class DownloadedHtmlContent extends Component {
 			error: null,
 		});
 
-		fetch(this.BASE_URL + url, { credentials: 'include' })
+		this.props.load(url, { credentials: 'include' })
 			.then(response => {
 				if(url !== this.props.url) {
 					return;
@@ -275,7 +273,7 @@ class DownloadedHtmlContent extends Component {
 		let elements = Array.from(document.body.getElementsByClassName(className));
 		elements.forEach(e => {
 			let url = e.dataset.url;
-			fetch(url, { credentials: 'include' }).then(r => r.text()).then(data => {
+			this.props.load(url, { credentials: 'include' }).then(r => r.text()).then(data => {
 				e.innerHTML = data;
 				let scripts = Array.from(e.getElementsByTagName('script'));
 				scripts.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
@@ -307,7 +305,7 @@ class DownloadedHtmlContent extends Component {
 				if(button && button.name && button.value)
 					formData.append(button.name, button.value);
 
-				fetch(formUrl, {
+				this.props.load(formUrl, {
 					method: 'POST',
 					credentials: 'include',
 					body: formData
@@ -353,12 +351,17 @@ class DownloadedHtmlContent extends Component {
 			enterToCourse: (courseId) => dispatch(changeCurrentCourseAction(courseId)),
 			updateUserInformation: () => api.account.redux.getCurrentUser()(dispatch),
 			updateCourses: () => api.courses.getCourses()(dispatch),
+			load: (url, init) => api.fetchFromWeb(url, init),
 		}
 	}
 
 	static propTypes = {
 		navigate: PropTypes.func.isRequired,
 		injectInWrapperAfterContentReady: PropTypes.func,
+		enterToCourse: PropTypes.func,
+		updateUserInformation: PropTypes.func,
+		updateCourses: PropTypes.func,
+		load: PropTypes.func,
 	}
 }
 

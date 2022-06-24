@@ -9,6 +9,8 @@ import { merge } from "webpack-merge";
 import base from './webpack.config.base';
 import pwaWebpackPlugins from "./pwa.webpack.plugins";
 
+const webUrl = 'https://localhost:44300/';
+
 const devServerConfig: WebpackDevServer.Configuration = {
 	client: {
 		logging: "info",
@@ -20,14 +22,27 @@ const devServerConfig: WebpackDevServer.Configuration = {
 		directory: paths.appPublic,
 	},
 	webSocketServer: "ws",
-	proxy: {
-		'/legacy/**': {
+	proxy: [
+		{
+			context: '/legacy/**',
 			secure: false,
 			changeOrigin: true,
-			target: paths.webUrl,
+			target: webUrl,
 			pathRewrite: { '^/legacy/': '' }
-		}
-	},
+		},
+		{
+			context: '/Login',
+			secure: false,
+			changeOrigin: true,
+			target: webUrl,
+		},
+		{
+			context: ['/Account/**', '/Admin/**', '/Quiz/**'],
+			secure: false,
+			changeOrigin: true,
+			target: webUrl,
+		},
+	],
 	historyApiFallback: {
 		disableDotRule: true,
 	},

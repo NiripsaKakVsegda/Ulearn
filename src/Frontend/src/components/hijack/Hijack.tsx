@@ -1,5 +1,6 @@
 import React from "react";
 import { Dispatch } from "redux";
+import api from "src/api";
 import { connect } from "react-redux";
 import { withCookies, ReactCookieProps } from 'react-cookie';
 
@@ -35,13 +36,13 @@ function Hijack({ allCookies, name, setHijack, isHijacked, }: Props) {
 	return (
 		<React.Fragment>
 			{ isHijacked &&
-			<div className={ styles.wrapper } onClick={ returnHijak }>
-				<Tooltip trigger='hover&focus' pos={ 'bottom center' } render={ renderTooltip }>
-					<Gapped gap={ 5 }>
-						<Logout size={ 20 }/>
-					</Gapped>
-				</Tooltip>
-			</div>
+				<div className={ styles.wrapper } onClick={ returnHijak }>
+					<Tooltip trigger="hover&focus" pos={ 'bottom center' } render={ renderTooltip }>
+						<Gapped gap={ 5 }>
+							<Logout size={ 20 }/>
+						</Gapped>
+					</Tooltip>
+				</div>
 			}
 		</React.Fragment>
 	);
@@ -53,7 +54,7 @@ function Hijack({ allCookies, name, setHijack, isHijacked, }: Props) {
 	}
 
 	function returnHijak() {
-		fetch(hijackReturnControllerPath, { method: 'POST' })
+		api.fetchFromWeb(hijackReturnControllerPath, { method: 'POST' })
 			.then(r => {
 				if(r.redirected) {
 					window.location.href = r.url;// reloading page to url in response location

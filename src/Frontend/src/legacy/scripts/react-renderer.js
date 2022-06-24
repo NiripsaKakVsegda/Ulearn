@@ -10,6 +10,7 @@
  * 	Child components are not supported now.
  */
 
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 /* Import all components you want to insert into legacy (cshtml+jquery) layout */

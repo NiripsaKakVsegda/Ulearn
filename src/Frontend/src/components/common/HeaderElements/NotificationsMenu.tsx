@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { useNavigate } from "react-router-dom";
 import cn from "classnames";
+import api from "src/api";
 
 import { notificationResetAction } from "src/actions/notifications";
 
@@ -91,7 +92,7 @@ class NotificationsMenu extends Component<Props, State> {
 	};
 
 	async loadNotifications() {
-		const r = await fetch('/' + notificationsFeed);
+		const r = await api.fetchFromWeb('/' + notificationsFeed);
 		return await r.text();
 	}
 

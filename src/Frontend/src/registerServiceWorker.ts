@@ -10,6 +10,8 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://cra.link/PWA
 
+import api from "src/api";
+
 const isLocalhost = Boolean(
 	window.location.hostname === 'localhost' ||
 	// [::1] is the IPv6 localhost address.
@@ -102,7 +104,7 @@ function registerValidSW(swUrl: string, config?: Config) {
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
 	// Check if the service worker can be found. If it can't reload the page.
-	fetch(swUrl, {
+	api.fetchFromWeb(swUrl, {
 		headers: { 'Service-Worker': 'script' },
 	})
 		.then((response) => {

@@ -1,5 +1,3 @@
-import config from "src/proxyConfig";
-
 import { Toast } from "ui";
 
 import * as account from "./account";
@@ -18,6 +16,7 @@ import * as googleSheet from "./googleSheet";
 import * as deadLines from "./deadLines";
 import * as additionalContent from "./additionalContent";
 import * as signalR from "@microsoft/signalr";
+import config from 'src/proxyConfig';
 
 const API_JWT_TOKEN_UPDATED = "API_JWT_TOKEN_UPDATED";
 let apiJwtToken = "";
@@ -207,7 +206,13 @@ function createSignalRConnection(url: string, loggingLevel = signalR.LogLevel.No
 		.build();
 }
 
+function fetchFromWeb(url: string, init?: RequestInit) {
+	return fetch((config.web?.endpoint || '') + url, init);
+}
+
 const api = {
+	fetchFromWeb,
+
 	refreshApiJwtToken,
 	clearApiJwtToken,
 	setServerErrorHandler,

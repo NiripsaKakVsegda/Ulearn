@@ -1,8 +1,0 @@
-{
-  "api": {
-    "endpoint": "http://localhost:8000/"
-  },
-  "web": {
-    "endpoint": "https://localhost:44300"
-  }
-}

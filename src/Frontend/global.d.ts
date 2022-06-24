@@ -22,30 +22,30 @@ declare global {
 	interface Window {
 		config: {
 			api: {
-				endpoint: string
+				endpoint: string;
 			},
-			web: {
-				endpoint: string
+			web?: {
+				endpoint: string | null;
 			}
 		},
 		legacy: {
 			//legacy scripts
-			documentReadyFunctions: (() => void)[],
+			documentReadyFunctions: (() => void)[];
 
 			//scripts used by cshtml scripts
-			loginForContinue: () => void,
-			likeSolution: () => void,
-			ToggleSystemRoleOrAccess: () => void,
-			ToggleButtonClass: () => void,
-			ToggleDropDownClass: () => void,
-			openPopup: () => void,
-			submitQuiz: () => void,
-			ShowPanel: () => void,
+			loginForContinue: () => void;
+			likeSolution: () => void;
+			ToggleSystemRoleOrAccess: () => void;
+			ToggleButtonClass: () => void;
+			ToggleDropDownClass: () => void;
+			openPopup: () => void;
+			submitQuiz: () => void;
+			ShowPanel: () => void;
 
 			//hack to use react history on back
-			reactHistory: unknown,
+			reactHistory: unknown;
 			//Yandex metrika used in registration pages on reachGoal
-			ym: unknown,
+			ym: unknown;
 		},
 	}
 }
