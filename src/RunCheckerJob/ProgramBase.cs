@@ -26,7 +26,7 @@ namespace RunCheckerJob
 		private readonly string[] supportedSandboxes;
 		private readonly string serviceName;
 
-		protected ProgramBase(string serviceName, ManualResetEvent externalShutdownEvent = null, bool isSandboxesInAppSettings = false)
+		protected ProgramBase(string serviceName, ManualResetEvent externalShutdownEvent = null, bool useLegacyCsharpSandbox = false)
 		{
 			this.serviceName = serviceName;
 			if (externalShutdownEvent != null)
@@ -40,7 +40,7 @@ namespace RunCheckerJob
 				var runCheckerJobConfiguration = ApplicationConfiguration.Read<RunCheckerJobConfiguration>().RunCheckerJob;
 				sleep = TimeSpan.FromSeconds(runCheckerJobConfiguration.SleepSeconds ?? 1);
 				agentName = runCheckerJobConfiguration.AgentName;
-				supportedSandboxes = isSandboxesInAppSettings ? runCheckerJobConfiguration.SupportedSandboxes : GetSupportedSandboxes();
+				supportedSandboxes = useLegacyCsharpSandbox ? new[] { "csharp" } : GetSupportedSandboxes();
 				if (string.IsNullOrEmpty(agentName))
 				{
 					agentName = Environment.MachineName;
@@ -54,7 +54,7 @@ namespace RunCheckerJob
 			}
 		}
 
-		string[] GetSupportedSandboxes()
+		private static string[] GetSupportedSandboxes()
 		{
 			var supportedSandboxes = new List<string>();
 			string error = null;
@@ -84,7 +84,7 @@ namespace RunCheckerJob
 				if (output.Data.Contains("<none>"))
 					return;
 
-				supportedSandboxes.Add(output.Data.Substring(1, output.Data.Length - 2));// all string are "'name'", so we need to remove "'"
+				supportedSandboxes.Add(output.Data.Substring(1, output.Data.Length - 2)); // all string are "'name'", so we need to remove "'"
 			};
 
 			dockerProc.ErrorDataReceived += (process, output) =>
