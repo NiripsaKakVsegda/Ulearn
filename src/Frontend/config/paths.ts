@@ -1,7 +1,5 @@
 import path from "path";
-import fs from "fs-extra";
-
-const appDirectory = fs.realpathSync(process.cwd());
+const appDirectory = process.cwd();
 const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
 const contentPath = 'static';
