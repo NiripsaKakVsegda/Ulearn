@@ -399,7 +399,7 @@ class Navigation extends Component<Props, State> {
 					courseId={ courseId }
 				/>
 				{ nextUnit && nextUnit.slides.length > 0 &&
-				<NextUnit unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
+					<NextUnit courseId={ courseId } unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
 			</>
 		);
 	}
@@ -427,18 +427,18 @@ class Navigation extends Component<Props, State> {
 		return (
 			<>
 				{ courseItems && courseItems.length &&
-				<CourseNavigationContent
-					getRefToActive={ this.currentActiveItem }
-					items={ courseItems }
-					courseId={ courseId }
-				/> }
+					<CourseNavigationContent
+						getRefToActive={ this.currentActiveItem }
+						items={ courseItems }
+						courseId={ courseId }
+					/> }
 				{ containsFlashcards &&
-				<Flashcards
-					statistics={ flashcardsStatistics }
-					toggleNavigation={ toggleNavigation }
-					courseId={ courseId }
-					isActive={ slideId === flashcards }
-				/> }
+					<Flashcards
+						statistics={ flashcardsStatistics }
+						toggleNavigation={ toggleNavigation }
+						courseId={ courseId }
+						isActive={ slideId === flashcards }
+					/> }
 			</>
 		);
 	}

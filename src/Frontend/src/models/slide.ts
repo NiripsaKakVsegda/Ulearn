@@ -116,13 +116,15 @@ interface LanguageLaunchInfo {
 }
 
 export {
-	ShortSlideInfo,
-	SlideType,
-	Block,
+	SlideType
+};
+export type {
+	ShortSlideInfo, Block,
 	SpoilerBlock,
 	TexBlock,
 	VideoBlock,
 	ExerciseBlock,
 	ExerciseBlockProps,
-	LanguageLaunchInfo,
+	LanguageLaunchInfo
 };
+

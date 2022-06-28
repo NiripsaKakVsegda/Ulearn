@@ -79,7 +79,7 @@ interface UnitsInfo {
 }
 
 
-export {
+export type {
 	CourseInfo,
 	ScoringInfo,
 	UnitInfo,

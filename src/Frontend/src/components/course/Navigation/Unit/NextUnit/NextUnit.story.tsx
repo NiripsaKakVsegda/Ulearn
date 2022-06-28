@@ -12,6 +12,7 @@ export default {
 
 const defaultProps: Props = {
 	onClick: mock,
+	courseId: 'basicprogramming',
 	unit: {
 		additionalContentInfo: { isAdditionalContent: false, publicationDate: null, },
 		additionalScores: [],
