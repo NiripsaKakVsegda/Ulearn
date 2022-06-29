@@ -8,7 +8,8 @@
     "analyze": "webpack -c config/webpack.config.prod.analyze.ts --node-env production",
     "test": "jest",
     "storybook": "start-storybook -p 9001 -c .storybook -s public",
-    "outdated": "yarn outdated"
+    "outdated": "yarn outdated",
+    "playwright": "playwright test"
   },
   "dependencies": {
     "@babel/core": "7.18.5",
@@ -70,22 +71,21 @@
     "redux": "4.2.0",
     "redux-thunk": "2.4.1",
     "style-loader": "3.3.1",
+    "ts-node": "10.8.1",
     "typescript": "4.7.4",
     "url-loader": "4.1.1",
     "webpack": "5.73.0",
     "webpack-bundle-analyzer": "4.5.0",
+    "webpack-cli": "4.10.0",
     "webpack-jquery-ui": "2.0.1",
     "webpack-manifest-plugin": "5.0.0",
     "webpack-merge": "5.8.0",
     "webpack-pwa-manifest": "4.3.0",
-    "workbox-webpack-plugin": "6.5.3",
-    "webpack-cli": "4.10.0",
-    "ts-node": "10.8.1"
+    "workbox-webpack-plugin": "6.5.3"
   },
   "devDependencies": {
+    "@playwright/test": "1.23.0",
     "@storybook/addon-essentials": "6.5.9",
-    "@storybook/addon-viewport": "6.5.9",
-    "@storybook/addons": "6.5.9",
     "@storybook/builder-webpack5": "6.5.9",
     "@storybook/manager-webpack5": "6.5.9",
     "@storybook/react": "6.5.9",
@@ -120,6 +120,7 @@
     "jest": "28.1.1",
     "jest-environment-jsdom": "28.1.1",
     "loki": "0.30.3",
+    "playwright": "1.23.0",
     "redux-mock-store": "1.5.4",
     "ts-jest": "28.0.5",
     "webpack-dev-server": "4.9.2"
