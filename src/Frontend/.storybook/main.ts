@@ -5,10 +5,15 @@ import { merge } from 'webpack-merge';
 
 export default {
 	core: {
-		builder: "webpack5"
+		builder: {
+			name: 'webpack5',
+			options: {
+				lazyCompilation: true,
+			},
+		},
 	},
 	stories: ['../src/**/**.story.@(js|jsx|tsx|ts)'],
-	addons: ['@storybook/addon-essentials'],
+	addons: ['@storybook/addon-essentials',],
 	webpackFinal: async (config: webpack.Configuration) => {
 		config = merge([base, config]);
 		// @ts-ignore
@@ -77,6 +82,7 @@ export default {
 		return config;
 	}
 };
+
 export const core = {
 	builder: 'webpack5'
 };
