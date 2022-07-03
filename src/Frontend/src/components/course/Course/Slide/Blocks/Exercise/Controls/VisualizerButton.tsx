@@ -16,25 +16,30 @@ import texts from "../Exercise.texts";
 
 interface Props extends IControlWithText {
 	code: string;
-	onModalClose: (code: string) => void;
+	onModalClose?: (code: string) => void;
+
+	size?: number;
+	className?: string;
 }
 
 function VisualizerButton({
 	showControlsText,
 	code,
+	className,
+	size,
 	onModalClose,
 }: Props): React.ReactElement {
 	const [isModalVisible, setModalVisible] = React.useState(false);
 
 	return (
 		<ThemeContext.Provider value={ defaultTheme }>
-			<span className={ styles.exerciseControls }>
+			<span className={ className ?? styles.exerciseControls }>
 				<ShowControlsTextContext.Consumer>
 				{
 					(showControlsTextContext) =>
 						<span onClick={ openModal }>
 							<span className={ styles.exerciseControlsIcon }>
-								<PC/>
+								<PC size={ size }/>
 							</span>
 							{ (showControlsTextContext || showControlsText) && texts.controls.visualizer.text }
 						</span>
@@ -51,7 +56,7 @@ function VisualizerButton({
 
 	function closeModal(code: string) {
 		setModalVisible(false);
-		onModalClose(code);
+		onModalClose?.(code);
 	}
 }
 

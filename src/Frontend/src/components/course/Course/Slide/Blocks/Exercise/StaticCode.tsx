@@ -13,6 +13,7 @@ import { loadLanguageStyles } from "./ExerciseUtils";
 
 import styles from './Exercise.less';
 import texts from "../Exercise/Exercise.texts";
+import VisualizerButton from "./Controls/VisualizerButton";
 
 
 export interface Props {
@@ -66,9 +67,9 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 				value={ value }
 			/>
 			{ collapseEditor &&
-			<button className={ styles.showAllCodeButton } onClick={ showAllCodeButtonClicked }>
-				{ texts.controls.showAllCode.text }
-			</button>
+				<button className={ styles.showAllCodeButton } onClick={ showAllCodeButtonClicked }>
+					{ texts.controls.showAllCode.text }
+				</button>
 			}
 			<div
 				className={ lines.length > 1 ? styles.copyCodeButton : styles.copyCodeButtonSingleLine }
@@ -77,6 +78,17 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 					<Copy size={ 20 }/>
 				</Hint>
 			</div>
+			{ (language === Language.python3 || language === Language.python2) &&
+				<div className={ lines.length > 1 ? styles.visualizerButton : styles.visualizerButtonSingleLine }>
+					<Hint text={ texts.controls.visualizer.text }>
+						<VisualizerButton
+							size={ 20 }
+							className={ styles.defaultColor }
+							code={ code }
+						/>
+					</Hint>
+				</div>
+			}
 		</div>
 	);
 
