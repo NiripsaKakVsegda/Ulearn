@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<NoWarn>NU1701;CS1573</NoWarn>
 		<RootNamespace>Ulearn.Web.Api</RootNamespace>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="AngleSharp" Version="0.14.0" />
+		<PackageReference Include="AngleSharp" Version="0.17.1" />
 		<PackageReference Include="Community.AspNetCore.ExceptionHandling.Mvc" Version="2.2.0" />
-		<PackageReference Include="EntityFrameworkProfiler.Appender" Version="6.0.6025" />
-		<PackageReference Include="EPPlus" Version="5.5.4" />
+		<PackageReference Include="EntityFrameworkProfiler.Appender" Version="6.0.6033" />
+		<PackageReference Include="EPPlus" Version="6.0.5" />
 		<PackageReference Include="LtiLibrary.Core" Version="1.6.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.3" />
-		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="5.0.3" />
-		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.6" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="6.0.6" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
@@ -74,6 +74,17 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Configuration\**" />
+	</ItemGroup>
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="packages\web.config" />
+	  <_ContentIncludedByDefault Remove="packages\appsettings.json" />
+	  <_ContentIncludedByDefault Remove="packages\appsettings.local.json" />
+	  <_ContentIncludedByDefault Remove="packages\Common.deps.json" />
+	  <_ContentIncludedByDefault Remove="packages\Common.runtimeconfig.json" />
+	  <_ContentIncludedByDefault Remove="packages\Core.deps.json" />
+	  <_ContentIncludedByDefault Remove="packages\Core.runtimeconfig.json" />
+	  <_ContentIncludedByDefault Remove="packages\Web.Api.deps.json" />
+	  <_ContentIncludedByDefault Remove="packages\Web.Api.runtimeconfig.json" />
 	</ItemGroup>
 
 

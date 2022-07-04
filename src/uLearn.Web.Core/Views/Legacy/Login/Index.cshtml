@@ -1,0 +1,24 @@
+﻿@model LoginViewModel
+
+@{
+	ViewBag.Title = "Вход";
+}
+<div class="container">
+	<div class="row">
+		<div class="col-md-offset-4 col-md-4">
+			<h2>@ViewBag.Title</h2>
+
+			<section id="socialLoginForm">
+				@Html.Partial("ExternalLoginsListPartial", new ExternalLoginsListModel { Action = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl, Type = ExternalLoginListType.Login })
+			</section>
+
+			<div class="strike-line grey">
+				<span>
+					<i>или введите логин и пароль</i>
+				</span>
+			</div>
+
+			@Html.Partial("_LoginForm", Model)
+		</div>
+	</div>
+</div>

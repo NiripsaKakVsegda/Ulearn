@@ -1,0 +1,13 @@
+﻿@model Ulearn.Core.Courses.Course
+
+@{
+	ViewBag.Title = "Обновление курса началось";
+}
+
+<div class="container">
+	<h2>Обновление курса «@Model.Title» началось</h2>
+	<p class="help-block">
+		Мы пришлём уведомление после окончания обновления.
+	</p>
+	@Html.RouteLink("Вернуться в курс", "Course.Slide", new { courseId = Model.Id }, new { @class = "btn btn-large btn-success " })
+</div>

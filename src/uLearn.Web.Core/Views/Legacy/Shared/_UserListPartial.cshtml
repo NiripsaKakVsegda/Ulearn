@@ -1,0 +1,215 @@
+﻿@using Database.Models
+@using Ulearn.Common.Extensions
+@using FormMethod = System.Web.Mvc.FormMethod
+@model UserListModel
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "AntiForgeryTokenContainer" }))
+{
+	@Html.AntiForgeryToken()
+}
+<div class="react-render" data-component="ToggleRoles"> </div>
+<table class="table table-condensed">
+	<tr>
+		<th>Пользователь</th>
+		<th>Группы</th>
+		@if (Model.CanToggleRoles)
+		{
+			<th>Роли</th>
+		}
+		@if (Model.CanViewAndToggleCourseAccesses)
+		{
+			<th>Права преподавателей</th>
+		}
+		@if (Model.CanViewAndToogleSystemAccesses)
+		{
+			<th>Системные права</th>
+		}
+		@if (Model.ShowDangerEntities)
+		{
+			<th>Удаление</th>
+		}
+	</tr>
+
+	@foreach (var user in Model.Users)
+	{
+		<tr data-userid="@user.UserId">
+			<td>
+				@if (Model.CanViewProfiles)
+				{
+					<span title="@user.UserName">
+						@Html.ActionLink(user.UserVisibleName, "Profile", "Account", new { userId = user.UserId }, new { })
+					</span>
+				}
+				else
+				{
+					<span title="@user.UserName">@user.UserVisibleName</span>
+				}
+			</td>
+			<td>
+				@Model.UsersGroups.GetOrDefault(user.UserId, "")
+				@if (Model.UsersArchivedGroups.ContainsKey(user.UserId) && !string.IsNullOrEmpty(Model.UsersArchivedGroups[user.UserId]))
+				{
+					<div class="text-muted">Архив: @Model.UsersArchivedGroups[user.UserId]</div>
+				}
+			</td>
+			@if (Model.CanToggleRoles)
+			{
+				<td>
+					<div class="btn-group">
+						@if (Model.ShowDangerEntities)
+						{
+							@RoleButton(user, LmsRoles.SysAdmin.ToString(), LmsRoles.SysAdmin.GetDisplayName(), "danger")
+						}
+						@RoleButton(user, CourseRole.CourseAdmin, "warning")
+						@RoleButton(user, CourseRole.Instructor, "info")
+						@RoleButton(user, CourseRole.Tester, "success")
+					</div>
+				</td>
+			}
+			@if (Model.CanViewAndToggleCourseAccesses)
+			{
+				<td>
+					@CourseAccessButtons(user)
+				</td>
+			}
+			@if (Model.CanViewAndToogleSystemAccesses)
+			{
+				<td>
+					@SystemAccessButtons(user)
+				</td>
+			}
+			@if (Model.ShowDangerEntities)
+			{
+				<td>
+					@using (Html.BeginForm("DeleteUser", "Account", new { userId = user.UserId }, FormMethod.Post))
+					{
+						@Html.AntiForgeryToken()
+						<button type="submit" class="btn btn-sm btn-danger">
+							<span class="glyphicon glyphicon-trash"></span>
+						</button>
+					}
+				</td>
+			}
+		</tr>
+	}
+</table>
+
+@helper RoleButton(UserModel user, CourseRole role, string cssClass)
+{ @RoleButton(user, role.ToString(), role.GetDisplayName(), cssClass) }
+
+@helper RoleButton(UserModel user, string role, string roleName, string cssClass)
+{
+	if (user.CourseRoles.ContainsKey(role))
+	{
+		@RoleButton((dynamic)user.CourseRoles[role], roleName, cssClass)
+	}
+}
+
+@helper RoleButton(SingleCourseRolesModel courseRoles, string role, string cssClass)
+{
+	var buttonClass = "btn-" + cssClass;
+	<button type="button"
+			class="btn btn-sm btn-default @( courseRoles.HasAccess ? buttonClass : "")"
+			data-css-class="@buttonClass"
+			data-toggle-url="@courseRoles.ToggleUrl"
+			data-toggle-userName="@courseRoles.UserName"
+			data-toggle-role="@courseRoles.Role.GetDisplayName()"
+			data-toggle-isRole="@true"
+			data-toggle-courseTitle="@courseRoles.VisibleCourseName"
+			onclick="window.legacy.openPopup(this, window.legacy.ToggleButtonClass)">
+		@role
+
+	</button>
+}
+
+@helper RoleButton(ManyCourseRolesModel coursesRoles, string role, string cssClass)
+{
+	var buttonClass = "btn-" + cssClass;
+	var liClass = "li-" + cssClass;
+	var hasAccess = coursesRoles.CourseRoles.Any(model => model.HasAccess);
+	<div class="btn-group">
+		<button type="button"
+				class="btn btn-sm  btn-default dropdown-toggle @( hasAccess ? buttonClass : "")"
+				data-css-class="@buttonClass"
+				data-toggle="dropdown"
+				aria-haspopup="true"
+				aria-expanded="false">
+			@role <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" data-css-class="li-@cssClass">
+			@foreach (var course in coursesRoles.CourseRoles)
+			{
+				<li class="@( course.HasAccess ? liClass : "")"
+					data-toggle-url="@course.ToggleUrl"
+					data-toggle-userName="@course.UserName"
+					data-toggle-role="@course.Role"
+					data-toggle-isRole="@true"
+					data-toggle-courseTitle="@course.VisibleCourseName"
+					onclick="window.legacy.openPopup(this, window.legacy.ToggleDropDownClass)">
+
+					<a>@course.VisibleCourseName</a>
+				</li>
+			}
+		</ul>
+	</div>
+}
+
+@helper CourseAccessButtons(UserModel user)
+{
+	<div class="btn-group">
+		<button type="button"
+				class="btn btn-sm  btn-default dropdown-toggle"
+				data-toggle="dropdown"
+				aria-haspopup="true"
+				aria-expanded="false">
+			Выберите права <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" data-css-class="li-primary">
+			@foreach (var courseId in user.CourseAccesses.Keys)
+			{
+				foreach (var courseAccessType in user.CourseAccesses[courseId].Keys)
+				{
+					var courseAccess = user.CourseAccesses[courseId][courseAccessType];
+					<li class="@( courseAccess.HasAccess ? "li-info" : "")"
+						data-toggle-url="@courseAccess.ToggleUrl"
+						data-toggle-userName="@courseAccess.UserName"
+						data-toggle-role="@courseAccess.AccessType.GetDisplayName()"
+						data-toggle-isRole="@false"
+						data-toggle-courseTitle="@courseAccess.VisibleCourseName"
+						data-css-class="li-info"
+						data-has-access="@( courseAccess.HasAccess ? "true" : "false")"
+
+						onclick="window.legacy.openPopup(this, window.legacy.ToggleButtonClass)">
+						<a>@courseAccessType.GetDisplayName()</a>
+					</li>
+				}
+			}
+		</ul>
+	</div>
+}
+
+@helper SystemAccessButtons(UserModel user)
+{
+	<div class="btn-group">
+		<button type="button"
+				class="btn btn-sm  btn-default dropdown-toggle"
+				data-toggle="dropdown"
+				aria-haspopup="true"
+				aria-expanded="false">
+			Выберите права <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" data-css-class="li-primary">
+			@foreach (var systemAccessType in user.SystemAccesses.Keys)
+			{
+				var systemAccess = user.SystemAccesses[systemAccessType];
+				<li class="@( systemAccess.HasAccess ? "li-info" : "")"
+					data-toggle-url="@systemAccess.ToggleUrl"
+					data-css-class="li-info"
+					data-has-access="@( systemAccess.HasAccess ? "true" : "false")"
+					onclick="window.legacy.ToggleSystemRoleOrAccess(this, window.legacy.ToggleButtonClass)">
+					<a>@systemAccessType.GetDisplayName()</a>
+				</li>
+			}
+		</ul>
+	</div>
+}

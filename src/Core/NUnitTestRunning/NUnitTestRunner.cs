@@ -86,6 +86,10 @@ namespace Ulearn.Core.NUnitTestRunning
 			public void TestOutput(TestOutput output)
 			{
 			}
+
+			public void SendMessage(TestMessage message)
+			{
+			}
 		}
 	}
 

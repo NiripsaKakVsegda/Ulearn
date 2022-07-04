@@ -1,0 +1,135 @@
+﻿@using Ulearn.Common.Extensions
+@using Ulearn.Core.Extensions
+@model uLearn.Web.Controllers.ExerciseScoreFormModel
+
+@{
+	var slide = Model.Slide;
+	var block = slide.Exercise;
+}
+
+<div class="exercise__add-review" style="display: none"
+	data-url="@Url.Action("AddExerciseCodeReview", "Exercise", new { courseId = Model.CourseId, checkingId = Model.Checking.Id })">
+	<div class="row">
+		<h4 class="col-xs-12">
+			Добавить комментарий
+			<a class="exercise__close-review pull-right no-underline" href="#" title="Закрыть окно (Esc)">&times;</a>
+		</h4>
+
+	</div>
+	<div class="row">
+		<div class="col-sm-6">
+			<textarea class="exercise__add-review__comment"></textarea>
+			<span class="markdown-formatting-helper with-long-tooltip cursor-pointer" data-toggle="tooltip" data-placement="bottom" title="**жирный текст**, __курсивный текст__, `код`, ```многострочный код```">
+				<span class="fa fa-question-circle"></span>
+				Работает форматирование
+			</span>
+			<button class="exercise__add-review__button btn btn-success btn-sm mt10">Сохранить (Ctrl+Enter)</button>
+		</div>
+		<div class="col-sm-6 exercise__add-review__top-comments">
+
+		</div>
+	</div>
+</div>
+
+<div class="row exercise__score-form-wrapper @(Model.Checking.IsChecked ? "" : "short")">
+	<div class="col-xs-12">
+		<div class="exercise__score-form" style="@(Model.IsCurrentSubmissionChecking ? "" : "display: none")"
+			data-action="@Url.Action("ScoreExercise", "Exercise", new { recheck = Model.Checking.IsChecked })"
+			data-submission-id="@Model.Checking.Submission.Id">
+			<div class="exercise__review-selection-hint text-muted">Выделите участок кода, чтобы оставить комментарий</div>
+
+			<input type="hidden" name="id" value="@Model.Checking.Id"/>
+			<input type="hidden" name="errorUrl" value="@Url.RouteUrl("Course.SlideById", new { courseId = Model.CourseId, slideId = Model.Slide.Url, CheckQueueItemId = Model.Checking.Id, group = Model.GroupsIdsJoined })&amp;error="/>
+
+			@if (Model.Checking.IsLocked && !Model.Checking.IsLockedBy(User.Identity))
+			{
+				<div class="alert alert-danger mt10 ">Внимание. Эта работа прямо сейчас проверяется преподавателем @Model.Checking.LockedBy.VisibleName</div>
+			}
+
+			<h4>Оцените работу <span>@(Model.PrevReviewPercent == null ? "(это первое ревью)" : $"(c прошлого ревью стоит {Model.PrevReviewPercent}%)")</span></h4>
+			@if (slide.Scoring.PassedTestsScore > 0)
+			{
+				<div class="exercise__score-form-prompt hide">
+					<div>
+						За прохождение тестов в этой задаче студенту автоматически дается @slide.Scoring.PassedTestsScore баллов.<br/>
+						После ревью студент максимально суммарно может иметь @slide.Scoring.ScoreWithCodeReview баллов.<br/>
+						Балл преподавателя заменяет автоматически выданный.<br/>
+						То есть если вы поставите 0%, то у студента будет честных 0 баллов.<br/>
+						А если поставите 100%, то у студента будет @slide.Scoring.ScoreWithCodeReview баллов.
+					</div>
+					<a class="internal-page-link" href="#">Скрыть подсказку</a>
+				</div>
+			}
+			<div class="exercise__score">
+				<div class="btn-group" role="group">
+					@{
+						var isPercentButtonsActive = false;
+					}
+					@foreach (var percentOnButton in new[] { 0, 25, 50, 75, 100 })
+					{
+						/* For max review score < 4 we can not define percentage score,
+                         * because they are the same (0% of 2 is equal to 25% of 2)
+                         */
+						var isActive = Model.Checking.IsChecked && Model.Checking.Percent == percentOnButton && slide.Scoring.ScoreWithCodeReview >= 4;
+						isPercentButtonsActive = isPercentButtonsActive || isActive;
+						<button type="button" class="btn btn-default @(isActive ? "active" : "")" data-percent="@percentOnButton">@percentOnButton%</button>
+					}
+				</div>
+				<div class="ib exercise__other-percent-container">
+					@{
+						var displayOtherPercentInput = Model.Checking.IsChecked && !isPercentButtonsActive;
+						var otherScoreInputDisplayProperty = displayOtherPercentInput ? "" : "display: none";
+					}
+					<a href="#" class="exercise__other-percent-link internal-page-link @(displayOtherPercentInput ? "active" : "")">Другой процент</a>
+					<input type="number" class="form-control" style="@otherScoreInputDisplayProperty" min="0" max="100" name="exercisePercent" required="required"
+							title="Введите процент баллов"
+							value="@(Model.Checking.IsChecked && Model.Checking.Percent != null ? Model.Checking.Percent.Value.ToString() : "")"/>
+				</div>
+			</div>
+
+			@{
+				var prohibitFurtherReview = Model.Checking.IsChecked
+					? Model.Checking.ProhibitFurtherManualCheckings
+					: Model.DefaultProhibitFurtherReview;
+			}
+
+			<div class="hide-on-short">
+
+				<div class="checkbox checkbox-default">
+					<input data-val="true" id="prohibitFurtherReview" name="prohibitFurtherReview" type="checkbox" value="true" @(prohibitFurtherReview ? "checked" : "")/>
+					<label for="prohibitFurtherReview">
+						Не принимать больше код-ревью у&nbsp;этого студента по&nbsp;задаче «@Model.Slide.Title.MakeNestedQuotes().TruncateWithEllipsis(50)»
+					</label>
+				</div>
+
+				@{
+					/* This submissions should not be calculated as left checking */
+					Model.ManualCheckingsLeftInQueue--;
+				}
+
+				<input type="submit" class="btn @(Model.Checking.IsChecked || Model.ManualCheckingsLeftInQueue == 0 ? "btn-primary" : "btn-default")" value="Сохранить и вернуться"
+						data-url="@Url.Action("CheckingQueue", "Admin", new { courseId = Model.CourseId, group = Model.GroupsIdsJoined, done = Model.Checking.IsChecked })"/>
+
+				@if (!Model.Checking.IsChecked)
+				{
+					if (Model.ManualCheckingsLeftInQueue == 0)
+					{
+						<div class="text-muted no-manual-checkings-left">
+							Это последняя работа по&nbsp;задаче
+						</div>
+					}
+					else
+					{
+						<input type="submit" class="btn btn-primary" value="Сохранить и перейти к следующему"
+								data-type="next"
+								data-url="@Url.Action("GetNextManualCheckingExerciseForSlide", "Admin", new { Model.CourseId, slideId = Model.Slide.Id, group = Model.GroupsIdsJoined, previous = Model.Checking.Id })"/>
+						<div class="text-muted manual-checkings-left">
+							По этой задаче остал@(Model.ManualCheckingsLeftInQueue % 10 == 1 && (Model.ManualCheckingsLeftInQueue % 100 / 10 != 1) ? "ась" : "ось")
+							@Model.ManualCheckingsLeftInQueue.PluralizeInRussian(RussianPluralizationOptions.Checkings)
+						</div>
+					}
+				}
+			</div>
+		</div>
+	</div>
+</div>

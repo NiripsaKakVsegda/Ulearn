@@ -12,18 +12,18 @@ namespace RunCsJob
 {
 	public class MsBuildSettings
 	{
-		private const string compilersFolderName = "Microsoft.Net.Compilers.3.11.0";
+		//private const string compilersFolderName = "Microsoft.Net.Compilers.Toolset.4.2.0";
 		private const string wellKnownLibsFolderName = "WellKnownLibs";
 
 		public MsBuildSettings()
 		{
 			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-			CompilerDirectory = new DirectoryInfo(Path.Combine(BaseDirectory, compilersFolderName));
+		//	CompilerDirectory = new DirectoryInfo(Path.Combine(BaseDirectory, compilersFolderName));
 			WellKnownLibsDirectory = new DirectoryInfo(Path.Combine(BaseDirectory, wellKnownLibsFolderName));
 		}
 
 		public readonly string BaseDirectory;
-		public DirectoryInfo CompilerDirectory;
+	//	public DirectoryInfo CompilerDirectory;
 		public readonly DirectoryInfo WellKnownLibsDirectory;
 		public readonly string MsBuildToolsVersion = null;
 	}
@@ -42,7 +42,7 @@ namespace RunCsJob
 				projectCollection =>
 				{
 					var project = new Project(path, null, settings.MsBuildToolsVersion, projectCollection);
-					project.SetProperty("CscToolPath", settings.CompilerDirectory.FullName);
+					//project.SetProperty("CscToolPath", settings.CompilerDirectory.FullName);
 
 					/* Workaround for MSB4216 (we don't know why it appears at some moment)
 					* https://medium.com/@kviat/msb4216-fix-83d9e891a47b

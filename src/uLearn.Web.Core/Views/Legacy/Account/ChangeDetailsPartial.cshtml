@@ -1,0 +1,109 @@
+﻿@using Ulearn.Common
+@model UserViewModel
+
+<section class="login-and-registration-form profile-form">
+	@if (!string.IsNullOrEmpty(Model.User.Email) && !Model.User.EmailConfirmed)
+	{
+		<div class="row">
+			<div class="col-sm-10 col-sm-offset-2">
+				@if (Model.User.LastConfirmationEmailTime != null)
+				{
+					<div class="alert alert-success">
+						Мы отправили письмо на&nbsp;@Model.User.Email.
+						Если письмо не&nbsp;пришло, мы можем @Html.ActionLink("отправить его ещё раз", "SendConfirmationEmail", "Account").
+					</div>
+				}
+				else
+				{
+					<div class="alert alert-danger">Адрес электронной почты @Model.User.Email не&nbsp;подтверждён. @Html.ActionLink("Отправить письмо для подтверждения", "SendConfirmationEmail", "Account")?</div>
+				}
+			</div>
+		</div>
+	}
+
+	@using (Html.BeginForm("ChangeDetailsPartial", "Account", FormMethod.Post, new { role = "form", @class = "form-horizontal" }))
+	{
+		@Html.AntiForgeryToken()
+
+		<div class="form-group">
+			<div class="col-sm-10 col-sm-offset-2">
+				@Html.ValidationSummary(true)
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-sm-2 control-label">Логин</div>
+			<div class="col-sm-10">
+				@Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Введите логин" })
+				@Html.ValidationMessageFor(m => m.Name)
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-2 control-label">Имя</div>
+			<div class="col-sm-10">
+				@Html.TextBoxFor(m => m.FirstName, new { @class = "form-control recommend-russian", placeholder = "Введите имя" })
+				@Html.ValidationMessageFor(m => m.FirstName)
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-2 control-label">Фамилия</div>
+			<div class="col-sm-10">
+				@Html.TextBoxFor(m => m.LastName, new { @class = "form-control recommend-russian", placeholder = "Введите фамилию" })
+				@Html.ValidationMessageFor(m => m.LastName)
+			</div>
+		</div>
+		<div class="form-group radio-form-group">
+			<div class="col-sm-2 control-label for-non-text-fields">Пол</div>
+			<div class="col-sm-10">
+				<div class="radio radio-default ib">
+					@Html.RadioButtonFor(m => m.Gender, Gender.Male, new { id = "profile__gender__male" }) <label for="profile__gender__male">Мужской</label>
+				</div>
+				<div class="radio radio-default ib">
+					@Html.RadioButtonFor(m => m.Gender, Gender.Female, new { id = "profile__gender__female" }) <label for="profile__gender__female">Женский</label>
+				</div>
+				@Html.ValidationMessageFor(m => m.Gender)
+			</div>
+		</div>
+		<div class="form-group profile__email-input @(Model.User.EmailConfirmed ? "no-display" : "")">
+			<div class="col-sm-2 control-label">Эл.&nbsp;почта</div>
+			<div class="col-sm-10">
+				@Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Введите адрес почты" })
+				@Html.ValidationMessageFor(m => m.Email)
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-sm-10 col-sm-offset-2">
+				@Html.Action("Settings", "Notifications")
+			</div>
+		</div>
+
+		if (!Model.HasPassword)
+		{
+			<p class="text-info">
+				Задайте пароль, чтобы входить по логину
+			</p>
+
+			<div class="form-group">
+				<div class="col-sm-2 control-label">Пароль</div>
+				<div class="col-sm-10">
+					@Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Пароль" })
+					@Html.ValidationMessageFor(m => m.Password)
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">Ещё раз</div>
+				<div class="col-sm-10">
+					@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Повторите пароль" })
+					@Html.ValidationMessageFor(m => m.ConfirmPassword)
+				</div>
+			</div>
+		}
+
+		<div class="form-group">
+			<div class="col-sm-10 col-sm-offset-2">
+				<input type="submit" value="Сохранить изменения" class="ph-btn ph-btn-blue btn-block"/>
+			</div>
+		</div>
+	}
+</section>

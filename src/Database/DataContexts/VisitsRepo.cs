@@ -334,7 +334,7 @@ namespace Database.DataContexts
 					.Select(v => new { v.UserId, v.SlideId })
 					.ToList()
 					.GroupBy(v => v.UserId)
-					.Where(g => g.DistinctBy(v => v.SlideId).Count() >= requiredSlides.Count)
+					.Where(g => g.Deprecated_DistinctBy(v => v.SlideId).Count() >= requiredSlides.Count)
 					.Select(g => g.Key)
 					.ToList();
 			}

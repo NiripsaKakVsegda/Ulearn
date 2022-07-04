@@ -191,7 +191,7 @@ Thread.Sleep(50000);
 const int memory = 63 * 1024 * 1024; 
 var a = new byte[memory]; 
 for (var j = 0; j < 2; j++)
-for (var i = 0; i < 2*1000*1000*1000; ++i) a[i % memory] = (byte)i;
+for (var i = 0; i < int.MaxValue; ++i) a[i % memory] = (byte)i;
 }}",
 			TestName = "many assignation")]
 		public static void TestTimeLimitError(string code)

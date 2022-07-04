@@ -1,0 +1,70 @@
+﻿@using Database.Models
+@using uLearn.Web.Extensions
+@using uLearn.Web.Views.Course
+@using Ulearn.Core.Courses.Slides.Quizzes
+@model CoursePageModel
+
+@{
+	ViewBag.Title = string.Format("{0}: {1}", Model.CourseTitle, Model.Slide.Title);
+	ViewBag.Slide = Model.Slide;
+	ViewBag.CourseId = Model.CourseId;
+
+	ViewBag.Meta = Model.Slide.Meta;
+}
+<div class="slide">
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+	<p class="alert alert-danger">@Model.Error</p>
+}
+@if (Model.Slide is QuizSlide)
+{
+	@Html.Action("Quiz", "Quiz", new
+	{
+		slide = (QuizSlide)Model.Slide,
+		courseId = Model.CourseId,
+		userId = Model.UserId,
+		isGuest = Model.IsGuest,
+		manualQuizCheckQueueItem = (ManualQuizChecking)Model.ManualChecking
+	})
+}
+else if (Model.ManualChecking != null)
+{
+	<p class="exercise-status">
+		@Model.ManualChecking.User.VisibleName
+		@if (Model.ContextManualCheckingUserGroups + Model.ContextManualCheckingUserArchivedGroups != "")
+		{
+			<span>
+				@{
+					var groupsStr = "";
+					if (Model.ContextManualCheckingUserGroups != "")
+					{
+						groupsStr = Model.ContextManualCheckingUserGroups;
+					}
+					if (Model.ContextManualCheckingUserGroups != "" && Model.ContextManualCheckingUserArchivedGroups != "")
+					{
+						groupsStr += "; ";
+					}
+					if (Model.ContextManualCheckingUserArchivedGroups != "")
+					{
+						groupsStr += "архивные группы: " + Model.ContextManualCheckingUserArchivedGroups;
+					}
+				}
+				(@groupsStr),
+			</span>
+		}
+		else
+		{
+			<span>,</span>
+		}
+		@Model.ManualChecking.Timestamp.ToPrettyString()
+	</p>
+	@SlideHtml.Blocks(Model.BlockRenderContext, Html)
+}
+@if (Model.ManualChecking == null)
+{
+	if (Model.IsGuest)
+	{
+		@Html.Partial("_LoginForContinue")
+	}
+}
+</div>

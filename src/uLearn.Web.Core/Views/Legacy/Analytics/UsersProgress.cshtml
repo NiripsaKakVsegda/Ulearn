@@ -1,0 +1,75 @@
+﻿@using System.Globalization
+@using Ulearn.Common.Extensions
+@using Ulearn.Core.Courses.Slides.Exercises
+@using Ulearn.Core.Courses.Slides.Quizzes
+@model uLearn.Web.Controllers.UserProgressViewModel
+
+<table class="tablesorter">
+	<thead>
+	<tr>
+		<th>Имя</th>
+		<th>Группы</th>
+		@foreach (var slide in Model.Slides)
+		{
+			string text;
+			if (slide is ExerciseSlide)
+			{
+				text = "Попыток решить:";
+			}
+			else if (slide is QuizSlide)
+			{
+				text = "Успешность квиза:";
+			}
+			else
+			{
+				text = "Посещаемость:";
+			}
+			<th>
+				<p>@Html.ActionLink(slide.Title, "SlideById", "Course", new { courseId = Model.CourseId, slideId = slide.Id }, null)</p>
+				<p>@text</p>
+			</th>
+		}
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var user in Model.Users)
+	{
+		<tr>
+			<td>
+				<h6>@user.UserName</h6>
+			</td>
+			<td data-sort-value="@Model.GroupsNames.GetOrDefault(user.UserId, "")">
+				@Model.GroupsNames.GetOrDefault(user.UserId, "")
+			</td>
+			@for (var i = 0; i < user.SlidesSlideInfo.Length; i++)
+			{
+				if (Model.Slides[i] is ExerciseSlide)
+				{
+					var styleClass = user.SlidesSlideInfo[i].IsExerciseSolved ? "green-stat" : "red-stat";
+					<td data-sort-value="@ToString(user.SlidesSlideInfo[i].AttemptsCount + 1000000)"
+						class="@styleClass">
+						@Html.ActionLink(user.SlidesSlideInfo[i].AttemptsCount.ToString(), "UserSolutions", new { courseId = Model.CourseId, userId = user.UserId, slideId = Model.Slides[i].Id })
+
+					</td>
+				}
+				else if (Model.Slides[i] is QuizSlide)
+				{
+					var styleClass = @user.SlidesSlideInfo[i].IsQuizPassed ? "green-stat" : "red-stat";
+					<td data-sort-value="@ToString(user.SlidesSlideInfo[i].QuizPercentage + 10000)"
+						class="@styleClass">
+						@(user.SlidesSlideInfo[i].QuizPercentage.ToString("P0"))
+					</td>
+				}
+				else
+				{
+					var styleClass = @user.SlidesSlideInfo[i].IsVisited ? "green-stat" : "red-stat";
+					<td data-sort-value="@styleClass" class="@styleClass"></td>
+				}
+			}
+		</tr>
+	}
+	</tbody>
+</table>
+
+@helper ToString(double k)
+{ @( k.ToString(CultureInfo.InvariantCulture)) }

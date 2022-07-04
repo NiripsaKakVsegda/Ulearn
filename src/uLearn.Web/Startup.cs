@@ -10,7 +10,6 @@ using Ulearn.Core;
 using Ulearn.Core.Configuration;
 
 [assembly: OwinStartup(typeof(Startup))]
-
 namespace uLearn.Web
 {
 	public partial class Startup

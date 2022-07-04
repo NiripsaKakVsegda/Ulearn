@@ -1,0 +1,62 @@
+﻿@using Database.Extensions
+@using uLearn.Web.Core.Extensions
+@model UserInfoModel
+
+@{
+	ViewBag.Title = Model.User.VisibleName;
+}
+
+<div class="container">
+	<h2>@Model.User.VisibleName (@Model.User.UserName)</h2>
+	<p>@Model.GroupsNames</p>
+
+	<h3>Курсы</h3>
+	<ol>
+		@foreach (var course in Model.UserCourses)
+		{
+			<li>@Html.ActionLink(course.Title, "CourseInfo", new { userId = Model.User.Id, courseId = course.Id })</li>
+		}
+	</ol>
+
+	<h3>Логины</h3>
+	@if (Model.User.Logins.Count == 0)
+	{
+		<p>Нет внешних логинов</p>
+	}
+	<ol>
+		@foreach (var login in Model.User.Logins)
+		{
+			<li>@login.LoginProvider @login.ProviderKey</li>
+		}
+	</ol>
+
+	<h3>
+		@Html.ActionLink("Список сертификатов пользователя", "Index", "Certificates", new { userId = Model.User.Id }, new { })
+	</h3>
+	@if (Model.Certificates.Count == 0)
+	{
+		<p>Нет сертификатов</p>
+	}
+	<ol>
+		@foreach (var certificate in Model.Certificates)
+		{
+			<li>
+				@Html.RouteLink(Model.Courses[certificate.Template.CourseId].Title, "Certificate", new { certificateId = certificate.Id }),
+				@certificate.Timestamp.ToAgoPrettyString()
+			</li>
+		}
+	</ol>
+
+
+	@if (User.IsSystemAdministrator())
+	{
+		var newPassword = (DateTime.Now.Ticks % 1000000).ToString();
+		using (Html.BeginForm("ResetPassword", "Account", new { newPassword, userId = Model.User.Id }))
+		{
+			@Html.AntiForgeryToken()
+			<h3>Сброс пароля</h3>
+			<button class="btn btn-danger"> Установить пользователю пароль: @newPassword </button>
+		}
+	}
+
+</div>

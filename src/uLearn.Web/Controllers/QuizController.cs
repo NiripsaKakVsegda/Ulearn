@@ -268,7 +268,7 @@ namespace uLearn.Web.Controllers
 			else if (attemptNumber < maxTriesCount)
 			{
 				var score = allQuizInfos
-					.DistinctBy(forDb => forDb.BlockId)
+					.Deprecated_DistinctBy(forDb => forDb.BlockId)
 					.Sum(forDb => forDb.QuizBlockScore);
 
 				metricSender.SendCount($"quiz.submit.try.{attemptNumber}.score", score);

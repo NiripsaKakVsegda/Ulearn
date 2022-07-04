@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	@Scripts.Render("~/modernizr.bundle.js")
+	@Html.Partial("_Retargeting")
+	<meta name="yandex-verification" content="96ff53330ecac8da"/>
+</head>
+<body>
+
+@{
+	var metaImageUrl = "/Content/logo.png";
+	var metaTitle = ViewBag.Title + " на ulearn.me";
+	var metaDescription = "Интерактивные учебные онлайн-курсы по программированию";
+	var metaKeywords = "";
+
+	if (ViewBag.Meta != null)
+	{
+		if (!string.IsNullOrEmpty(ViewBag.Meta.AbsoluteImageUrl))
+		{
+			metaImageUrl = ViewBag.Meta.AbsoluteImageUrl;
+		}
+		if (!string.IsNullOrEmpty(ViewBag.Meta.Description))
+		{
+			metaDescription = ViewBag.Meta.Description;
+		}
+		if (!string.IsNullOrEmpty(ViewBag.Meta.Keywords))
+		{
+			metaKeywords = ViewBag.Meta.Keywords;
+		}
+	}
+}
+
+<script>
+	window.meta = {
+		title: "@(metaTitle)",
+		description: "@(metaDescription)",
+		keywords: "@(metaKeywords)",
+		imageUrl: "@(metaImageUrl)"
+	}
+</script>
+
+@RenderBody()
+
+@RenderSection("scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+﻿@using Database.Models
+@using uLearn.Web.Extensions
+@using SelectListItem = System.Web.Mvc.SelectListItem
+@model uLearn.Web.Controllers.ExerciseSubmissionsPanelModel
+
+@functions
+{
+
+	private static string GetSubmissionDescription(UserExerciseSubmission submission)
+	{
+		if (submission.AutomaticChecking != null && submission.AutomaticChecking.Status != AutomaticExerciseCheckingStatus.Done)
+			return ", (" + submission.AutomaticChecking.Status + ")";
+		if (submission.AutomaticChecking != null && !submission.AutomaticChecking.IsRightAnswer)
+			return ", " + submission.AutomaticChecking.GetVerdict();
+
+		if (submission.ManualChecking != null)
+			if (submission.ManualChecking.IsChecked)
+				return ", прошло код-ревью";
+			else
+				return ", ожидает код-ревью";
+		return "";
+	}
+
+}
+
+@{
+	/* Default values */
+	if (Model.GetSubmissionDescription == null)
+	{
+		Model.GetSubmissionDescription = GetSubmissionDescription;
+	}
+
+	if (Model.FormUrl == null)
+	{
+		Model.FormUrl = Url.RouteUrl("Course.SlideById", new { Model.CourseId, slideId = Model.Slide.Url });
+	}
+}
+
+<div class="exercise__submissions-panel">
+	@if (Model.Submissions.Count > 0)
+	{
+		if (Model.ShowButtons)
+		{
+			var currentSubmissionIndex = Model.Submissions.FindIndex(s => s.Id == Model.CurrentSubmissionId);
+
+			const string buttonClasses = "btn btn-xs btn-info exercise-version-link";
+			const string disabledButtonClasses = "btn btn-xs btn-default";
+			<div class="btn-group">
+				@* Previous version link *@
+				@if (currentSubmissionIndex > 0)
+				{
+					var previousSubmission = Model.Submissions[currentSubmissionIndex - 1];
+					@Html.RouteLink("← Предыдущая версия", "Course.SlideById", new { Model.CourseId, slideId = Model.Slide.Url, version = previousSubmission.Id }, new { @class = buttonClasses, data_version_id = previousSubmission.Id })
+				}
+				else if (currentSubmissionIndex == 0)
+				{
+					<div class="@disabledButtonClasses" disabled="disabled">← Предыдущая версия</div>
+				}
+				else
+				{
+					@Html.RouteLink("← Предыдущая версия", "Course.SlideById", new { Model.CourseId, slideId = Model.Slide.Url, version = Model.Submissions[Model.Submissions.Count - 1].Id }, new { @class = buttonClasses, data_version_id = Model.Submissions[Model.Submissions.Count - 1].Id })
+				}
+
+				@* Next version link *@
+				@if (currentSubmissionIndex >= 0 && currentSubmissionIndex < Model.Submissions.Count - 1)
+				{
+					var nextSubmission = Model.Submissions[currentSubmissionIndex + 1];
+					@Html.RouteLink("Следующая версия →", "Course.SlideById", new { Model.CourseId, slideId = Model.Slide.Url, version = nextSubmission.Id }, new { @class = buttonClasses, data_version_id = nextSubmission.Id })
+				}
+				else if (currentSubmissionIndex >= 0 && Model.CanTryAgain)
+				{
+					@Html.RouteLink("Сдать ещё раз »", "Course.SlideById", new { Model.CourseId, slideId = Model.Slide.Url, version = -1 }, new { @class = buttonClasses, data_version_id = -1 })
+				}
+				else
+				{
+					<div class="@disabledButtonClasses" disabled="disabled">Следующая версия →</div>
+				}
+			</div>
+		}
+
+		/* Version selector */
+		var listItems = Model.Submissions.Select(s => new SelectListItem
+		{
+			Text = s.Timestamp.ToPrettyString() + Model.GetSubmissionDescription(s),
+			Value = s.Id.ToString(),
+			Selected = s.Id == Model.CurrentSubmissionId,
+		}).ToList();
+
+		if (Model.CanTryAgain)
+		{
+			listItems.Add(new SelectListItem { Text = "Новая попытка", Value = "-1", Selected = !Model.CurrentSubmissionId.HasValue });
+		}
+
+		<form method="GET" action="@Model.FormUrl" class="ib">
+			@Html.Hidden("courseId", Model.CourseId)
+			@Html.DropDownList(Model.SelectControlName, listItems, new { @class = "inline-select select-auto-width " + (Model.ShowButtons ? "with-buttons" : "without-buttons") })
+		</form>
+	}
+</div>

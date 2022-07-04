@@ -6,7 +6,7 @@ namespace System.Linq
 {
 	public static class EnumerableExtensions
 	{
-		public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+		public static IEnumerable<TSource> Deprecated_DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		{
 			var hash = new HashSet<TKey>();
 			return source.Where(p => hash.Add(keySelector(p)));

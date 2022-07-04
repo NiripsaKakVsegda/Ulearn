@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
         <Authors>SKB Kontur Ulearn Team</Authors>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="6.1.0" />
-      <PackageReference Include="DotNetZip" Version="1.15.0" />
-      <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
+      <PackageReference Include="Autofac" Version="6.4.0" />
+      <PackageReference Include="DotNetZip" Version="1.16.0" />
+      <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
       <PackageReference Include="OctoPack" Version="3.6.5">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Vostok.Logging.File" Version="1.0.12" />
+      <PackageReference Include="Vostok.Logging.File" Version="1.0.21" />
     </ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Common\Common.csproj" />

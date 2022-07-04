@@ -1,0 +1,48 @@
+﻿@model LtiUserViewModel
+
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title></title>
+	@Styles.Render("~/css")
+</head>
+<body class="lti-component">
+<div>
+	<p>Эти данные смогут использовать преподаватели, чтобы следить за успеваемостью в своих учебных группах.</p>
+
+	@using (Html.BeginForm("StudentInfo", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+	{
+		@Html.AntiForgeryToken()
+		<div class="form-group">
+			@Html.LabelFor(m => m.FirstName, new { @class = "col-md-1 control-label" })
+			<div class="col-md-10">
+				@Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+			</div>
+		</div>
+		<div class="form-group">
+			@Html.LabelFor(m => m.LastName, new { @class = "col-md-1 control-label" })
+			<div class="col-md-10">
+				@Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+			</div>
+		</div>
+		<div class="form-group">
+			@Html.LabelFor(m => m.Email, new { @class = "col-md-1 control-label" })
+			<div class="col-md-10">
+				@Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-md-offset-1 col-md-10">
+				<input type="submit" value="Сохранить изменения" class="btn btn-default"/>
+			</div>
+		</div>
+	}
+</div>
+</body>
+
+</html>

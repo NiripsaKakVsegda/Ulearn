@@ -181,7 +181,7 @@ namespace Database.DataContexts
 				.Where(s => slides.Contains(s.Key))
 				.Select(g =>
 				{
-					var lastPercent = g.MaxBy(c => c.Timestamp).Percent.Value;
+					var lastPercent = g.Deprecated_MaxBy(c => c.Timestamp).Percent.Value;
 					return (g.Key, lastPercent);
 				}).ToList();
 		}

@@ -848,7 +848,7 @@ namespace uLearn.Web.Controllers
 			;
 			var courses = courseStorage.GetCourses()
 				.ToDictionary(c => c.Id, c => (c, allTempCourses.GetValueOrDefault(c.Id)), StringComparer.OrdinalIgnoreCase);
-			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList(),
+			var model = GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).Deprecated_DistinctBy(r => r.UserId).ToList(),
 				courses,
 				queryModel.CourseId);
 

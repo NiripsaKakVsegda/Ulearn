@@ -154,5 +154,10 @@ namespace Database.Repos.Users
 		{
 			return await db.Users.Where(u => emails.Contains(u.Email) && u.EmailConfirmed).ToListAsync();
 		}
+		
+		public async Task<List<ApplicationUser>> FindUsersByConfirmedEmail(string email)
+		{
+			return await db.Users.Where(u => email == u.Email && u.EmailConfirmed).ToListAsync();
+		}
 	}
 }

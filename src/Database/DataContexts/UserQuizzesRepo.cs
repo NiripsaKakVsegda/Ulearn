@@ -133,7 +133,7 @@ namespace Database.DataContexts
 			return db.UserQuizAnswers
 				.Where(q => q.SubmissionId == submission.Id)
 				.ToList()
-				.DistinctBy(q => q.BlockId)
+				.Deprecated_DistinctBy(q => q.BlockId)
 				.ToDictionary(q => q.BlockId, q => q.QuizBlockScore);
 		}
 

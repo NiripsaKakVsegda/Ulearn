@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net48;net5.0</TargetFrameworks>
+		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
 	<ItemGroup>
@@ -8,8 +8,8 @@
 		<ProjectReference Include="..\Core\Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-	  <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="5.0.0" />
+	  <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+	  <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
 	</ItemGroup>
 </Project>

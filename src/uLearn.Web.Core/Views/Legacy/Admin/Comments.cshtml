@@ -1,0 +1,85 @@
+﻿@using Database.Extensions
+@using Database.Models
+@using FormMethod = System.Web.Mvc.FormMethod
+@model uLearn.Web.Controllers.AdminCommentsViewModel
+
+@{
+	ViewBag.Title = "Комментарии";
+}
+
+<div class="container">
+
+	<h1>Комментарии</h1>
+
+	@{
+		var is_form_disabled = !User.HasAccessFor(Model.CourseId, CourseRole.CourseAdmin);
+		var disabled_attributes = is_form_disabled ?
+			new Dictionary<string, object> { { "disabled", "disabled" } } :
+			new Dictionary<string, object>();
+	}
+	@using (Html.BeginForm("SaveCommentsPolicy", "Admin", FormMethod.Post))
+	{
+		@Html.AntiForgeryToken()
+
+		<input type="hidden" name="courseId" value="@Model.CourseId"/>
+
+		<div class="checkbox checkbox-default">
+			@Html.CheckBox("isCommentsEnabled", Model.IsCommentsEnabled, disabled_attributes)
+			<label for="isCommentsEnabled">
+				Комментарии включены
+			</label>
+		</div>
+
+		<div class="checkbox checkbox-default">
+			@Html.CheckBox("onlyInstructorsCanReply", Model.OnlyInstructorsCanReply, disabled_attributes)
+			<label for="onlyInstructorsCanReply">
+				Отвечать могут только преподаватели
+			</label>
+		</div>
+
+		<h3 @Html.Raw(is_form_disabled ? "class=\"text-muted\"" : "")>Режим модерации</h3>
+		<div class="radio radio-default">
+			@{
+				var radioAttributes = disabled_attributes;
+				radioAttributes["id"] = "moderationPolicyPremoderation";
+			}
+			@Html.RadioButton("moderationPolicy", "Premoderation", Model.ModerationPolicy == CommentModerationPolicy.Premoderation, radioAttributes)
+			<label for="moderationPolicyPremoderation">
+				премодерация
+			</label>
+		</div>
+
+		<div class="radio radio-defaul">
+			@{
+				radioAttributes["id"] = "moderationPolicyPostmoderation";
+			}
+			@Html.RadioButton("moderationPolicy", "Postmoderation", Model.ModerationPolicy == CommentModerationPolicy.Postmoderation, radioAttributes)
+			<label for="moderationPolicyPostmoderation">
+				постмодерация
+			</label>
+		</div>
+
+		<div class="">
+			<button class="btn btn-success" type="submit" @(is_form_disabled ? "disabled" : "")>Сохранить</button>
+			@if (is_form_disabled)
+			{
+				<span class="text-muted">Менять настройки могут только администраторы</span>
+			}
+		</div>
+	}
+
+	@* Used for ajax in AddAntiForgeryToken() *@
+	<form id="__AjaxAntiForgeryForm" action="#" method="post">@Html.AntiForgeryToken()</form>
+
+	<div class="comments comments__feed">
+		<h1>Последние комментарии</h1>
+		@foreach (var comment in Model.Comments)
+		{
+			@Html.Partial("~/Views/Comments/_Comment.cshtml", comment)
+		}
+		@if (Model.Comments.Count == 0)
+		{
+			<p class="text-muted">Комментариев нет</p>
+		}
+	</div>
+</div>

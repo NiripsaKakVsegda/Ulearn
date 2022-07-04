@@ -83,7 +83,8 @@ namespace RunCheckerJob
 				if (response.IsSuccessStatusCode)
 					return;
 
-				log.Error($"Не могу отправить результаты проверки (они ниже) на сервер: {response}\n{await response.Content.ReadAsStringAsync().ConfigureAwait(false)}");
+				var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				log.Error($"Не могу отправить результаты проверки (они ниже) на сервер: {response}\n{error}");
 			}
 			catch (Exception e)
 			{

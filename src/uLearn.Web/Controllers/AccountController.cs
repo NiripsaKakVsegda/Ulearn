@@ -84,7 +84,7 @@ namespace uLearn.Web.Controllers
 		{
 			var userRolesByEmail = User.IsSystemAdministrator() ? usersRepo.FilterUsersByEmail(queryModel) : null;
 			var userRoles = usersRepo.FilterUsers(queryModel);
-			var model = await GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).DistinctBy(r => r.UserId).ToList());
+			var model = await GetUserListModel(userRolesByEmail.EmptyIfNull().Concat(userRoles).Deprecated_DistinctBy(r => r.UserId).ToList());
 
 			return PartialView("_UserListPartial", model);
 		}

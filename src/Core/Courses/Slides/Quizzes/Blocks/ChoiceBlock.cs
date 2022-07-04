@@ -27,7 +27,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 
 		public override void Validate(SlideBuildingContext slideBuildingContext)
 		{
-			if (Items.DistinctBy(i => i.Id).Count() != Items.Length)
+			if (Items.Deprecated_DistinctBy(i => i.Id).Count() != Items.Length)
 				throw new FormatException("Duplicate choice id in quizBlock " + Id);
 			if (!Multiple && Items.Count(i => i.IsCorrect == ChoiceItemCorrectness.True) != 1)
 				throw new FormatException("Should be exaclty one correct item for non-multiple choice. BlockId=" + Id);

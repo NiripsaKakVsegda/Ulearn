@@ -538,13 +538,13 @@ namespace uLearn.Web.Controllers
 			var acceptedSubmissions = userSolutionsRepo
 				.GetAllAcceptedSubmissionsByUser(courseId, exercises.Select(s => s.Id), userId)
 				.OrderByDescending(s => s.Timestamp)
-				.DistinctBy(u => u.SlideId)
+				.Deprecated_DistinctBy(u => u.SlideId)
 				.ToList();
 			var reviewedSubmissions = userSolutionsRepo
 				.GetAllAcceptedSubmissionsByUser(courseId, exercises.Select(s => s.Id), userId)
 				.Where(s => s.ManualChecking != null && s.ManualChecking.IsChecked)
 				.OrderByDescending(s => s.Timestamp)
-				.DistinctBy(u => u.SlideId)
+				.Deprecated_DistinctBy(u => u.SlideId)
 				.ToList();
 			var userScores = visitsRepo.GetScoresForSlides(courseId, userId, slides.Select(s => s.Id));
 

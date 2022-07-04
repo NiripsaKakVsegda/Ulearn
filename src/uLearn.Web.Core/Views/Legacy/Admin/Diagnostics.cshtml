@@ -1,0 +1,167 @@
+﻿@using uLearn.Web.Controllers
+@using Ulearn.Common.Extensions
+@using FormMethod = System.Web.Mvc.FormMethod
+
+@model DiagnosticsModel
+
+@{
+	ViewBag.Title = "Диагностика";
+}
+
+<div class="container">
+	@if (Model.IsVersionPublished)
+	{
+		<h1>Курс обновлён, @Html.RouteLink("перейти к курсу →", "Course.Slide", new { courseId = Model.CourseId }, new { })</h1>
+
+		<div>
+			@Html.ActionLink("Скопировать на Степик", "ExportCourse", "Stepik", new { courseId = Model.CourseId }, new { @class = "btn btn-warning" })
+		</div>
+		if (!string.IsNullOrEmpty(Model.Warnings))
+		{
+			<div class="alert alert-warning" style="white-space: pre-wrap">@Model.Warnings</div>
+		}
+
+		if (Model.CourseDiff.SlideDiffs.Count > 0)
+		{
+			<h4>Изменились слайды:</h4>
+			foreach (var slideDiff in Model.CourseDiff.SlideDiffs)
+			{
+				<div>
+					@if (slideDiff.IsTitleChanged)
+					{
+						<span>«@slideDiff.OriginalSlide.Title»</span>
+						<span>→</span>
+					}
+					«@Html.RouteLink(slideDiff.ChangedSlide.Title, "Course.SlideById", new { Model.CourseId, slideId = slideDiff.ChangedSlide.Url }, new { target = "_blank", title = "Открыть новую версию" })»
+				</div>
+			}
+		}
+		if (Model.CourseDiff.RemovedSlides.Count > 0)
+		{
+			<h4>Удаленные слайды</h4>
+			foreach (var slide in Model.CourseDiff.RemovedSlides)
+			{
+				<div>«@slide.Title»</div>
+			}
+		}
+		if (Model.CourseDiff.InsertedSlides.Count > 0)
+		{
+			<h4>Добавленные слайды</h4>
+			foreach (var slide in Model.CourseDiff.InsertedSlides)
+			{
+				<div>«@Html.RouteLink(slide.Title, "Course.SlideById", new { Model.CourseId, slideId = slide.Url }, new { target = "_blank", title = "Открыть слайд" })»</div>
+			}
+		}
+	}
+	else
+	{
+		<h1>
+			Диагностика
+			@if (Model.IsDiagnosticsForVersion && !Model.IsTempCourse)
+			{
+				using (Html.BeginForm("PublishVersion", "Admin", new { Model.CourseId, Model.VersionId }, FormMethod.Post))
+				{
+					@Html.AntiForgeryToken()
+					@Html.ActionLink("← Назад", "Packages", new { courseId = Model.CourseId }, new { @class = "btn btn-xs btn-default" })
+					<button class="btn btn-xs btn-success">Опубликовать эту версию →</button>
+				}
+			}
+		</h1>
+
+		<div>
+			<h3>Результат проверки орфографии:</h3>
+			<div class="load-content" data-url="@Url.Action("SpellingErrors", new { Model.VersionId })"> processing... </div>
+		</div>
+		if (!string.IsNullOrEmpty(Model.Warnings))
+		{
+			<div class="alert alert-warning" style="white-space: pre-wrap">@Model.Warnings</div>
+		}
+
+		if (Model.IsDiagnosticsForVersion)
+		{
+			if (Model.CourseDiff.IsEmptyChangeset)
+			{
+				if (Model.IsTempCourse)
+				{
+					<h3>Отличий от основной версии курса нет</h3>
+				}
+				else
+				{
+					<h3>Отличий от текущей версии нет</h3>
+				}
+			}
+			else
+			{
+				if (Model.IsTempCourse)
+				{
+					<h3>Отличия от основной версии курса</h3>
+				}
+				else
+				{
+					<h3>Отличия от текущей версии</h3>
+				}
+				
+			}
+			if (Model.CourseDiff.SlideDiffs.Count > 0)
+			{
+				<h4>Изменятся слайды:</h4>
+				foreach (var slideDiff in Model.CourseDiff.SlideDiffs)
+				{
+					<div>
+						«@Html.RouteLink(slideDiff.OriginalSlide.Title, "Course.SlideById", new { Model.CourseId, slideId = slideDiff.OriginalSlide.Url }, new { target = "_blank", title = "Открыть текущую версию" })»
+						@if (slideDiff.IsTitleChanged)
+						{
+							<span>→</span>
+							<span>«@slideDiff.ChangedSlide.Title»</span>
+						}
+						@if (slideDiff.IsAtLeastOneBlockChanged)
+						{
+							<a href="#" class="expand-slide-diff-link internal-page-link" data-toggle="collapse" data-target=".slide-diff__@slideDiff.OriginalSlide.Id">показать отличия</a>
+						}
+					</div>
+					<div class="slide-diff__@slideDiff.OriginalSlide.Id collapse">
+						@foreach (var blockDiff in slideDiff.SlideBlockDiffs)
+						{
+							<div class="diff-table slide-diff-table" data-original="@(blockDiff.OriginalSlideBlock.XmlSerialize())" data-changed="@(blockDiff.ChangedSlideBlock.XmlSerialize())"></div>
+						}
+						@foreach (var block in slideDiff.InsertedBlocks)
+						{
+							<div class="diff-table slide-diff-table" data-original="" data-changed="@(block.XmlSerialize())"></div>
+						}
+						@foreach (var block in slideDiff.RemovedBlocks)
+						{
+							<div class="diff-table slide-diff-table" data-original="@(block.XmlSerialize())" data-changed=""></div>
+						}
+					</div>
+				}
+			}
+			if (Model.CourseDiff.RemovedSlides.Count > 0)
+			{
+				<h4>Будут удалены слайды</h4>
+				foreach (var slide in Model.CourseDiff.RemovedSlides)
+				{
+					<div>«@Html.RouteLink(slide.Title, "Course.SlideById", new { Model.CourseId, slideId = slide.Url }, new { target = "_blank", title = "Открыть текущую версию" })»</div>
+				}
+			}
+			if (Model.CourseDiff.InsertedSlides.Count > 0)
+			{
+				<h4>Следующие слайды будут добавлены</h4>
+				foreach (var slide in Model.CourseDiff.InsertedSlides)
+				{
+					<div>«@slide.Title»</div>
+				}
+			}
+			if (!Model.IsTempCourse)
+			{
+				<p>
+					@using (Html.BeginForm("PublishVersion", "Admin", new { Model.CourseId, Model.VersionId }, FormMethod.Post))
+					{
+						@Html.AntiForgeryToken()
+						<button class="btn btn-success">Опубликовать →</button>
+					}
+				</p>
+				
+			}
+		}
+	}
+</div>

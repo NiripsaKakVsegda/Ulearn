@@ -37,7 +37,7 @@ namespace Database.DataContexts
 			var courseVersions = db.CourseVersions.ToList();
 			return courseVersions
 				.GroupBy(v => v.CourseId.ToLower())
-				.Select(g => g.MaxBy(v => v.PublishTime))
+				.Select(g => g.Deprecated_MaxBy(v => v.PublishTime))
 				.ToList();
 		}
 
