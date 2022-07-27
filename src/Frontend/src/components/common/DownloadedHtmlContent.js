@@ -185,7 +185,10 @@ class DownloadedHtmlContent extends Component {
 			body: body.innerHTML,
 			bodyClassName: body.className,
 			links: links
-		}, () => runLegacy(documentReadyFunctions));
+		}, () => {
+			runLegacy(documentReadyFunctions);
+			this.setPostFormSubmitHandler();
+		});
 
 		DownloadedHtmlContent.removeStickyHeaderAndColumn();
 
@@ -197,8 +200,6 @@ class DownloadedHtmlContent extends Component {
 		/* Eval embedded scripts */
 		allScriptTags.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
 
-		this.loadContentByClass();
-		this.setPostFormSubmitHandler();
 
 		let meta = window.meta || {
 			title: titles && titles.length ? titles[0].innerText : 'Ulearn',
@@ -266,19 +267,6 @@ class DownloadedHtmlContent extends Component {
 				<Content body={ this.state.body }/>
 			</div>
 		)
-	}
-
-	loadContentByClass() {
-		const className = 'load-content';
-		let elements = Array.from(document.body.getElementsByClassName(className));
-		elements.forEach(e => {
-			let url = e.dataset.url;
-			this.props.load(url, { credentials: 'include' }).then(r => r.text()).then(data => {
-				e.innerHTML = data;
-				let scripts = Array.from(e.getElementsByTagName('script'));
-				scripts.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
-			});
-		});
 	}
 
 	setPostFormSubmitHandler() {
