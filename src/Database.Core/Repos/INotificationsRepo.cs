@@ -15,10 +15,13 @@ namespace Database.Repos
 		Task<NotificationTransport> FindNotificationTransport(int transportId);
 		Task EnableNotificationTransport(int transportId, bool isEnabled = true);
 		Task<List<NotificationTransport>> GetUsersNotificationTransports(string userId, bool includeDisabled = false);
+
 		[ItemCanBeNull]
 		Task<T> FindUsersNotificationTransport<T>(string userId, bool includeDisabled = false) where T : NotificationTransport;
+
 		Task SetNotificationTransportSettings(string courseId, int transportId, NotificationType type, bool isEnabled);
 		Task<DefaultDictionary<int, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, NotificationType type, List<int> transportIds);
+		Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, string userId);
 		Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, List<int> transportIds);
 		Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId);
 		Task AddNotification(string courseId, Notification notification, string initiatedUserId);

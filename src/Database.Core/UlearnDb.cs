@@ -25,6 +25,7 @@ namespace Database
 				NpgsqlLogManager.Provider = new UlearnDbLoggingProvider();
 				NpgsqlLogManager.IsParameterLoggingEnabled = true;
 			}
+			AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 		}
 
 		public UlearnDb(DbContextOptions<UlearnDb> options)

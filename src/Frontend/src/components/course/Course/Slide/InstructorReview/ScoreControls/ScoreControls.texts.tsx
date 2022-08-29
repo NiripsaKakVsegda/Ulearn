@@ -7,8 +7,8 @@ export default {
 	resetScoreButtonText: 'Не оценивать',
 	changeScoreText: 'Изменить оценку',
 	lastReviewScoreText: 'за пред. ревью',
-	getCodeReviewToggleText: (exerciseTitle: string): React.ReactText => `Принимать ещё код-ревью у этого студента по практике «${ exerciseTitle }»`,
-	getScoreText: (percent: number, date?: string,): React.ReactText => {
+	getCodeReviewToggleText: (exerciseTitle: string): string => `Принимать ещё код-ревью у этого студента по практике «${ exerciseTitle }»`,
+	getScoreText: (percent: number, date?: string,): string => {
 		if(date) {
 			return `Работа от ${ getDateDDMMYY(date) }. Оценена на ${ percent }%`;
 		}

@@ -22,5 +22,6 @@ namespace Database.Repos.Groups
 		Task<bool> IsUserMemberOfGroup(int groupId, string userId);
 		Task<Dictionary<string, List<Group>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false);
 		Task<List<Group>> GetUserGroupsAsync(string userId);
+		Task<string> GetUserGroupsNamesAsString(string courseId, string userId, bool includeArchived = false);
 	}
 }

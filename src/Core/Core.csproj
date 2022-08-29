@@ -2,11 +2,11 @@
 	<PropertyGroup>
 		<RootNamespace>Ulearn.Core</RootNamespace>
 		<LangVersion>default</LangVersion>
-		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<NoWarn>NU1701;CS0168</NoWarn>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Authors>SKB Kontur Ulearn Team</Authors>
 		<Copyright>Copyright 2014–2022 SKB Kontur</Copyright>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="AngleSharp" Version="0.17.1" />
@@ -32,7 +32,7 @@
 		<PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NHunspell" Version="1.2.5554.16953" />
-		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="StatsdClient" Version="2.0.68" />
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />

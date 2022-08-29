@@ -59,5 +59,7 @@ namespace Database.Repos
 		Task<int> GetExerciseUsersWithRightAnswerCount(string courseId, Guid slideId);
 		Task RefreshExerciseStatisticsMaterializedViews();
 		Task EditExerciseCodeReviewComment(ExerciseCodeReviewComment codeReviewComment, string text);
+		Task<List<string>> GetTopUserReviewComments(string courseId, Guid slideId, string userId, int count);
+		Task<HashSet<Guid>> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 	}
 }

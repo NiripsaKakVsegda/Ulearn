@@ -21,7 +21,7 @@ const texts = {
 				return 'Решение студента';
 		}
 	},
-	getStudentInfo: (visibleName: string, groups: ShortGroupInfo[]): React.ReactText => {
+	getStudentInfo: (visibleName: string, groups: ShortGroupInfo[]): string => {
 		if(groups.length > 0) {
 			const archivedGroups = groups.filter(g => g.isArchived);
 			const notArchivedGroups = groups.filter(g => !g.isArchived);
@@ -41,7 +41,7 @@ const texts = {
 	getDeadLineViolationInfo: (
 		submission: SubmissionInfo,
 		deadLine: DeadLineInfo
-	): React.ReactText => `Первое решение было прислано ${ momentFromServer(submission.timestamp).from(
+	): string => `Первое решение было прислано ${ momentFromServer(submission.timestamp).from(
 		momentFromServer(deadLine.date)) } после дедлайна`,
 	getReviewInfo: (submissions: SubmissionInfo[], prevReviewScore: number | null,
 		currentScore: number | null

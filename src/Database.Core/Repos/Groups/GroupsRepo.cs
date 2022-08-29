@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
@@ -155,6 +156,18 @@ namespace Database.Repos.Groups
 			return groups.ToListAsync();
 		}
 
+		public async Task<bool> GetDefaultProhibitFutherReviewForUser(string courseId, string userId, string instructorId)
+		{
+			var accessibleGroupsIds = new HashSet<int>((await GetMyGroupsFilterAccessibleToUser(courseId, instructorId)).Select(g => g.Id));
+			var userGroupsIdsWithDefaultProhibitFutherReview = db.GroupMembers
+				.Include(m => m.Group)
+				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.DefaultProhibitFutherReview)
+				.Select(m => m.GroupId)
+				.Distinct()
+				.ToList();
+			return userGroupsIdsWithDefaultProhibitFutherReview.Any(g => accessibleGroupsIds.Contains(g));
+		}
+
 		public async Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId)
 		{
 			if (course.Settings.IsManualCheckingEnabled)
@@ -170,10 +183,10 @@ namespace Database.Repos.Groups
 				return userIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
 			return (await db.GroupMembers
-				.Where(m => m.Group.CourseId == course.Id && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled)
-				.Where(m => userIds.Contains(m.UserId))
-				.Select(m => m.UserId)
-				.ToListAsync())
+					.Where(m => m.Group.CourseId == course.Id && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled)
+					.Where(m => userIds.Contains(m.UserId))
+					.Select(m => m.UserId)
+					.ToListAsync())
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		}
 
@@ -220,6 +233,63 @@ namespace Database.Repos.Groups
 		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupAsync(int groupId)
 		{
 			return db.EnabledAdditionalScoringGroups.Where(e => e.GroupId == groupId).ToListAsync();
+		}
+
+		public async Task<List<string>> GetUsersIdsForAllGroups(string courseId)
+		{
+			var groupsIdsQueryable = GetCourseGroupsQueryable(courseId)
+				.Select(g => g.Id);
+
+			return await db.GroupMembers
+				.Where(m => groupsIdsQueryable.Contains(m.GroupId))
+				.Select(m => m.UserId)
+				.ToListAsync();
+		}
+
+		public async Task<List<Group>> GetMyGroupsFilterAccessibleToUser(string courseId, string userId, bool includeArchived = false)
+		{
+			//var userId = user.Identity.GetUserId();
+			var accessableGroupsIds = db.GroupAccesses
+				.Where(a => a.Group.CourseId == courseId && a.UserId == userId && a.IsEnabled)
+				.Select(a => a.GroupId);
+
+			var groups = db.Groups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && (g.OwnerId == userId || accessableGroupsIds.Contains(g.Id)));
+
+			if (!includeArchived)
+				groups = groups.Where(g => !g.IsArchived);
+
+			return await groups.ToListAsync();
+		}
+
+		public async Task<List<string>> GetGroupsMembersAsUserIds(IEnumerable<int> groupIds)
+		{
+			return await db.GroupMembers
+				.Include(m => m.User)
+				.Where(m => !m.User.IsDeleted && groupIds.Contains(m.GroupId))
+				.Select(m => m.UserId)
+				.Distinct()
+				.ToListAsync();
+		}
+
+		public async Task<IEnumerable<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(IEnumerable<int> groupIds)
+		{
+			return (await db.GroupMembers
+					.Include(m => m.User)
+					.Where(m => !m.User.IsDeleted && groupIds.Contains(m.GroupId))
+					.Select(m => new { m.GroupId, m.UserId })
+					.ToListAsync())
+				.Select(m => (m.GroupId, m.UserId));
+		}
+
+		public List<ApplicationUser> GetGroupsMembersAsUsers(IEnumerable<int> groupIds)
+		{
+			return db.GroupMembers
+				.Include(m => m.User)
+				.Where(m => !m.User.IsDeleted && groupIds.Contains(m.GroupId)).Select(m => m.User)
+				.AsEnumerable()
+				.Deprecated_DistinctBy(g => g.Id)
+				.ToList();
 		}
 	}
 }

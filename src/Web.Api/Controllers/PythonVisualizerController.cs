@@ -10,12 +10,14 @@ using Ulearn.Common.Api;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Parameters.Exercise;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Logging.Abstractions;
 
 namespace Ulearn.Web.Api.Controllers
 {
 	[Route("/python-visualizer")]
 	public class PythonVisualizerController : BaseController
 	{
+		private static ILog log => LogProvider.Get().ForContext(typeof(PythonVisualizerController));
 		private readonly IPythonVisualizerClient pythonVisualizerClient;
 
 		public PythonVisualizerController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
@@ -35,6 +37,8 @@ namespace Ulearn.Web.Api.Controllers
 			var response = await pythonVisualizerClient.GetResult(parameters);
 			if (response == null)
 				return StatusCode((int)HttpStatusCode.InternalServerError);
+			if (response.Code == ResponseCode.RequestTimeout)
+				log.Error($"Request timed out with user code {parameters.Code}");
 			if (response.Code != ResponseCode.Ok)
 				return StatusCode((int)response.Code);
 			if (response.HasStream)

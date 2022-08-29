@@ -27,7 +27,7 @@ function getProxyConfig() {
 		/* Replace api.endpoint to be ready for production environment */
 		proxyConfig = {
 			"api": {
-				"endpoint": "http://localhost:8000/"
+				"endpoint": "https://localhost:8000/"
 			},
 			"web": {
 				"endpoint": null

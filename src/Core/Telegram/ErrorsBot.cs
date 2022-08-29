@@ -12,19 +12,22 @@ namespace Ulearn.Core.Telegram
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(ErrorsBot));
 		private readonly MetricSender metricSender;
+		private readonly string host;
 
-		public ErrorsBot()
+		public ErrorsBot(string host = "https://ulearn.me")
 		{
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			channel = configuration.Telegram?.Errors?.Channel;
 			var serviceName = configuration.GraphiteServiceName ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Name.ToLower();
 			metricSender = new MetricSender(serviceName);
+			this.host = host;
 		}
 
-		public ErrorsBot(UlearnConfiguration configuration, MetricSender metricSender)
+		public ErrorsBot(UlearnConfiguration configuration, MetricSender metricSender, string host = "https://ulearn.me")
 		{
 			channel = configuration.Telegram?.Errors?.Channel;
 			this.metricSender = metricSender;
+			this.host = host;
 		}
 
 		public async Task PostToChannelAsync(string message, ParseMode parseMode = ParseMode.Default)
@@ -61,7 +64,7 @@ namespace Ulearn.Core.Telegram
 			if (!IsBotEnabled)
 				return;
 
-			var elmahUrl = "https://ulearn.me/elmah/detail?id=" + errorId;
+			var elmahUrl = host + "/elmah/detail/" + errorId;
 
 			var text = $"*Произошла ошибка {errorId.EscapeMarkdown()}*\n" +
 						$"{exception.Message.EscapeMarkdown()}\n\n" +

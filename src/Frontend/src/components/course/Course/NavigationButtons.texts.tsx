@@ -11,7 +11,7 @@ const texts = {
 
 	nextReviewLinkText: 'Следующее решение',
 	returnToCheckingQueuePage: 'Вернуться',
-	buildNextReviewText: (count: number): React.ReactText =>
+	buildNextReviewText: (count: number): string =>
 		count > 0
 			? `${ getPluralForm(count, 'Осталась', 'Осталось', 'Осталось') } ${ count } ${ getPluralForm(count,
 				'работа', 'работ', 'работ') }`

@@ -2,11 +2,11 @@
 	<PropertyGroup>
 		<RootNamespace>Ulearn.Common</RootNamespace>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<Authors>SKB Kontur Ulearn Team</Authors>
 		<Copyright>Copyright 2014–2022 SKB Kontur</Copyright>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="DotNetZip" Version="1.16.0" />
@@ -16,7 +16,7 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
 		<PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.4" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
 		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />

@@ -115,13 +115,7 @@ namespace Ulearn.Web.Api
 				{
 					app.UseWebSockets();
 					app.UseRouting(); // Включает обработку UseEndpoints
-					app.UseEndpoints(endpoints =>
-					{
-						endpoints.MapHub<WebsocketsHub>(websocketsPath, configureOptions =>
-						{
-							configureOptions.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
-						});
-					});
+					app.UseEndpoints(endpoints => { endpoints.MapHub<WebsocketsHub>(websocketsPath, configureOptions => { configureOptions.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling; }); });
 				});
 		}
 
@@ -255,7 +249,7 @@ namespace Ulearn.Web.Api
 
 		protected override OpenApiInfo GetApiNameAndDescription()
 		{
-			return new OpenApiInfo 
+			return new OpenApiInfo
 			{
 				Title = "Ulearn API",
 				Version = "v1",
@@ -299,12 +293,12 @@ namespace Ulearn.Web.Api
 			services.AddScoped<TempCourseRemover>();
 			services.AddScoped<ControllerUtils>();
 			services.AddScoped<StatisticModelUtils>();
-			services.AddSingleton<IAntiPlagiarismClient>(sp=>
+			services.AddSingleton<IAntiPlagiarismClient>(sp =>
 			{
 				var antiplagiarismClientConfiguration = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.AntiplagiarismClient;
 				return new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
 			});
-			services.AddSingleton<IPythonVisualizerClient>(sp=>
+			services.AddSingleton<IPythonVisualizerClient>(sp =>
 			{
 				var pythonVisualizerEndpoint = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.PythonVisualizerEndpoint;
 				return new PythonVisualizerClient(pythonVisualizerEndpoint);
@@ -325,7 +319,8 @@ namespace Ulearn.Web.Api
 		{
 			/* Configure sharing cookies between application.
 			   See https://docs.microsoft.com/en-us/aspnet/core/security/cookie-sharing?tabs=aspnetcore2x for details */
-			services.AddDataProtection()
+			services
+				.AddDataProtection()
 				.PersistKeysToFileSystem(new DirectoryInfo(configuration.Web.CookieKeyRingDirectory))
 				.SetApplicationName("ulearn");
 
@@ -350,39 +345,42 @@ namespace Ulearn.Web.Api
 				};
 			});
 
-			services.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-			}).AddJwtBearer(options =>
-			{
-				options.TokenValidationParameters = new TokenValidationParameters
+			services
+				.AddAuthentication(options =>
 				{
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidateLifetime = true,
-					ValidateIssuerSigningKey = true,
-
-					ValidIssuer = configuration.Web.Authentication.Jwt.Issuer,
-					ValidAudience = configuration.Web.Authentication.Jwt.Audience,
-					IssuerSigningKey = JwtBearerHelpers.CreateSymmetricSecurityKey(configuration.Web.Authentication.Jwt.IssuerSigningKey)
-				};
-				options.Events = new JwtBearerEvents // Jwt-токен в websocket передается через query string
+					options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+					options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+					options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				})
+				.AddJwtBearer(options =>
 				{
-					OnMessageReceived = context =>
+					options.TokenValidationParameters = new TokenValidationParameters
 					{
-						var path = context.HttpContext.Request.Path;
-						if (path.StartsWithSegments(websocketsPath))
+						ValidateIssuer = true,
+						ValidateAudience = true,
+						ValidateLifetime = true,
+						ValidateIssuerSigningKey = true,
+
+						ValidIssuer = configuration.Web.Authentication.Jwt.Issuer,
+						ValidAudience = configuration.Web.Authentication.Jwt.Audience,
+						IssuerSigningKey = JwtBearerHelpers.CreateSymmetricSecurityKey(configuration.Web.Authentication.Jwt.IssuerSigningKey)
+					};
+					options.Events = new JwtBearerEvents // Jwt-токен в websocket передается через query string
+					{
+						OnMessageReceived = context =>
 						{
-							var accessToken = context.Request.Query["access_token"];
-							if(!string.IsNullOrEmpty(accessToken))
-								context.Token = accessToken;
+							var path = context.HttpContext.Request.Path;
+							if (path.StartsWithSegments(websocketsPath))
+							{
+								var accessToken = context.Request.Query["access_token"];
+								if (!string.IsNullOrEmpty(accessToken))
+									context.Token = accessToken;
+							}
+
+							return Task.CompletedTask;
 						}
-						return Task.CompletedTask;
-					}
-				};
-			});
+					};
+				});
 
 			services.AddAuthorization(options =>
 			{
@@ -397,10 +395,7 @@ namespace Ulearn.Web.Api
 				}
 			});
 
-			services.Configure<PasswordHasherOptions>(options =>
-			{
-				options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2;
-			});
+			services.Configure<PasswordHasherOptions>(options => { options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2; });
 		}
 	}
 }

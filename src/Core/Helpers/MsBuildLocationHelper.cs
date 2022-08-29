@@ -17,12 +17,20 @@ namespace Ulearn.Core.Helpers
 			const string version = "Current";
 			var path = ToolLocationHelper.GetPathToBuildTools(version);
 			var assembly = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(typeof(ProjModifier)).Location);
-			if (path == assembly)
+			
+			//otherwise it will look for net6 analog, which doesn't exist
+			Environment.SetEnvironmentVariable("MicrosoftNETBuildExtensionsTasksAssembly",
+				Path.Combine(@"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\Microsoft.NET.Build.Extensions\tools\net472", "Microsoft.NET.Build.Extensions.Tasks.dll"));
+			
+			if (path == assembly || path.Contains("TestRunner"))
 			{
 				// TODO использовать PowerShell module to locate MSBuild: vssetup.powershell. Get-VSSetupInstance
+				var newBuildTools = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin";
 				var buildToolsMsBuildDirectory = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin";
 				var vsCommunityMsBuildDirectory = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin";
-				if (Directory.Exists(buildToolsMsBuildDirectory))
+				if (Directory.Exists(newBuildTools))
+					Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(newBuildTools, "MSBuild.exe"));
+				else if (Directory.Exists(buildToolsMsBuildDirectory))
 					Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(buildToolsMsBuildDirectory, "MSBuild.exe"));
 				else if (Directory.Exists(vsCommunityMsBuildDirectory))
 					Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(vsCommunityMsBuildDirectory, "MSBuild.exe"));

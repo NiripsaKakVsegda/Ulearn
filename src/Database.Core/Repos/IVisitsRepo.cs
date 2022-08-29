@@ -23,8 +23,10 @@ namespace Database.Repos
 		Task<Dictionary<string, int>> GetScore(string courseId, Guid slideId, List<string> userIds);
 		Task SkipSlide(string courseId, Guid slideId, string userId);
 		Task<bool> IsSkipped(string courseId, Guid slideId, string userId);
+
 		/// Забывает, что пользователь смотрел чужие решения и дает ему получить баллы при следующей отправке.
 		Task UnskipAllSlides(string courseId, string userId);
+
 		Task<bool> IsPassed(string courseId, Guid slideId, string userId);
 		Task<bool> IsSkippedOrPassed(string courseId, Guid slideId, string userId);
 		Task AddVisits(IEnumerable<Visit> visits);
@@ -36,10 +38,12 @@ namespace Database.Repos
 		Task<List<string>> GetCourseUsers(string courseId);
 		Task<List<RatingEntry>> GetCourseRating(string courseId, int minScore, List<Guid> requiredSlides);
 		Task<HashSet<string>> GetUserIdsWithPassedSlide(string courseId, Guid slideId, IEnumerable<string> userIds);
+		bool HasManualChecking(string courseId, string userId, Guid slideId);
 	}
 
 	public interface ILastVisitsRepo
 	{
+		Task<LastVisit> FindLastVisit(string courseId, string userId, Guid? slideId = null);
 		Task<Dictionary<string, Visit>> FindLastVisitsInGroup(int groupId);
 		Task<Dictionary<Guid, LastVisit>> GetLastVisitsInCourse(string courseId, string userId);
 

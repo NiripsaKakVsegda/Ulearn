@@ -1,4 +1,5 @@
 using Database.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Ulearn.Common;
 using Ulearn.Core.Courses.Slides.Exercises;
@@ -37,7 +38,7 @@ public class ExerciseBlockData
 	public bool ShowControls => !IsGuest;
 	public string Solution { get; private set; }
 
-	public UrlHelper Url { get; set; }
+	public IUrlHelper Url { get; set; }
 
 	public ExerciseReviewState ReviewState { get; set; }
 	public List<ExerciseCodeReview> Reviews { get; set; }

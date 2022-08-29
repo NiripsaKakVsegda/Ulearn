@@ -26,6 +26,10 @@ public class QuizModel
 	public int MaxAttemptsCount { get; set; }
 	public bool IsLti { get; set; }
 	public bool IsGuest { get; set; }
+	
+	public bool IsInstructor { get; set; }
+	
+	public bool IsCourseAdmin { get; set; }
 
 	[CanBeNull]
 	public ManualQuizChecking Checking { get; set; }

@@ -1,19 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Database.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common;
 using Ulearn.Core.Courses;
+using Ulearn.Web.Core.Attributes;
 
 namespace uLearn.Web.Core.Models;
-
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
-public class MustBeTrueAttribute : ValidationAttribute
-{
-	public override bool IsValid(object? value)
-	{
-		return value is true;
-	}
-}
 
 public class ExternalLoginConfirmationViewModel
 {
@@ -119,6 +112,8 @@ public class RegistrationViewModel
 	public string ReturnUrl { get; set; }
 
 	public bool RegistrationFinished { get; set; }
+	
+	
 }
 
 public class UserViewModel

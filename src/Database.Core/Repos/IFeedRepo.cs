@@ -12,12 +12,17 @@ namespace Database.Repos
 		Task<DateTime?> GetFeedViewTimestamp(string userId, int transportId);
 		Task UpdateFeedViewTimestamp(string userId, int transportId, DateTime timestamp);
 		Task AddFeedNotificationTransportIfNeeded(string userId);
+
 		[ItemCanBeNull]
 		Task<FeedNotificationTransport> GetUsersFeedNotificationTransport(string userId);
+
 		Task<int?> GetUsersFeedNotificationTransportId(string userId);
 		Task<int?> GetCommentsFeedNotificationTransportId();
 		Task<DateTime?> GetLastDeliveryTimestamp(int notificationTransportId);
 		Task<int> GetNotificationsCount(string userId, DateTime from, params int[] transports);
 		Task<List<Notification>> GetNotificationForFeedNotificationDeliveries<TProperty>(string userId, Expression<Func<Notification, TProperty>> includePath, params int[] transportsIds);
+		Task<FeedNotificationTransport> GetCommonFeedNotificationTransport();
+
+		Task<List<NotificationDelivery>> GetFeedNotificationDeliveries(string userId, params FeedNotificationTransport[] transports);
 	}
 }

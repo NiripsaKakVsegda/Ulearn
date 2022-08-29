@@ -165,7 +165,7 @@ namespace uLearn.CourseTool.Validating
 				var csprojFile = tempExFolder.GetFile(ex.CsprojFileName);
 				MsBuildLocationHelper.InitPathToMsBuild();
 				FuncUtils.Using(
-					new ProjectCollection(),
+					new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile),
 					projectCollection =>
 					{
 						var csproj = new Project(csprojFile.FullName, null, null, projectCollection);

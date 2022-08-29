@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<RootNamespace>Ulearn.VideoAnnotations.Api</RootNamespace>
-		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>

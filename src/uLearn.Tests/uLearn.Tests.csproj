@@ -1,114 +1,103 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <RootNamespace>uLearn</RootNamespace>
-    <TargetFramework>net48</TargetFramework>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NoWarn>CS0219;CS0162;CS0414;CS0169;CS0649</NoWarn>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <LangVersion>default</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="ApprovalTests" Version="5.7.3" />
-    <PackageReference Include="ApprovalUtilities" Version="5.7.3" />
-    <PackageReference Include="DotNetZip" Version="1.16.0" />
-    <PackageReference Include="FluentAssertions" Version="6.7.0" />
-    <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.2.20220510" />
-    <PackageReference Include="MarkdownDeep.NET.Core" Version="1.5.0.4" />
-    <PackageReference Include="Microsoft.Build" Version="17.2.0" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="17.2.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.2.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.4" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.2.2146">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NHunspell" Version="1.2.5554.16953" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
-    <PackageReference Include="UnidecodeSharpCore" Version="2.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Web" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="tests\**">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="CSharp\testProject\**">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Compile Remove="CSharp\IndentsValidation\TestData\Correct\IfOpenBraceGrandparentIsMultilineThenContentIndentedFromGrandparent.cs" />
-    <Compile Remove="CSharp\IndentsValidation\TestData\Correct\LocalFunction.cs" />
-    <Compile Remove="CSharp\IndentsValidation\TestData\Correct\TopLevelNodesCanBeIndented.cs" />
-    <Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\TopLevelNodesShouldBeConsistent.cs" />
-    <Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\IfOpenBraceGrandparentIsMultilineThenContentShouldBeIndentedFromGrandparent.cs" />
-    <Compile Remove="CSharp\testProject\projDir\AnotherTask.cs" />
-    <Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.21.plus.21.cs" />
-    <Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.27.cs" />
-    <Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.Type.cs" />
-    <Compile Remove="CSharp\testProject\projDir\inner-dir-1\inner-dir-2\MeaningOfLifeTask.cs" />
-    <Compile Remove="CSharp\ProjectExerciseBlock_Should.cs" />
-    <Compile Remove="CSharp\testProject\projDir\AnotherTask.WrongAnswer.88.cs" />
-    <Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_Code.cs" />
-    <Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_FirstStep.cs" />
-    <Compile Remove="CourseTool\TestData\TestCourse\Prelude.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Hunspellx64.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Hunspellx86.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="CourseTool\TestData\**\*.*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Model\**" />
-    <None Remove="CourseTool\Config_Test.ConfigTemplate_IsOk.approved.xml" />
-    <None Remove="toZip\**" />
-    <None Update="appsettings.local.json">
-      <DependentUpon>appsettings.json</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\CourseTool\CourseTool.csproj" />
-    <ProjectReference Include="..\CsSandboxer\CsSandboxer.csproj" />
-    <ProjectReference Include="..\RunCsJob\RunCsJob.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="toZip\**" />
-    <Compile Remove="Model\**" />
-    <Compile Remove="CSharp\ArrayGetLengthValidation\TestData\Correct\GetLengthInInitializersPartOfFor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Remove="Model\**" />
-    <EmbeddedResource Remove="toZip\**" />
-  </ItemGroup>
+	<PropertyGroup>
+		<RootNamespace>uLearn</RootNamespace>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<NoWarn>CS0219;CS0162;CS0414;CS0169;CS0649</NoWarn>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<LangVersion>default</LangVersion>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="ApprovalTests" Version="5.7.3" />
+		<PackageReference Include="FluentAssertions" Version="6.7.0" />
+		<PackageReference Include="Microsoft.Build" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="Microsoft.VisualBasic" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="System.Web" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="tests\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="CSharp\testProject\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\IfOpenBraceGrandparentIsMultilineThenContentIndentedFromGrandparent.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\LocalFunction.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\TopLevelNodesCanBeIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\TopLevelNodesShouldBeConsistent.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\IfOpenBraceGrandparentIsMultilineThenContentShouldBeIndentedFromGrandparent.cs" />
+		<Compile Remove="CSharp\testProject\projDir\AnotherTask.cs" />
+		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.21.plus.21.cs" />
+		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.27.cs" />
+		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.Type.cs" />
+		<Compile Remove="CSharp\testProject\projDir\inner-dir-1\inner-dir-2\MeaningOfLifeTask.cs" />
+		<Compile Remove="CSharp\ProjectExerciseBlock_Should.cs" />
+		<Compile Remove="CSharp\testProject\projDir\AnotherTask.WrongAnswer.88.cs" />
+		<Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_Code.cs" />
+		<Compile Remove="CourseTool\TestData\TestCourse\U99_Presentation\_FirstStep.cs" />
+		<Compile Remove="CourseTool\TestData\TestCourse\Prelude.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Hunspellx64.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Hunspellx86.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<Content Include="CourseTool\TestData\**\*.*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Model\**" />
+		<None Remove="CourseTool\Config_Test.ConfigTemplate_IsOk.approved.xml" />
+		<None Remove="toZip\**" />
+		<None Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Core\Core.csproj" />
+		<ProjectReference Include="..\CourseTool\CourseTool.csproj" />
+		<ProjectReference Include="..\RunCsJob\RunCsJob.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="toZip\**" />
+		<Compile Remove="Model\**" />
+		<Compile Remove="CSharp\ArrayGetLengthValidation\TestData\Correct\GetLengthInInitializersPartOfFor.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Remove="Model\**" />
+		<EmbeddedResource Remove="toZip\**" />
+	</ItemGroup>
 </Project>

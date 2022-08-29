@@ -1,0 +1,187 @@
+﻿@using Database.Models
+@using Ulearn.Common.Extensions
+@using Ulearn.Core.Courses.Slides.Exercises
+@using Ulearn.Core.Courses.Slides.Quizzes
+@using Ulearn.Core.Extensions
+@using uLearn.Web.Core.Models
+@model uLearn.Web.Core.Models.UnitStatModel
+
+@{
+	ViewBag.Title = Model.Unit.Title;
+}
+
+@functions {
+	public void UsersByCountVisitedSlidesTable(string id, Dictionary<int, int> data)
+	{
+		<table id="@id" class="hidden">
+			<thead>
+			<tr>
+				<th>Просмотренных слайдов</th>
+				<th>Количество человек</th>
+			</tr>
+			</thead>
+			<tbody>
+			@for (var countVisitedSlides = 0; countVisitedSlides <= Model.Slides.Count; countVisitedSlides++)
+			{
+				<tr>
+					<td>@countVisitedSlides</td>
+					<td>@data.GetOrDefault(countVisitedSlides, 0)</td>
+				</tr>
+			}
+			</tbody>
+		</table>
+	}
+
+}
+
+<body>
+<div class="container">
+	<h2>
+		@Model.Unit.Title.TruncateWithEllipsis(35)
+
+		<small>
+			<a href="#filters" class="visible-xs-inline ml10" data-toggle="true" data-scroll="false">
+				<span class="no-underline glyphicon glyphicon-filter"></span>
+			</a>
+		</small>
+		<br class="visible-xs"/>
+		<small class="visible-xs">с @Model.PeriodStart.ToShortDateString() по @Model.PeriodFinish.ToShortDateString()</small>
+	</h2>
+	<div class="analytics__dashboard">
+		@using (Html.BeginForm("UnitStatistics", "Analytics", FormMethod.Get, new { @class = "form-inline", id = "unit-statistics-filter-form" }))
+		{
+			@Html.Hidden("courseId", Model.CourseId)
+
+			<div id="filters" class="hidden-xs-inline">
+				<div class="form-group">
+					@Html.DropDownList("unitId",
+						Model.Units.Select(unit => new SelectListItem { Text = unit.Title, Selected = unit == Model.Unit, Value = unit.Id.ToString() }),
+						new { @class = "form-control selectpicker show-tick" })
+				</div>
+
+				<div class="form-group sm-ml10 ib">
+					с @Html.TextBox("periodStart", Model.PeriodStart.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
+				</div>
+
+				<div class="form-group ib">
+					по @Html.TextBox("periodFinish", Model.PeriodFinish.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
+				</div>
+
+				@await Html.PartialAsync("~/Views/Shared/_GroupsFilter.cshtml", new GroupsFilterViewModel
+				{
+					CourseId = Model.CourseId,
+					SelectedGroupsIds = Model.SelectedGroupsIds,
+					Groups = Model.Groups,
+					UsersIdsWithGroupsAccess = Model.GroupsAccesses.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(s => s.UserId).ToList()),
+				})
+
+				<div class="form-group">
+					<button role="button" class="btn btn-primary">Отфильтровать</button>
+				</div>
+			</div>
+		}
+
+		<div class="vspace-20 hidden-xs hidden-sm"></div>
+
+		<div class="row">
+			<div class="col-xs-12 col-md-6">
+				<h2 class="internal-page-menu">
+					Слайды
+					<a href="#statistics" class="internal-page-link visible-xs-inline">Статистика</a>
+				</h2>
+				<div class="small-table__title">
+					<span class="navbar-label navbar-label-link glyphicon glyphicon-none"></span>
+					<span class="small-table__title__cell">слайд</span>
+					<div class="pull-right">
+						<span class="stat-title small-table__title__cell">просмотры</span>
+						<span class="stat-title small-table__title__cell"></span>
+					</div>
+				</div>
+				@foreach (var slide in Model.Slides)
+				{
+					<div>
+						@if (slide is QuizSlide)
+						{
+							<span class="navbar-label navbar-label-link glyphicon glyphicon-pushpin"></span>
+						}
+						else if (slide is ExerciseSlide)
+						{
+							<span class="navbar-label navbar-label-link glyphicon glyphicon-edit"></span>
+						}
+						else
+						{
+							<span class="navbar-label navbar-label-link glyphicon glyphicon-none"></span>
+						}
+
+						@Html.RouteLink(slide.Title.TruncateWithEllipsis(35), "Course.SlideById", new { Model.CourseId, SlideId = slide.Url }, new { })
+						<div class="pull-right">
+							<span class="slide-visits-count">
+								@Model.SlidesVisits.GetOrDefault(slide.Id, new List<Visit>()).Count
+							</span>
+
+							@if (slide is QuizSlide)
+							{
+								var average = Model.QuizzesAverageScore[slide.Id];
+								if (average < 0)
+								{
+									<span class="quiz-average">&ndash;</span>
+								}
+								else
+								{
+									<span class="quiz-average" title="Средний процент полученных баллов">@average%</span>
+								}
+							}
+							else if (slide is ExerciseSlide)
+							{
+								var tries = Model.ExercisesSolutionsCount.GetOrDefault(slide.Id, 0);
+								var acceptedTries = Model.ExercisesAcceptedSolutionsCount.GetOrDefault(slide.Id, 0);
+								if (tries == 0)
+								{
+									<span class="exercise-tries" title="Нет попыток">&ndash;</span>
+								}
+								else
+								{
+									var acceptedPercent = acceptedTries * 100 / tries;
+									<span class="exercise-tries" title="Успешных попыток: @acceptedTries/@tries">@acceptedPercent%</span>
+								}
+							}
+							else
+							{
+								<span class="lesson-slide-no-stat"></span>
+							}
+						</div>
+					</div>
+				}
+			</div>
+
+			<div class="col-xs-12 col-md-6" id="statistics">
+				<h2>Статистика</h2>
+				<div>
+					Посмотрели весь модуль <strong>за&nbsp;выбранный период</strong>: <strong>@Model.UsersVisitedAllSlidesInPeriodCount</strong>
+				</div>
+
+				<div class="vspace-20"></div>
+
+				@{
+					var usersByCountVisitedSlides = Model.VisitedSlidesCountByUser
+						.GroupBy(p => p.Value, p => p.Key)
+						.ToDictionary(g => g.Key, g => g.Count());
+					var usersByCountVisitedSlidesAllTime = Model.VisitedSlidesCountByUserAllTime
+						.GroupBy(p => p.Value, p => p.Key)
+						.ToDictionary(g => g.Key, g => g.Count());
+				}
+				@{ UsersByCountVisitedSlidesTable("usersByCountVisitedSlides", usersByCountVisitedSlides); }
+				@{ UsersByCountVisitedSlidesTable("usersByCountVisitedSlidesAllTime", usersByCountVisitedSlidesAllTime); }
+
+				<div class="analytics__chart__toggles">
+					Показать график:
+					<a href="#usersByCountVisitedSlides" class="analytics__chart__toggle internal-page-link active">за&nbsp;выбранный период</a>
+					<a href="#usersByCountVisitedSlidesAllTime" class="analytics__chart__toggle internal-page-link">за&nbsp;всё время</a>
+				</div>
+
+				<div id="usersByCountVisitedSlidesChart"></div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>

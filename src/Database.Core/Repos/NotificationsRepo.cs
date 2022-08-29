@@ -58,7 +58,7 @@ namespace Database.Repos
 			notificationTypesCache = Enum.GetValues(typeof(NotificationType)).Cast<NotificationType>().ToList();
 		}
 
-		private static List<NotificationType> GetAllNotificationTypes()
+		public static List<NotificationType> GetAllNotificationTypes()
 		{
 			BuildNotificationTypesCache();
 			return notificationTypesCache;
@@ -171,6 +171,17 @@ namespace Database.Repos
 					)
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s);
 			return settings.ToDefaultDictionary(() => null);
+		}
+		
+		// Dictionary<(notificationTransportId, NotificationType), NotificationTransportSettings>
+		public async Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, string userId)
+		{
+			return (await db.NotificationTransportSettings
+				.Include(s => s.NotificationTransport)
+				.Where(s => s.CourseId == courseId && s.NotificationTransport.UserId == userId)
+				.ToListAsync())
+				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s)
+				.ToDefaultDictionary(() => null);
 		}
 
 		public async Task AddNotification(string courseId, Notification notification, string initiatedUserId)

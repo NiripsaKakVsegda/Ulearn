@@ -16,6 +16,7 @@ public class UserCourseModel
 
 		var visits = db.Visits
 			.Where(v => v.UserId == user.Id && v.CourseId == course.Id)
+			.ToList()
 			.GroupBy(v => v.SlideId)
 			.ToDictionary(g => g.Key, g => g.FirstOrDefault());
 		var unitResults = new Dictionary<Guid, UserCourseUnitModel>();

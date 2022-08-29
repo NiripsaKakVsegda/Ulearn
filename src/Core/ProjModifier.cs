@@ -29,7 +29,7 @@ namespace Ulearn.Core
 		{
 			MsBuildLocationHelper.InitPathToMsBuild();
 			return FuncUtils.Using(
-				new ProjectCollection(),
+				new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile),
 				projectCollection =>
 				{
 					var proj = new Project(csproj.FullName, null, toolsVersion, projectCollection);

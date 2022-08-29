@@ -11,6 +11,7 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.SystemAccessesRepo;
 using Database.Repos.Users;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -222,6 +223,7 @@ namespace Ulearn.Web.Api.Controllers
 		public async Task<ActionResult<LogoutResponse>> Logout()
 		{
 			await signInManager.SignOutAsync().ConfigureAwait(false);
+			//await HttpContext.SignOutAsync().ConfigureAwait(false);
 
 			return new LogoutResponse
 			{

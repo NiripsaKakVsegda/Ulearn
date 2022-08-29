@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Ulearn.Common;
 using Ulearn.Core;
 
@@ -14,7 +16,7 @@ namespace Database.Repos.Users
 	public class UsersRepo : IUsersRepo
 	{
 		private readonly UlearnDb db;
-		private readonly UlearnUserManager userManager;
+		private readonly UserManager<ApplicationUser> userManager;
 		private IdentityRole sysAdminRole;
 
 		public const string UlearnBotUsername = "ulearn-bot";
@@ -41,7 +43,7 @@ namespace Database.Repos.Users
 			var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == lmsRole.ToString());
 			if (role == null)
 				return new List<string>();
-			return db.Users.Where(u => !u.IsDeleted).FilterByRole(role, userManager).Select(u => u.Id).ToList();
+			return await db.Users.Where(u => !u.IsDeleted).FilterByRole(role).Select(u => u.Id).ToListAsync();
 		}
 
 		public Task<List<string>> GetSysAdminsIds()
@@ -154,10 +156,10 @@ namespace Database.Repos.Users
 		{
 			return await db.Users.Where(u => emails.Contains(u.Email) && u.EmailConfirmed).ToListAsync();
 		}
-		
+
 		public async Task<List<ApplicationUser>> FindUsersByConfirmedEmail(string email)
 		{
-			return await db.Users.Where(u => email == u.Email && u.EmailConfirmed).ToListAsync();
+			return await FindUsersByConfirmedEmails(new[] { email });
 		}
 	}
 }

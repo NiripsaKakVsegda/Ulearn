@@ -5,7 +5,7 @@ const texts = {
 	getSuspicionText: (
 		count: number,
 		strongSuspicion?: boolean,
-	): React.ReactText => {
+	): string => {
 		const text = count > 0
 			? `у ${ count } других студентов найдены ${ strongSuspicion ? 'очень' : '' } похожие решения.`
 			: `похожих решений не найдено`;

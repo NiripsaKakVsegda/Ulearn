@@ -1,0 +1,257 @@
+﻿@using Database.Models.Comments
+@using Ulearn.Core.Extensions
+@using uLearn.Web.Core.Extensions
+@using System.Web
+@using Database.Models
+
+@model uLearn.Web.Core.Models.CommentViewModel
+
+@functions{
+	void ReplyForm(Comment comment, bool isFormHidden, bool forInstructorsOnly)
+	{
+		<div class="reply-form is-reply media @(isFormHidden ? "collapse" : "")">
+			@{
+				using (Html.BeginForm("AddComment", "Comments", FormMethod.Post))
+				{
+					@Html.Hidden("courseId", comment.CourseId)
+					@Html.Hidden("slideId", comment.SlideId)
+					@Html.Hidden("parentCommentId", comment.Id)
+					@Html.Hidden("forInstructorsOnly", forInstructorsOnly)
+					<div class="pull-left">
+						@{ SmallAvatar(Model.CurrentUser); }
+					</div>
+					<div class="media-body">
+						@Html.TextBox("commentText", "", new { placeholder = "Ответить..." })
+					</div>
+				}
+			}
+		</div>
+	}
+
+	public void GetAvatarPlaceholderColor(ApplicationUser user)
+	{
+		var hashForColor = user.Id.Aggregate(0, (a, i) => a += i);
+		var hue = Math.Abs(hashForColor) % 360;
+		<text>hsl(@hue, 64%, 75%)</text>
+	}
+
+	public void GetAvatarPlaceholderLetter(ApplicationUser user)
+	{
+		<text>@char.ToUpper(user.VisibleName.FindFirstLetter('O'))</text>
+	}
+
+	public void Avatar(ApplicationUser user, string classes = "")
+	{
+		if (user.HasAvatar)
+		{
+			<img class="user__avatar @classes" src="@user.AvatarUrl" alt="@HttpUtility.HtmlAttributeEncode(user.VisibleName)"/>
+		}
+		else
+		{
+			<div class="user__avatar user__avatar__placeholder @classes" style="background-color: @{ GetAvatarPlaceholderColor(user); }">
+				@{ GetAvatarPlaceholderLetter(user); }
+			</div>
+		}
+	}
+
+	public void SmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "small " + classes);
+	}
+
+	public void ExtraSmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "xsmall " + classes);
+	}
+
+	public void LargeAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "large " + classes);
+	}
+}
+
+@if (Model.IsCommentVisibleForUser)
+{
+	<div class="comment
+		 @(Model.Comment.IsTopLevel ? "" : "is-reply")
+		 @(Model.Comment.IsApproved ? "" : "not-approved")
+		 @(Model.Comment.IsPinnedToTop ? "is-pinned" : "")
+		 @(Model.Comment.IsCorrectAnswer ? "is-correct-answer" : "")
+		 media"
+		data-comment-id="@Model.Comment.Id">
+
+		@if (Model.CanViewAuthorProfile)
+		{
+			<a class="pull-left" href="@Url.Action("Profile", "Account", new { userId = Model.Comment.AuthorId })">
+				@{ Avatar(Model.Comment.Author, "comment__author-avatar media-object"); }
+			</a>
+		}
+		else
+		{
+			<div class="pull-left">
+				@{ Avatar(Model.Comment.Author, "comment__author-avatar media-object"); }
+			</div>
+		}
+
+		<div class="media-body">
+			<div class="comment__header media-heading">
+				<div class="comment__author-name">
+					@if (Model.CanViewAuthorProfile)
+					{
+						<a href="@Url.Action("Profile", "Account", new { userId = Model.Comment.AuthorId })">@Model.Comment.Author.VisibleName</a>
+					}
+					else
+					{
+						@Model.Comment.Author.VisibleName
+					}
+					@if (Model.CanViewAuthorSubmissions)
+					{
+						<sup>
+							@Html.ActionLink(
+								"решения",
+								"UserSolutions", "Analytics",
+								new
+								{
+									courseId = Model.Comment.CourseId,
+									slideId = Model.Comment.SlideId,
+									userId = Model.Comment.AuthorId
+								}, null)
+						</sup>
+					}
+				</div>
+				@if (Model.ShowContextInformation)
+				{
+					<div>
+						— слайд
+						<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId, })">
+							«@Model.ContextSlideTitle»
+						</a>
+					</div>
+					<!--
+					-->
+					if (!string.IsNullOrEmpty(Model.ContextParentComment))
+					{
+						<div>
+							, в ответ на
+							<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId, })#comment-@Model.Comment.ParentCommentId"
+								title="@Html.Encode(Model.ContextParentComment.TruncateWithEllipsis(200))">
+								«@(Model.ContextParentComment.TruncateWithEllipsis(40))»
+							</a>
+						</div>
+					}
+				}
+				@if (Model.CanModerateComment || !Model.Comment.IsApproved)
+				{
+					<div class="comment__not-approved @(Model.CanModerateComment ? "label-switcher" : "") label label-as-badge label-default"
+						data-url="@Url.Action("ApproveComment", "Comments", new { commentId = Model.Comment.Id })">
+						@if (Model.CanModerateComment)
+						{
+							<span class="hide-on-parent-hover">не опубликовано</span>
+							<span class="show-on-parent-hover"><span class="glyphicon glyphicon-ok"></span>опубликовать</span>
+						}
+						else
+						{
+							<text>не опубликовано</text>
+						}
+					</div>
+				}
+
+				@if (Model.Comment.IsTopLevel)
+				{
+					if (Model.CanModerateComment || Model.Comment.IsPinnedToTop)
+					{
+						<div class="comment__pinned @(Model.CanModerateComment ? "label-switcher" : "") label label-as-badge label-success show-on-comment-hover"
+							data-url="@Url.Action("PinComment", "Comments", new { commentId = Model.Comment.Id })">
+
+							@if (Model.CanModerateComment)
+							{
+								<span class="hide-on-parent-hover show__if_pinned">закреплено</span>
+								<span class="show-on-parent-hover__if-pinned"><span class="glyphicon glyphicon-arrow-down"></span>открепить</span>
+								<span class="show-on-comment-hover__if-not-pinned"><span class="glyphicon glyphicon-arrow-up"></span>закрепить</span>
+							}
+							else
+							{
+								<text>закреплено</text>
+							}
+						</div>
+					}
+				}
+
+				@if (!Model.Comment.IsTopLevel)
+				{
+					if (Model.CanModerateComment || Model.Comment.IsCorrectAnswer)
+					{
+						<div class="comment__correct-answer @(Model.CanModerateComment ? "label-switcher" : "") label label-as-badge label-primary show-on-comment-hover"
+							data-url="@Url.Action("MarkAsCorrectAnswer", "Comments", new { commentId = Model.Comment.Id })">
+							@if (Model.CanModerateComment)
+							{
+								<span class="glyphicon glyphicon-remove"></span>
+							}
+							правильный ответ
+						</div>
+					}
+				}
+			</div>
+
+			@await Html.PartialAsync("~/Views/Comments/_CommentText.cshtml", Model.Comment)
+
+			<div class="comment__footer">
+				@{
+					var likesCount = Model.LikesCount;
+				}
+				<div class="comment__likes-count @(Model.IsLikedByUser ? "is-liked" : "")"
+					data-url="@Url.Action("LikeComment", "Comments", new { commentId = Model.Comment.Id })">
+					<span class="glyphicon glyphicon-heart"></span>
+					<span class="comment__likes-count__counter">
+						@if (likesCount > 0)
+						{
+							@likesCount
+						}
+					</span>
+				</div>
+				<div class="comment__publish-time" title="@Model.Comment.PublishTime.ToPrettyString()">
+					<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId })#comment-@Model.Comment.Id">
+						@Model.Comment.PublishTime.ToAgoPrettyString()
+					</a>
+				</div>
+				@if (Model.Comment.IsTopLevel && Model.CanReply && !Model.Replies.Any())
+				{
+					<div class="comment__inline-reply show-on-comment-hover">
+						<a href="">ответить</a>
+					</div>
+				}
+
+				@if (Model.CanEditAndDeleteComment)
+				{
+					<div class="comment__edit-link show-on-comment-hover"
+						data-url="@Url.Action("EditCommentText", "Comments", new { commentId = Model.Comment.Id })">
+						<a href=""><span class="glyphicon glyphicon-pencil"></span>редактировать</a>
+					</div>
+				}
+
+				@if (Model.CanModerateComment)
+				{
+					<div class="comment__hide-link show-on-comment-hover" data-url="@Url.Action("ApproveComment", "Comments", new { commentId = Model.Comment.Id })">
+						<a href=""><span class="glyphicon glyphicon-eye-close"></span>скрыть</a>
+					</div>
+				}
+
+				@if (Model.CanEditAndDeleteComment)
+				{
+					<div class="comment__delete-link show-on-comment-hover"
+						data-url="@Url.Action("DeleteComment", "Comments", new { commentId = Model.Comment.Id })"
+						data-restore-url="@Url.Action("RestoreComment", "Comments", new { commentId = Model.Comment.Id })">
+						<a href="" title="удалить комментарий"><span class="glyphicon glyphicon-remove"></span>удалить</a>
+					</div>
+				}
+
+			</div>
+		</div>
+	</div>
+
+	foreach (var reply in Model.Replies)
+		@await Html.PartialAsync("_Comment", reply)
+
+	if (Model.Comment.IsTopLevel && Model.CanReply)
+		ReplyForm(Model.Comment, !Model.Replies.Any(), forInstructorsOnly: Model.IsCommentForInstructorsOnly);
+}

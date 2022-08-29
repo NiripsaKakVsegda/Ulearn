@@ -46,7 +46,7 @@ public class SingleCourseRolesModel : ICoursesRolesListModel
 
 	public string UserName { get; set; }
 
-	public CourseRole Role { get; set; }
+	public CourseRoleType Role { get; set; }
 
 	public string VisibleCourseName { get; set; }
 }
@@ -58,7 +58,7 @@ public class CourseRoleModel
 	public bool HasAccess { get; set; }
 	public string ToggleUrl { get; set; }
 	public string UserName { get; set; }
-	public CourseRole Role { get; set; }
+	public CourseRoleType Role { get; set; }
 }
 
 public class ManyCourseRolesModel : ICoursesRolesListModel

@@ -33,7 +33,11 @@ namespace Database.DataContexts
 			var visibleUnitsIds = new HashSet<Guid>(db.UnitAppearances
 				.Where(u => u.CourseId == course.Id && u.PublishTime <= DateTime.Now)
 				.Select(u => u.UnitId));
-			return course.GetUnitsNotSafe().Select(u => u.Id).Where(g => visibleUnitsIds.Contains(g)).ToList();
+			return course
+				.GetUnitsNotSafe()
+				.Select(u => u.Id)
+				.Where(g => visibleUnitsIds.Contains(g))
+				.ToList();
 		}
 
 		public bool IsUnitVisibleForStudents(Course course, Guid unitId)

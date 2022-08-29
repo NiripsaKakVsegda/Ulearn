@@ -1,0 +1,74 @@
+﻿@using Database.Models
+@using Ulearn.Common.Extensions
+@using Ulearn.Core.Extensions
+@using uLearn.Web.Core.Extensions
+@using uLearn.Web.Core.Models
+
+@model uLearn.Web.Core.Models.GroupsFilterViewModel
+
+<div class="form-group">
+	@{
+		var groupsListItems = new List<SelectListItemWithAttributes>
+		{
+			new SelectListItemWithAttributes
+			{
+				Text = "Мои группы",
+				Value = "",
+				Selected = Model.SelectedGroupsIds.Count == 0 || Model.SelectedGroupsIds.Any(string.IsNullOrEmpty),
+				HtmlAttributes = new { data_exclusive = "true" }
+			}
+		};
+		if (User.HasAccessFor(Model.CourseId, CourseRoleType.CourseAdmin))
+		{
+			groupsListItems.Add(new SelectListItemWithAttributes
+			{
+				Text = "Ни в одной группе",
+				Value = "not-in-group",
+				Selected = Model.SelectedGroupsIds.Contains("not-in-group"),
+				HtmlAttributes = new { data_exclusive = "true" }
+			});
+			groupsListItems.Add(new SelectListItemWithAttributes
+			{
+				Text = "Все пользователи",
+				Value = "all",
+				Selected = Model.SelectedGroupsIds.Contains("all"),
+				HtmlAttributes = new { data_exclusive = "true" }
+			});
+		}
+		if (Model.Groups.Any())
+		{
+			groupsListItems.Add(new SelectListItemWithAttributes
+			{
+				Value = "-",
+				HtmlAttributes = new { data_divider = "true", data_exclusive = "true" }
+			});
+		}
+		var groupsAndInstructors = Model.Groups
+			.Select(g => (Group: g, Accesses: Model.UsersIdsWithGroupsAccess?.GetOrDefault(g.Id))).ToArray();
+		Array.Sort(groupsAndInstructors, new GroupsComparer(User.GetUserId()));
+		var orderedGroups = groupsAndInstructors.Select(t => t.Group);
+		groupsListItems.AddRange(
+			orderedGroups
+				.Select(
+					group => new SelectListItemWithAttributes
+					{
+						Text = group.Name.TruncateWithEllipsis(40),
+						Value = group.Id.ToString(),
+						Selected = Model.SelectedGroupsIds.Contains(group.Id.ToString())
+					})
+			);
+	}
+
+	@Html.DropDownListWithItemAttributes(
+		Model.InputControlName,
+		groupsListItems,
+		new
+		{
+			@class = "form-control selectpicker without-backdrop",
+			size = "1",
+			multiple = "true",
+			title = "Выберите группу",
+			data_selected_text_format = "count > 2",
+			data_count_selected_text = "Выбрано {0} групп(ы)",
+		})
+</div>

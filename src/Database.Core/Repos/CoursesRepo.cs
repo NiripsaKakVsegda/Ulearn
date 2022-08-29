@@ -220,5 +220,56 @@ namespace Database.Repos
 				return null;
 			return data;
 		}
+
+		public async Task<List<CourseGit>> FindCoursesByRepoUrl(string repoUrl)
+		{
+			return await db.CourseGitRepos
+				.GroupBy(r => r.CourseId)
+				.Select(g => g.MaxBy(r => r.CreateTime))
+				.Where(r => r.RepoUrl == repoUrl)
+				.ToListAsync();
+		}
+
+		public async Task SetCourseRepoSettings(CourseGit courseGit)
+		{
+			courseGit.CreateTime = DateTime.Now;
+			db.CourseGitRepos.Add(courseGit);
+			await db.SaveChangesAsync();
+		}
+
+		public async Task RemoveCourseRepoSettings(string courseId)
+		{
+			var courseGit = new CourseGit { CourseId = courseId };
+			await SetCourseRepoSettings(courseGit).ConfigureAwait(false);
+		}
+
+		public async Task UpdateKeysByRepoUrl(string repoUrl, string publicKey, string privateKey)
+		{
+			using (var transaction = db.Database.BeginTransaction())
+			{
+				var repos = await FindCoursesByRepoUrl(repoUrl);
+				foreach (var repo in repos)
+				{
+					repo.PublicKey = publicKey;
+					repo.PrivateKey = privateKey;
+					await SetCourseRepoSettings(repo).ConfigureAwait(false);
+				}
+
+				transaction.Commit();
+			}
+		}
+
+		public async Task<List<CourseAccess>> GetUserAccessHistoryByCourseId(string userId, string courseId)
+		{
+			courseId = courseId.ToLower();
+			return await db.CourseAccesses
+				.Where(x => x.UserId == userId && x.CourseId == courseId)
+				.ToListAsync();
+		}
+
+		public async Task<List<CourseAccess>> GetUserAccessHistory(string userId)
+		{
+			return await db.CourseAccesses.Where(x => x.UserId == userId).ToListAsync();
+		}
 	}
 }

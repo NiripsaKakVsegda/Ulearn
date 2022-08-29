@@ -377,7 +377,8 @@ namespace Database.Repos
 		// Метод переписан, но может не работать, нужно тестировать совместимость с EF Core
 		public async Task<List<RatingEntry>> GetCourseRating(string courseId, int minScore, List<Guid> requiredSlides)
 		{
-			var userId2TotalScore = await db.Visits.Where(v => v.CourseId == courseId)
+			var userId2TotalScore = await db.Visits
+				.Where(v => v.CourseId == courseId)
 				.GroupBy(v => v.UserId)
 				.Select(g => new
 				{
@@ -387,7 +388,10 @@ namespace Database.Repos
 				})
 				.Where(p => p.TotalScore >= minScore)
 				.ToListAsync();
-			var userIds = userId2TotalScore.Select(g => g.UserId).ToList();
+			
+			var userIds = userId2TotalScore
+				.Select(g => g.UserId)
+				.ToList();
 
 			List<string> usersWithAllRequiredSlides;
 			if (requiredSlides.Count > 0)
@@ -417,6 +421,11 @@ namespace Database.Repos
 		{
 			return (await db.Visits.Where(v => v.CourseId == courseId && v.SlideId == slideId && v.IsPassed && userIds.Contains(v.UserId)).Select(v => v.UserId).ToListAsync())
 				.ToHashSet();
+		}
+		
+		public bool HasManualChecking(string courseId, string userId, Guid slideId)
+		{
+			return db.Visits.Any(v => v.CourseId == courseId && v.UserId == userId && v.SlideId == slideId && v.HasManualChecking);
 		}
 	}
 

@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Http.Extensions;
+
 namespace uLearn.Web.Core.Extensions;
 
 public static class StringExtensions
@@ -107,18 +109,20 @@ public static class StringExtensions
 	}
 
 	// /* TODO (andgein): Move to ControllerBase? */
-	// public static bool IsLocalUrl(this string url, HttpRequestBase request)
-	// {
-	// 	if (string.IsNullOrEmpty(url))
-	// 		return false;
-	//
-	// 	if (Uri.TryCreate(url, UriKind.Absolute, out var absoluteUri))
-	// 		return request.Url != null && string.Equals(request.Url.Host, absoluteUri.Host, StringComparison.OrdinalIgnoreCase);
-	//
-	// 	var isLocal = !url.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
-	// 				&& !url.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
-	// 				&& Uri.IsWellFormedUriString(url, UriKind.Relative);
-	// 	
-	// 	return isLocal;
-	// }
+	public static bool IsLocalUrl(this string url, HttpRequest request)
+	{
+		if (string.IsNullOrEmpty(url))
+			return false;
+		
+		var uri = new Uri(request.GetDisplayUrl());
+	
+		if (Uri.TryCreate(url, UriKind.Absolute, out var absoluteUri))
+			return uri != null && string.Equals(uri.Host, absoluteUri.Host, StringComparison.OrdinalIgnoreCase);
+	
+		var isLocal = !url.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
+					&& !url.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
+					&& Uri.IsWellFormedUriString(url, UriKind.Relative);
+		
+		return isLocal;
+	}
 }

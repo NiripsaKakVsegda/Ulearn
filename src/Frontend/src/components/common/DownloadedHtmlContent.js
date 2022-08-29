@@ -185,7 +185,10 @@ class DownloadedHtmlContent extends Component {
 			body: body.innerHTML,
 			bodyClassName: body.className,
 			links: links
-		}, () => runLegacy(documentReadyFunctions));
+		}, () => {
+			runLegacy(documentReadyFunctions);
+			this.setPostFormSubmitHandler();
+		});
 
 		DownloadedHtmlContent.removeStickyHeaderAndColumn();
 
@@ -197,8 +200,6 @@ class DownloadedHtmlContent extends Component {
 		/* Eval embedded scripts */
 		allScriptTags.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
 
-		this.loadContentByClass();
-		this.setPostFormSubmitHandler();
 
 		let meta = window.meta || {
 			title: titles && titles.length ? titles[0].innerText : 'Ulearn',
@@ -268,26 +269,14 @@ class DownloadedHtmlContent extends Component {
 		)
 	}
 
-	loadContentByClass() {
-		const className = 'load-content';
-		let elements = Array.from(document.body.getElementsByClassName(className));
-		elements.forEach(e => {
-			let url = e.dataset.url;
-			this.props.load(url, { credentials: 'include' }).then(r => r.text()).then(data => {
-				e.innerHTML = data;
-				let scripts = Array.from(e.getElementsByTagName('script'));
-				scripts.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
-			});
-		});
-	}
-
 	setPostFormSubmitHandler() {
 		let exceptions = ["/Login/ExternalLogin", "/Login/DoLinkLogin"];
 
 		let forms = Array.from(document.body.getElementsByTagName('form'));
 		let postForms = forms.filter(f => f.method.toLowerCase() === 'post' && !f.onsubmit && f.action);
 		postForms.forEach(f => {
-			let formUrl = f.action;
+			const url = new URL(f.action);
+			let formUrl = url.pathname + url.search;
 			if(exceptions.some(e => getUrlParts(formUrl).pathname.toUpperCase() === e.toUpperCase()))
 				return;
 
@@ -304,7 +293,7 @@ class DownloadedHtmlContent extends Component {
 				let button = document.activeElement;
 				if(button && button.name && button.value)
 					formData.append(button.name, button.value);
-
+				debugger
 				this.props.load(formUrl, {
 					method: 'POST',
 					credentials: 'include',

@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Ulearn.Core.Configuration;
 
 /* Move it to Web.Api.Configuration after disabling Ulearn.Web. Now it's here because Ulearn.Web should know about CookieKeyRingDirectory */
@@ -17,12 +18,19 @@ namespace Web.Api.Configuration
 		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки
 	}
 
+	public class WebConfiguration : WebApiConfiguration
+	{
+		public Dictionary<string, string> OldWebConfig { get; set; }
+	}
+
 	public class UlearnWebConfiguration
 	{
 		public string CookieKeyRingDirectory { get; set; }
 		public string CookieName { get; set; }
 		public string CookieDomain { get; set; }
 		public bool CookieSecure { get; set; }
+
+		public string CspHeader { get; set; }
 
 		public CorsConfiguration Cors { get; set; }
 

@@ -25,5 +25,6 @@ namespace Database.Repos.Users
 		Task<List<string>> GetUserIdsWithLmsRole(LmsRoleType lmsRole);
 		Task<List<string>> FindUsersBySocialProviderKey(string providerKey);
 		Task<List<ApplicationUser>> FindUsersByConfirmedEmails(IEnumerable<string> emails);
+		Task<List<ApplicationUser>> FindUsersByConfirmedEmail(string email);
 	}
 }

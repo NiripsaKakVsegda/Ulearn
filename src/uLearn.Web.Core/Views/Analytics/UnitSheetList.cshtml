@@ -1,0 +1,21 @@
+﻿@model uLearn.Web.Core.Models.UnitSheetPageModel
+
+@{
+	ViewBag.Title = "Аналитика";
+}
+
+<body>
+<div class="container">
+
+	<h1 class="hidden-xs">Ведомость модуля</h1>
+
+	<h3>Выберите модуль</h3>
+
+	@foreach (var unit in Model.Units)
+	{
+		<div>
+			@Html.ActionLink(unit.Title, "UnitSheet", new { courseId = Model.CourseId, unitId = unit.Id })
+		</div>
+	}
+</div>
+</body>

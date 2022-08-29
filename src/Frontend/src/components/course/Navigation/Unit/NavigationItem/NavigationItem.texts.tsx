@@ -12,7 +12,7 @@ export default {
 	getDeadLineInfo: (
 		deadLineInfo: DeadLineInfo,
 		maxScore: number
-	): React.ReactText => {
+	): string => {
 		return `На этот слайд установлен дедлайн на ${ momentFromServerToLocal(
 			deadLineInfo.date).format(
 			'DD.MM.YYYY HH:mm') }. ${ texts.afterDeadLine(deadLineInfo, maxScore) }`;

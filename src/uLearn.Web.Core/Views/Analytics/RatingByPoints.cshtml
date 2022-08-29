@@ -1,0 +1,54 @@
+﻿@using Ulearn.Common.Extensions
+@using uLearn.Web.Core.Extensions
+@model uLearn.Web.Core.Controllers.ExerciseRatingByPointsModel
+
+@{
+	ViewBag.Title = Model.Slide.Title + " — Рейтинг";
+}
+
+<div class="container">
+	<h1 class="hidden-xs">@Model.Slide.Title</h1>
+
+	@if (Model.AvailableGroups != null && Model.AvailableGroups.Count > 0)
+	{
+		<h3>Выберите группу</h3>
+		foreach (var group in Model.AvailableGroups)
+		{
+			<div>
+				@Html.ActionLink(group.Name, "RatingByPoints", new { courseId = Model.Course.Id, slideId = Model.Slide.Id, groupId = group.Id })
+			</div>
+		}
+	}
+
+	<h3>Рейтинг@(Model.SelectedGroup == null ? null : $" по группе {Model.SelectedGroup.Name}")</h3>
+	<p>Используются очки, полученные за последнее посланное решение.</p>
+	@{
+		var place = 1;
+		<table class="rating-by-points-table">
+			<thead>
+			<tr>
+				<td></td>
+				<td>Имя</td>
+				<td>Очки</td>
+				<td>Дата</td>
+			</tr>
+			</thead>
+			<tbody>
+			@foreach (var userId in Model.UsersOrderedByPoints)
+			{
+				<tr class="@(User.GetUserId() == userId ? "rating-by-points-table__current-user-row" : null)">
+					<td>@place</td>
+					<td>
+					<span title="@(Model.HideOtherUsersNames && User.GetUserId() != userId ? "Имя пользователя скрыто" : null)">
+						@(Model.HideOtherUsersNames && User.GetUserId() != userId ? "***" : Model.Users[userId].VisibleName)
+					</span>
+					</td>
+					<td class="rating-by-points-table__right-cell">@(Model.PointsByUser[userId].Points.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))</td>
+					<td>@(Model.PointsByUser[userId].Timestamp.ToPrettyString(true))</td>
+				</tr>
+				place++;
+			}
+			</tbody>
+		</table>
+	}
+</div>

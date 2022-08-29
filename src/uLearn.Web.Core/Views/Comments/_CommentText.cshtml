@@ -1,0 +1,9 @@
+﻿@using Ulearn.Common.Extensions
+@using uLearn.Web.Core.Extensions
+
+@{
+	var htmlCommentText = Html.EncodeMultiLineText((string)Model.Text);
+	htmlCommentText = htmlCommentText.RenderSimpleMarkdown();
+	htmlCommentText = Html.HighlightLinks(htmlCommentText);
+}
+<div class="comment__text" data-original-text="@Model.Text">@Html.Raw(htmlCommentText)</div>

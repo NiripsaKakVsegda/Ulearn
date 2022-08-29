@@ -18,12 +18,21 @@ namespace RunCsJob
 		public static void SetUp()
 		{
 			Directory.CreateDirectory(compilationDirectory);
+			var dir = new DirectoryInfo("OldAssembly");
+			var newAssembly = Path.Combine(compilationDirectory, "OldAssembly");
+			Directory.CreateDirectory(newAssembly);
+			foreach (var file in dir.GetFiles())
+			{
+				var targetFilePath = Path.Combine(newAssembly, file.Name);
+				file.CopyTo(targetFilePath);
+			}
 			Directory.SetCurrentDirectory(compilationDirectory);
 		}
 
 		[TearDown]
 		public static void TearDown()
 		{
+			Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
 			try
 			{
 				Directory.Delete(compilationDirectory, true);

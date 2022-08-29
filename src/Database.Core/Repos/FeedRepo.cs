@@ -27,9 +27,9 @@ namespace Database.Repos
 		public async Task<DateTime?> GetFeedViewTimestamp(string userId, int transportId)
 		{
 			var updateTimestamp = await db.FeedViewTimestamps
-				.Where(t => t.UserId == userId && (t.TransportId == null || t.TransportId == transportId))
-				.OrderByDescending(t => t.Timestamp)
-				.FirstOrDefaultAsync()
+					.Where(t => t.UserId == userId && (t.TransportId == null || t.TransportId == transportId))
+					.OrderByDescending(t => t.Timestamp)
+					.FirstOrDefaultAsync()
 				;
 			return updateTimestamp?.Timestamp;
 		}
@@ -98,7 +98,7 @@ namespace Database.Repos
 			var nextSecond = from.AddSeconds(1);
 			var userCourses = await visitsRepo.GetUserCourses(userId);
 			var deliveriesQueryable = db.NotificationDeliveries
-				.Select(d => new {d.NotificationTransportId, d.Notification.CourseId, d.Notification.InitiatedById, d.CreateTime})
+				.Select(d => new { d.NotificationTransportId, d.Notification.CourseId, d.Notification.InitiatedById, d.CreateTime })
 				.Where(d => transportIds.Contains(d.NotificationTransportId))
 				.Where(d => userCourses.Contains(d.CourseId))
 				.Where(d => d.InitiatedById != userId)
@@ -160,7 +160,7 @@ namespace Database.Repos
 			List<Notification> notifications,
 			Expression<Func<TNotification, TInclude>> navigationPropertyPath,
 			Expression<Func<Notification, TProperty>> includePath)
-			where TNotification: Notification
+			where TNotification : Notification
 		{
 			var notificationIds = notifications.OfType<TNotification>().Select(n => n.Id).ToList();
 			if (!notificationIds.Any())
@@ -175,7 +175,7 @@ namespace Database.Repos
 				.AsQueryable();
 			return await tnotificationQuery.ToListAsync();
 		}
-		
+
 		private async Task<List<Notification>> GetNotifications<TProperty>(
 			List<int> notificationIds,
 			Expression<Func<Notification, TProperty>> includePath)
@@ -187,6 +187,36 @@ namespace Database.Repos
 			if (includePath != null)
 				query = query.Include(includePath);
 			return await query.ToListAsync();
+		}
+
+		public async Task<FeedNotificationTransport> GetCommonFeedNotificationTransport()
+		{
+			var transport = await notificationsRepo.FindUsersNotificationTransport<FeedNotificationTransport>(null);
+			if (transport == null)
+			{
+				log.Error("Can't find common feed notification transport. You should create FeedNotificationTransport with userId = NULL");
+				throw new Exception("Can't find common feed notification transport");
+			}
+
+			return transport;
+		}
+
+		public async Task<List<NotificationDelivery>> GetFeedNotificationDeliveries(string userId, params FeedNotificationTransport[] transports)
+		{
+			return (await GetFeedNotificationDeliveriesQueryable(userId, transports))
+				.OrderByDescending(d => d.CreateTime)
+				.Take(99)
+				.ToList();
+		}
+
+		private async Task<IQueryable<NotificationDelivery>> GetFeedNotificationDeliveriesQueryable(string userId, params FeedNotificationTransport[] transports)
+		{
+			var transportsIds = new List<FeedNotificationTransport>(transports).Select(t => t.Id).ToList();
+			var userCourses = await visitsRepo.GetUserCourses(userId);
+			return notificationsRepo
+				.GetTransportsDeliveriesQueryable(transportsIds, DateTime.MinValue)
+				.Where(d => userCourses.Contains(d.Notification.CourseId))
+				.Where(d => d.Notification.InitiatedById != userId);
 		}
 	}
 }

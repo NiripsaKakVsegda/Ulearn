@@ -43,5 +43,9 @@ namespace Database.Repos.Comments
 
 		Task<List<Comment>> GetRepliesAsync(int commentId);
 		Task<DefaultDictionary<int, List<Comment>>> GetRepliesAsync(IEnumerable<int> commentIds);
+
+		Dictionary<int, int> GetCommentsLikesCounts(IEnumerable<Comment> comments);
+
+		Task<List<int>> GetCourseCommentsLikedByUserAsync(string courseId, string userId);
 	}
 }

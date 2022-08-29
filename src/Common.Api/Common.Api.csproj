@@ -2,11 +2,11 @@
 
 	<PropertyGroup>
 		<RootNamespace>Ulearn.Common.Api</RootNamespace>
-		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<Authors>SKB Kontur Ulearn Team</Authors>
 		<Copyright>Copyright 2014–2022 SKB Kontur</Copyright>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,6 +27,10 @@
 
 	<ItemGroup>
 	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\AuthorizationRequirement" />
 	</ItemGroup>
 
 	<!-- See https://docs.microsoft.com/ru-ru/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-2.1&tabs=visual-studio%2Cvisual-studio-xml -->

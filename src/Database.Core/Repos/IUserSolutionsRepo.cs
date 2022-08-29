@@ -49,5 +49,7 @@ namespace Database.Repos
 		Task<UserExerciseSubmission> GetUnhandledSubmission(string agentName, List<string> sandboxes);
 		Task<IList<ExerciseCodeReview>> FindSubmissionReviewsBySubmissionId(int submissionId);
 		Task SetExceptionStatusForSubmission(UserExerciseSubmission submission);
+		IQueryable<AutomaticExerciseChecking> GetAutomaticExerciseCheckingsByUsers(string courseId, Guid slideId, List<string> userIds);
+		UserExerciseSubmission FindNoTrackingSubmission(int id);
 	}
 }

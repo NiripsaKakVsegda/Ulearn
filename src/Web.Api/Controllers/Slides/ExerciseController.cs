@@ -154,7 +154,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			}
 
 			var hasAutomaticChecking = exerciseBlock.HasAutomaticChecking();
-			var sandbox = (exerciseSlide.Exercise as UniversalExerciseBlock)?.DockerImageName;
+			var sandbox = (exerciseSlide.Exercise as UniversalExerciseBlock)?.DockerImageName ?? "csharp";
 			var submissionId = await CreateInitialSubmission(courseId, exerciseSlide, userCode, language, userId, userName,
 				hasAutomaticChecking, buildResult, serviceScopeFactory);
 			UserExerciseSubmission submissionNoTracking; // Получается позже, чтобы быть максимально обновленным из базы, и чтобы не занимать память надолго и не попасть в 2 поколение

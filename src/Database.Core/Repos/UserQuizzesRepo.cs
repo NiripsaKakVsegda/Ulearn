@@ -208,5 +208,37 @@ namespace Database.Repos
 					.ToListAsync())
 				.ToDictionary(p => p.Key, p => p.Count.PercentsOf(totalTries));
 		}
+		
+		public async Task<Dictionary<string, Dictionary<string, int>>> GetAnswersFrequencyForChoiceBlocks(string courseId, Guid slideId, List<ChoiceBlock> choiceBlock)
+		{
+			var answers = await db.UserQuizAnswers
+				.Include(q => q.Submission)
+				.Where(q => q.Submission.CourseId == courseId && q.Submission.SlideId == slideId && q.ItemId != null)
+				.OrderByDescending(q => q.Submission.Id)
+				.Select(q => new { q.Submission.UserId, q.Submission.Timestamp, q.BlockId, q.ItemId })
+				.Take(500 * choiceBlock.Count)
+				.ToListAsync();
+			var choiceBlockIds = choiceBlock.Select(cb => cb.Id);
+			answers = answers.Where(a => choiceBlockIds.Contains(a.BlockId)).ToList();
+			var tries = answers
+				.GroupBy(q => q.BlockId)
+				.ToDictionary(g => g.Key, g => g.Select(v => (v.UserId, v.Timestamp)).Distinct().Count());
+			return answers
+				.GroupBy(q => q.BlockId)
+				.ToDictionary(
+					g => g.Key, 
+					g => g
+						.GroupBy(q => q.ItemId)
+						.ToDictionary(g2 => g2.Key, g2 => g2.Count().PercentsOf(tries[g.Key]))
+				);
+		}
+		
+		// Автоматическая проверка не создается, если это лишняя попытка. Так лишние попытки не увеличивают число.
+		public int GetUsedAttemptsCountForQuizWithAutomaticChecking(string courseId, string userId, Guid slideId)
+		{
+			return db.UserQuizSubmissions
+				.Count(s => s.CourseId == courseId && s.UserId == userId && s.SlideId == slideId
+							&& s.AutomaticChecking != null && !s.AutomaticChecking.IgnoreInAttemptsCount);
+		}
 	}
 }

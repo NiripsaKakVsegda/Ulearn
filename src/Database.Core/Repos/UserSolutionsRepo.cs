@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Database.Extensions;
@@ -107,7 +108,7 @@ namespace Database.Repos
 					.Include(s => s.AutomaticChecking);
 			return query.Where(x => x.CourseId == courseId);
 		}
-		
+
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId)
 		{
 			return db.UserExerciseSubmissions
@@ -124,7 +125,7 @@ namespace Database.Repos
 		{
 			return GetAllSubmissions(courseId).Where(x => slidesIds.Contains(x.SlideId));
 		}
-		
+
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsAllInclude(string courseId, IEnumerable<Guid> slidesIds)
 		{
 			return GetAllSubmissionsAllInclude(courseId).Where(x => slidesIds.Contains(x.SlideId));
@@ -180,7 +181,7 @@ namespace Database.Repos
 		{
 			return GetAllSubmissions(courseId, new List<Guid> { slideId }).Where(s => s.UserId == userId);
 		}
-		
+
 		public IQueryable<UserExerciseSubmission> GetAllSubmissionsByUserAllInclude(string courseId, Guid slideId, string userId)
 		{
 			return GetAllSubmissionsAllInclude(courseId, new List<Guid> { slideId }).Where(s => s.UserId == userId);
@@ -547,6 +548,27 @@ namespace Database.Repos
 			return solutionsHashes.ToDictSafe(
 				s => s.SubmissionId,
 				s => textsByHash.GetOrDefault(s.Hash, ""));
+		}
+
+		public UserExerciseSubmission FindNoTrackingSubmission(int id)
+		{
+			return FuncUtils.TrySeveralTimes(() => TryFindNoTrackingSubmission(id).Result, 3, () => Thread.Sleep(TimeSpan.FromMilliseconds(200)));
+		}
+
+		private async Task<UserExerciseSubmission> TryFindNoTrackingSubmission(int id)
+		{
+			var submission = db.UserExerciseSubmissions.AsNoTracking().SingleOrDefault(x => x.Id == id);
+			if (submission == null)
+				return null;
+			submission.SolutionCode = await textsRepo.GetText(submission.SolutionCodeHash);
+
+			if (submission.AutomaticChecking != null)
+			{
+				submission.AutomaticChecking.Output = await textsRepo.GetText(submission.AutomaticChecking.OutputHash);
+				submission.AutomaticChecking.CompilationError = await textsRepo.GetText(submission.AutomaticChecking.CompilationErrorHash);
+			}
+
+			return submission;
 		}
 	}
 

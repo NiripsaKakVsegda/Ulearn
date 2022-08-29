@@ -1,0 +1,28 @@
+﻿@model uLearn.Web.Core.Models.InstructorNoteModel
+
+@{
+	ViewBag.Title = "Заметки преподавателю";
+}
+
+<div class="slide-container">
+	<div class="container body-content">
+		<div class="row">
+			<div class='slide'>
+				<h1>
+					Заметки преподавателю
+					<small>
+						@if (Model.NoteEditUrl != null)
+						{
+							<a href="@Model.NoteEditUrl" target="_blank" style="margin-right: 5px">
+								<span class="glyphicon glyphicon-pencil"></span>
+							</a>
+						}
+						@Model.UnitTitle
+					</small>
+				</h1>
+				<hr/>
+				@Html.Raw(Model.RenderedMarkdownRaw)
+			</div>
+		</div>
+	</div>
+</div>

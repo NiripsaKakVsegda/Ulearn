@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using Database.Repos.Groups;
 using Microsoft.EntityFrameworkCore;
 using Vostok.Logging.Abstractions;
 
@@ -12,10 +13,14 @@ namespace Database.Repos
 	{
 		private readonly UlearnDb db;
 		private static ILog log => LogProvider.Get().ForContext(typeof(GoogleSheetExportTasksRepo));
+		private readonly IGroupAccessesRepo groupAccessesRepo;
+		private readonly ICourseRolesRepo courseRolesRepo;
 
-		public GoogleSheetExportTasksRepo(UlearnDb db)
+		public GoogleSheetExportTasksRepo(UlearnDb db, IGroupAccessesRepo groupAccessesRepo, ICourseRolesRepo courseRolesRepo)
 		{
 			this.db = db;
+			this.groupAccessesRepo = groupAccessesRepo;
+			this.courseRolesRepo = courseRolesRepo;
 		}
 
 		public async Task<int> AddTask(string courseId, string authorId,
@@ -33,6 +38,7 @@ namespace Database.Repos
 				exportTaskGroups.Add(exportTaskGroup);
 				db.GoogleSheetExportTaskGroups.Add(exportTaskGroup);
 			}
+
 			var exportTask = new GoogleSheetExportTask
 			{
 				CourseId = courseId,
@@ -88,7 +94,7 @@ namespace Database.Repos
 			exportTask.ListId = listId;
 			await db.SaveChangesAsync();
 		}
-		
+
 		public async Task SaveTaskUploadResult(GoogleSheetExportTask exportTask, DateTime lastUpdateTime, string error = null)
 		{
 			exportTask.LastUpdateDate = lastUpdateTime;
@@ -98,8 +104,50 @@ namespace Database.Repos
 
 		public async Task DeleteTask(GoogleSheetExportTask exportTask)
 		{
-			db.GoogleSheetExportTasks.Remove(exportTask); 
+			db.GoogleSheetExportTasks.Remove(exportTask);
 			await db.SaveChangesAsync();
+		}
+
+		public async Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<Group> groups, string userId)
+		{
+			if (groups == null)
+				return null;
+			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor).ConfigureAwait(false);
+			var groupsIds = groups.Select(g => g.Id);
+
+			var accessibleAsMemberGroupsIds = db.GroupMembers
+				.Where(a => a.UserId == userId)
+				.Select(g => g.GroupId)
+				.ToHashSet();
+			var accessibleCourseGroupsIds = (await groupAccessesRepo
+					.GetAvailableForUserGroupsAsync(courseId, userId, true, true, true))
+				.Select(g => g.Id);
+
+			accessibleAsMemberGroupsIds.UnionWith(accessibleCourseGroupsIds);
+			accessibleAsMemberGroupsIds.IntersectWith(groupsIds);
+			if (accessibleAsMemberGroupsIds.Count == 0)
+				return null;
+
+			var tasksIds = db.GoogleSheetExportTaskGroups
+				.Where(g => accessibleAsMemberGroupsIds.Contains(g.GroupId))
+				.Select(g => g.TaskId)
+				.ToHashSet();
+
+			var currentUtcTime = DateTime.UtcNow;
+			var query = db.GoogleSheetExportTasks
+				.Include(t => t.Author)
+				.Include(t => t.Groups.Select(g => g.Group))
+				.Where(t => tasksIds.Contains(t.Id))
+				.Where(t => t.RefreshStartDate <= currentUtcTime);
+
+			if (!isInstructor)
+				query = query.Where(t => t.IsVisibleForStudents);
+
+			return query.GroupBy(t => t.Author.Id)
+				.OrderBy(t => t.Key == userId)
+				.SelectMany(t => t)
+				.OrderBy(t => t.RefreshEndDate)
+				.ToList();
 		}
 	}
 }

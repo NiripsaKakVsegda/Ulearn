@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>GiftsGranter</RootNamespace>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <OutputType>Exe</OutputType>
@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.4" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit" Version="3.10.0" />
     <PackageReference Include="OctoPack" Version="3.6.5">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -45,7 +45,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\Database\Database.csproj" />
+    <ProjectReference Include="..\Database.Core\Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json">

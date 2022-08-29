@@ -6,11 +6,10 @@ public class ExternalLoginsListModel
 {
 	public ExternalLoginsListModel()
 	{
-		UserLogins = new List<IdentityUser>();
-		AvailableProviders = new List<string>();
+		UserLogins = new List<IdentityUserLogin<string>>();
 	}
 
-	public string Action { get; set; }
+	public string ActionName { get; set; }
 
 	public string ReturnUrl { get; set; }
 
@@ -18,10 +17,10 @@ public class ExternalLoginsListModel
 
 	public ExternalLoginListType Type { get; set; }
 
-	public List<IdentityUser> UserLogins { get; set; }
+	public List<IdentityUserLogin<string>> UserLogins { get; set; }
 
 	/* If empty, all providers are available */
-	public List<string> AvailableProviders { get; set; }
+	public List<string>? AvailableProviders { get; set; }
 }
 
 public enum ExternalLoginListType

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net48;net6.0</TargetFrameworks>
 		<NoWarn>NU1701;CS0168</NoWarn>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

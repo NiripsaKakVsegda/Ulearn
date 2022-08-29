@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using HtmlHelper = Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper;
@@ -55,7 +56,7 @@ public static class HtmlExtensions
 
 	public static readonly Regex urlRegex = new Regex(urlRegexS, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-	public static string EncodeMultiLineText(this HtmlHelper helper, string text, bool keepFirstSpaces = false)
+	public static string EncodeMultiLineText(this IHtmlHelper helper, string text, bool keepFirstSpaces = false)
 	{
 		if (string.IsNullOrEmpty(text))
 			return string.Empty;
@@ -73,7 +74,7 @@ public static class HtmlExtensions
 		return url.Contains("@") && !url.Contains("/");
 	}
 
-	public static string HighlightLink(this HtmlHelper helper, string url)
+	public static string HighlightLink(this IHtmlHelper helper, string url)
 	{
 		var fullUrl = url;
 		if (!url.Contains("://") && !url.StartsWith("mailto:"))
@@ -93,7 +94,7 @@ public static class HtmlExtensions
 	/// <param name="helper"></param>
 	/// <param name="htmlEncodedText">HTML-encoded text</param>
 	/// <returns>HTML string with links</returns>
-	public static string HighlightLinks(this HtmlHelper helper, string htmlEncodedText)
+	public static string HighlightLinks(this IHtmlHelper helper, string htmlEncodedText)
 	{
 		return urlRegex.Replace(htmlEncodedText, match => helper.HighlightLink(match.Groups[0].Value));
 	}
@@ -102,52 +103,81 @@ public static class HtmlExtensions
 	/// Creates `DropDownList` with item's data-attributes. Options are the same as for `SelectExtensions.DropdownList()`,
 	/// but `selectList` is a list of `SelectListItemWithAttributes`.
 	/// </summary>
-	// public static MvcHtmlString DropDownListWithItemAttributes(this HtmlHelper htmlHelper, string name, IEnumerable<SelectListItemWithAttributes> selectList, IDictionary<string, object> htmlAttributes)
-	// {
-	// 	selectList = selectList.ToList();
-	// 	var selectItems = selectList.ToDictionary(item => item.Value, item => item);
-	// 	var selectDoc = XDocument.Parse(htmlHelper.DropDownList(name, selectList, htmlAttributes).ToString());
-	//
-	// 	var selectElement = selectDoc.Element("select");
-	// 	if (selectElement != null)
-	// 	{
-	// 		var options = selectElement.XPathSelectElements("//option").ToList();
-	//
-	// 		foreach (var option in options)
-	// 		{
-	// 			var optionValue = option.Attribute("value");
-	// 			if (optionValue != null && selectItems.ContainsKey(optionValue.Value))
-	// 			{
-	// 				var listItem = selectItems[optionValue.Value];
-	// 				foreach (var attribute in HtmlHelper.AnonymousObjectToHtmlAttributes(listItem.HtmlAttributes))
-	// 					option.SetAttributeValue(attribute.Key, attribute.Value);
-	// 			}
-	// 		}
-	// 	}
-	//
-	// 	return MvcHtmlString.Create(selectDoc.ToString());
-	// }
+	public static HtmlString DropDownListWithItemAttributes(
+		this IHtmlHelper htmlHelper,
+		string name,
+		IEnumerable<SelectListItemWithAttributes> selectList,
+		IDictionary<string, object> htmlAttributes
+	)
+	{
+		selectList = selectList.ToList();
+		var selectItems = selectList.ToDictionary(item => item.Value, item => item);
+		var content = htmlHelper.DropDownList(name, selectList, htmlAttributes).ToHtmlString();
+		if (content == null || content == "")
+			return null;
+		var selectDoc = XDocument.Parse(content);
 
-	// public static MvcHtmlString DropDownListWithItemAttributes(this HtmlHelper htmlHelper, string name, IEnumerable<SelectListItemWithAttributes> selectList, object htmlAttributes)
-	// {
-	// 	return DropDownListWithItemAttributes(htmlHelper, name, selectList, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
-	// }
+		var selectElement = selectDoc.Element("select");
+		if (selectElement != null)
+		{
+			var options = selectElement.XPathSelectElements("//option").ToList();
+
+			foreach (var option in options)
+			{
+				var optionValue = option.Attribute("value");
+				if (optionValue != null && selectItems.ContainsKey(optionValue.Value))
+				{
+					var listItem = selectItems[optionValue.Value];
+					foreach (var attribute in HtmlHelper.AnonymousObjectToHtmlAttributes(listItem.HtmlAttributes))
+						option.SetAttributeValue(attribute.Key, attribute.Value);
+				}
+			}
+		}
+
+		return new HtmlString(selectDoc.ToString());
+	}
+
+	public static HtmlString DropDownListWithItemAttributes(this IHtmlHelper htmlHelper, string name, IEnumerable<SelectListItemWithAttributes> selectList, object htmlAttributes)
+	{
+		return DropDownListWithItemAttributes(htmlHelper, name, selectList, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+	}
 
 	/* This method shows ValidationSummary() iff at least one error exists. Standard ValidationSummary() sometimes shows empty <div>.
 	See https://stackoverflow.com/a/12111297 for details. */
-	public static IHtmlContent? UlearnValidationSummary(this HtmlHelper htmlHelper, bool excludePropertyErrors)
+	public static IHtmlContent? UlearnValidationSummary(this IHtmlHelper htmlHelper, bool excludePropertyErrors)
 	{
 		var htmlString = htmlHelper.ValidationSummary(excludePropertyErrors);
 
 		if (htmlString == null)
 			return null;
 
-		var xmlElement = XElement.Parse(htmlString.ToString()); //TODO ToHtmlString
+		var content = htmlString.ToHtmlString();
+		if (content == null || content == "")
+			return null;
+
+		var xmlElement = XElement.Parse(content);
 		var lis = xmlElement.Element("ul")?.Elements("li").ToList();
 		if (lis == null || lis.Count == 1 && lis.First().Value == "")
 			return null;
 
 		return htmlString;
+	}
+}
+
+public static class HtmlContentExtensions
+{
+	public static string ToHtmlString(this IHtmlContent htmlContent)
+	{
+		if (htmlContent is HtmlString htmlString)
+		{
+			return htmlString.Value;
+		}
+
+		using (var writer = new StringWriter())
+		{
+			htmlContent.WriteTo(writer, System.Text.Encodings.Web.HtmlEncoder.Default);
+			return writer.ToString();
+		}
 	}
 }
 

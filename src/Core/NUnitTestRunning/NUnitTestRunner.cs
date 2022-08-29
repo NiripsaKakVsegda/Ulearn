@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Text.RegularExpressions;
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
@@ -84,10 +85,6 @@ namespace Ulearn.Core.NUnitTestRunning
 			}
 
 			public void TestOutput(TestOutput output)
-			{
-			}
-
-			public void SendMessage(TestMessage message)
 			{
 			}
 		}

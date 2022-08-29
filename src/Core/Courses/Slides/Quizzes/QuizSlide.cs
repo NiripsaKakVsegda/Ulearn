@@ -26,7 +26,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes
 
 		public override string ScoringGroup => Scoring.ScoringGroup;
 
-		public override int MaxScore => Blocks.OfType<AbstractQuestionBlock>().Sum(b => b.MaxScore);
+		public override int MaxScore => (Blocks ?? Array.Empty<SlideBlock>()).OfType<AbstractQuestionBlock>().Sum(b => b.MaxScore);
 
 		/* TODO (andgein): remove MaxTriesCount and ManualChecking and use Scoring's fields implicitly */
 		[XmlIgnore]

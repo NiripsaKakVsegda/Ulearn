@@ -1,0 +1,80 @@
+﻿@using System.Web
+@using Database.Models
+@using Ulearn.Common.Extensions
+@using uLearn.Web.Core.Extensions
+
+@model Database.Models.ExerciseCodeReviewComment
+
+<div class="exercise__review-comment">
+	<div class="exercise__review__comment__header with-timestamp">
+		<div class="media">
+			<div class="media-left">
+				@{ SmallAvatar(Model.Author); }
+			</div>
+			<div class="media-body">
+				@{
+					var courseId = Model.Review.ExerciseCheckingId.HasValue ? Model.Review.ExerciseChecking.CourseId : Model.Review.Submission.CourseId;
+					var canDelete = Model.AuthorId == User.GetUserId() || User.HasAccessFor(courseId, CourseRoleType.CourseAdmin);
+					if (canDelete)
+					{
+						<span class="pull-right exercise__delete-review-comment visible-on-parent-hover"
+							title="Удалить комментарий"
+							data-url="@Url.Action("DeleteExerciseCodeReviewComment", "Exercise", new { commentId = Model.Id })">
+							&times;
+						</span>
+					}
+				}
+
+				<div class="author">@Model.Author.VisibleName</div>
+				<div class="timestamp" title="@Model.AddingTime.ToPrettyString()">@Model.AddingTime.ToAgoPrettyString()</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="exercise__review__comment">
+		@Html.Raw(Html.HighlightLinks(Html.EncodeMultiLineText(Model.Text, keepFirstSpaces: true).RenderSimpleMarkdown()))
+	</div>
+</div>
+
+@functions{
+	public void GetAvatarPlaceholderColor(ApplicationUser user)
+	{
+		var hashForColor = user.Id.Aggregate(0, (a, i) => a += i);
+		var hue = Math.Abs(hashForColor) % 360;
+		<text>hsl(@hue, 64%, 75%)</text>
+	}
+
+	public void GetAvatarPlaceholderLetter(ApplicationUser user)
+	{
+		<text>@char.ToUpper(user.VisibleName.FindFirstLetter('O'))</text>
+	}
+
+	public void Avatar(ApplicationUser user, string classes = "")
+	{
+		if (user.HasAvatar)
+		{
+			<img class="user__avatar @classes" src="@user.AvatarUrl" alt="@HttpUtility.HtmlAttributeEncode(user.VisibleName)"/>
+		}
+		else
+		{
+			<div class="user__avatar user__avatar__placeholder @classes" style="background-color: @{ GetAvatarPlaceholderColor(user); }">
+				@{ GetAvatarPlaceholderLetter(user); }
+			</div>
+		}
+	}
+
+	public void SmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "small " + classes);
+	}
+
+	public void ExtraSmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "xsmall " + classes);
+	}
+
+	public void LargeAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "large " + classes);
+	}
+}

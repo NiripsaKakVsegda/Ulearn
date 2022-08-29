@@ -17,6 +17,7 @@ const devServerConfig: WebpackDevServer.Configuration = {
 		overlay: false,
 		progress: false,
 	},
+	server: "https",
 	hot: true,
 	static: {
 		directory: paths.appPublic,
@@ -37,7 +38,7 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			target: webUrl,
 		},
 		{
-			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**"],
+			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**", "/content/**"],
 			secure: false,
 			changeOrigin: true,
 			target: webUrl,

@@ -78,7 +78,7 @@ namespace Ulearn.Core.Helpers
 		{
 			MsBuildLocationHelper.InitPathToMsBuild();
 			return FuncUtils.Using(
-				new ProjectCollection(),
+				new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile),
 				projectCollection =>
 				{
 					return Body();

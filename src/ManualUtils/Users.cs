@@ -10,7 +10,7 @@ namespace ManualUtils
 	{
 		public static void PrintCourseAdmins(UlearnDb db)
 		{
-			var courseRolesRepo = new CourseRolesRepo(db, null);
+			var courseRolesRepo = new CourseRolesRepo(db, null, null);
 			var adminIds = courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.CourseAdmin, null, false).Result;
 			var users = adminIds.Select(
 				adminId =>

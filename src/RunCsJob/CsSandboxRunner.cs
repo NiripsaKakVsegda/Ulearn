@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security;
 using System.Text;
+using CsSandboxer;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json;

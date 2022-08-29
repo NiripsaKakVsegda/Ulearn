@@ -3,7 +3,7 @@ import moment from "moment/moment";
 import React from "react";
 
 export default {
-	buildUploadTimeRange: (task: GoogleSheetsExportTaskResponse): React.ReactText => `Выгрузка с ${ moment(
+	buildUploadTimeRange: (task: GoogleSheetsExportTaskResponse): string => `Выгрузка с ${ moment(
 		task.refreshStartDate).format('DD.MM.yyyy') } по ${ moment(task.refreshEndDate).format('DD.MM.yyyy') }`,
 	isVisibleForStudents:'Видна студентам',
 	isInvisibleForStudents:'Не видна студентам',
