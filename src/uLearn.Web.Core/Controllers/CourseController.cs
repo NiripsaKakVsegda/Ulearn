@@ -86,7 +86,6 @@ public class CourseController : BaseController
 	[AllowAnonymous]
 	public async Task<ActionResult> SlideById(string courseId, string slideId = "", int? checkQueueItemId = null, int? version = null, int autoplay = 0)
 	{
-		HttpContext.RaiseError(new Exception("Test"));
 		if (slideId.Contains("_"))
 			slideId = slideId.Substring(slideId.LastIndexOf('_') + 1);
 
