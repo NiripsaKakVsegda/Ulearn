@@ -4,6 +4,7 @@ using Microsoft.AspNet.Identity;
 using Vostok.Logging.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using uLearn.Web.Core.Authentication;
 using uLearn.Web.Core.Extensions;
 
 namespace uLearn.Web.Core.Controllers;
@@ -43,8 +44,8 @@ public class AuthenticationManager
 	private async Task InternalLoginAsync(HttpContext context, ApplicationUser user, bool isPersistent)
 	{
 		//await context.SignOutAsync(DefaultAuthenticationTypes.ExternalCookie);
-		await context.AuthenticateAsync("Identity.Application");
+		await context.AuthenticateAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme);
 		var claimsIdentity = await user.GenerateUserIdentityAsync(principalFactory, courseRolesRepo);
-		await context.SignInAsync("Identity.Application", claimsIdentity, new AuthenticationProperties { IsPersistent = isPersistent });
+		await context.SignInAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme, claimsIdentity, new AuthenticationProperties { IsPersistent = isPersistent });
 	}
 }

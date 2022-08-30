@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Routing;
+﻿namespace uLearn.Web.Core.Extensions;
 
 public static class HelperExtensions
 {

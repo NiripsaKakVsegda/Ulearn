@@ -1,5 +1,5 @@
-﻿@using uLearn.Web.Core.External.Kontur
-@using uLearn.Web.Core.External.Vkontakte
+﻿@using uLearn.Web.Core.Authentication.External.Kontur
+@using uLearn.Web.Core.Authentication.External.Vkontakte
 @using uLearn.Web.Core.Models
 
 @model string
@@ -41,7 +41,7 @@
 					ActionName = "ExternalLogin",
 					ReturnUrl = ViewBag.ReturnUrl,
 					Type = ExternalLoginListType.Login,
-					AvailableProviders = new List<string> { Constants.DefaultAuthenticationType }
+					AvailableProviders = new List<string> { VkontakteConstants.DefaultAuthenticationType }
 				})
 			</section>
 

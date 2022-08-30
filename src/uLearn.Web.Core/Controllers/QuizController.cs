@@ -16,7 +16,7 @@ using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 using Ulearn.Core.Extensions;
 using Ulearn.Core.Metrics;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Extensions.LTI;
 using uLearn.Web.Core.Models;
@@ -24,7 +24,7 @@ using Vostok.Logging.Abstractions;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 public class QuizController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(QuizController));
@@ -323,7 +323,7 @@ public class QuizController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<IActionResult> ScoreQuiz(int id, string nextUrl, string errorUrl = "")
 	{
 		metricSender.SendCount("quiz.manual_score");

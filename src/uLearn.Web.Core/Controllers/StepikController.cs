@@ -11,14 +11,14 @@ using Ulearn.Core;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using Vostok.Logging.Abstractions;
 using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "CourseAdmins")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
+[Authorize(Policy = UlearnAuthorizationBuilder.CourseAdminsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
 public class StepikController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(StepikController));

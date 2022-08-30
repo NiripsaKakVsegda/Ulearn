@@ -1,4 +1,4 @@
-﻿namespace Ulearn.Web.Core.Attributes;
+﻿namespace uLearn.Web.Core.Attributes;
 
 public class IsErrorAttribute : Attribute
 {

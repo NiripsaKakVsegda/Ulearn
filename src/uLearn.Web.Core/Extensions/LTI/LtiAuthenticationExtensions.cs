@@ -58,7 +58,7 @@
 // 				OnGenerateUserName = context => SecurityHandler.OnGenerateUserName(context)
 // 			},
 // 			//SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
-// 			SignInAsAuthenticationType = "Identity.Application"
+// 			SignInAsAuthenticationType = UlearnAuthenticationConstants.DefaultAuthenticationScheme
 // 		});
 // 	
 // 		return app;

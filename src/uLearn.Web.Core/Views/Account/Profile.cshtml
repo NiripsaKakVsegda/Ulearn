@@ -1,9 +1,9 @@
 ﻿@using System.Web
 @using Database.Models
 @using Ulearn.Common
+@using uLearn.Web.Core.Authentication.External.Kontur
+@using uLearn.Web.Core.Authentication.External.Vkontakte
 @using uLearn.Web.Core.Extensions
-@using uLearn.Web.Core.External.Kontur
-@using uLearn.Web.Core.External.Vkontakte
 
 @model uLearn.Web.Core.Controllers.ProfileModel
 
@@ -66,7 +66,7 @@
 		<div>
 			<div>@Model.User.UserName, <a href="mailto:@Model.User.Email">@Model.User.Email</a><i>@(!Model.User.EmailConfirmed ? " (почта не подтверждена)" : "")</i></div>
 			@{
-				var vkLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == "Вконтакте");
+				var vkLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == VkontakteConstants.DefaultAuthenticationType);
 				if (vkLogin != null)
 				{
 					<div>

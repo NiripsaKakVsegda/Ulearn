@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Models;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 public class SandboxController : Controller
 {
 	private readonly IUserSolutionsRepo solutionsRepo;

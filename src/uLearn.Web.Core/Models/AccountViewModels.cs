@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common;
 using Ulearn.Core.Courses;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Attributes;
 
 namespace uLearn.Web.Core.Models;
 

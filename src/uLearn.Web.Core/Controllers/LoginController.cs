@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
-using Ulearn.Web.Core.Attributes;
-using uLearn.Web.Core.External.Kontur;
-using uLearn.Web.Core.External.Vkontakte;
+using uLearn.Web.Core.Authentication.External.Kontur;
+using uLearn.Web.Core.Authentication.External.Vkontakte;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Models;
 using Vostok.Logging.Abstractions;
 
@@ -158,7 +158,7 @@ public class LoginController : BaseUserController
 			return Redirect(this.FixRedirectUrl(returnUrl));
 		}
 
-		if (info.LoginProvider == "Вконтакте")
+		if (info.LoginProvider == VkontakteConstants.DefaultAuthenticationType)
 			metricSender.SendCount("registration.via_vk.try");
 		else if (info.LoginProvider == KonturPassportConstants.AuthenticationType)
 			metricSender.SendCount("registration.via_kontur_passport.try");
@@ -233,7 +233,7 @@ public class LoginController : BaseUserController
 					}
 
 					metricSender.SendCount("registration.success");
-					if (info.LoginProvider == Constants.DefaultAuthenticationType)
+					if (info.LoginProvider == VkontakteConstants.DefaultAuthenticationType)
 						metricSender.SendCount("registration.via_vk.success");
 					else if (info.LoginProvider == KonturPassportConstants.AuthenticationType)
 						metricSender.SendCount("registration.via_kontur_passport.success");
@@ -254,7 +254,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpGet]
-	[Authorize(Policy = "Students")]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 	public ActionResult LinkLogin(string provider, string returnUrl)
 	{
 		return View(new LinkLoginViewModel
@@ -265,7 +265,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = "Students")]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public ActionResult DoLinkLogin(string provider, string returnUrl = "")
@@ -279,7 +279,7 @@ public class LoginController : BaseUserController
 		return Challenge(properties, provider);
 	}
 
-	[Authorize(Policy = "Students")]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 	public async Task<ActionResult> LinkLoginCallback(string returnUrl = "")
 	{
 		var user = await userManager.GetUserAsync(User);

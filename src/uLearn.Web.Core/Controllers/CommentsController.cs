@@ -15,7 +15,7 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Quizzes;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
 
@@ -127,7 +127,7 @@ public class CommentsController : Controller
 			commentsPolicy.LastTimeForMaxCommentsLimit);
 	}
 
-	[Authorize(Policy = "Students")]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
@@ -219,7 +219,7 @@ public class CommentsController : Controller
 		await notificationsRepo.AddNotification(courseId, notification, comment.AuthorId);
 	}
 
-	[Authorize(Policy = "Students")]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]

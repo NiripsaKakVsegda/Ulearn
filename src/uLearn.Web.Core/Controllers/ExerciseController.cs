@@ -20,7 +20,7 @@ using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Metrics;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
 using Vostok.Clusterclient.Core.Model;
@@ -30,7 +30,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 public class ExerciseController : JsonDataContractController
 {
 	private readonly UlearnDb db;
@@ -82,7 +82,7 @@ public class ExerciseController : JsonDataContractController
 		authCookieName = configuration.Web.CookieName;
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	[HttpPost]
 	public async Task<ActionResult> AddExerciseCodeReview(string courseId, int checkingId, [FromBody] ReviewInfo reviewInfo)
 	{
@@ -115,7 +115,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> DeleteExerciseCodeReview(string courseId, int reviewId)
 	{
 		var review = await slideCheckingsRepo.FindExerciseCodeReviewById(reviewId);
@@ -130,7 +130,7 @@ public class ExerciseController : JsonDataContractController
 		return Json(new CodeReviewOperationResult { Status = "ok" });
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	[HttpPost]
 	public async Task<ActionResult> UpdateExerciseCodeReview(string courseId, int reviewId, string comment)
 	{
@@ -145,7 +145,7 @@ public class ExerciseController : JsonDataContractController
 		return Json(new CodeReviewOperationResult { Status = "ok" });
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	[HttpPost]
 	public async Task<ActionResult> HideFromTopCodeReviewComments(string courseId, Guid slideId, string comment)
 	{
@@ -165,7 +165,7 @@ public class ExerciseController : JsonDataContractController
 		});
 	}
 
-	[Authorize(Policy = "CourseAdmins")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.CourseAdminsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
 	public async Task<ActionResult> SlideCodeReviewComments(string courseId, Guid slideId)
 	{
 		var comments = await slideCheckingsRepo.GetLastYearReviewComments(courseId, slideId);
@@ -231,7 +231,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> ScoreExercise(int id, string nextUrl, string exercisePercent, bool prohibitFurtherReview, string errorUrl = "", bool recheck = false)
 	{
 		if (string.IsNullOrEmpty(errorUrl))
@@ -285,7 +285,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> SimpleScoreExercise(int submissionId, int exercisePercent, bool ignoreNewestSubmission = false)
 	{
 		var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
@@ -421,7 +421,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[AllowAnonymous]
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> Submission(string courseId, Guid slideId, string userId = null, int? submissionId = null, int? manualCheckingId = null, bool isLti = false, bool showOutput = false, bool instructorView = false, bool onlyAccepted = true)
 	{
 		var currentUserId = userId ?? (User.Identity.IsAuthenticated ? User.GetUserId() : "");
@@ -517,14 +517,14 @@ public class ExerciseController : JsonDataContractController
 		return PartialView("~/Views/Exercise/_ExerciseScoreForm.cshtml", model);
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> StudentSubmissions(string courseId, Guid slideId)
 	{
 		var model = await GetStudentSubmissionsModel(courseId, slideId, "");
 		return PartialView(model.Value);
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> StudentSubmissionsTable(string courseId, Guid slideId, string name)
 	{
 		var model = await GetStudentSubmissionsModel(courseId, slideId, name);

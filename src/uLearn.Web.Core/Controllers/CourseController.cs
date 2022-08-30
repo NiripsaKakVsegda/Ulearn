@@ -19,14 +19,14 @@ using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Units;
 using Ulearn.Core.Markdown;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Extensions.LTI;
 using uLearn.Web.Core.Models;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 public class CourseController : BaseController
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(CourseController));
@@ -422,7 +422,7 @@ public class CourseController : BaseController
 		return await visitsRepo.FindVisit(courseId, slideId, userId);
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> InstructorNote(string courseId, Guid unitId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -433,7 +433,7 @@ public class CourseController : BaseController
 		return View(new InstructorNoteModel(slide, gitEditUrl, new MarkdownRenderContext(baseUrlApi, baseUrlWeb, courseId, slide.Unit.UnitDirectoryRelativeToCourse)));
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Tester)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Tester)]
 	public async Task<ActionResult> ForgetAll(string courseId, Guid slideId)
 	{
 		var slide = courseStorage.GetCourse(courseId).GetSlideByIdNotSafe(slideId);

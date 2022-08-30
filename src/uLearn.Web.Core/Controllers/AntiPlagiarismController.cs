@@ -17,14 +17,14 @@ using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Exercises;
-using Ulearn.Web.Core.Attributes;
 using uLearn.Web.Core.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 public class AntiPlagiarismController : JsonDataContractController
 {
 	private readonly IUserSolutionsRepo userSolutionsRepo;

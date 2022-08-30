@@ -20,13 +20,13 @@ using Ulearn.Core.Courses.Slides.Exercises;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Units;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)
 public class AnalyticsController : JsonDataContractController
 {
 	private readonly UlearnDb db;
@@ -74,7 +74,7 @@ public class AnalyticsController : JsonDataContractController
 		this.configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 	}
 
-	[Authorize(Policy = "Instructors")]//[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]//[Authorize(Policy = UlearnAuthorization.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> UnitSheet(UnitSheetParams param)
 	{
 		const int usersLimit = 200;
@@ -171,7 +171,7 @@ public class AnalyticsController : JsonDataContractController
 		return View(model);
 	}
 
-	[Authorize(Policy = "CourseAdmins")]//[Authorize(Policy = "CourseAdmins")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.CourseAdminsPolicyName)]//[Authorize(Policy = UlearnAuthorization.CourseAdminsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.CourseAdmin)]
 	public async Task<ActionResult> UnitStatistics(UnitSheetParams param)
 	{
 		if (param.CourseId == null)
@@ -320,7 +320,7 @@ public class AnalyticsController : JsonDataContractController
 	}
 
 
-	[Authorize(Policy = "Students")]//[ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)]
 	public async Task<ActionResult> CourseStatistics(CourseStatisticsParams param, int max = 200)
 	{
 		if (param.CourseId == null)
@@ -531,7 +531,7 @@ public class AnalyticsController : JsonDataContractController
 			.ToDefaultDictionary();
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> UserUnitStatistics(string courseId, Guid unitId, string userId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -580,7 +580,7 @@ public class AnalyticsController : JsonDataContractController
 		return View(model);
 	}
 
-	[Authorize(Policy = "Students")]//[ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize(MinAccessLevel = CourseRoleType.Student)]
 	public async Task<ActionResult> RatingByPoints(string courseId, Guid slideId, int? groupId = null)
 	{
 		var course = courseStorage.FindCourse(courseId);
@@ -686,7 +686,7 @@ public class AnalyticsController : JsonDataContractController
 		return ordered.Select(p => p.Key).ToList();
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> UsersProgress(string courseId, Guid unitId, DateTime periodStart)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -761,7 +761,7 @@ public class AnalyticsController : JsonDataContractController
 			.ToArray();
 	}
 
-	[Authorize(Policy = "Instructors")] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
 	public async Task<ActionResult> UserSolutions(string courseId, string userId, Guid slideId, int? version = null)
 	{
 		var user = await db.Users.FindAsync(userId);

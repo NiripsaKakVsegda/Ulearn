@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Ulearn.Core.Configuration;
 using Web.Api.Configuration;
 
-namespace Ulearn.Web.Core.Attributes;
+namespace uLearn.Web.Core.Attributes;
 
 public class ServeStaticFileForEveryNonAjaxRequestAttribute : ActionFilterAttribute
 {
@@ -64,13 +64,6 @@ public class ServeStaticFileForEveryNonAjaxRequestAttribute : ActionFilterAttrib
 	public override void OnResultExecuting(ResultExecutingContext filterContext)
 	{
 		/* Add no-cache headers for correct working of react application (otherwise clicking on `back` button in browsers loads cached not-reacted version) */
-		// var cache = filterContext.HttpContext.Response.Headers;
-		// cache["Expires"] = "-1";
-		// cache.SetValidUntilExpires(false);
-		// cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
-		// cache.SetCacheability(HttpCacheability.NoCache);
-		// cache.SetNoStore();
-		//
 		filterContext.HttpContext.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
 		filterContext.HttpContext.Response.Headers["Expires"] = "-1";
 		filterContext.HttpContext.Response.Headers["Pragma"] = "no-cache";

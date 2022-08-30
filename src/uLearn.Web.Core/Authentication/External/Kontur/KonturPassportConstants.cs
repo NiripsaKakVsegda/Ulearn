@@ -1,4 +1,4 @@
-﻿namespace uLearn.Web.Core.External.Kontur;
+﻿namespace uLearn.Web.Core.Authentication.External.Kontur;
 
 public static class KonturPassportConstants
 {

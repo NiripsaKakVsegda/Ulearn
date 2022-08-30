@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Telegram.Bot.Types;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
 public class FeedController : Controller //JsonDataContractController
 {
 	private readonly IServiceProvider serviceProvider;

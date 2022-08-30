@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Ulearn.Web.Core.Attributes;
+namespace uLearn.Web.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public class MustBeTrueAttribute : ValidationAttribute

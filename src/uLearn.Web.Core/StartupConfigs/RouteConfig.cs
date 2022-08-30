@@ -1,4 +1,4 @@
-﻿namespace uLearn.Web.Core.Utils;
+﻿namespace uLearn.Web.Core.Start;
 
 public static class RouteConfig
 {

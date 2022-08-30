@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Web.Core.Attributes;
+using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = "Students")]//ULearnAuthorize
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//ULearnAuthorize
 public class NotificationsController : Controller
 {
 	private readonly INotificationsRepo notificationsRepo;
