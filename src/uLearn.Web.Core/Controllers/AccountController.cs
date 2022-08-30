@@ -5,6 +5,7 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.SystemAccessesRepo;
 using Database.Repos.Users;
+using ElmahCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;

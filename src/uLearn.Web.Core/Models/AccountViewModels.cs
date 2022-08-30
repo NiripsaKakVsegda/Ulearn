@@ -109,7 +109,7 @@ public class RegistrationViewModel
 	[MustBeTrue(ErrorMessage = "Нужно согласиться с правилами")]
 	public bool AgreeWithTerms { get; set; }
 
-	public string ReturnUrl { get; set; }
+	public string? ReturnUrl { get; set; }
 
 	public bool RegistrationFinished { get; set; }
 	

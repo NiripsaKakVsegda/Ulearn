@@ -158,8 +158,7 @@ public class LoginController : BaseUserController
 			return Redirect(this.FixRedirectUrl(returnUrl));
 		}
 
-		//if (loginInfo.ExternalIdentity.AuthenticationType == Constants.DefaultAuthenticationType) TODO
-		if (info.LoginProvider == Constants.DefaultAuthenticationType)
+		if (info.LoginProvider == "Вконтакте")
 			metricSender.SendCount("registration.via_vk.try");
 		else if (info.LoginProvider == KonturPassportConstants.AuthenticationType)
 			metricSender.SendCount("registration.via_kontur_passport.try");
@@ -183,7 +182,7 @@ public class LoginController : BaseUserController
 	//[ValidateInput(false)]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
+	public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string? returnUrl)
 	{
 		if (User.Identity.IsAuthenticated)
 			return RedirectToAction("Manage", "Account");

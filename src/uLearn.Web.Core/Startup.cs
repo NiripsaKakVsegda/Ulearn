@@ -81,7 +81,7 @@ public class Startup
 		services.AddSingleton<IWebCourseManager, WebCourseManager>();
 
 		ConfigureAuthServices(services);
-
+		
 		services.AddElmah(options =>
 		{
 			options.Notifiers.Add(new ElmahTelegram());
@@ -91,14 +91,10 @@ public class Startup
 				var isSysAdmin = context.User.IsSystemAdministrator();
 
 				if (!isSysAdmin && !isAuthenticated)
-				{
 					context.Response.Redirect($"/login?returnUrl={context.Request.Path}");
-				}
 
 				if (isAuthenticated && !isSysAdmin)
-				{
 					context.Response.Redirect("/");
-				}
 
 				return true;
 			};
@@ -160,8 +156,9 @@ public class Startup
 		services
 			.AddAuthentication(options =>
 			{
-				options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-				options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				options.DefaultAuthenticateScheme = "Identity.Application";
+				options.DefaultScheme = "Identity.Application";
+				options.DefaultChallengeScheme = "Identity.Application";
 			})
 			.AddCookie(options =>
 			{
@@ -229,35 +226,39 @@ public class Startup
 				};
 			});
 
-		services.AddAuthentication(options => { options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme; })
+		services
+			.AddAuthentication(options =>
+			{
+				options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+			})
 			.AddOpenIdConnect("Контур.Паспорт", "Контур.Паспорт", options =>
 			{
 				var passportAppId = Configuration.OldWebConfig["oicd.konturPassport.clientId"];
 				var passportAppSecret = Configuration.OldWebConfig["oicd.konturPassport.clientSecret"];
 				var passportAuthority = Configuration.OldWebConfig["oicd.konturPassport.authority"];
 				var returnUrl = Configuration.OldWebConfig["oicd.konturPassport.returnUrl"];
-
+		
 				options.Authority = passportAuthority;
 				options.ClientId = passportAppId;
 				options.ClientSecret = passportAppSecret;
 				options.CallbackPath = returnUrl;
-
+		
 				options.Scope.AddAll(new[] { "openid", "profile", "email" });
-
+		
 				options.Events.OnTicketReceived = context =>
 				{
 					var user = context.Principal;
 					var userClaims = user.Claims.ToList();
 					const string xmlSchemaForStringType = "http://www.w3.org/2001/XMLSchema#string";
-
+		
 					log.Info($"Received follow user claims from Kontur.Passport server: {string.Join(", ", userClaims.Select(c => c.Type + ": " + c.Value))}");
-
+		
 					var login = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 					var sid = userClaims.FirstOrDefault(c => c.Type == KonturPassportConstants.SidClaimType)?.Value;
 					var email = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 					var avatarUrl = userClaims.FirstOrDefault(c => c.Type == KonturPassportConstants.AvatarUrlClaimType)?.Value;
 					var realNameParts = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value.Split(' ');
-
+		
 					var identity = new ClaimsIdentity();
 					if (sid != null)
 						identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, sid, xmlSchemaForStringType));
@@ -272,19 +273,19 @@ public class Startup
 						if (realNameParts.Length > 1)
 							identity.AddClaim(new Claim(ClaimTypes.GivenName, realNameParts[1], xmlSchemaForStringType));
 					}
-
+		
 					/* Replace name from Kontur\andgein to andgein */
 					if (login != null && login.Contains('\\'))
 						login = login[(login.IndexOf('\\') + 1)..];
-
+		
 					if (login != null)
 					{
 						identity.AddClaim(new Claim(ClaimTypes.Name, login, xmlSchemaForStringType));
-						identity.AddClaim(new Claim("KonturLogin", login, xmlSchemaForStringType));
+						identity.AddClaim(new Claim("KonturLogin", sid, xmlSchemaForStringType));
 					}
-
+		
 					user.AddIdentity(identity);
-
+		
 					return Task.CompletedTask;
 				};
 			});
@@ -321,7 +322,7 @@ public class Startup
 				policy.RequireAuthenticatedUser();
 				policy.RequireRole(new List<string> { LmsRoleType.SysAdmin.GetDisplayName() });
 			});
-
+		
 			foreach (var courseAccessType in Enum.GetValues(typeof(CourseAccessType)).Cast<CourseAccessType>())
 			{
 				var policyName = courseAccessType.GetAuthorizationPolicyName();
@@ -430,18 +431,18 @@ public class Startup
 
 		app.UseAuthentication();
 		app.UseAuthorization();
+		
+		app.UseElmah();
 
 		app.UseCookiePolicy(new CookiePolicyOptions
 		{
 			Secure = CookieSecurePolicy.Always
 		});
 
-		app.UseElmah();
-
 		// app.UseLtiAuthentication();
 
 		app.UseMvc(RouteConfig.RegisterRoutes);
-
+		
 		InitializeAllUtils(app);
 	}
 
