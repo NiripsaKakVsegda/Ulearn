@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uLearn.Web", "uLearn.Web\uLearn.Web.csproj", "{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{886309CE-DFC7-4449-9171-2351E2CE2B88}"
 	ProjectSection(SolutionItems) = preProject
 		schema.xsd = schema.xsd
@@ -19,8 +17,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uLearn.Tests", "uLearn.Tests\uLearn.Tests.csproj", "{BF698331-FF65-4B1E-850D-2E399434580B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications", "Notifications\Notifications.csproj", "{0C7067B6-4AC8-46D4-AFCB-836F4BF66EBA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{95510835-0B21-4D99-A4D2-B8FC87761A3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XQueueWatcher", "XQueueWatcher\XQueueWatcher.csproj", "{73474493-49F2-48E2-8550-B1FF0B32C67E}"
 EndProject
@@ -84,10 +80,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3701D2E-D001-4E0A-AB2F-7ACB5A89589B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{38660028-BD75-4281-84E9-B35CE3E338DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{38660028-BD75-4281-84E9-B35CE3E338DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38660028-BD75-4281-84E9-B35CE3E338DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -108,10 +100,6 @@ Global
 		{0C7067B6-4AC8-46D4-AFCB-836F4BF66EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C7067B6-4AC8-46D4-AFCB-836F4BF66EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C7067B6-4AC8-46D4-AFCB-836F4BF66EBA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{95510835-0B21-4D99-A4D2-B8FC87761A3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{95510835-0B21-4D99-A4D2-B8FC87761A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{95510835-0B21-4D99-A4D2-B8FC87761A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{95510835-0B21-4D99-A4D2-B8FC87761A3C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73474493-49F2-48E2-8550-B1FF0B32C67E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73474493-49F2-48E2-8550-B1FF0B32C67E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73474493-49F2-48E2-8550-B1FF0B32C67E}.Release|Any CPU.ActiveCfg = Release|Any CPU
