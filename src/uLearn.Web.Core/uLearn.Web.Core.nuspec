@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Kontur.Ulearn.Web.Core</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>SKB Kontur</authors>
+    <owners>SKB Kontur</owners>
+    <licenseUrl>https://ulearn.me/Home/Terms</licenseUrl>
+    <projectUrl>https://ulearn.me</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ASP.Net Core MVC application for ulearn</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014–2022 SKB Kontur</copyright>
+    <tags>Ulearn education mooc</tags>
+  </metadata>
+</package>
