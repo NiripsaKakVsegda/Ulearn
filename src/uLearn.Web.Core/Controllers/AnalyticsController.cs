@@ -107,7 +107,7 @@ public class AnalyticsController : JsonDataContractController
 		var slides = selectedUnit.GetSlides(false);
 		var slidesIds = slides.Select(s => s.Id).ToList();
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, true);
+		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
 		var groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		var filterOptions = await ControllerUtils.GetFilterOptionsByGroup<VisitsFilterOptions>(groupsRepo, groupAccessesRepo, User, courseId, groupsIds);
 		filterOptions.SlidesIds = slidesIds;
@@ -203,7 +203,7 @@ public class AnalyticsController : JsonDataContractController
 		var slides = selectedUnit.GetSlides(false);
 		var slidesIds = slides.Select(s => s.Id).ToList();
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, true);
+		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
 		var groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		var filterOptions = await ControllerUtils.GetFilterOptionsByGroup<VisitsFilterOptions>(groupsRepo, groupAccessesRepo, User, courseId, groupsIds);
 		filterOptions.SlidesIds = slidesIds;
@@ -414,7 +414,7 @@ public class AnalyticsController : JsonDataContractController
 		Dictionary<int, List<GroupAccess>> groupsAccesses = null;
 		if (isInstructor)
 		{
-			groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, true);
+			groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
 			groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		}
 		else
@@ -618,7 +618,7 @@ public class AnalyticsController : JsonDataContractController
 		{
 			if (isInstructor)
 			{
-				availableGroups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, true);
+				availableGroups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
 				if (isAdministrator)
 				{
 					showAllUsers = true;

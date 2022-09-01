@@ -634,7 +634,7 @@ public class AdminController : Controller
 		if (!checkings.Any() && !string.IsNullOrEmpty(message))
 			return RedirectToAction("CheckingQueue", new { courseId, group = string.Join(",", groupsIds) });
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, true);
+		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
 		var groupsAccesses = await groupAccessesRepo.GetGroupAccessesAsync(groups.Select(g => g.Id));
 
 		var alreadyChecked = done;
