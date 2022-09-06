@@ -5,8 +5,8 @@ module.exports = function (api) {
 		["@babel/preset-env",
 			{
 				modules: false,
-				// useBuiltIns: "usage",
-				// corejs: { version: "3.23", proposals: true }
+				useBuiltIns: "usage",
+				corejs: { version: "3.23", proposals: true }
 			}
 		],
 		"@babel/preset-react",
