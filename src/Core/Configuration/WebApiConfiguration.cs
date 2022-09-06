@@ -21,6 +21,8 @@ namespace Web.Api.Configuration
 	public class WebConfiguration : WebApiConfiguration
 	{
 		public Dictionary<string, string> OldWebConfig { get; set; }
+
+		public string ElmahXmlLogPath { get; set; }
 	}
 
 	public class UlearnWebConfiguration

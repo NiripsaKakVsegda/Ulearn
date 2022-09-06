@@ -12,6 +12,10 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 	public void Build(WebConfiguration configuration, ElmahOptions options)
 	{
 		options.Notifiers.Add(new ElmahTelegram());
+
+		if (!string.IsNullOrEmpty(configuration.ElmahXmlLogPath))
+			options.LogPath = configuration.ElmahXmlLogPath;
+
 		options.OnPermissionCheck = context =>
 		{
 			var isAuthenticated = context.User.Identity.IsAuthenticated;
@@ -31,7 +35,7 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 public class ElmahTelegram : IErrorNotifierWithId
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(ElmahTelegram));
-	
+
 	private ErrorsBot errorsBot;
 
 	public string Name { get; }
