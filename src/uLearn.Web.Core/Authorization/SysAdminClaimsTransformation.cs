@@ -20,7 +20,10 @@ public class SysAdminClaimsTransformation : IClaimsTransformation
 	{
 		var claimsIdentity = new ClaimsIdentity();
 		if (await usersRepo.IsSystemAdministrator(principal.GetUserId()))
+		{
 			claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, LmsRoleType.SysAdmin.ToString()));
+			claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, LmsRoleType.SysAdmin.GetDisplayName()));
+		}
 
 		principal.AddIdentity(claimsIdentity);
 		return await Task.FromResult(principal);

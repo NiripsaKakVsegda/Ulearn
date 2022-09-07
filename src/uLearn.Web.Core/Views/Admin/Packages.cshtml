@@ -33,7 +33,7 @@
 			</p>
 		</div>
 	}
-	@using (Html.BeginForm("UploadCourse", "Admin", FormMethod.Post, new { courseId = Model.Course.Id, enctype = "multipart/form-data", style = "margin-bottom: 8px" }))
+	@using (Html.BeginForm("UploadCourse", "Admin", new { courseId = Model.Course.Id, }, FormMethod.Post, null, new { enctype = "multipart/form-data", style = "margin-bottom: 8px" }))
 	{
 		<input type="file" data-filename-placement="inside" class="btn" name="file" title="Выбрать архив с курсом"/>
 		<input type="submit" class="btn btn-success" value="Загрузить"/>
@@ -41,7 +41,7 @@
 	@if (Model.CourseGit?.RepoUrl != null && Model.CourseGit?.PublicKey != null)
 	{
 		<p style="margin: 8px 0">или</p>
-		using (Html.BeginForm("UploadCourseWithGit", "Admin", FormMethod.Post, new { courseId = Model.Course.Id, @class = "form-inline", style = "margin-bottom: 20px" }))
+		using (Html.BeginForm("UploadCourseWithGit", "Admin", new { courseId = Model.Course.Id }, FormMethod.Post, null, new { @class = "form-inline", style = "margin-bottom: 20px" }))
 		{
 			@Html.AntiForgeryToken()
 			<input type="submit" class="btn btn-success" style="width: 180px" value="Загрузить из git"/>

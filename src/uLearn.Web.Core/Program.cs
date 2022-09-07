@@ -17,7 +17,12 @@ public static class Program
 			.UseSerilog()
 			.ConfigureWebHostDefaults(
 				webBuilder => webBuilder
-					.UseStartup<Startup>())
+					.UseStartup<Startup>()
+					.UseKestrel(options =>
+					{
+						options.Limits.MaxRequestBodySize = 160_000_000;
+					})
+				)
 			.Build()
 			.RunAsync();
 	}

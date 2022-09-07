@@ -1,6 +1,6 @@
 ﻿@model uLearn.Web.Core.Controllers.LinkLoginViewModel
 
-@using (Html.BeginForm("DoLinkLogin", "Login", FormMethod.Post, new { provider = Model.Provider, returnUrl = Model.ReturnUrl, id = "link-login-form" }))
+@using (Html.BeginForm("DoLinkLogin", "Login", new { provider = Model.Provider, returnUrl = Model.ReturnUrl }, FormMethod.Post, null, new { id = "link-login-form" }))
 {
 	@Html.AntiForgeryToken()
 }

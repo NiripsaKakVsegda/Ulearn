@@ -1,7 +1,7 @@
 ﻿@model uLearn.Web.Core.Models.LoginViewModel
 
 <section class="login-and-registration-form">
-	@using (Html.BeginForm("Index", "Login", new { ViewBag.ReturnUrl, FormMethod = FormMethod.Post, role = "form" })) // new { role = "form" },
+	@using (Html.BeginForm("Index", "Login", new { ViewBag.ReturnUrl }, FormMethod.Post, null, new { role = "form" }))
 	{
 		@Html.AntiForgeryToken()
 		<div class="form-group">
