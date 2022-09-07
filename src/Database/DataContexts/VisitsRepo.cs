@@ -99,11 +99,12 @@ namespace Database.DataContexts
 			var deadLines = db.DeadLines.Where(d =>
 					d.CourseId == courseId
 					&& userGroupsIds.Contains(d.GroupId)
-					&& (d.UserIds == null || d.UserIds.Contains(userIdGuid))
 					&& d.UnitId == slide.Unit.Id
 					&& (d.SlideType == DeadLineSlideType.All ||
 						(slide.ScoringGroup != string.Empty && d.SlideType == DeadLineSlideType.ScoringGroupId && d.SlideValue == slide.ScoringGroup
 						|| d.SlideType == DeadLineSlideType.SlideId && d.SlideValue == slide.Id.ToString())))
+				.ToList()
+				.Where(d => d.UserIds == null || d.UserIds.Contains(userIdGuid))
 				.ToList();
 			var deadLineScorePercent = 100;
 			if (deadLines.Count > 0)
