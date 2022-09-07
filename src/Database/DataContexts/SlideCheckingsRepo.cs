@@ -163,7 +163,7 @@ namespace Database.DataContexts
 			return lastChecking?.Percent;
 		}
 
-		public int GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 10)
+		public int GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 100)
 		{
 			var manualScore = GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).Max();
 			var automaticScore = GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).Max();
