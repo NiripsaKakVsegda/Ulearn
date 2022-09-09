@@ -4,7 +4,7 @@ using Ulearn.Common.Extensions;
 using uLearn.Web.Core.Attributes;
 using Web.Api.Configuration;
 
-namespace uLearn.Web.Core.Start;
+namespace uLearn.Web.Core.StartupConfigs;
 
 public static class FilterConfig
 {

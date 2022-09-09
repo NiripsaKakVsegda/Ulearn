@@ -15,6 +15,7 @@ using Serilog;
 using uLearn.Web.Core.Authentication;
 using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Start;
+using uLearn.Web.Core.StartupConfigs;
 using Web.Api.Configuration;
 
 namespace uLearn.Web.Core;
@@ -124,12 +125,6 @@ public class Startup
 
 		app.UseHttpsRedirection();
 		app.UseStaticFiles();
-		app.UseStaticFiles(new StaticFileOptions
-		{
-			FileProvider = new PhysicalFileProvider(
-				Path.Combine(HostingEnvironment.ContentRootPath, "Content")),
-			RequestPath = "/content"
-		});
 
 		app.UseRouting();
 

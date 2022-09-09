@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Vostok.Applications.Scheduled;
 using Vostok.Hosting.Abstractions;
 
@@ -35,33 +36,31 @@ namespace Ulearn.Core.Courses.Manager
 			updateTempCourses(); // в другом потоке
 		}
 
-		public void DoInitialCourseLoadAndRunCoursesUpdateInThreads()
+		public async Task DoInitialCourseLoadAndRunCoursesUpdateInThreads()
 		{
-			courseUpdater.UpdateCoursesAsync().Wait();
+			await courseUpdater.UpdateCoursesAsync();
 			var coursesThread = new Thread(UpdateCoursesLoop);
 			coursesThread.Start();
 			var tempCoursesThread = new Thread(UpdateTempCoursesLoop);
 			tempCoursesThread.Start();
 		}
 
-		private void UpdateCoursesLoop()
+		private async void UpdateCoursesLoop()
 		{
 			while (true)
 			{
-				courseUpdater.UpdateCoursesAsync().Wait();
-				Thread.Sleep(coursesUpdatePeriod);
+				await courseUpdater.UpdateCoursesAsync();
+				await Task.Delay(coursesUpdatePeriod);
 			}
-			// ReSharper disable once FunctionNeverReturns
 		}
 
-		private void UpdateTempCoursesLoop()
+		private async void UpdateTempCoursesLoop()
 		{
 			while (true)
 			{
-				courseUpdater.UpdateTempCoursesAsync().Wait();
-				Thread.Sleep(tempCoursesUpdatePeriod);
+				await courseUpdater.UpdateTempCoursesAsync();
+				await Task.Delay(tempCoursesUpdatePeriod);
 			}
-			// ReSharper disable once FunctionNeverReturns
 		}
 	}
 }

@@ -16,6 +16,11 @@
 		<Exec Command="robocopy /s ..\Frontend\build\ .\wwwroot /PURGE" IgnoreExitCode="True" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
+	<Target Name="AddContentToWWWRoot" BeforeTargets="BeforeBuild" Condition="!Exists('$(MSBuildProjectDirectory)/wwwroot/Content')">
+		<!-- Robocopy always exits with code 1: https://social.msdn.microsoft.com/Forums/en-US/d599833c-dcea-46f5-85e9-b1f028a0fefe/robocopy-exits-with-error-code-1?forum=tfsbuild -->
+		<Exec Command="robocopy /s .\Content\ .\wwwroot\Content /PURGE" IgnoreExitCode="True" WorkingDirectory="$(MSBuildProjectDirectory)" />
+	</Target>
+
 	<ItemGroup>
 		<PackageReference Include="ApprovalUtilities" Version="5.7.3" />
 		<PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="6.0.6" />
@@ -47,20 +52,11 @@
 		<ProjectReference Include="..\Web.Api.Client\Web.Api.Client.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="Content\404.jpg" />
-		<Content Include="Content\banner-campus-2019.png" />
-		<Content Include="Content\banner-campus.png" />
-		<Content Include="Content\banner-intern-backend-2021.jpg" />
-		<Content Include="Content\banner-internship-2020.jpg" />
-		<Content Include="Content\banner-summer-practice.jpg" />
-		<Content Include="Content\certificate-template.zip" />
-		<Content Include="Content\loading-ring.gif" />
-		<Content Include="Content\loading.gif" />
-		<Content Include="Content\logo.png" />
-		<Content Include="Content\StartPageJumbotron.png" />
-		<Content Include="Content\ulearn.yml" />
 		<Content Include="..\schema.xsd">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="deploy\Web.Core.Task.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 
