@@ -2,7 +2,7 @@ import React, { RefObject } from "react";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import cn from "classnames";
-import { useParams } from "react-router-dom";
+import { matchPath, useLocation, } from "react-router-dom";
 
 import { Toggle, } from "ui";
 
@@ -10,7 +10,6 @@ import { parseKnownQueryParams } from "../../course/Course/CourseUtils";
 import { studentModeToggleAction, } from "src/actions/instructor";
 import { saveToCache, studentMode, } from "src/utils/localStorageManager";
 
-import { MatchParams } from "src/models/router";
 import { RootState } from "src/models/reduxState";
 import { DeviceType } from "src/consts/deviceType";
 
@@ -26,10 +25,12 @@ interface Props {
 function StudentMode({ isStudentMode, setStudentMode, deviceType, containerClass, }: Props) {
 	const refButton: RefObject<HTMLButtonElement> = React.createRef();
 	const refSpan: RefObject<HTMLSpanElement> = React.createRef();
-	const params = useParams<keyof MatchParams>();
+	const location = useLocation();
+	const match = matchPath({
+		path: "/course/:courseId/:slideSlugOrAction",
+	}, location.pathname);
 	const queryParams = parseKnownQueryParams(location.search);
-
-	if(!params.slideSlugOrAction || queryParams.isLti || queryParams.submissionId) {
+	if(!match?.params.slideSlugOrAction || queryParams.isLti || queryParams.submissionId) {
 		return null;
 	}
 
