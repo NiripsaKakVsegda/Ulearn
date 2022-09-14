@@ -45,6 +45,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\AntiPlagiarism.Api\AntiPlagiarism.Api.csproj" />
+		<ProjectReference Include="..\Common.Api.Application\Common.Api.Application.csproj" />
 		<ProjectReference Include="..\Core\Core.csproj" />
 		<ProjectReference Include="..\Database.Core\Database.Core.csproj" />
 		<ProjectReference Include="..\GitCourseUpdater\GitCourseUpdater.csproj" />
