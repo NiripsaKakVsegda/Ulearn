@@ -41,6 +41,7 @@ public class CourseController : BaseController
 	private readonly IUnitsRepo unitsRepo;
 	private readonly IVisitsRepo visitsRepo;
 	private readonly ILtiRequestsRepo ltiRequestsRepo;
+	private readonly ILtiConsumersRepo consumersRepo;
 	private readonly ISlideCheckingsRepo slideCheckingsRepo;
 	private readonly IGroupsRepo groupsRepo;
 	private readonly IGroupAccessesRepo groupAccessesRepo;
@@ -56,6 +57,7 @@ public class CourseController : BaseController
 		IUnitsRepo unitsRepo,
 		IVisitsRepo visitsRepo,
 		ILtiRequestsRepo ltiRequestsRepo,
+		ILtiConsumersRepo consumersRepo,
 		ISlideCheckingsRepo slideCheckingsRepo,
 		IGroupsRepo groupsRepo,
 		IUserQuizzesRepo userQuizzesRepo,
@@ -69,6 +71,7 @@ public class CourseController : BaseController
 		this.unitsRepo = unitsRepo;
 		this.visitsRepo = visitsRepo;
 		this.ltiRequestsRepo = ltiRequestsRepo;
+		this.consumersRepo = consumersRepo;
 		this.slideCheckingsRepo = slideCheckingsRepo;
 		this.groupsRepo = groupsRepo;
 		this.userQuizzesRepo = userQuizzesRepo;
@@ -199,11 +202,11 @@ public class CourseController : BaseController
 	{
 		if (string.IsNullOrWhiteSpace(courseId))
 			return RedirectToAction("Index", "Home");
-	
+
 		var course = courseStorage.GetCourse(courseId);
 		var visibleUnitIds = await unitsRepo.GetVisibleUnitIds(course, User.GetUserId());
 		var slide = course.GetSlideById(slideId, false, visibleUnitIds);
-	
+
 		string userId;
 		//var owinRequest = Request.GetOwinContext().Request;
 		if (await Request.IsAuthenticatedWithLtiAsync())
@@ -212,7 +215,7 @@ public class CourseController : BaseController
 			log.Info($"Нашёл LTI request в запросе: {ltiRequest.JsonSerialize()}");
 			userId = ltiRequest.UserId; //Request.Authentication.AuthenticationResponseGrant.Identity.GetUserId();
 			await ltiRequestsRepo.Update(courseId, userId, slide.Id, ltiRequest.JsonSerialize());
-		
+
 			/* Substitute http(s) scheme with real scheme from header */
 			var uriBuilder = new UriBuilder(ltiRequest.Url)
 			{
@@ -221,27 +224,28 @@ public class CourseController : BaseController
 			};
 			return Redirect(uriBuilder.Uri.AbsoluteUri);
 		}
-		
+
 		/* For now user should be authenticated */
 		if (!User.Identity.IsAuthenticated)
 			return Forbid();
-		
+
 		userId = User.GetUserId();
 		var visit = await VisitSlide(courseId, slide.Id, userId);
-		
+
 		/* Try to send score via LTI immediately after slide visiting */
 		try
 		{
 			if (visit.IsPassed)
-				LtiUtils.SubmitScore(courseId, slide, userId, visit);
+				await LtiUtils.SubmitScore(ltiRequestsRepo, consumersRepo, visitsRepo, courseId, slide, userId, visit);
 		}
 		catch (Exception e)
 		{
 			await HttpContext.RaiseError(e);
 		}
+
 		userId = User.GetUserId();
 		// Exercise обрабатывается реактом
-	
+
 		var quizSlide = slide as QuizSlide;
 		if (quizSlide != null)
 		{
@@ -253,7 +257,7 @@ public class CourseController : BaseController
 			};
 			return View("LtiQuizSlide", model);
 		}
-	
+
 		return View();
 	}
 
@@ -421,7 +425,7 @@ public class CourseController : BaseController
 		return await visitsRepo.FindVisit(courseId, slideId, userId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]
 	public async Task<ActionResult> InstructorNote(string courseId, Guid unitId)
 	{
 		var course = courseStorage.GetCourse(courseId);

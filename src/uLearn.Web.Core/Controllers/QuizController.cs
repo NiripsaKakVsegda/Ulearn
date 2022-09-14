@@ -45,11 +45,24 @@ public class QuizController : Controller
 	private readonly INotificationsRepo notificationsRepo;
 	private readonly ICourseRolesRepo courseRolesRepo;
 	private readonly IUnitsRepo unitsRepo;
+	private readonly ILtiRequestsRepo ltiRequestsRepo;
+	private readonly ILtiConsumersRepo consumersRepo;
 
 	private readonly string baseUrlWeb;
 	private readonly string baseUrlApi;
 
-	public QuizController(IUserQuizzesRepo userQuizzesRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo, ISlideCheckingsRepo slideCheckingsRepo, INotificationsRepo notificationsRepo, IUnitsRepo unitsRepo, IGroupAccessesRepo groupAccessesRepo, UlearnDb db, ICourseRolesRepo courseRolesRepo)
+	public QuizController(
+		IUserQuizzesRepo userQuizzesRepo,
+		IVisitsRepo visitsRepo,
+		IGroupsRepo groupsRepo,
+		ISlideCheckingsRepo slideCheckingsRepo,
+		INotificationsRepo notificationsRepo,
+		IUnitsRepo unitsRepo,
+		IGroupAccessesRepo groupAccessesRepo,
+		UlearnDb db,
+		ICourseRolesRepo courseRolesRepo,
+		ILtiRequestsRepo ltiRequestsRepo,
+		ILtiConsumersRepo consumersRepo)
 	{
 		this.userQuizzesRepo = userQuizzesRepo;
 		this.visitsRepo = visitsRepo;
@@ -58,6 +71,8 @@ public class QuizController : Controller
 		this.notificationsRepo = notificationsRepo;
 		this.unitsRepo = unitsRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
+		this.consumersRepo = consumersRepo;
+		this.ltiRequestsRepo = ltiRequestsRepo;
 		this.db = db;
 		this.courseRolesRepo = courseRolesRepo;
 		var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
@@ -118,12 +133,12 @@ public class QuizController : Controller
 		var isInstructor = isCourseAdmin || !isGuest && await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor);
 
 		var slide = course.FindSlideById(slideId, isInstructor, visibleUnitIds) as QuizSlide;
-		
+
 		ManualQuizChecking manualQuizCheckQueueItem = null;
 		var isManualCheckingReadonly = false;
 		if (isInstructor && checkQueueItemId.HasValue)
 			manualQuizCheckQueueItem = await slideCheckingsRepo.FindManualCheckingById<ManualQuizChecking>(checkQueueItemId.Value);
-		
+
 		if (isGuest)
 		{
 			metricSender.SendCount("quiz.show.to.guest");
@@ -182,9 +197,9 @@ public class QuizController : Controller
 			CanUserFillQuiz = canUserFillQuiz,
 			GroupsIds = Request.GetMultipleValuesFromQueryString("group"),
 			QuestionAnswersFrequency = questionAnswersFrequency,
-			IsManualCheckingEnabledForUser = isManualCheckingEnabledForUser, 
+			IsManualCheckingEnabledForUser = isManualCheckingEnabledForUser,
 			IsInstructor = isInstructor,
-			IsCourseAdmin = isCourseAdmin, 
+			IsCourseAdmin = isCourseAdmin,
 			IsGuest = isGuest
 		};
 
@@ -302,7 +317,7 @@ public class QuizController : Controller
 			await slideCheckingsRepo.AddAutomaticQuizChecking(submission, courseId, slideId, userId, score).ConfigureAwait(false);
 			await visitsRepo.UpdateScoreForVisit(courseId, slide, userId).ConfigureAwait(false);
 			if (isLti)
-				LtiUtils.SubmitScore(courseId, slide, userId);
+				await LtiUtils.SubmitScore(ltiRequestsRepo, consumersRepo, visitsRepo, courseId, slide, userId);
 		}
 
 		return Json(new
@@ -323,7 +338,7 @@ public class QuizController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]
 	public async Task<IActionResult> ScoreQuiz(int id, string nextUrl, string errorUrl = "")
 	{
 		metricSender.SendCount("quiz.manual_score");
@@ -563,7 +578,7 @@ public class QuizController : Controller
 			{
 				await visitsRepo.UpdateScoreForVisit(courseId, slide, userId).ConfigureAwait(false);
 				if (isLti)
-					LtiUtils.SubmitScore(courseId, slide, userId);
+					await LtiUtils.SubmitScore(ltiRequestsRepo, consumersRepo, visitsRepo, courseId, slide, userId);
 			}
 		}
 
