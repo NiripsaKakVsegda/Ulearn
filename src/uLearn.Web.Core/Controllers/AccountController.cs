@@ -5,8 +5,6 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.SystemAccessesRepo;
 using Database.Repos.Users;
-using ElmahCore;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +22,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
 public class AccountController : BaseUserController
 {
 	private readonly ICourseStorage courseStorage = CourseManager.CourseStorageInstance;
@@ -70,8 +68,9 @@ public class AccountController : BaseUserController
 		IUsersRepo usersRepo,
 		IGroupMembersRepo groupMembersRepo,
 		IGroupAccessesRepo groupAccessesRepo,
+		WebConfiguration configuration,
 		AuthenticationManager authenticationManager)
-		: base(userManager, usersRepo)
+		: base(userManager, usersRepo, configuration)
 	{
 		this.db = db;
 		this.groupsRepo = groupsRepo;
@@ -87,8 +86,7 @@ public class AccountController : BaseUserController
 		this.groupMembersRepo = groupMembersRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 
-		//    <add key="ulearn.telegram.webhook.secret" value="123" />
-		telegramSecret = "123"; // WebConfigurationManager.AppSettings["ulearn.telegram.webhook.secret"] ?? "";
+		telegramSecret = configuration.OldWebConfig["ulearn.telegram.webhook.secret"] ?? "";
 	}
 
 	[AllowAnonymous]
@@ -97,7 +95,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("Index", "Login", new { returnUrl });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	public ActionResult List(UserSearchQueryModel queryModel)
 	{
 		return View(queryModel);
@@ -257,7 +255,7 @@ public class AccountController : BaseUserController
 		await notificationsRepo.AddNotification(courseId, notification, initiatedUserId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	//[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ToggleRole(string courseId, string userId, CourseRoleType role)
@@ -301,7 +299,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("List");
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	/* Now we use AccountController.Profile and don't use AccountController.Info, but this method exists for back compatibility */
 	public ActionResult Info(string userName)
 	{
@@ -312,7 +310,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("Profile", new { userId = user.Id });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	public async Task<ActionResult> CourseInfo(string userId, string courseId)
 	{
 		var user = await usersRepo.FindUserById(userId);
@@ -324,7 +322,7 @@ public class AccountController : BaseUserController
 		return View(new UserCourseModel(course, user, db));
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	public async Task<ActionResult> ToggleRolesHistory(string userId, string courseId)
 	{
 		var user = await usersRepo.FindUserById(userId);

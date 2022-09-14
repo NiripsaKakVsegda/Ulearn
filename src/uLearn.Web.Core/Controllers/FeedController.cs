@@ -13,7 +13,7 @@ using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
 public class FeedController : Controller //JsonDataContractController
 {
 	private readonly IServiceProvider serviceProvider;

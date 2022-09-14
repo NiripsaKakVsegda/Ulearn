@@ -35,7 +35,7 @@ public class Startup : VostokAspNetCoreApplication
 					.UseKestrel(options => { options.Limits.MaxRequestBodySize = 160_000_000; })
 					.ConfigureServices(s => ConfigureServices(s, hostingEnvironment))
 					.UseEnvironment(hostingEnvironment.ApplicationIdentity.Environment)
-					.Configure(Configure))
+					.Configure(ConfigureApp))
 			.SetupLogging(s =>
 			{
 				s.LogRequests = true;
@@ -56,8 +56,7 @@ public class Startup : VostokAspNetCoreApplication
 		configuration = hostingEnvironment.SecretConfigurationProvider.Get<WebConfiguration>(hostingEnvironment.SecretConfigurationSource);
 		env = services.FirstOrDefault(s => s.ServiceType == typeof(IHostEnvironment)).ImplementationInstance as IHostEnvironment;
 
-		services.Configure<WebConfiguration>(options =>
-			options.SetFrom(configuration));
+		services.AddScoped<WebConfiguration>(_ => configuration);
 
 		services.AddLogging(builder => builder.AddVostok(hostingEnvironment.Log));
 
@@ -123,7 +122,7 @@ public class Startup : VostokAspNetCoreApplication
 		services.Configure<PasswordHasherOptions>(options => { options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2; });
 	}
 
-	public void Configure(IApplicationBuilder app)
+	public void ConfigureApp(IApplicationBuilder app)
 	{
 		var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 

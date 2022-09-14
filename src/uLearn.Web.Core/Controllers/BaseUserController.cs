@@ -1,14 +1,12 @@
 using Database.Models;
-using Database;
 using Database.Repos;
 using Database.Repos.Users;
 using Kontur.Spam.Client;
 using Vostok.Logging.Abstractions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Extensions;
-using Ulearn.Core.Configuration;
 using Ulearn.Core.Metrics;
+using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
@@ -27,30 +25,20 @@ public class BaseUserController : BaseController
 	protected readonly SpamClient spamClient;
 	protected readonly string spamTemplateId;
 
-	public BaseUserController(UlearnUserManager userManager, IUsersRepo usersRepo)
+	public BaseUserController(UlearnUserManager userManager, IUsersRepo usersRepo, WebConfiguration configuration)
 	{
 		this.userManager = userManager;
 		this.usersRepo = usersRepo;
-		metricSender = new MetricSender(ApplicationConfiguration.Read<UlearnConfiguration>().GraphiteServiceName);
+		metricSender = new MetricSender(configuration.GraphiteServiceName);
+		secretForHashes = configuration.OldWebConfig["ulearn.secretForHashes"] ?? "";
 
-		var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
+		var spamEndpoint = configuration.OldWebConfig["ulearn.spam.endpoint"] ?? "";
+		var spamLogin = configuration.OldWebConfig["ulearn.spam.login"] ?? "";
+		var spamPassword = configuration.OldWebConfig["ulearn.spam.password"] ?? "";
 
-		secretForHashes = "AAGaAxFmEUjmiyixyy6VNPsaqc"; //WebConfigurationManager.AppSettings["ulearn.secretForHashes"] ?? "";
+		spamChannelId = configuration.OldWebConfig["ulearn.spam.channels.emailConfirmations"] ?? "";
 
-		// <add key="ulearn.spam.password" value="w32eRrn7tz" />
-		var spamEndpoint = "https://mail.testkontur.ru"; //WebConfigurationManager.AppSettings["ulearn.spam.endpoint"] ?? "";
-
-		// <add key="ulearn.spam.login" value="ulearn" />
-		var spamLogin = "ulearn"; // WebConfigurationManager.AppSettings["ulearn.spam.login"] ?? "ulearn";
-
-		// <add key="ulearn.spam.endpoint" value="https://mail.testkontur.ru" />
-		var spamPassword = "w32eRrn7tz"; //WebConfigurationManager.AppSettings["ulearn.spam.password"] ?? "";
-
-		//   <add key="ulearn.spam.channels.emailConfirmations" value="email_confirmations" />
-		spamChannelId = "email_confirmations"; //WebConfigurationManager.AppSettings["ulearn.spam.channels.emailConfirmations"] ?? "";
-
-		//    <add key="ulearn.spam.templates.withButton" value="with_button" />
-		spamTemplateId = "with_button"; //WebConfigurationManager.AppSettings["ulearn.spam.templates.withButton"] ?? "";
+		spamTemplateId = configuration.OldWebConfig["ulearn.spam.templates.withButton"] ?? ""; //WebConfigurationManager.AppSettings["ulearn.spam.templates.withButton"] ?? "";
 
 		try
 		{
@@ -73,7 +61,7 @@ public class BaseUserController : BaseController
 		metricSender.SendCount("email_confirmation.send_confirmation_email.try");
 		var confirmationUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, email = user.Email, signature = GetEmailConfirmationSignature(user.Email, user.Id) }, "https");
 		var subject = "Подтверждение адреса";
-	
+
 		var messageInfo = new MessageSentInfo
 		{
 			RecipientAddress = user.Email,
@@ -99,7 +87,7 @@ public class BaseUserController : BaseController
 				}
 			}
 		};
-	
+
 		try
 		{
 			await spamClient.SentMessageAsync(spamChannelId, messageInfo).ConfigureAwait(false);
@@ -109,9 +97,9 @@ public class BaseUserController : BaseController
 			log.Error(e, $"Не могу отправить письмо для подтверждения адреса на {user.Email}");
 			return false;
 		}
-	
+
 		metricSender.SendCount("email_confirmation.send_confirmation_email.success");
-	
+
 		await usersRepo.UpdateLastConfirmationEmailTime(user).ConfigureAwait(false);
 		return true;
 	}
@@ -122,7 +110,7 @@ public class BaseUserController : BaseController
 		var users = await usersRepo.FindUsersByConfirmedEmail(email);
 		return users.All(u => u.Id == user.Id);
 	}
-	
+
 	protected async Task<bool> CanNewUserSetThisEmail(string email)
 	{
 		var users = await usersRepo.FindUsersByConfirmedEmail(email);

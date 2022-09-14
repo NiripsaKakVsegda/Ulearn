@@ -26,7 +26,7 @@ using uLearn.Web.Core.Models;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
 public class CourseController : BaseController
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(CourseController));
@@ -421,7 +421,7 @@ public class CourseController : BaseController
 		return await visitsRepo.FindVisit(courseId, slideId, userId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	public async Task<ActionResult> InstructorNote(string courseId, Guid unitId)
 	{
 		var course = courseStorage.GetCourse(courseId);

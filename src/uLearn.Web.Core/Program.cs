@@ -1,9 +1,5 @@
-using Serilog;
 using Ulearn.Common.Api;
-using Ulearn.Core.Configuration;
-using uLearn.Web.Core.Utils;
 using Vostok.Hosting;
-using Web.Api.Configuration;
 
 namespace uLearn.Web.Core;
 

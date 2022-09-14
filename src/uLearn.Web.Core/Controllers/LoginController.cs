@@ -1,12 +1,9 @@
 ﻿using System.Security.Claims;
-using AspNet.Security.OAuth.Vkontakte;
 using Database.Models;
 using Database.Repos;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +15,7 @@ using uLearn.Web.Core.Authentication.External.Vkontakte;
 using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Models;
 using Vostok.Logging.Abstractions;
+using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
@@ -63,8 +61,8 @@ public class LoginController : BaseUserController
 	private SignInManager<ApplicationUser> signInManager;
 	private AuthenticationManager authenticationManager;
 
-	public LoginController(UlearnUserManager userManager, IUsersRepo usersRepo, SignInManager<ApplicationUser> signInManager, AuthenticationManager authenticationManager)
-		: base(userManager, usersRepo)
+	public LoginController(UlearnUserManager userManager, IUsersRepo usersRepo, SignInManager<ApplicationUser> signInManager, AuthenticationManager authenticationManager, WebConfiguration configuration)
+		: base(userManager, usersRepo, configuration)
 	{
 		this.signInManager = signInManager;
 		this.authenticationManager = authenticationManager;
@@ -193,7 +191,7 @@ public class LoginController : BaseUserController
 
 		ViewBag.LoginProvider = info.LoginProvider;
 		ViewBag.ReturnUrl = returnUrl;
-		
+
 		if (ModelState.IsValid)
 		{
 			var userAvatarUrl = info.Principal.FindFirstValue("AvatarUrl");
@@ -254,7 +252,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpGet]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
 	public ActionResult LinkLogin(string provider, string returnUrl)
 	{
 		return View(new LinkLoginViewModel
@@ -265,7 +263,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public ActionResult DoLinkLogin(string provider, string returnUrl = "")
@@ -279,7 +277,7 @@ public class LoginController : BaseUserController
 		return Challenge(properties, provider);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//[ULearnAuthorize]
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
 	public async Task<ActionResult> LinkLoginCallback(string returnUrl = "")
 	{
 		var user = await userManager.GetUserAsync(User);

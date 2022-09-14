@@ -24,7 +24,7 @@ using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Instructor)]
+[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 public class AntiPlagiarismController : JsonDataContractController
 {
 	private readonly IUserSolutionsRepo userSolutionsRepo;
