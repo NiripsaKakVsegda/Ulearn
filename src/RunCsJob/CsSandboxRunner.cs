@@ -10,6 +10,7 @@ using CsSandboxer;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json;
+using NUnit.Framework;
 using RunCheckerJob;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;

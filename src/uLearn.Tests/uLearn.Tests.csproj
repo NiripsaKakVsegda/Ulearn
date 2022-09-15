@@ -9,6 +9,7 @@
 		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
 		<TargetFramework>net6.0</TargetFramework>
 		<OutputType>Library</OutputType>
+		<GenerateProgramFile>false</GenerateProgramFile>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<DebugType>full</DebugType>
@@ -33,8 +34,10 @@
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="NUnit" Version="3.10.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
@@ -50,11 +53,22 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\IfOpenBraceGrandparentIsMultilineThenContentIndentedFromGrandparent.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\MultilineExpressionStatementIsIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\MultilineParameterListIsIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\NonBracesSyntaxStatementsWithoutIndentsErrorsShouldNotHaveValidationReports.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\SingleLineExpressionStatementNotIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\SingleLineMultipleStatementsNotIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\SingleLineParameterListNotIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\TabsMixedWithSpaces.cs" />
 		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\LocalFunction.cs" />
 		<Compile Remove="CSharp\IndentsValidation\TestData\Correct\TopLevelNodesCanBeIndented.cs" />
 		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\TopLevelNodesShouldBeConsistent.cs" />
 		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\IfOpenBraceGrandparentIsMultilineThenContentShouldBeIndentedFromGrandparent.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\MultilineExpressionStatementShouldBeIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\MultilineParameterListShouldBeIndented.cs" />
+		<Compile Remove="CSharp\IndentsValidation\TestData\Incorrect\NonBracesSyntaxStatementsWithIndentsErrorsShouldHaveValidationReports.cs" />
 		<Compile Remove="CSharp\testProject\projDir\AnotherTask.cs" />
+		<Compile Remove="CSharp\testProject\_Упражнение на параметры по умолчанию.cs" />
 		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.21.plus.21.cs" />
 		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.27.cs" />
 		<Compile Remove="CSharp\testProject\projDir\MeaningOfLifeTask.WrongAnswer.Type.cs" />

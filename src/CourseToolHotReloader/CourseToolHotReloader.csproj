@@ -4,15 +4,12 @@
         <TargetFramework>net6.0</TargetFramework>
         <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
         <Authors>SKB Kontur Ulearn Team</Authors>
+        <AssemblyName>ulearn</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.4.0" />
       <PackageReference Include="DotNetZip" Version="1.16.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-      <PackageReference Include="OctoPack" Version="3.6.5">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
       <PackageReference Include="Vostok.Logging.File" Version="1.0.21" />
     </ItemGroup>
 	<ItemGroup>
@@ -23,7 +20,4 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
-	<Target Name="CreateCourseToolHotReloaderZip" BeforeTargets="OctoPack" Condition="$(RunOctoPack)">
-		<Exec Command="powershell -NonInteractive -executionpolicy Unrestricted &quot; Compress-Archive -Path '$(TargetDir)*' -DestinationPath '$(TargetDir)CourseToolHotReloader.zip' -Force&quot;" />
-	</Target>
 </Project>

@@ -2,6 +2,7 @@
 {
 	public class MultilineParameterListIsIndented
 	{
+		// ReSharper disable once FunctionRecursiveOnAllPaths
 		public static void Main(
 			string[] args)
 		{

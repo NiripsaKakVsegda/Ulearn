@@ -9,15 +9,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AntiPlagiarism.Api\AntiPlagiarism.Api.csproj" />
-		<PackageReference Include="OctoPack" Version="3.6.5" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="CsvHelper" Version="27.2.1" />
       <PackageReference Include="Vostok.Logging.File" Version="1.0.21" />
     </ItemGroup>
-
-	<Target Name="CreateAntiPlagiarismConsoleAppZip" BeforeTargets="OctoPack" Condition="$(RunOctoPack)">
-		<Exec Command="powershell -NonInteractive -executionpolicy Unrestricted &quot; Compress-Archive -Path '$(TargetDir)*' -DestinationPath '$(TargetDir)AntiPlagiarismConsoleApp.zip' -Force&quot;" />
-	</Target>
 </Project>

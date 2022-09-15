@@ -65,9 +65,9 @@
 		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>
-		<Compile Remove="IsExternalInit.cs" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<Compile Remove="IsExternalInit.cs" Condition="'$(TargetFramework)' == 'net6.0'" />
 	</ItemGroup>
-	<Target Name="CopyFiles" BeforeTargets="AfterBuild;OctoPack">
+	<Target Name="CopyFiles" BeforeTargets="AfterBuild;">
 		<Copy DestinationFolder="$(OutputPath)" SourceFiles="@(HunspellDlls)" SkipUnchangedFiles="true" />
 	</Target>
 </Project>

@@ -199,7 +199,7 @@ Thread.Sleep(50000);
 		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { 
 const int memory = 63 * 1024 * 1024; 
 var a = new byte[memory]; 
-for (var j = 0; j < 2; j++)
+for (var j = 0; j < int.MaxValue; j++)
 for (var i = 0; i < int.MaxValue; ++i) a[i % memory] = (byte)i;
 }}",
 			TestName = "many assignation")]

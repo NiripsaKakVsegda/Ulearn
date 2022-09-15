@@ -8,8 +8,8 @@
       <UlearnBaseUrlApi>https://api.ulearn.me</UlearnBaseUrlApi>
     </Profile>
     <Profile name="dev">
-      <UlearnBaseUrlWeb>http://localhost:3000</UlearnBaseUrlWeb>
-      <UlearnBaseUrlApi>http://localhost:8000</UlearnBaseUrlApi>
+      <UlearnBaseUrlWeb>https://localhost:3000</UlearnBaseUrlWeb>
+      <UlearnBaseUrlApi>https://localhost:8000</UlearnBaseUrlApi>
     </Profile>
   </Profiles>
   <IgnoredUlearnSlides>

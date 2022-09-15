@@ -32,9 +32,6 @@
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.10.0" />
-    <PackageReference Include="OctoPack" Version="3.6.5">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
     <PackageReference Include="Telegram.Bot" Version="16.0.2" />
@@ -51,6 +48,8 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="deploy\GiftsGranter.Task.xml" />
+    <Content Include="deploy\**">   
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 </Project>
