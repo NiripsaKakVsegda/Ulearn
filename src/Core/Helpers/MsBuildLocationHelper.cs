@@ -18,7 +18,8 @@ namespace Ulearn.Core.Helpers
 			var path = ToolLocationHelper.GetPathToBuildTools(version);
 			var assembly = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(typeof(ProjModifier)).Location);
 
-			if (path == assembly || path.Contains("TestRunner"))
+			//TODO (rozentor) do not know why, but dev determines path to build tools of 2017 which are deleted, in that case we need to override it with 2022
+			if (path == assembly || path.Contains("TestRunner") || path.Contains("2017"))
 			{
 				// TODO использовать PowerShell module to locate MSBuild: vssetup.powershell. Get-VSSetupInstance
 				var newBuildTools = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin";

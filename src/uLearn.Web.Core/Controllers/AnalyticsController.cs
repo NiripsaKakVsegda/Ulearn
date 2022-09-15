@@ -23,6 +23,7 @@ using Ulearn.Core.Courses.Units;
 using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
+using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
@@ -56,7 +57,8 @@ public class AnalyticsController : JsonDataContractController
 		IUnitsRepo unitsRepo,
 		IAdditionalScoresRepo additionalScoresRepo,
 		IGoogleSheetExportTasksRepo googleSheetExportTasksRepo,
-		ISystemAccessesRepo systemAccessesRepo
+		ISystemAccessesRepo systemAccessesRepo,
+		WebConfiguration configuration
 	)
 	{
 		this.db = db;
@@ -71,10 +73,10 @@ public class AnalyticsController : JsonDataContractController
 		this.unitsRepo = unitsRepo;
 		this.googleSheetExportTasksRepo = googleSheetExportTasksRepo;
 		this.systemAccessesRepo = systemAccessesRepo;
-		this.configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
+		this.configuration = configuration;
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]//[Authorize(Policy = UlearnAuthorization.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]
 	public async Task<ActionResult> UnitSheet(UnitSheetParams param)
 	{
 		const int usersLimit = 200;

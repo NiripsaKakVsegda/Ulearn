@@ -26,7 +26,7 @@
 			<div class="notifications__notification @(notification.CreateTime >= Model.ImportantLastViewTimestamp ? "unread" : "")">
 				@try
 				{
-					@Notification((dynamic)notification, Model.CourseStorage.FindCourse(notification.CourseId), Html, Url, collapse: false)
+					Notification((dynamic)notification, Model.CourseStorage.FindCourse(notification.CourseId), Html, Url, collapse: false);
 				}
 				catch (Exception)
 				{

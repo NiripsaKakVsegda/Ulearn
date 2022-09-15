@@ -22,7 +22,7 @@
 
 				@try
 				{
-					@Notification((dynamic)notification, Model.CourseStorage.FindCourse(notification.CourseId), Html, Url)
+					Notification((dynamic)notification, Model.CourseStorage.FindCourse(notification.CourseId), Html, Url);
 				}
 				catch (Exception)
 				{
