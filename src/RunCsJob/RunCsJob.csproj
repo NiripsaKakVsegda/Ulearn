@@ -123,4 +123,7 @@
 	<ItemGroup>
 	  <Folder Include="Microsoft.Net.Compilers.Toolset.4.2.0" />
 	</ItemGroup>
+	<ItemGroup>
+		<None Remove="packages\**" />
+	</ItemGroup>
 </Project>
