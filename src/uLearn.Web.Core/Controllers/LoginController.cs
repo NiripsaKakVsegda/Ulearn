@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using uLearn.Web.Core.Authentication;
 using uLearn.Web.Core.Authentication.External.Kontur;
 using uLearn.Web.Core.Authentication.External.Vkontakte;
 using uLearn.Web.Core.Authorization;
@@ -104,7 +105,7 @@ public class LoginController : BaseUserController
 
 			if (user != null)
 			{
-				// await HttpContext.SignOutAsync(DefaultAuthenticationTypes.ExternalCookie);
+				await HttpContext.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
 				await authenticationManager.LoginAsync(HttpContext, user, model.RememberMe);
 				await SendConfirmationEmailAfterLogin(user).ConfigureAwait(false);
 				return Redirect(this.FixRedirectUrl(returnUrl));
@@ -156,7 +157,7 @@ public class LoginController : BaseUserController
 		if (user != null)
 		{
 			await UpdateUserFieldsFromExternalLoginInfo(user, info);
-
+			await HttpContext.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
 			await authenticationManager.LoginAsync(HttpContext, user, isPersistent: rememberMe ?? false);
 			await SendConfirmationEmailAfterLogin(user);
 			return Redirect(this.FixRedirectUrl(returnUrl));
@@ -232,6 +233,7 @@ public class LoginController : BaseUserController
 				if (result.Succeeded)
 				{
 					await userManager.AddPasswordAsync(user, model.Password);
+					await HttpContext.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
 					await authenticationManager.LoginAsync(HttpContext, user, isPersistent: false);
 					if (!await SendConfirmationEmail(user))
 					{
@@ -302,6 +304,7 @@ public class LoginController : BaseUserController
 		var result = await userManager.AddLoginAsync(user, loginInfo);
 		if (result.Succeeded)
 		{
+			await HttpContext.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
 			await UpdateUserFieldsFromExternalLoginInfo(user, loginInfo);
 
 			if (!string.IsNullOrEmpty(returnUrl))
