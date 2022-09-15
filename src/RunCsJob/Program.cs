@@ -52,13 +52,13 @@ namespace RunCsJob
 		private Program([CanBeNull] DirectoryInfo сompilerDirectory, ManualResetEvent externalShutdownEvent = null)
 			: base(serviceName, externalShutdownEvent, true)
 		{
-			// if (сompilerDirectory != null)
-			// 	CsSandboxRunnerSettings.MsBuildSettings.CompilerDirectory = сompilerDirectory;
-			// if (!CsSandboxRunnerSettings.MsBuildSettings.CompilerDirectory.Exists)
-			// {
-			// 	log.Error($"Не найдена папка с компиляторами: {сompilerDirectory}");
-			// 	Environment.Exit(1);
-			// }
+			if (сompilerDirectory != null)
+				CsSandboxRunnerSettings.MsBuildSettings.CompilerDirectory = сompilerDirectory;
+			if (!CsSandboxRunnerSettings.MsBuildSettings.CompilerDirectory.Exists)
+			{
+				log.Error($"Не найдена папка с компиляторами: {сompilerDirectory}");
+				Environment.Exit(1);
+			}
 
 			log.Info($"Путь до компиляторов: {сompilerDirectory}");
 			csSandboxRunnerClient = new CsSandboxRunnerClient();
