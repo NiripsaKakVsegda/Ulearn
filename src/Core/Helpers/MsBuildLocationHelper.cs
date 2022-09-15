@@ -22,9 +22,18 @@ namespace Ulearn.Core.Helpers
 			{
 				// TODO использовать PowerShell module to locate MSBuild: vssetup.powershell. Get-VSSetupInstance
 				var newBuildTools = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin";
+				var newBuildToolsX86 = @"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin";
 				var buildToolsMsBuildDirectory = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin";
 				var vsCommunityMsBuildDirectory = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin";
-				if (Directory.Exists(newBuildTools))
+				if (Directory.Exists(newBuildToolsX86))
+				{
+					//otherwise it will look for net6 analog, which doesn't exist
+					Environment.SetEnvironmentVariable("MicrosoftNETBuildExtensionsTasksAssembly",
+						Path.Combine(@"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Microsoft\Microsoft.NET.Build.Extensions\tools\net472", 
+							"Microsoft.NET.Build.Extensions.Tasks.dll"));
+					Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", Path.Combine(newBuildToolsX86, "MSBuild.exe"));
+				}
+				else if (Directory.Exists(newBuildTools))
 				{
 					//otherwise it will look for net6 analog, which doesn't exist
 					Environment.SetEnvironmentVariable("MicrosoftNETBuildExtensionsTasksAssembly",
