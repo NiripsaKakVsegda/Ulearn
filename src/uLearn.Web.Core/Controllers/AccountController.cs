@@ -231,9 +231,9 @@ public class AccountController : BaseUserController
 		return View("JoinedToGroup", group);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
-	//[HandleHttpAntiForgeryException]
+	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ToggleSystemRole(string userId, string role)
 	{
 		if (userId == User.GetUserId())
@@ -257,7 +257,7 @@ public class AccountController : BaseUserController
 
 	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
 	[ValidateAntiForgeryToken]
-	//[HandleHttpAntiForgeryException]
+	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ToggleRole(string courseId, string userId, CourseRoleType role)
 	{
 		var comment = Request.Form["comment"];
@@ -282,7 +282,7 @@ public class AccountController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> DeleteUser(string userId)
@@ -482,7 +482,7 @@ public class AccountController : BaseUserController
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	//[HandleHttpAntiForgeryException]
+	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> Disassociate(string loginProvider, string providerKey)
 	{
 		var user = await userManager.FindByIdAsync(User.GetUserId());
@@ -733,7 +733,7 @@ public class AccountController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ResetPassword(string newPassword, string userId)
@@ -863,7 +863,7 @@ public class AccountController : BaseUserController
 		await SendConfirmationEmail(user).ConfigureAwait(false);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> ToggleSystemAccess(string userId, SystemAccessType accessType, bool isEnabled)
 	{
@@ -876,7 +876,7 @@ public class AccountController : BaseUserController
 		return Json(new { status = "ok" });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> Hijack(string userId)
 	{

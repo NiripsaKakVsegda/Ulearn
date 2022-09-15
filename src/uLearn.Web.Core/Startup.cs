@@ -119,7 +119,10 @@ public class Startup : VostokAspNetCoreApplication
 		services.AddUlearnAuthentication(configuration);
 		services.AddUlearnAuthorization(configuration);
 
-		services.Configure<PasswordHasherOptions>(options => { options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2; });
+		services.Configure<PasswordHasherOptions>(options =>
+		{
+			options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2;
+		});
 	}
 
 	public void ConfigureApp(IApplicationBuilder app)

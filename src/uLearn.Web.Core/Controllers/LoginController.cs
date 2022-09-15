@@ -84,6 +84,9 @@ public class LoginController : BaseUserController
 		if (ModelState.IsValid)
 		{
 			var user = await userManager.FindByNameAsync(model.UserName);
+			if (user != null)
+				if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
+					user = null;
 
 			if (user == null)
 			{
@@ -93,11 +96,11 @@ public class LoginController : BaseUserController
 
 				/* For signing in via email/password we need to be sure that email is confirmed */
 				user = usersWithEmail.FirstOrDefault(u => u.EmailConfirmed);
+				
+				if (user != null)
+					if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
+						user = null;
 			}
-
-			if (user != null)
-				if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
-					user = null;
 
 			if (user != null)
 			{
@@ -126,7 +129,7 @@ public class LoginController : BaseUserController
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	//[HandleHttpAntiForgeryException]
+	[HandleHttpAntiForgeryException]
 	public IActionResult ExternalLogin(string provider, string? returnUrl, bool? rememberMe)
 	{
 		var userId = userManager.GetUserId(User);
@@ -146,7 +149,10 @@ public class LoginController : BaseUserController
 		if (info == null)
 			return RedirectToAction("Index", "Login");
 
-		var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+		var user = info.LoginProvider == KonturPassportConstants.AuthenticationType
+			//for kontur.passport ProviderKey is login, but we need sid for backward compatible 
+			? await userManager.FindByLoginAsync(info.LoginProvider, info.Principal.FindFirstValue(KonturPassportConstants.SidClaimType))
+			: await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 		if (user != null)
 		{
 			await UpdateUserFieldsFromExternalLoginInfo(user, info);
@@ -219,6 +225,9 @@ public class LoginController : BaseUserController
 			var result = await userManager.CreateAsync(user);
 			if (result.Succeeded)
 			{
+				//for kontur.passport ProviderKey is login, but we need sid for backward compatible
+				if (info.LoginProvider == KonturPassportConstants.AuthenticationType)
+					info.ProviderKey = info.Principal.FindFirstValue(KonturPassportConstants.SidClaimType);
 				result = await userManager.AddLoginAsync(user, info);
 				if (result.Succeeded)
 				{
@@ -252,7 +261,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpGet]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
 	public ActionResult LinkLogin(string provider, string returnUrl)
 	{
 		return View(new LinkLoginViewModel
@@ -263,7 +272,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public ActionResult DoLinkLogin(string provider, string returnUrl = "")
@@ -277,7 +286,7 @@ public class LoginController : BaseUserController
 		return Challenge(properties, provider);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
 	public async Task<ActionResult> LinkLoginCallback(string returnUrl = "")
 	{
 		var user = await userManager.GetUserAsync(User);
@@ -287,7 +296,9 @@ public class LoginController : BaseUserController
 			log.Warn("LinkLoginCallback: GetExternalLoginInfoAsync() returned null");
 			return RedirectToAction("Manage", "Account", new { Message = AccountController.ManageMessageId.ErrorOccured });
 		}
-
+		//for kontur.passport ProviderKey is login, but we need sid for backward compatible
+		if (loginInfo.LoginProvider == KonturPassportConstants.AuthenticationType)
+			loginInfo.ProviderKey = loginInfo.Principal.FindFirstValue(KonturPassportConstants.SidClaimType);
 		var result = await userManager.AddLoginAsync(user, loginInfo);
 		if (result.Succeeded)
 		{
@@ -346,31 +357,6 @@ public class LoginController : BaseUserController
 		{
 			var newReturnUrl = Url.Action("EnsureKonturProfileLogin", "Login", new { returnUrl });
 			return View("EnsureKonturProfileLogin", model: newReturnUrl);
-		}
-	}
-
-	private const string XsrfKey = "XsrfId";
-
-	private class ChallengeResult : UnauthorizedResult
-	{
-		public ChallengeResult(string provider, string redirectUri, string userId = null)
-		{
-			LoginProvider = provider;
-			RedirectUri = redirectUri;
-			UserId = userId;
-		}
-
-		public string LoginProvider { get; set; }
-		public string RedirectUri { get; set; }
-		public string UserId { get; set; }
-
-		public override void ExecuteResult(ActionContext context)
-		{
-			var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
-			if (UserId != null)
-				properties.Items[XsrfKey] = UserId; // TODO DICTIONARY INSTEAD OF ITEMS
-
-			context.HttpContext.ChallengeAsync(LoginProvider, properties);
 		}
 	}
 }

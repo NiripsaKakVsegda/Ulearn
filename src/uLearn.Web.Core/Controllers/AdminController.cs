@@ -492,7 +492,7 @@ public class AdminController : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] //[ULearnAuthorize(ShouldBeSysAdmin = true)]
+	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> CreateCourse(string courseId, string courseTitle)
 	{

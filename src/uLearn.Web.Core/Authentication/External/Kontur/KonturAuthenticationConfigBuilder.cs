@@ -35,15 +35,10 @@ public class KonturConfigBuilder : IConfigBuilder<OpenIdConnectOptions>
 
 			var login = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var sid = userClaims.FirstOrDefault(c => c.Type == KonturPassportConstants.SidClaimType)?.Value;
-			var email = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 			var avatarUrl = userClaims.FirstOrDefault(c => c.Type == KonturPassportConstants.AvatarUrlClaimType)?.Value;
 			var realNameParts = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value.Split(' ');
 
 			var identity = new ClaimsIdentity();
-			if (sid != null)
-				identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, sid, xmlSchemaForStringType));
-			if (email != null)
-				identity.AddClaim(new Claim(ClaimTypes.Email, email, xmlSchemaForStringType));
 			if (avatarUrl != null)
 				identity.AddClaim(new Claim("AvatarUrl", avatarUrl, xmlSchemaForStringType));
 			if (realNameParts is { Length: > 0 })
@@ -61,7 +56,7 @@ public class KonturConfigBuilder : IConfigBuilder<OpenIdConnectOptions>
 			if (login != null)
 			{
 				identity.AddClaim(new Claim(ClaimTypes.Name, login, xmlSchemaForStringType));
-				identity.AddClaim(new Claim("KonturLogin", sid, xmlSchemaForStringType));
+				identity.AddClaim(new Claim("KonturLogin", login, xmlSchemaForStringType));
 			}
 
 			user.AddIdentity(identity);
