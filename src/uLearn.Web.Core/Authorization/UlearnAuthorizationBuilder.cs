@@ -13,27 +13,30 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Authorization;
 
-public class UlearnAuthorizationBuilder : IConfigBuilder<AuthorizationOptions>
+public class UlearnAuthorizationConstants
 {
 	public const string StudentsPolicyName = "Students";
 	public const string InstructorsPolicyName = "Instructors";
 	public const string CourseAdminsPolicyName = "CourseAdmins";
 	public const string SysAdminsPolicyName = "SysAdmins";
+}
 
+public class UlearnAuthorizationBuilder : IConfigBuilder<AuthorizationOptions>
+{
 	public void Build(WebConfiguration configuration, AuthorizationOptions options)
 	{
-		options.AddPolicy(StudentsPolicyName, AddDefaultAuthentication);
-		options.AddPolicy(InstructorsPolicyName, policy =>
+		options.AddPolicy(UlearnAuthorizationConstants.StudentsPolicyName, AddDefaultAuthentication);
+		options.AddPolicy(UlearnAuthorizationConstants.InstructorsPolicyName, policy =>
 		{
 			AddDefaultAuthentication(policy);
 			policy.Requirements.Add(new CourseRoleRequirement(CourseRoleType.Instructor));
 		});
-		options.AddPolicy(CourseAdminsPolicyName, policy =>
+		options.AddPolicy(UlearnAuthorizationConstants.CourseAdminsPolicyName, policy =>
 		{
 			AddDefaultAuthentication(policy);
 			policy.Requirements.Add(new CourseRoleRequirement(CourseRoleType.CourseAdmin));
 		});
-		options.AddPolicy(SysAdminsPolicyName, policy =>
+		options.AddPolicy(UlearnAuthorizationConstants.SysAdminsPolicyName, policy =>
 		{
 			AddDefaultAuthentication(policy);
 			policy.RequireRole(new List<string> { LmsRoleType.SysAdmin.GetDisplayName() });

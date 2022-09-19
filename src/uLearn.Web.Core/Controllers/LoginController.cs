@@ -263,7 +263,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpGet]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 	public ActionResult LinkLogin(string provider, string returnUrl)
 	{
 		return View(new LinkLoginViewModel
@@ -274,7 +274,7 @@ public class LoginController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public ActionResult DoLinkLogin(string provider, string returnUrl = "")
@@ -288,7 +288,7 @@ public class LoginController : BaseUserController
 		return Challenge(properties, provider);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 	public async Task<ActionResult> LinkLoginCallback(string returnUrl = "")
 	{
 		var user = await userManager.GetUserAsync(User);

@@ -69,7 +69,7 @@ public class ElmahTelegram : IErrorNotifierWithId
 
 	private static bool IsErrorIgnoredForTelegramChannel(Error error)
 	{
-		var message = error.Exception.Message;
+		var message = error.Message ?? error.Exception.Message;
 		return ignorableForTelegramChannelSubstrings.Any(ignorableSubstring => message.Contains(ignorableSubstring));
 	}
 }

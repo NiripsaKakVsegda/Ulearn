@@ -127,7 +127,7 @@ public class CommentsController : Controller
 			commentsPolicy.LastTimeForMaxCommentsLimit);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
@@ -219,7 +219,7 @@ public class CommentsController : Controller
 		await notificationsRepo.AddNotification(courseId, notification, comment.AuthorId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]

@@ -13,7 +13,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]//ULearnAuthorize
+[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]//ULearnAuthorize
 public class NotificationsController : Controller
 {
 	private readonly INotificationsRepo notificationsRepo;

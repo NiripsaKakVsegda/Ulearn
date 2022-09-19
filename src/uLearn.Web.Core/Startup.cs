@@ -11,6 +11,7 @@ using uLearn.Web.Core.Utils;
 using Serilog;
 using uLearn.Web.Core.Authentication;
 using uLearn.Web.Core.Authorization;
+using uLearn.Web.Core.Extensions.LTI;
 using uLearn.Web.Core.Start;
 using uLearn.Web.Core.StartupConfigs;
 using Vostok.Applications.AspNetCore;
@@ -89,6 +90,8 @@ public class Startup : VostokAspNetCoreApplication
 		services.AddScoped<CertificateGenerator>();
 		services.AddScoped<AdminController>();
 		services.AddSingleton<IWebCourseManager, WebCourseManager>();
+
+		services.AddSingleton<LtiAuthentication>();
 
 		ConfigureAuthServices(services);
 

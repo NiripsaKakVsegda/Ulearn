@@ -8,7 +8,7 @@ using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 public class VisitsController : Controller
 {
 	private readonly IVisitsRepo visitsRepo;

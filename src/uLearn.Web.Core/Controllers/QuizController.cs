@@ -24,7 +24,7 @@ using Vostok.Logging.Abstractions;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 public class QuizController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(QuizController));
@@ -338,7 +338,7 @@ public class QuizController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<IActionResult> ScoreQuiz(int id, string nextUrl, string errorUrl = "")
 	{
 		metricSender.SendCount("quiz.manual_score");

@@ -26,7 +26,7 @@ using uLearn.Web.Core.Models;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)]
+[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
 public class CourseController : BaseController
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(CourseController));
@@ -50,6 +50,7 @@ public class CourseController : BaseController
 	private readonly ITempCoursesRepo tempCoursesRepo;
 	private readonly ICourseRolesRepo courseRoleTypesRepo;
 	private readonly IGroupMembersRepo groupMembersRepo;
+	private readonly LtiAuthentication ltiAuthentication;
 
 	public CourseController(
 		UlearnDb db,
@@ -64,6 +65,7 @@ public class CourseController : BaseController
 		ICoursesRepo coursesRepo,
 		ITempCoursesRepo tempCoursesRepo,
 		IGroupMembersRepo groupMembersRepo,
+		LtiAuthentication ltiAuthentication,
 		ICourseRolesRepo courseRoleTypesRepo, IGroupAccessesRepo groupAccessesRepo)
 	{
 		this.db = db;
@@ -80,6 +82,7 @@ public class CourseController : BaseController
 		this.courseRoleTypesRepo = courseRoleTypesRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 		this.groupMembersRepo = groupMembersRepo;
+		this.ltiAuthentication = ltiAuthentication;
 
 		var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		baseUrlWeb = configuration.BaseUrl;
@@ -222,6 +225,8 @@ public class CourseController : BaseController
 				Scheme = Request.GetRealScheme(),
 				Port = Request.GetRealPort()
 			};
+			await ltiAuthentication.Authenticate(HttpContext, ltiRequest);
+			
 			return Redirect(uriBuilder.Uri.AbsoluteUri);
 		}
 
@@ -425,7 +430,7 @@ public class CourseController : BaseController
 		return await visitsRepo.FindVisit(courseId, slideId, userId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> InstructorNote(string courseId, Guid unitId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -436,7 +441,7 @@ public class CourseController : BaseController
 		return View(new InstructorNoteModel(slide, gitEditUrl, new MarkdownRenderContext(baseUrlApi, baseUrlWeb, courseId, slide.Unit.UnitDirectoryRelativeToCourse)));
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] //[ULearnAuthorize(MinAccessLevel = CourseRoleType.Tester)]
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> ForgetAll(string courseId, Guid slideId)
 	{
 		var slide = courseStorage.GetCourse(courseId).GetSlideByIdNotSafe(slideId);

@@ -18,7 +18,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.CourseAdminsPolicyName)] 
+[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 public class StepikController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(StepikController));

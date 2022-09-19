@@ -22,7 +22,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationBuilder.StudentsPolicyName)] 
+[Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)] 
 public class AccountController : BaseUserController
 {
 	private readonly ICourseStorage courseStorage = CourseManager.CourseStorageInstance;
@@ -95,7 +95,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("Index", "Login", new { returnUrl });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	public ActionResult List(UserSearchQueryModel queryModel)
 	{
 		return View(queryModel);
@@ -231,7 +231,7 @@ public class AccountController : BaseUserController
 		return View("JoinedToGroup", group);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ToggleSystemRole(string userId, string role)
@@ -255,7 +255,7 @@ public class AccountController : BaseUserController
 		await notificationsRepo.AddNotification(courseId, notification, initiatedUserId);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ToggleRole(string courseId, string userId, CourseRoleType role)
@@ -282,7 +282,7 @@ public class AccountController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> DeleteUser(string userId)
@@ -299,7 +299,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("List");
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	/* Now we use AccountController.Profile and don't use AccountController.Info, but this method exists for back compatibility */
 	public ActionResult Info(string userName)
 	{
@@ -310,7 +310,7 @@ public class AccountController : BaseUserController
 		return RedirectToAction("Profile", new { userId = user.Id });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	public async Task<ActionResult> CourseInfo(string userId, string courseId)
 	{
 		var user = await usersRepo.FindUserById(userId);
@@ -322,7 +322,7 @@ public class AccountController : BaseUserController
 		return View(new UserCourseModel(course, user, db));
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	public async Task<ActionResult> ToggleRolesHistory(string userId, string courseId)
 	{
 		var user = await usersRepo.FindUserById(userId);
@@ -733,7 +733,7 @@ public class AccountController : BaseUserController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> ResetPassword(string newPassword, string userId)
@@ -863,7 +863,7 @@ public class AccountController : BaseUserController
 		await SendConfirmationEmail(user).ConfigureAwait(false);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> ToggleSystemAccess(string userId, SystemAccessType accessType, bool isEnabled)
 	{
@@ -876,7 +876,7 @@ public class AccountController : BaseUserController
 		return Json(new { status = "ok" });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationBuilder.SysAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> Hijack(string userId)
 	{
