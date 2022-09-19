@@ -32,7 +32,8 @@ namespace RunCheckerJob
 			var httpClientHandler = new HttpClientHandler { CookieContainer = cookieContainer };
 			var environmentName = Environment.GetEnvironmentVariable("UlearnEnvironmentName");
 			// if (environmentName != null && environmentName.ToLower().Contains("local"))
-			httpClientHandler.ServerCertificateCustomValidationCallback = ((message, certificate2, arg3, arg4) => true);  // ignore the certificate check when ssl HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+			httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+			//((message, certificate2, arg3, arg4) => true);  // ignore the certificate check when ssl;
 			var baseAddress = new Uri(address + "/");
 
 			httpClient = new HttpClient(httpClientHandler) { BaseAddress = baseAddress };

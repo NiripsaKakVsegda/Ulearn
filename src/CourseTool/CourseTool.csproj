@@ -157,4 +157,7 @@
 		<Compile Remove="bin\Debug\submissions\Names.csproj-f3d55148\checking\NamesSolution.cs" />
 		<Compile Remove="bin\Debug\submissions\Names.csproj-f3d55148\checking\~$Checker.cs" />
 	</ItemGroup>
+	<ItemGroup>
+		<None Remove="packages\**" />
+	</ItemGroup>
 </Project>
