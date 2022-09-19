@@ -15,7 +15,7 @@ public static class UlearnAuthentication
 			options.Cookie.Name = configuration.Web.CookieName;
 			options.ExpireTimeSpan = TimeSpan.FromDays(14);
 			options.Cookie.Domain = configuration.Web.CookieDomain;
-			options.Cookie.SameSite = SameSiteMode.Lax;
+			options.Cookie.SameSite = SameSiteMode.None;
 			options.LoginPath = "/login";
 		});
 
