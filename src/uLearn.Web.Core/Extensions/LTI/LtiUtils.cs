@@ -1,4 +1,5 @@
 ﻿using System.Collections.Specialized;
+using System.Data;
 using Database;
 using Database.Models;
 using Database.Repos;
@@ -161,7 +162,7 @@ public class LtiAuthentication
 
 	private async Task<ApplicationUser> GetIdentityForLtiLogin(HttpContext context, LtiRequest ltiRequest, UserLoginInfo ltiLogin)
 	{
-		//await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+		await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 		var ltiLoginUser = await userManager.FindByLoginAsync(ltiLogin.LoginProvider, ltiLogin.ProviderKey);
 		if (ltiLoginUser != null)
 		{
@@ -205,7 +206,7 @@ public class LtiAuthentication
 
 		//var identity = await userManager.CreateIdentityAsync(ulearnUser, context.Options.SignInAsAuthenticationType);
 
-		//await transaction.CommitAsync();
+		await transaction.CommitAsync();
 
 		//return identity;
 		return ulearnUser;
