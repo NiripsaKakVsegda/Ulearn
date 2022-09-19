@@ -65,4 +65,8 @@
 		<Folder Include="Pages\Shared" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Remove="packages\**" />
+	</ItemGroup>
+
 </Project>
