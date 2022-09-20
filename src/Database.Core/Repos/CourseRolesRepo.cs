@@ -168,7 +168,7 @@ LIMIT {limit}"; // ~ - регвыр c учетом размера букв. Ес
 			// 	new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}")
 			// ).ToList();
 			var userIds = await db.Users
-				.FromSqlRaw(sql, new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}")) //$@"(^|\s){escapedName}"
+				.FromSqlRaw(sql, new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}"))
 				.Select(u => u.Id)
 				.ToListAsync();
 			return userIds;
