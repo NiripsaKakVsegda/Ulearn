@@ -1,6 +1,7 @@
 ﻿using Database;
 using Database.Di;
 using Database.Models;
+using ElmahCore;
 using ElmahCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
@@ -96,6 +97,11 @@ public class Startup : VostokAspNetCoreApplication
 		ConfigureAuthServices(services);
 
 		services.AddElmah(options => new ElmahBuilder().Build(configuration, options));
+		if (!string.IsNullOrEmpty(configuration.ElmahXmlLogPath))
+			services.AddElmah<XmlFileErrorLog>(options =>
+			{
+				options.LogPath = configuration.ElmahXmlLogPath;
+			});
 
 		services
 			.AddMvc(options =>

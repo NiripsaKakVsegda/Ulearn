@@ -13,9 +13,6 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 	{
 		options.Notifiers.Add(new ElmahTelegram());
 
-		if (!string.IsNullOrEmpty(configuration.ElmahXmlLogPath))
-			options.LogPath = configuration.ElmahXmlLogPath;
-
 		options.OnPermissionCheck = context =>
 		{
 			var isAuthenticated = context.User.Identity.IsAuthenticated;

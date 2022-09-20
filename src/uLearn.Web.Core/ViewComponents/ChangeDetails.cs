@@ -1,4 +1,5 @@
 ﻿using Database.Repos;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 using uLearn.Web.Core.Controllers;
 using uLearn.Web.Core.Models;
@@ -16,8 +17,8 @@ public class ChangeDetails : ViewComponent
 
 	public async Task<IViewComponentResult> InvokeAsync()
 	{
-		var user = await userManager.FindByNameAsync(User.Identity.Name);
-		var hasPassword = await ControllerUtils.HasPassword(userManager, user.Id);
+		var user = await userManager.FindByNameAsync(User.Identity?.Name);
+		var hasPassword = await ControllerUtils.HasPassword(userManager, User.Identity.GetUserId());
 
 		return View("ChangeDetailsPartial", new UserViewModel
 		{

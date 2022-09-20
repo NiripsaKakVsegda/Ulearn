@@ -43,7 +43,7 @@ public class TelegramController : JsonDataContractController
 			return Forbid();
 		}
 
-		var update = GetJsonObjectFromRequestBody<Update>();
+		var update = await GetJsonObjectFromRequestBody<Update>();
 		if (update == null)
 			return BadRequest();
 
@@ -61,11 +61,11 @@ public class TelegramController : JsonDataContractController
 		return Ok();
 	}
 
-	private T GetJsonObjectFromRequestBody<T>()
+	private async Task<T> GetJsonObjectFromRequestBody<T>()
 	{
 		Request.Body.Position = 0;
-		using (var reader = new StreamReader(Request.Body))
-			return reader.ReadToEnd().DeserializeJson<T>();
+		using var reader = new StreamReader(Request.Body);
+		return (await reader.ReadToEndAsync()).DeserializeJson<T>();
 	}
 
 	public async Task OnMessage(Message message)
