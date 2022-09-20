@@ -162,13 +162,13 @@ namespace Database.Repos
 				$@"SELECT ""Id""
 FROM ""AspNetUsers""
 WHERE ""IsDeleted"" = False and ""Names"" ~ @query
-LIMIT {limit};"; // ~ - регвыр c учетом размера букв. Есть ~* без учета. Но мы все равно поле ловеркейзим, чтобы по нему можно было искать в том числе like. 
+LIMIT {limit}"; // ~ - регвыр c учетом размера букв. Есть ~* без учета. Но мы все равно поле ловеркейзим, чтобы по нему можно было искать в том числе like. 
 			// var userIds = db.Database.SqlQuery<string>(
 			// 	sql,
 			// 	new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}")
 			// ).ToList();
 			var userIds = await db.Users
-				.FromSqlRaw(sql, new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}"))
+				.FromSqlRaw(sql, new NpgsqlParameter<string>("@query", $@"(^|\s){escapedName}")) //$@"(^|\s){escapedName}"
 				.Select(u => u.Id)
 				.ToListAsync();
 			return userIds;
