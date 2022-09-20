@@ -93,10 +93,10 @@ public class LtiAuthentication
 		this.authenticationManager = authenticationManager;
 	}
 
-	public async Task Authenticate(HttpContext context, LtiRequest ltiRequest)
+	public async Task<string> Authenticate(HttpContext context, LtiRequest ltiRequest)
 	{
 		// Make sure the request is not being replayed
-		var timeout = TimeSpan.FromMinutes(500000);
+		var timeout = TimeSpan.FromMinutes(5);
 		var oauthTimestampAbsolute = OAuthConstants.Epoch.AddSeconds(ltiRequest.Timestamp);
 		if (DateTime.UtcNow - oauthTimestampAbsolute > timeout)
 		{
@@ -125,7 +125,7 @@ public class LtiAuthentication
 		if (!signature.Equals(ltiRequest.Signature))
 			throw new LtiException("Invalid " + OAuthConstants.SignatureParameter);
 
-		await Internal_Authenticate(context, ltiRequest);
+		return await Internal_Authenticate(context, ltiRequest);
 		// If we made it this far the request is valid
 	}
 
@@ -135,7 +135,7 @@ public class LtiAuthentication
 	/// <param name="context">Contains information about the login session as well as the LTI request.</param>
 	/// <param name="claims">Optional set of claims to add to the identity.</param>
 	/// <returns>A <see cref="Task"/> representing the completed operation.</returns>
-	private async Task Internal_Authenticate(HttpContext context, LtiRequest ltiRequest)
+	private async Task<string> Internal_Authenticate(HttpContext context, LtiRequest ltiRequest)
 	{
 		log.Info($"LTI обрабатывает запрос на {context.Request.Path}");
 
@@ -155,6 +155,7 @@ public class LtiAuthentication
 		log.Info($"Аутенфицирую пользователя по identity: {identity.UserName}"); // login
 		
 		await authenticationManager.LoginAsync(context, identity, false);
+		return identity.Id;
 		// await context.AuthenticateAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme);
 		// var claimsIdentity = await identity.GenerateUserIdentityAsync(principalFactory, courseRolesRepo);
 		// await context.SignInAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme, identity, new AuthenticationProperties { IsPersistent = false });

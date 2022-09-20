@@ -215,8 +215,10 @@ public class CourseController : BaseController
 		if (await Request.IsAuthenticatedWithLtiAsync())
 		{
 			var ltiRequest = await Request.ParseLtiRequestAsync();
+			userId = await ltiAuthentication.Authenticate(HttpContext, ltiRequest);
+
 			log.Info($"Нашёл LTI request в запросе: {ltiRequest.JsonSerialize()}");
-			userId = ltiRequest.UserId; //Request.Authentication.AuthenticationResponseGrant.Identity.GetUserId();
+			//userId = ltiRequest.UserId; //Request.Authentication.AuthenticationResponseGrant.Identity.GetUserId();
 			await ltiRequestsRepo.Update(courseId, userId, slide.Id, ltiRequest.JsonSerialize());
 
 			/* Substitute http(s) scheme with real scheme from header */
@@ -225,7 +227,6 @@ public class CourseController : BaseController
 				Scheme = Request.GetRealScheme(),
 				Port = Request.GetRealPort()
 			};
-			await ltiAuthentication.Authenticate(HttpContext, ltiRequest);
 			
 			return Redirect(uriBuilder.Uri.AbsoluteUri);
 		}
