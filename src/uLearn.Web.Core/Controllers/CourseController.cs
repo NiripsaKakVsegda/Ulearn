@@ -211,17 +211,21 @@ public class CourseController : BaseController
 		var slide = course.GetSlideById(slideId, false, visibleUnitIds);
 
 		string userId;
-		//var owinRequest = Request.GetOwinContext().Request;
 		if (await Request.IsAuthenticatedWithLtiAsync())
 		{
 			var ltiRequest = await Request.ParseLtiRequestAsync();
 			userId = await ltiAuthentication.Authenticate(HttpContext, ltiRequest);
+			var ulearnLtiRequest = new Ulearn.Core.Model.LtiRequest
+			{
+				ConsumerKey = ltiRequest.ConsumerKey,
+				LisOutcomeServiceUrl = ltiRequest.LisOutcomeServiceUrl, 
+				LisResultSourcedId = ltiRequest.LisResultSourcedId,
+			};
 
-			log.Info($"Нашёл LTI request в запросе: {ltiRequest.JsonSerialize()}");
-			//userId = ltiRequest.UserId; //Request.Authentication.AuthenticationResponseGrant.Identity.GetUserId();
-			await ltiRequestsRepo.Update(courseId, userId, slide.Id, ltiRequest.JsonSerialize());
+			log.Info($"Нашёл LTI request в запросе: {ulearnLtiRequest.JsonSerialize()}");
 
-			/* Substitute http(s) scheme with real scheme from header */
+			await ltiRequestsRepo.Update(courseId, userId, slide.Id, ulearnLtiRequest.JsonSerialize());
+
 			var uriBuilder = new UriBuilder(ltiRequest.Url)
 			{
 				Scheme = Request.GetRealScheme(),

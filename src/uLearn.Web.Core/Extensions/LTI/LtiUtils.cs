@@ -10,7 +10,6 @@ using LtiLibrary.Core.Outcomes.v1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Ulearn.Common;
 using Ulearn.Core.Courses.Slides;
 using uLearn.Web.Core.Controllers;
 using Vostok.Logging.Abstractions;
@@ -34,7 +33,7 @@ public static class LtiUtils
 		if (ltiRequest == null)
 			throw new Exception("LtiRequest for user '" + userId + "' not found");
 
-		var ltiRequestJson = JsonConvert.DeserializeObject<LtiRequest>(ltiRequest);
+		var ltiRequestJson = JsonConvert.DeserializeObject<Ulearn.Core.Model.LtiRequest>(ltiRequest);
 
 		var consumerSecret = (await consumersRepo.Find(ltiRequestJson.ConsumerKey)).Secret;
 
@@ -137,17 +136,13 @@ public class LtiAuthentication
 	/// <returns>A <see cref="Task"/> representing the completed operation.</returns>
 	private async Task<string> Internal_Authenticate(HttpContext context, LtiRequest ltiRequest)
 	{
-		log.Info($"LTI обрабатывает запрос на {context.Request.Path}");
+		log.Info($"LTI обрабатывает запрос на {context.Request.Path + context.Request.QueryString.Value}");
 
 		var loginProvider = string.Join(":", "LTI", ltiRequest.ConsumerKey);
 		var providerKey = ltiRequest.UserId;
 		var ltiLogin = new UserLoginInfo(loginProvider, providerKey, "LTI");
 
-		var identity = await FuncUtils.TrySeveralTimesAsync(
-			() => GetIdentityForLtiLogin(context, ltiRequest, ltiLogin),
-			3,
-			() => Task.Delay(200)
-		);
+		var identity = await GetIdentityForLtiLogin(context, ltiRequest, ltiLogin);
 
 		if (identity == null)
 			throw new Exception("Can\'t authenticate identity for LTI user");
@@ -156,9 +151,6 @@ public class LtiAuthentication
 		
 		await authenticationManager.LoginAsync(context, identity, false);
 		return identity.Id;
-		// await context.AuthenticateAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme);
-		// var claimsIdentity = await identity.GenerateUserIdentityAsync(principalFactory, courseRolesRepo);
-		// await context.SignInAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme, identity, new AuthenticationProperties { IsPersistent = false });
 	}
 
 	private async Task<ApplicationUser> GetIdentityForLtiLogin(HttpContext context, LtiRequest ltiRequest, UserLoginInfo ltiLogin)

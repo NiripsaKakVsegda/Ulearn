@@ -18,6 +18,7 @@ namespace Ulearn.Web.Api.Utils.LTI
 			string ltiRequestJson, ILtiConsumersRepo consumersRepo)
 		{
 			var ltiRequest = JsonConvert.DeserializeObject<LtiRequest>(ltiRequestJson);
+			log.Info($"Нашёл Lti запрос с ConsumerKey = {ltiRequest.ConsumerKey}, ищу secret для этого consumer-а");
 
 			var consumerSecret = (await consumersRepo.Find(ltiRequest.ConsumerKey)).Secret;
 
