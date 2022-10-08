@@ -24,6 +24,7 @@ import buttons from './scripts/buttons.js'; //кнопка загрузки ку
 import slideChecking from './scripts/slide-checking.js'; //сабмиты задач
 import slideEditor from './scripts/slide-editor.js'; //code mirror editor
 import slideModals from './scripts/slide-modals.js'; //модалки
+import spoiler from './scripts/spoiler.js'; //спойлеры
 import slideQuiz from './scripts/slide-quiz.js'; // слайд с квизами
 import slideSpoilers from './scripts/slide-spoilers.js'; //спойлеры, TODO reuse react
 import slideComments from './scripts/slide-comments.js'; //обработчики для комментариев, который рисует бэк на странице /Admin/Comments
@@ -84,6 +85,7 @@ const documentReadyFunctions = [
 	slideModals,
 	slideQuiz,
 	slideSpoilers,
+	spoiler,
 	slideTex,
 	slideComments,
 	slideUtils,
