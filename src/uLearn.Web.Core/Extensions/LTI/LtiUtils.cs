@@ -147,7 +147,7 @@ public class LtiAuthentication
 		if (identity == null)
 			throw new Exception("Can\'t authenticate identity for LTI user");
 
-		log.Info($"Аутенфицирую пользователя по identity: {identity.UserName}"); // login
+		log.Info($"Аутенфицирую пользователя по identity: {identity.UserName}");
 		
 		await authenticationManager.LoginAsync(context, identity, false);
 		return identity.Id;
@@ -160,7 +160,7 @@ public class LtiAuthentication
 		if (ltiLoginUser != null)
 		{
 			log.Info($"Нашёл LTI-логин: провайдер {ltiLogin.LoginProvider}, идентификатор {ltiLogin.ProviderKey}, он принадлежит пользователю {ltiLoginUser.UserName} (Id = {ltiLoginUser.Id})");
-			return ltiLoginUser; //await userManager.CreateIdentityAsync(ltiLoginUser, context.Options.SignInAsAuthenticationType);
+			return ltiLoginUser;
 		}
 
 		log.Info($"Не нашёл LTI-логин: провайдер {ltiLogin.LoginProvider}, идентификатор {ltiLogin.ProviderKey}");
@@ -171,8 +171,9 @@ public class LtiAuthentication
 			var ulearnUserFromPrincipal = await userManager.GetUserAsync(ulearnPrincipal);
 			log.Info($"Пришёл LTI-запрос на аутенфикацию, пользователь уже аутенфицирован на ulearn: {ulearnPrincipal.Identity.Name}. Прикрепляю к пользователю LTI-логин");
 			await userManager.AddLoginAsync(ulearnUserFromPrincipal, ltiLogin);
-
-			return ulearnUserFromPrincipal; //(ClaimsIdentity)ulearnPrincipal.Identity;
+			await transaction.CommitAsync();
+				
+			return ulearnUserFromPrincipal;
 		}
 
 		var userName = GenerateUserName(ltiRequest);
@@ -196,12 +197,8 @@ public class LtiAuthentication
 		}
 
 		await userManager.AddLoginAsync(ulearnUser, ltiLogin);
-
-		//var identity = await userManager.CreateIdentityAsync(ulearnUser, context.Options.SignInAsAuthenticationType);
-
 		await transaction.CommitAsync();
-
-		//return identity;
+			
 		return ulearnUser;
 	}
 
