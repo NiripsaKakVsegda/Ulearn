@@ -1,7 +1,7 @@
 // Adding Element.remove() for DOM elements, suggested in the Mozilla documentation. https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
 (function (arr) {
 	arr.forEach(function (item) {
-		if(Object.hasOwn(item, 'remove')) {
+		if(Object.prototype.hasOwnProperty.call(item, 'remove')) {
 			return;
 		}
 		Object.defineProperty(item, 'remove', {

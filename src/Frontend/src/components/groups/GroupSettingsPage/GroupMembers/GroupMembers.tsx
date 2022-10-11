@@ -277,7 +277,7 @@ function GroupMembers(props: Props) {
 			});
 	}
 
-	function onAddTeacher(item: { value: string }) {
+	function onAddTeacher(item: { value: string } & ShortUserInfo) {
 		setState(oldState => ({
 			...oldState,
 			selected: item,
@@ -286,7 +286,7 @@ function GroupMembers(props: Props) {
 		onLoadTeacher(item);
 	}
 
-	function onLoadTeacher(item: { value: string }) {
+	function onLoadTeacher(item: { value: string } & ShortUserInfo) {
 		const grantedBy = getUserFromAccount(account);
 
 		addGroupAccesses(group.id, item.value)
@@ -294,10 +294,10 @@ function GroupMembers(props: Props) {
 				const updatedAccesses = accesses
 					.filter(i => i.user.id !== item.value)
 					.concat({
-						user: item,
+						user: item as ShortUserInfo,
 						grantedBy,
 						grantTime: new Date().toDateString(),
-					});
+					} as GroupAccessesInfo);
 
 				setState(oldState => ({
 					...oldState,
@@ -326,7 +326,8 @@ function GroupMembers(props: Props) {
 	function onDeleteStudents(students: string[]) {
 		deleteStudents(group.id, students)
 			.then(() => {
-				const updatedStudents = students.filter((item) => !students.includes(item.user.id));
+				const currentStudents = state.students;
+				const updatedStudents = currentStudents.filter((item) => !students.includes(item.user.id));
 
 				setState(oldState => ({
 					...oldState,

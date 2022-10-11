@@ -29,7 +29,7 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			secure: false,
 			changeOrigin: true,
 			target: webUrl,
-			pathRewrite: { '^/legacy/': '' }
+			pathRewrite: { '^/legacy/': '' },
 		},
 		{
 			context: '/Login',
@@ -42,6 +42,11 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			secure: false,
 			changeOrigin: true,
 			target: webUrl,
+			bypass: (req, res, proxyConfig)=>{
+				if (req.headers.accept?.indexOf('html') !== -1) {
+					return '/index.html';
+				}
+			}
 		},
 	],
 	historyApiFallback: {

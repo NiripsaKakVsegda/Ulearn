@@ -293,8 +293,8 @@ class DownloadedHtmlContent extends Component {
 				let button = document.activeElement;
 				if(button && button.name && button.value)
 					formData.append(button.name, button.value);
-				debugger
-				this.props.load(formUrl, {
+
+				this.props.load(getUrlParts(formUrl).pathname, {
 					method: 'POST',
 					credentials: 'include',
 					body: formData
