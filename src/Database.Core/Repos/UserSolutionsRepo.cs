@@ -557,7 +557,15 @@ namespace Database.Repos
 
 		private async Task<UserExerciseSubmission> TryFindNoTrackingSubmission(int id)
 		{
-			var submission = db.UserExerciseSubmissions.AsNoTracking().SingleOrDefault(x => x.Id == id);
+			var submission = await db.UserExerciseSubmissions
+				.Include(s => s.AutomaticChecking)
+				.ThenInclude(ac => ac.CompilationError)
+				.Include(s => s.AutomaticChecking)
+				.ThenInclude(ac => ac.Output)
+				.Include(s => s.SolutionCode)
+				.Include(s => s.ManualChecking)
+				.AsNoTracking()
+				.SingleOrDefaultAsync(x => x.Id == id);
 			if (submission == null)
 				return null;
 			submission.SolutionCode = await textsRepo.GetText(submission.SolutionCodeHash);

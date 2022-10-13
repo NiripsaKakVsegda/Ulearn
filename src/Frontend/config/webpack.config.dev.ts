@@ -38,7 +38,7 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			target: webUrl,
 		},
 		{
-			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**", "/content/**"],
+			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**", "/content/**", "/Sandbox/**"],
 			secure: false,
 			changeOrigin: true,
 			target: webUrl,

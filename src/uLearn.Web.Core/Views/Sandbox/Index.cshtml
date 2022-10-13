@@ -27,7 +27,7 @@
 		var automaticChecking = submission.AutomaticChecking;
 		var defaultDescription = "Submission #" + submission.Id;
 		var description = automaticChecking != null ? (automaticChecking.DisplayName ?? defaultDescription) : defaultDescription;
-		<tr class="@{ SubmissionClass(automaticChecking != null ? automaticChecking.GetVerdict() : ""); } submitions-item" data-id="@submission.Id">
+		<tr class="@{ SubmissionClass(automaticChecking != null ? automaticChecking.GetVerdict() : ""); } submitions-item" data-url='@Url.Action("GetDetails")' data-id="@submission.Id">
 			<td>@submission.Id</td>
 			<td title="@submission.Timestamp">@submission.Timestamp.ToPrettyString(true)</td>
 			<td>@submission.Language.GetName()</td>
@@ -107,26 +107,4 @@
 			@("warning")
 		}
 	}
-}
-
-@section scripts {
-	<script>
-		$(".submitions-item").click(function(item) {
-			openDetails(item.currentTarget.dataset.id);
-		});
-
-		function openDetails(id) {
-			$.ajax({
-				type: 'GET',
-				url: '@Url.Action("GetDetails")',
-				data:
-				{
-					id: id
-				}
-			}).always(function(ans) {
-				$('#details-field').html(ans);
-				$('#details-window').modal('show');
-			});
-		}
-	</script>
 }

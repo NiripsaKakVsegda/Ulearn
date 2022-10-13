@@ -47,6 +47,7 @@ import connectCheckboxes from './scripts/connect-checkboxes.js'; // исполь
 import { antiplagiarism, antiplagiarismChart } from './scripts/antiplagiarism.js'; // антиплагиат
 import styleErrorsSettings from './scripts/style-errors-settings.js'; // стилевые ошибки c#
 import studentSubmissions from './scripts/student-submissions.js'; // поиск решений студентов
+import allSubmissions from './scripts/all-submissions.js'; // страница последних отправок
 import reactRenderer from './scripts/react-renderer.js'; // рендер реакта для бэка
 import smoothScroll from './scripts/smoothScroll.js'; //скролл к фильтрам + показ/скрытие
 
@@ -78,6 +79,7 @@ const documentReadyFunctions = [
 	//overrides
 	bootsrapSelectOverride,
 	//scripts
+	allSubmissions,
 	tooltips,
 	buttons,
 	slideChecking,

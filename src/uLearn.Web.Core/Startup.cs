@@ -66,7 +66,7 @@ public class Startup : VostokAspNetCoreApplication
 			.AddDbContext<UlearnDb>(
 				options => options
 					.UseLazyLoadingProxies()
-					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(14, 4))
+					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2))
 			);
 
 		var cookieKeyRingDirectory = new DirectoryInfo(Path.Combine(Ulearn.Core.Utils.GetAppPath(), configuration.Web.CookieKeyRingDirectory));
