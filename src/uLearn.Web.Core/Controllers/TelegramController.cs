@@ -1,5 +1,5 @@
-﻿using System.Net;
-using Database.Repos;
+﻿using Database.Repos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -12,6 +12,7 @@ using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
+[AllowAnonymous]
 public class TelegramController : JsonDataContractController
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(TelegramController));
