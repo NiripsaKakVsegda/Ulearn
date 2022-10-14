@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 using uLearn.Web.Core.Controllers;
 using uLearn.Web.Core.Utils;
 using Serilog;
@@ -28,7 +29,7 @@ public class Startup : VostokAspNetCoreApplication
 {
 	private WebConfiguration configuration;
 	private IHostEnvironment env;
-	
+
 	public override void Setup(IVostokAspNetCoreApplicationBuilder builder, IVostokHostingEnvironment hostingEnvironment)
 	{
 		builder
@@ -98,10 +99,7 @@ public class Startup : VostokAspNetCoreApplication
 
 		services.AddElmah(options => new ElmahBuilder().Build(configuration, options));
 		if (!string.IsNullOrEmpty(configuration.ElmahXmlLogPath))
-			services.AddElmah<XmlFileErrorLog>(options =>
-			{
-				options.LogPath = configuration.ElmahXmlLogPath;
-			});
+			services.AddElmah<XmlFileErrorLog>(options => { options.LogPath = configuration.ElmahXmlLogPath; });
 
 		services
 			.AddMvc(options =>
@@ -128,10 +126,7 @@ public class Startup : VostokAspNetCoreApplication
 		services.AddUlearnAuthentication(configuration);
 		services.AddUlearnAuthorization(configuration);
 
-		services.Configure<PasswordHasherOptions>(options =>
-		{
-			options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2;
-		});
+		services.Configure<PasswordHasherOptions>(options => { options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2; });
 	}
 
 	public void ConfigureApp(IApplicationBuilder app)
@@ -139,7 +134,7 @@ public class Startup : VostokAspNetCoreApplication
 		var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
 		app.UseSerilogRequestLogging(options => new SerilogBuilder().Build(configuration, options));
-		
+
 		if (env.IsDevelopment())
 		{
 			app.UseMigrationsEndPoint();
@@ -161,6 +156,20 @@ public class Startup : VostokAspNetCoreApplication
 
 		app.UseHttpsRedirection();
 		app.UseStaticFiles();
+
+		//in production certificates lives in another directory, so locally we should create it to serve later
+		var certificatesDirectoryName = "Certificates";
+		var certificatesDirectoryPath = Path.Combine(env.ContentRootPath, certificatesDirectoryName);
+		var certificatesDirectory = new DirectoryInfo(certificatesDirectoryPath);
+		if (!certificatesDirectory.Exists)
+			certificatesDirectory.Create();
+
+		app.UseStaticFiles(new StaticFileOptions
+		{
+			FileProvider = new PhysicalFileProvider(
+				Path.Combine(env.ContentRootPath, certificatesDirectoryName)),
+			RequestPath = $"/{certificatesDirectoryName}"
+		});
 
 		app.UseRouting();
 

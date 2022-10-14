@@ -19,6 +19,7 @@ public class CertificateGenerator
 	private readonly ISlideCheckingsRepo slideCheckingsRepo;
 	private readonly IVisitsRepo visitsRepo;
 	private readonly WebConfiguration configuration;
+	private readonly string contentRootPath;
 	private readonly IUnitsRepo unitsRepo;
 
 	private static ILog log => LogProvider.Get().ForContext(typeof(CertificatesRepo));
@@ -45,6 +46,7 @@ public class CertificateGenerator
 		ISlideCheckingsRepo slideCheckingsRepo,
 		IVisitsRepo visitsRepo,
 		WebConfiguration configuration,
+		IHostEnvironment env,
 		IUnitsRepo unitsRepo)
 	{
 		this.userQuizzesRepo = userQuizzesRepo;
@@ -53,6 +55,7 @@ public class CertificateGenerator
 		this.visitsRepo = visitsRepo;
 		this.unitsRepo = unitsRepo;
 		this.configuration = configuration;
+		this.contentRootPath = env.ContentRootPath;
 	}
 
 	public FileInfo GetTemplateArchivePath(CertificateTemplate template)
@@ -64,7 +67,7 @@ public class CertificateGenerator
 	{
 		var certificatesDirectory = configuration.OldWebConfig["ulearn.certificatesDirectory"];
 		if (string.IsNullOrEmpty(certificatesDirectory))
-			certificatesDirectory = Path.Combine(Ulearn.Core.Utils.GetAppPath(), "Certificates");
+			certificatesDirectory = Path.Combine(contentRootPath, "Certificates");
 
 		var directory = new DirectoryInfo(certificatesDirectory);
 		if (!directory.Exists)
