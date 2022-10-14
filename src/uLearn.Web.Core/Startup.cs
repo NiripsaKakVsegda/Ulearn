@@ -157,22 +157,6 @@ public class Startup : VostokAspNetCoreApplication
 		app.UseHttpsRedirection();
 		app.UseStaticFiles();
 
-		//in production certificates lives in another directory, so locally we should create it to serve later
-		var certificatesDirectoryName = "Certificates";
-		var certificatesDirectoryPath = Path.Combine(env.ContentRootPath,"wwwroot", certificatesDirectoryName);
-		var localCertificatesDirectoryPath = Path.Combine(env.ContentRootPath, certificatesDirectoryName);
-		var certificatesDirectory = new DirectoryInfo(certificatesDirectoryPath);
-		if (!certificatesDirectory.Exists)
-		{
-			new DirectoryInfo(localCertificatesDirectoryPath).Create();
-
-			app.UseStaticFiles(new StaticFileOptions
-			{
-				FileProvider = new PhysicalFileProvider(localCertificatesDirectoryPath),
-				RequestPath = $"/{certificatesDirectoryName}"
-			});
-		}
-
 		app.UseRouting();
 
 		app.UseAuthentication();

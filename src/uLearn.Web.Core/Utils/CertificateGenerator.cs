@@ -67,7 +67,7 @@ public class CertificateGenerator
 	{
 		var certificatesDirectory = configuration.OldWebConfig["ulearn.certificatesDirectory"];
 		if (string.IsNullOrEmpty(certificatesDirectory))
-			certificatesDirectory = Path.Combine(contentRootPath, "Certificates");
+			certificatesDirectory = Path.Combine(contentRootPath, "wwwroot", "Certificates");
 
 		var directory = new DirectoryInfo(certificatesDirectory);
 		if (!directory.Exists)
