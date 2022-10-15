@@ -167,6 +167,22 @@ class DownloadedHtmlContent extends Component {
 		});
 	}
 
+	loadContentByClass() {
+		const className = 'load-content';
+		let elements = Array.from(document.body.getElementsByClassName(className));
+		elements.forEach(e => {
+			let url = e.dataset.url;
+			this.props.load(url, { credentials: 'include' })
+				.then(r => r.text())
+				.then(data => {
+					e.innerHTML = data;
+					let allScriptTags = Array.from(body.getElementsByTagName('script'));
+					/* Eval embedded scripts */
+					allScriptTags.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
+				});
+		});
+	}
+
 	processNewHtmlContent(url, data) {
 		/* In case if we haven't do it yet, get courseId from URL now */
 		let courseId = this._getCourseIdFromUrl();
@@ -186,8 +202,9 @@ class DownloadedHtmlContent extends Component {
 			bodyClassName: body.className,
 			links: links
 		}, () => {
-			runLegacy(documentReadyFunctions);
+			this.loadContentByClass();
 			this.setPostFormSubmitHandler();
+			runLegacy(documentReadyFunctions);
 		});
 
 		DownloadedHtmlContent.removeStickyHeaderAndColumn();
