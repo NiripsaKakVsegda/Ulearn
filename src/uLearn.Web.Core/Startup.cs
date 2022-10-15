@@ -1,4 +1,5 @@
-﻿using Database;
+﻿using System.Globalization;
+using Database;
 using Database.Di;
 using Database.Models;
 using ElmahCore;
@@ -6,6 +7,7 @@ using ElmahCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using uLearn.Web.Core.Controllers;
@@ -107,7 +109,22 @@ public class Startup : VostokAspNetCoreApplication
 				options.EnableEndpointRouting = false;
 				FilterConfig.RegisterGlobalFilters(options.Filters, env, configuration);
 			})
+			.AddViewLocalization()
 			.AddControllersAsServices();
+		
+		services.Configure<RequestLocalizationOptions>(
+			options =>
+			{
+				var supportedCultures = new List<CultureInfo>
+				{
+					new CultureInfo("ru-RU"),
+					new CultureInfo("en-US"),
+				};
+
+				options.DefaultRequestCulture = new RequestCulture(culture: "ru-RU", uiCulture: "ru-RU");
+				options.SupportedCultures = supportedCultures;
+				options.SupportedUICultures = supportedCultures;
+			});
 	}
 
 	public void ConfigureAuthServices(IServiceCollection services)
