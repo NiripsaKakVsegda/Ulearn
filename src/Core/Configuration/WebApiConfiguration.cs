@@ -22,6 +22,8 @@ namespace Web.Api.Configuration
 	{
 		public Dictionary<string, string> OldWebConfig { get; set; }
 
+		public string Culture { get; set; }
+
 		public string ElmahXmlLogPath { get; set; }
 	}
 

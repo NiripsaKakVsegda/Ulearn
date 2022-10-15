@@ -109,22 +109,11 @@ public class Startup : VostokAspNetCoreApplication
 				options.EnableEndpointRouting = false;
 				FilterConfig.RegisterGlobalFilters(options.Filters, env, configuration);
 			})
-			.AddViewLocalization()
 			.AddControllersAsServices();
 		
-		services.Configure<RequestLocalizationOptions>(
-			options =>
-			{
-				var supportedCultures = new List<CultureInfo>
-				{
-					new CultureInfo("ru-RU"),
-					new CultureInfo("en-US"),
-				};
-
-				options.DefaultRequestCulture = new RequestCulture(culture: "ru-RU", uiCulture: "ru-RU");
-				options.SupportedCultures = supportedCultures;
-				options.SupportedUICultures = supportedCultures;
-			});
+		var cultureInfo = new CultureInfo(configuration.Culture);
+		CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+		CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 	}
 
 	public void ConfigureAuthServices(IServiceCollection services)
