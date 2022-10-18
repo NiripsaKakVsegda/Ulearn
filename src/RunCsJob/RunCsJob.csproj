@@ -129,7 +129,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Microsoft.Net.Compilers.Toolset.4.2.0" />
-	  <Folder Include="ResourcesLibs" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="packages\**" />
