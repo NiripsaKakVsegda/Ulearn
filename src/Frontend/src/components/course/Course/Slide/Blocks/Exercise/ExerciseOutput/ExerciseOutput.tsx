@@ -169,6 +169,18 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 		</div>;
 	}
 
+	static splitToLines(text: string) {
+		return text.split(/\r?\n/);
+	}
+
+	static lineEndingsToUnixStyle(text: string) {
+		return this.splitToLines(text).join("\n");
+	}
+
+	static normalizeEoLn(str: string) {
+		return this.lineEndingsToUnixStyle(str).trim();
+	}
+
 	static renderOutputLines(output: string, expectedOutput: string): React.ReactNode {
 		const actualOutputLines = output.match(/[^\r\n]+/g) ?? [];
 		const expectedOutputLines = expectedOutput.match(/[^\r\n]+/g) ?? [];
