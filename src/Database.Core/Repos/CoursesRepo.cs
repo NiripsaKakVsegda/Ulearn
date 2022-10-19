@@ -223,17 +223,18 @@ namespace Database.Repos
 
 		public async Task<List<CourseGit>> FindCoursesByRepoUrl(string repoUrl)
 		{
-			return await db.CourseGitRepos
-				.GroupBy(r => r.CourseId)
+			return (await db.CourseGitRepos
+					.Where(r => r.RepoUrl == repoUrl)
+					.GroupBy(r => r.CourseId)
+					.ToListAsync())
 				.Select(g => g.MaxBy(r => r.CreateTime))
-				.Where(r => r.RepoUrl == repoUrl)
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task SetCourseRepoSettings(CourseGit courseGit)
 		{
 			courseGit.CreateTime = DateTime.Now;
-			db.CourseGitRepos.Add(courseGit);
+			db.CourseGitRepos.Update(courseGit);
 			await db.SaveChangesAsync();
 		}
 
