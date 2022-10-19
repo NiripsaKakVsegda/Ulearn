@@ -32,7 +32,8 @@ public class AuthenticationManager
 
 	public async Task Logout(HttpContext context)
 	{
-		await context.SignOutAsync();
+		await context.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
+		await context.SignOutAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme);
 	}
 
 	public async Task<ExternalLoginInfo> GetExternalLoginInfoAsync(string? xsrfKey = null)

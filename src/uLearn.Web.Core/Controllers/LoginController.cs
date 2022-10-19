@@ -71,7 +71,7 @@ public class LoginController : BaseUserController
 
 	private static ILog log => LogProvider.Get().ForContext(typeof(LoginController));
 
-	public ActionResult Index(string returnUrl)
+	public ActionResult Index(string returnUrl = "/")
 	{
 		ViewBag.ReturnUrl = returnUrl;
 		return View();
@@ -97,7 +97,7 @@ public class LoginController : BaseUserController
 
 				/* For signing in via email/password we need to be sure that email is confirmed */
 				user = usersWithEmail.FirstOrDefault(u => u.EmailConfirmed);
-				
+
 				if (user != null)
 					if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
 						user = null;
@@ -298,6 +298,7 @@ public class LoginController : BaseUserController
 			log.Warn("LinkLoginCallback: GetExternalLoginInfoAsync() returned null");
 			return RedirectToAction("Manage", "Account", new { Message = AccountController.ManageMessageId.ErrorOccured });
 		}
+
 		//for kontur.passport ProviderKey is login, but we need sid for backward compatible
 		if (loginInfo.LoginProvider == KonturPassportConstants.AuthenticationType)
 			loginInfo.ProviderKey = loginInfo.Principal.FindFirstValue(KonturPassportConstants.SidClaimType);
