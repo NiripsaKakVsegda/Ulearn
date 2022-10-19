@@ -726,7 +726,7 @@ public class AccountController : BaseUserController
 	{
 		var userId = User.GetUserId();
 		await usersRepo.ChangeTelegram(userId, null, null).ConfigureAwait(false);
-		var telegramTransport = notificationsRepo.FindUsersNotificationTransport<TelegramNotificationTransport>(userId);
+		var telegramTransport = await notificationsRepo.FindUsersNotificationTransport<TelegramNotificationTransport>(userId);
 		if (telegramTransport != null)
 			await notificationsRepo.EnableNotificationTransport(telegramTransport.Id, false).ConfigureAwait(false);
 		return RedirectToAction("Manage", new { Message = ManageMessageId.TelegramRemoved });
@@ -769,7 +769,7 @@ public class AccountController : BaseUserController
 		var userId = User.GetUserId();
 		await usersRepo.ChangeTelegram(userId, chatId, chatTitle).ConfigureAwait(false);
 		metricSender.SendCount("connect_telegram.success");
-		var telegramTransport = notificationsRepo.FindUsersNotificationTransport<TelegramNotificationTransport>(userId);
+		var telegramTransport = await notificationsRepo.FindUsersNotificationTransport<TelegramNotificationTransport>(userId);
 		if (telegramTransport != null)
 			await notificationsRepo.EnableNotificationTransport(telegramTransport.Id).ConfigureAwait(false);
 		else
