@@ -102,7 +102,19 @@ public class RestorePasswordController : Controller
 				continue;
 			}
 
-			await SendRestorePasswordEmail(requestId, user);
+			try
+			{
+				await SendRestorePasswordEmail(requestId, user);
+			}
+			catch (Exception _)
+			{
+				answer.Messages.Add(user.EmailConfirmed
+					? new Message($"При отправке письма произошла ошибка. Обратитесь в службу поддержки support@ulearn.me") 
+					: new Message($"При отправке письма произошла ошибка. Ваша почта {user.Email} - не подтверждена, возможно вы ошиблись в её написании. Обратитесь на support@ulearn.me, укажите ваше ФИО и почту в письме."));
+
+				return View(answer);
+			}
+
 			answer.Messages.Add(new Message($"Письмо с инструкцией по восстановлению пароля для пользователя {user.UserName} отправлено вам на почту", false));
 		}
 
