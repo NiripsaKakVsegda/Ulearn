@@ -1095,7 +1095,7 @@
 
 @media (max-width: 767px) {
 	.legacy-page .login-and-registration-form .control-label {
-		display: none;
+		padding: 8px 15px 5px 15px;
 	}
 }
 
