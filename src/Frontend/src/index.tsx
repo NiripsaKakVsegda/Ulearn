@@ -11,7 +11,7 @@ import { Toast } from "ui";
 import isInDevelopment from "./isInDevelopment";
 
 Sentry.init({
-	dsn: "https://62e9c6b9ae6a47399a2b79600f1cacc5@sentry.skbkontur.ru/781",
+	dsn: "https://af1ac24eb9eb41859d98c7a2a419123d@sentry.skbkontur.ru/781",
 	integrations: [new Integrations.BrowserTracing()],
 });
 
