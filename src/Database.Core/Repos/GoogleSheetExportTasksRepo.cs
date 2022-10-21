@@ -136,18 +136,21 @@ namespace Database.Repos
 			var currentUtcTime = DateTime.UtcNow;
 			var query = db.GoogleSheetExportTasks
 				.Include(t => t.Author)
-				.Include(t => t.Groups.Select(g => g.Group))
-				.Where(t => tasksIds.Contains(t.Id))
-				.Where(t => t.RefreshStartDate <= currentUtcTime);
+				.Include(t => t.Groups)
+				.ThenInclude(g => g.Group)
+				.Where(t => tasksIds.Contains(t.Id) && t.RefreshStartDate <= currentUtcTime);
 
 			if (!isInstructor)
 				query = query.Where(t => t.IsVisibleForStudents);
 
-			return query.GroupBy(t => t.Author.Id)
+			return await query
+				.OrderBy(t => t.RefreshEndDate)
+				.ToListAsync();
+			/*
+			 * .GroupBy(t => t.Author.Id)
 				.OrderBy(t => t.Key == userId)
 				.SelectMany(t => t)
-				.OrderBy(t => t.RefreshEndDate)
-				.ToList();
+			 */
 		}
 	}
 }
