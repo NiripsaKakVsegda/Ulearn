@@ -18,12 +18,10 @@ public class ChangeDetails : ViewComponent
 
 	public async Task<IViewComponentResult> InvokeAsync()
 	{
-		var user = await userManager.FindByNameAsync(User.Identity?.Name);
-		var hasPassword = await ControllerUtils.HasPassword(userManager, UserClaimsPrincipal.GetUserId());
-		
-		if(user == null)
-			return Content(string.Empty);
-		
+		var id = UserClaimsPrincipal.GetUserId();
+		var user = await userManager.FindByIdAsync(id);
+		var hasPassword = await ControllerUtils.HasPassword(userManager, id);
+
 		return View("ChangeDetailsPartial", new UserViewModel
 		{
 			Name = user.UserName,

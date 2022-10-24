@@ -672,7 +672,7 @@ public class AccountController : BaseUserController
 		var user = await userManager.FindByIdAsync(User.GetUserId());
 		if (user == null)
 		{
-			await authenticationManager.Logout(HttpContext);
+			await authenticationManager.LogoutAsync(HttpContext);
 			return RedirectToAction("Index", "Login");
 		}
 
@@ -715,7 +715,7 @@ public class AccountController : BaseUserController
 
 		if (nameChanged)
 		{
-			await authenticationManager.Logout(HttpContext);
+			await authenticationManager.LogoutAsync(HttpContext);
 			return RedirectToAction("Index", "Login");
 		}
 
@@ -818,7 +818,7 @@ public class AccountController : BaseUserController
 		metricSender.SendCount("email_confirmation.confirmed");
 
 		/* Enable notification transport if it exists or create auto-enabled mail notification transport */
-		var mailNotificationTransport = notificationsRepo.FindUsersNotificationTransport<MailNotificationTransport>(realUserId, includeDisabled: true);
+		var mailNotificationTransport = await notificationsRepo.FindUsersNotificationTransport<MailNotificationTransport>(realUserId, includeDisabled: true);
 		if (mailNotificationTransport != null)
 			await notificationsRepo.EnableNotificationTransport(mailNotificationTransport.Id).ConfigureAwait(false);
 		else

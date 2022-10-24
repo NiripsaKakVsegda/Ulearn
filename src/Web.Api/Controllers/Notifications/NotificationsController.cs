@@ -88,7 +88,7 @@ namespace Ulearn.Web.Api.Controllers.Notifications
 				LastTimestamp = unreadCountAndLastTimestamp.Item2,
 			};
 		}
-		
+
 		/// <summary>
 		/// Уведомление в плашке под шапкой
 		/// </summary>
@@ -99,7 +99,22 @@ namespace Ulearn.Web.Api.Controllers.Notifications
 			{
 				Message = configuration.NotificationBar,
 				Force = configuration.ForceNotificationBar,
+				Overlap = configuration.OverlapNotificationBar
 			};
+		}
+
+		/// <summary>
+		/// Уведомление в плашке под шапкой
+		/// </summary>
+		[HttpPost("global")]
+		[Authorize(Policy = "SysAdmins")]
+		public ActionResult<NotificationBarResponse> SetGlobalNotification(string message, bool force, bool overlap = false)
+		{
+			configuration.NotificationBar = message;
+			configuration.ForceNotificationBar = force;
+			configuration.OverlapNotificationBar = overlap;
+
+			return NoContent();
 		}
 
 		private async Task<Tuple<int, DateTime?>> GetUnreadNotificationsCountAndLastTimestampAsync(string userId, int transportId, DateTime? from = null)

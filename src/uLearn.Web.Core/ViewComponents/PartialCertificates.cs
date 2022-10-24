@@ -1,5 +1,6 @@
 ﻿using Database.Models;
 using Database.Repos;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Core.Courses.Manager;
 using uLearn.Web.Core.Controllers;
@@ -21,7 +22,7 @@ public class PartialCertificates : ViewComponent
 
 	public async Task<IViewComponentResult> InvokeAsync()
 	{
-		var user = await userManager.FindByNameAsync(User.Identity.Name);
+		var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 		if (user == null)
 			return View("ListPartial", new UserCertificatesViewModel
 			{

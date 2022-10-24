@@ -14,6 +14,8 @@ namespace Web.Api.Configuration
 		public FrontendConfiguration Frontend { get; set; }
 
 		public string NotificationBar { get; set; } // сообщение в плашке на фронте. Показывается сверху, обычно о технических работах
+		
+		public bool OverlapNotificationBar { get; set; } // плашка на весь экран, не мешает админам
 
 		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки
 	}

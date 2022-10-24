@@ -341,7 +341,7 @@ public class LoginController : BaseUserController
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> LogOff()
 	{
-		await authenticationManager.Logout(HttpContext);
+		await authenticationManager.LogoutAsync(HttpContext);
 		return RedirectToAction("Index", "Home");
 	}
 

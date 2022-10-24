@@ -1,4 +1,5 @@
 ﻿using Database.Repos;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 using uLearn.Web.Core.Models;
 
@@ -17,7 +18,7 @@ public class ExternalLoginsListPartial : ViewComponent
 	{
 		if (User.Identity.IsAuthenticated)
 		{
-			var user = await userManager.FindByNameAsync(User.Identity.Name);
+			var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 			model.UserLogins = user.Logins.ToList();
 		}
 

@@ -71,12 +71,12 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>Hunspellx86.dll</TargetPath>
 		</ContentWithTargetPath>
-		<None Update="Utils\Hunspellx86.dll"/>
+		<None Update="Utils\Hunspellx86.dll" />
 		<ContentWithTargetPath Include="Utils\Hunspellx64.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>Hunspellx64.dll</TargetPath>
 		</ContentWithTargetPath>
-		<None Update="Utils\Hunspellx64.dll"/>
+		<None Update="Utils\Hunspellx64.dll" />
 	</ItemGroup>
 
 </Project>

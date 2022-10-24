@@ -30,7 +30,7 @@ public class AuthenticationManager
 		await InternalLoginAsync(context, user, isPersistent);
 	}
 
-	public async Task Logout(HttpContext context)
+	public async Task LogoutAsync(HttpContext context)
 	{
 		await context.SignOutAsync(UlearnAuthenticationConstants.DefaultExternalAuthenticationScheme);
 		await context.SignOutAsync(UlearnAuthenticationConstants.DefaultAuthenticationScheme);

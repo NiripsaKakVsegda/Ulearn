@@ -1,5 +1,6 @@
 ﻿using Database.Models;
 using Database.Repos;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Core.Courses.Manager;
 using uLearn.Web.Core.Controllers;
@@ -31,7 +32,7 @@ public class NotificationSettings : ViewComponent
 
 	public async Task<IViewComponentResult> InvokeAsync()
 	{
-		var user = await userManager.FindByNameAsync(User.Identity.Name);
+		var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
 		var mailTransport = await notificationsRepo.FindUsersNotificationTransport<MailNotificationTransport>(user.Id, includeDisabled: true);
 		var telegramTransport = await notificationsRepo.FindUsersNotificationTransport<TelegramNotificationTransport>(user.Id, includeDisabled: true);
