@@ -18,6 +18,24 @@
   background: @lightBlue;
 }
 
+.overlap {
+  top:0;
+  bottom: 0;
+  position: absolute;
+  width: 100vw;
+  z-index: 100000000000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 28px;
+  font-family: @defaultFonts;
+  color: @white;
+
+  background: @lightBlue;
+}
+
 .closeButton:hover {
   cursor: pointer;
 }

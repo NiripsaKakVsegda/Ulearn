@@ -6,4 +6,5 @@ export interface NotificationsInfo {
 export interface NotificationBarResponse {
 	message?: string | null;
 	force: boolean;
+	overlap?: boolean;
 }
