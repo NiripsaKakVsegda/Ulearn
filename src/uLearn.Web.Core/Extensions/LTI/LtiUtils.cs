@@ -155,12 +155,10 @@ public class LtiAuthentication
 
 	private async Task<ApplicationUser> GetIdentityForLtiLogin(HttpContext context, LtiRequest ltiRequest, UserLoginInfo ltiLogin)
 	{
-		await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 		var ltiLoginUser = await userManager.FindByLoginAsync(ltiLogin.LoginProvider, ltiLogin.ProviderKey);
 		if (ltiLoginUser != null)
 		{
 			log.Info($"Нашёл LTI-логин: провайдер {ltiLogin.LoginProvider}, идентификатор {ltiLogin.ProviderKey}, он принадлежит пользователю {ltiLoginUser.UserName} (Id = {ltiLoginUser.Id})");
-			await transaction.CommitAsync();
 			return ltiLoginUser;
 		}
 
@@ -172,7 +170,6 @@ public class LtiAuthentication
 			var ulearnUserFromPrincipal = await userManager.GetUserAsync(ulearnPrincipal);
 			log.Info($"Пришёл LTI-запрос на аутенфикацию, пользователь уже аутенфицирован на ulearn: {ulearnPrincipal.Identity.Name}. Прикрепляю к пользователю LTI-логин");
 			await userManager.AddLoginAsync(ulearnUserFromPrincipal, ltiLogin);
-			await transaction.CommitAsync();
 				
 			return ulearnUserFromPrincipal;
 		}
@@ -198,7 +195,6 @@ public class LtiAuthentication
 		}
 
 		await userManager.AddLoginAsync(ulearnUser, ltiLogin);
-		await transaction.CommitAsync();
 			
 		return ulearnUser;
 	}
