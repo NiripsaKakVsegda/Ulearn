@@ -20,7 +20,10 @@ public class ChangeDetails : ViewComponent
 	{
 		var user = await userManager.FindByNameAsync(User.Identity?.Name);
 		var hasPassword = await ControllerUtils.HasPassword(userManager, UserClaimsPrincipal.GetUserId());
-
+		
+		if(user == null)
+			return Content(string.Empty);
+		
 		return View("ChangeDetailsPartial", new UserViewModel
 		{
 			Name = user.UserName,

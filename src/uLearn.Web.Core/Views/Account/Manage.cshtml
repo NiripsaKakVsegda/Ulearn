@@ -20,7 +20,10 @@
 				</div>
 			</div>
 
-			@await Component.InvokeAsync("ChangeDetails", new UserViewModel { Render = true })
+			@if (User.Identity != null)
+			{
+				@await Component.InvokeAsync("ChangeDetails", new UserViewModel { Render = true })
+			}
 			@if (ViewBag.HasLocalPassword)
 			{
 				@await Html.PartialAsync("_ChangePasswordPartial")
