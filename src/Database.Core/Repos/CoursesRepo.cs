@@ -225,8 +225,8 @@ namespace Database.Repos
 		{
 			return (await db.CourseGitRepos
 					.Where(r => r.RepoUrl == repoUrl)
-					.GroupBy(r => r.CourseId)
 					.ToListAsync())
+				.GroupBy(r => r.CourseId)
 				.Select(g => g.MaxBy(r => r.CreateTime))
 				.ToList();
 		}
