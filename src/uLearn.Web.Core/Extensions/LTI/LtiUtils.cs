@@ -160,6 +160,7 @@ public class LtiAuthentication
 		if (ltiLoginUser != null)
 		{
 			log.Info($"Нашёл LTI-логин: провайдер {ltiLogin.LoginProvider}, идентификатор {ltiLogin.ProviderKey}, он принадлежит пользователю {ltiLoginUser.UserName} (Id = {ltiLoginUser.Id})");
+			await transaction.CommitAsync();
 			return ltiLoginUser;
 		}
 
