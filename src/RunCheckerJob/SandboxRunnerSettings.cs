@@ -8,7 +8,7 @@ namespace RunCheckerJob
 	{
 		public TimeSpan MaintenanceTimeLimit = TimeSpan.FromSeconds(10);
 		public TimeSpan TestingTimeLimit = TimeSpan.FromSeconds(10);
-		public int MemoryLimit = 96 * 1024 * 1024;
+		public int MemoryLimit = 128 * 1024 * 1024;
 		public int OutputLimit = 10 * 1024 * 1024;
 		public TimeSpan WaitSandboxAfterKilling = TimeSpan.FromSeconds(5);
 
