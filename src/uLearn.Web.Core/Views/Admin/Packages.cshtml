@@ -17,7 +17,6 @@
 			Текущая версия опубликована <b title="@(Model.PublishedVersion.PublishTime?.ToPrettyString())">@(Model.PublishedVersion.PublishTime?.ToAgoPrettyString())</b>
 
 			@Html.ActionLink("Скачать опубликованную версию", "DownloadPackage", new { courseId = Model.Course.Id }, new { @class = "btn btn-xs btn-primary", style = "margin-left: 10px" })
-			@Html.ActionLink("Скопировать курс на Степик", "ExportCourse", "Stepik", new { courseId = Model.Course.Id }, new { @class = "btn btn-xs btn-warning" })
 		</div>
 	}
 
