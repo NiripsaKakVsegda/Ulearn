@@ -103,20 +103,6 @@ namespace Ulearn.Web.Api.Controllers.Notifications
 			};
 		}
 
-		/// <summary>
-		/// Уведомление в плашке под шапкой
-		/// </summary>
-		[HttpPost("global")]
-		[Authorize(Policy = "SysAdmins")]
-		public ActionResult<NotificationBarResponse> SetGlobalNotification(string message, bool force, bool overlap = false)
-		{
-			configuration.NotificationBar = message;
-			configuration.ForceNotificationBar = force;
-			configuration.OverlapNotificationBar = overlap;
-
-			return NoContent();
-		}
-
 		private async Task<Tuple<int, DateTime?>> GetUnreadNotificationsCountAndLastTimestampAsync(string userId, int transportId, DateTime? from = null)
 		{
 			var realFrom = from ?? await feedRepo.GetFeedViewTimestamp(userId, transportId) ?? DateTime.MinValue;
