@@ -52,7 +52,7 @@ function NotificationBar({
 	return (
 		<div className={ state.overlap ? styles.overlap : styles.wrapper }>
 			{ state.message }
-			{ (!state.force && state.overlap) &&
+			{ (!state.force && !state.overlap) &&
 				<Delete className={ styles.closeButton } onClick={ closeForThisDay }/> }
 		</div>
 	);
