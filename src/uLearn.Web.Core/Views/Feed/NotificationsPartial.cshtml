@@ -1,6 +1,7 @@
 ﻿@using System.Web
 @using Database.Models
 @using Database.Repos
+@using Microsoft.AspNetCore.Html
 @using Ulearn.Common
 @using Ulearn.Common.Extensions
 @using Ulearn.Core
@@ -88,14 +89,14 @@ else
 		return Url.RouteUrl("Course.SlideById", new { courseId = course.Id, slideId = slide.Url });
 	}
 
-	private static void CollapseIfNeed(bool collapse, IHtmlHelper Html, string text, int truncateMaxLength, bool renderSimpleMarkdown = false)
+	private static IHtmlContent CollapseIfNeed(bool collapse, IHtmlHelper Html, string text, int truncateMaxLength, bool renderSimpleMarkdown = false)
 	{
 		var encodedText = Html.EncodeMultiLineText(text);
 		if (renderSimpleMarkdown)
 			encodedText = encodedText.RenderSimpleMarkdown();
 		if (collapse)
 			encodedText = encodedText.TruncateHtmlWithEllipsis(truncateMaxLength);
-		Html.Raw(collapse ? encodedText : Html.HighlightLink(encodedText));
+		return Html.Raw(collapse ? encodedText : Html.HighlightLink(encodedText));
 	}
 
 	public void SlideLink(IUrlHelper Url, Course course, Slide slide)
@@ -115,7 +116,7 @@ else
 			</div>
 			<div class="media-body">
 				<div class="">
-					@{ CollapseIfNeed(collapse, Html, notification.Text, 100); }
+					@CollapseIfNeed(collapse, Html, notification.Text, 100)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -134,7 +135,7 @@ else
 					:
 				</div>
 				<div class="">
-					@{ CollapseIfNeed(collapse, Html, notification.Text, 100); }
+					@CollapseIfNeed(collapse, Html, notification.Text, 100)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -157,7 +158,7 @@ else
 					</span>
 				</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -180,7 +181,7 @@ else
 					</span>
 				</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -199,11 +200,11 @@ else
 					@{ UserName(notification.Comment.Author); }
 					ответил@(notification.Comment.Author.Gender.ChooseEnding()) на&nbsp;ваш комментарий
 					<span title="@notification.ParentComment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__cite">
-						@{ CollapseIfNeed(collapse, Html, notification.ParentComment.Text, 50, renderSimpleMarkdown: true); }
+						@CollapseIfNeed(collapse, Html, notification.ParentComment.Text, 50, renderSimpleMarkdown: true)
 					</span>
 				</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer">
 					к&nbsp;слайду
@@ -227,7 +228,7 @@ else
 					лайкнул@(notification.LikedUser.Gender.ChooseEnding()) ваш комментарий
 				</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -318,7 +319,7 @@ else
 					прокомментировал@(notification.InitiatedBy.Gender.ChooseEnding()) код-ревью задания «@slide.Title.MakeNestedQuotes()»
 				</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -423,7 +424,7 @@ else
 				</div>
 				<div class="comments-for-instructors-only__description">Комментарий для преподавателей:</div>
 				<div title="@notification.Comment.Text.TruncateWithEllipsis(200)" class="notifications__comment-notification__text">
-					@{ CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true); }
+					@CollapseIfNeed(collapse, Html, notification.Comment.Text, 100, renderSimpleMarkdown: true)
 				</div>
 				<div class="notifications__notification__footer" title="@notification.CreateTime.ToPrettyString()">@notification.CreateTime.ToAgoPrettyString()</div>
 			</div>
@@ -564,20 +565,5 @@ else
 				@{ GetAvatarPlaceholderLetter(user); }
 			</div>
 		}
-	}
-
-	public void SmallAvatar(ApplicationUser user, string classes = "")
-	{
-		Avatar(user, "small " + classes);
-	}
-
-	public void ExtraSmallAvatar(ApplicationUser user, string classes = "")
-	{
-		Avatar(user, "xsmall " + classes);
-	}
-
-	public void LargeAvatar(ApplicationUser user, string classes = "")
-	{
-		Avatar(user, "large " + classes);
 	}
 }
