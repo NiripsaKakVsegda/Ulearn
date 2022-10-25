@@ -65,7 +65,7 @@ namespace AntiPlagiarism.Web.Database.Repos
 				},
 				TokensCount = tokensCount,
 				AdditionalInfo = additionalInfo,
-				AddingTime = DateTime.Now,
+				AddingTime = DateTime.UtcNow,
 				ClientSubmissionId = clientSubmissionId
 			};
 
