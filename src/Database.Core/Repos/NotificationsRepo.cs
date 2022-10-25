@@ -364,6 +364,7 @@ namespace Database.Repos
 			var blockerNotificationsSentToTransports = new HashSet<int>(
 				GetNotificationsDeliveries(blockerNotifications.Select(n => n.Id), transportsSettings.Select(s => s.NotificationTransportId))
 					.Select(d => d.NotificationTransportId)
+					.ToList()
 			);
 			if (blockerNotificationsSentToTransports.Count > 0)
 			{
