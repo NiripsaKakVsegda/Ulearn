@@ -379,7 +379,7 @@
 
 	void Block(MarkdownBlock block, BlockRenderContext context, IHtmlHelper html)
 	{
-		new HtmlString(block.RenderMarkdown(context.Slide, new MarkdownRenderContext(context.BaseUrlApi, context.BaseUrlWeb, context.Course.Id, context.Slide.Unit.UnitDirectoryRelativeToCourse)));
+		@Html.Raw(new HtmlString(block.RenderMarkdown(context.Slide, new MarkdownRenderContext(context.BaseUrlApi, context.BaseUrlWeb, context.Course.Id, context.Slide.Unit.UnitDirectoryRelativeToCourse))));
 	}
 
 	void Block(CodeBlock block, BlockRenderContext context, IHtmlHelper html)
@@ -513,7 +513,7 @@
 
 	void Block(HtmlBlock block, BlockRenderContext context, IHtmlHelper html)
 	{
-		@(new HtmlString(block.GetContent(context.BaseUrlApi)))
+		@Html.Raw(new HtmlString(block.GetContent(context.BaseUrlApi)))
 	}
 
 	void Block(SpoilerBlock block, BlockRenderContext context, IHtmlHelper html)
