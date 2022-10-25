@@ -915,7 +915,12 @@ public class AccountController : BaseUserController
 			});
 
 			if (removeOld)
-				response.Cookies.Delete(actualCookie(cookieName));
+				response.Cookies.Append(actualCookie(cookieName), actualCookie(cookieName), new CookieOptions
+				{
+					Expires = DateTime.Now.AddDays(-1),
+					Domain = configuration.Web.CookieDomain,
+					Secure = configuration.Web.CookieSecure
+				});
 		}
 
 		// 	response.Cookies.Add(new HttpCookie(newCookie(cookieName), cookie.Value)
