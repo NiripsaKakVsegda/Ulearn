@@ -175,8 +175,6 @@ public class Startup : VostokAspNetCoreApplication
 			Secure = CookieSecurePolicy.Always
 		});
 
-		// app.UseLtiAuthentication();
-
 		app.UseMvc(RouteConfig.RegisterRoutes);
 
 		StartupUtils.InitializeAllUtils(app, configuration);
