@@ -8,13 +8,13 @@ using uLearn.Web.Core.Extensions;
 
 namespace uLearn.Web.Core.Authorization;
 
-///This transformation adding SysAdmin claim to identity
-public class SysAdminClaimsTransformation : IClaimsTransformation
+///This transformation adding SysAdmin claim and course roles to identity
+public class CourseRolesAndSysAdminClaimsTransformation : IClaimsTransformation
 {
 	private readonly IUsersRepo usersRepo;
 	private readonly ICourseRolesRepo courseRolesRepo;
 
-	public SysAdminClaimsTransformation(IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo)
+	public CourseRolesAndSysAdminClaimsTransformation(IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo)
 	{
 		this.usersRepo = usersRepo;
 		this.courseRolesRepo = courseRolesRepo;
