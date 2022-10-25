@@ -155,6 +155,7 @@ public class LtiAuthentication
 
 	private async Task<ApplicationUser> GetIdentityForLtiLogin(HttpContext context, LtiRequest ltiRequest, UserLoginInfo ltiLogin)
 	{
+		log.Info($"Ищу пользователя по LTI-логину {ltiLogin.LoginProvider}-{ltiLogin.ProviderKey}");
 		var ltiLoginUser = await userManager.FindByLoginAsync(ltiLogin.LoginProvider, ltiLogin.ProviderKey);
 		if (ltiLoginUser != null)
 		{
