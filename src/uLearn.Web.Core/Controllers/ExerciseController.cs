@@ -620,7 +620,7 @@ public class ExerciseController : JsonDataContractController
 			? fileName
 			: ((exerciseSlide.Exercise as CsProjectExerciseBlock)?.CsprojFileName ?? new DirectoryInfo((exerciseSlide.Exercise as UniversalExerciseBlock).ExerciseDirPath).Name) + ".zip";
 
-		var cookie = Request.Headers.Get("Cookie");
+		var cookie = Request.Headers.Cookie;
 		IWebApiClient webApiClient = new WebApiClient(new ApiClientSettings(baseUrlApi));
 		var response = await webApiClient.GetStudentZipFile(courseId, slideId, studentZipName, cookie.Count == 0 ? null : new Header("Cookie", cookie));
 
