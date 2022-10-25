@@ -51,7 +51,7 @@
 			encodedText = encodedText.RenderSimpleMarkdown();
 		if (collapse)
 			encodedText = encodedText.TruncateHtmlWithEllipsis(truncateMaxLength);
-		Html.Raw(collapse ? encodedText : Html.HighlightLink(encodedText));
+		@Html.Raw(collapse ? encodedText : Html.HighlightLink(encodedText));
 	}
 
 	public void SlideLink(IUrlHelper Url, Course course, Slide slide)
