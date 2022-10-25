@@ -11,28 +11,42 @@ namespace RunCsJob
 {
 	public static class AssemblyCreator
 	{
+		static readonly PortableExecutableReference mscorlib;
+		static readonly PortableExecutableReference system;
+		static readonly PortableExecutableReference systemCore;
+		static readonly PortableExecutableReference drawing;
+		static readonly PortableExecutableReference runtime;
+
+		static AssemblyCreator()
+		{
+			var directory = Directory.GetCurrentDirectory().PathCombine("OldAssembly");
+			var mscorlibPath = directory.PathCombine("mscorlib.dll");
+			var systemPath = directory.PathCombine("System.dll");
+			var systemCorePath = directory.PathCombine("System.Core.dll");
+			var drawingPath = directory.PathCombine("System.Drawing.dll");
+			var runtimePath = directory.PathCombine("System.Runtime.dll");
+			mscorlib = MetadataReference.CreateFromFile(mscorlibPath);
+			system = MetadataReference.CreateFromFile(systemPath);
+			systemCore = MetadataReference.CreateFromFile(systemCorePath);
+			drawing = MetadataReference.CreateFromFile(drawingPath);
+			runtime = MetadataReference.CreateFromFile(runtimePath);
+		}
+
 		public static CompileResult CreateAssemblyWithRoslyn(FileRunnerSubmission submission, string workingDirectory, TimeSpan compilationTimeLimit)
 		{
 			var syntaxTree = CSharpSyntaxTree.ParseText(submission.Code);
 			var assemblyName = submission.Id;
-
-			var directory = Directory.GetCurrentDirectory().PathCombine("OldAssembly");
-			var mscorlib = directory.PathCombine("mscorlib.dll");
-			var system = directory.PathCombine("System.dll");
-			var systemCore = directory.PathCombine("System.Core.dll");
-			var drawing = directory.PathCombine("System.Drawing.dll");
-			var runtime = directory.PathCombine("System.Runtime.dll");
 
 			var compilation = CSharpCompilation.Create(
 				assemblyName,
 				new[] { syntaxTree },
 				new MetadataReference[]
 				{
-					MetadataReference.CreateFromFile(mscorlib),
-					MetadataReference.CreateFromFile(system),
-					MetadataReference.CreateFromFile(systemCore),
-					MetadataReference.CreateFromFile(drawing),
-					MetadataReference.CreateFromFile(runtime),
+					mscorlib,
+					system,
+					systemCore,
+					drawing,
+					runtime,
 
 					// MetadataReference.CreateFromFile(typeof(object).Assembly.Location), // mscorlib
 					// MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location), // System
