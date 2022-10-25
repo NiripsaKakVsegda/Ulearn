@@ -24,6 +24,7 @@ public static class UlearnAuthentication
 			{
 				options.DefaultAuthenticateScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 				options.DefaultScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
+				options.DefaultForbidScheme  = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 				options.DefaultChallengeScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 			})
 			.AddCookie(options =>

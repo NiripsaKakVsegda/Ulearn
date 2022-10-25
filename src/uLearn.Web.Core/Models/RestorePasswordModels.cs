@@ -20,7 +20,7 @@ public class SetNewPasswordModel
 	[System.ComponentModel.DataAnnotations.Compare("NewPassword", ErrorMessage = "Пароли отличаются")]
 	public string ConfirmPassword { get; set; }
 
-	public string[] Errors { get; set; }
+	public string[]? Errors { get; set; }
 }
 
 public class RestorePasswordModel
