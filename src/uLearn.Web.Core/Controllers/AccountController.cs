@@ -8,6 +8,7 @@ using Database.Repos.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Courses;
@@ -301,9 +302,9 @@ public class AccountController : BaseUserController
 
 	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	/* Now we use AccountController.Profile and don't use AccountController.Info, but this method exists for back compatibility */
-	public ActionResult Info(string userName)
+	public async Task<ActionResult> Info(string userName)
 	{
-		var user = db.Users.FirstOrDefault(u => (u.Id == userName || u.UserName == userName) && !u.IsDeleted);
+		var user = await db.Users.FirstOrDefaultAsync(u => (u.Id == userName || u.UserName == userName) && !u.IsDeleted);
 		if (user == null)
 			return NotFound();
 

@@ -4,6 +4,7 @@ using Database.Repos;
 using Kontur.Spam.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
 using Ulearn.Core.Metrics;
@@ -126,7 +127,7 @@ public class RestorePasswordController : Controller
 		var user = await userManager.FindByNameAsync(info);
 		if (user != null)
 			return new List<ApplicationUser> { user };
-		return db.Users.Where(u => u.Email == info && !u.IsDeleted).ToList();
+		return await db.Users.Where(u => u.Email == info && !u.IsDeleted).ToListAsync();
 	}
 
 	private async Task SendRestorePasswordEmail(string requestId, ApplicationUser user)

@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using System.Security.Claims;
+using Database.Repos;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Identity;
+using Ulearn.Common.Extensions;
 using uLearn.Web.Core.Authentication.External.Google;
 using uLearn.Web.Core.Authentication.External.Kontur;
 using uLearn.Web.Core.Authentication.External.Vkontakte;
+using uLearn.Web.Core.Extensions;
 using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Authentication;
@@ -19,12 +24,17 @@ public static class UlearnAuthentication
 			options.LoginPath = "/login";
 		});
 
+		services.Configure<SecurityStampValidatorOptions>(options =>
+		{
+			options.ValidationInterval = TimeSpan.FromSeconds(30);
+		});
+
 		services
 			.AddAuthentication(options =>
 			{
 				options.DefaultAuthenticateScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 				options.DefaultScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
-				options.DefaultForbidScheme  = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
+				options.DefaultForbidScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 				options.DefaultChallengeScheme = UlearnAuthenticationConstants.DefaultAuthenticationScheme;
 			})
 			.AddCookie(options =>

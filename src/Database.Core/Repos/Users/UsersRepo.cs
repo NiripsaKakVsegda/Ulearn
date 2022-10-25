@@ -46,9 +46,9 @@ namespace Database.Repos.Users
 			return await db.Users.Where(u => !u.IsDeleted).FilterByRole(role).Select(u => u.Id).ToListAsync();
 		}
 
-		public Task<List<string>> GetSysAdminsIds()
+		public async Task<List<string>> GetSysAdminsIds()
 		{
-			return GetUserIdsWithLmsRole(LmsRoleType.SysAdmin);
+			return await GetUserIdsWithLmsRole(LmsRoleType.SysAdmin);
 		}
 
 		public async Task ChangeTelegram(string userId, long? chatId, string chatTitle)

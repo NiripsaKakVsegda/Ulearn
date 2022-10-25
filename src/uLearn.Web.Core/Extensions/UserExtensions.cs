@@ -22,7 +22,7 @@ public static class UserExtensions
 		return courseStorage.GetCourses().Select(course => course.Id);
 	}
 
-	private const string courseRoleClaimType = "CourseRole";
+	public const string courseRoleClaimType = "CourseRole";
 
 	public static bool HasAccessFor(this ClaimsPrincipal principal, string courseId, CourseRoleType minAccessLevel)
 	{
@@ -48,7 +48,7 @@ public static class UserExtensions
 		return roles.Min() <= minAccessLevel;
 	}
 
-	private static IEnumerable<Tuple<string, CourseRoleType>> GetAllRoles(this ClaimsPrincipal principal)
+	internal static IEnumerable<Tuple<string, CourseRoleType>> GetAllRoles(this ClaimsPrincipal principal)
 	{
 		var roleTuples = principal
 			.ToClaimsPrincipal()
@@ -97,9 +97,9 @@ public static class UserExtensions
 	public static async Task<ClaimsPrincipal> GenerateUserIdentityAsync(this ApplicationUser user, IUserClaimsPrincipalFactory<ApplicationUser> principalFactory, ICourseRolesRepo courseRolesRepo)
 	{
 		var identity = await principalFactory.CreateAsync(user);
-		var roles = (await courseRolesRepo.GetRoles(user.Id))
-			.Select(r => new Claim(courseRoleClaimType, r.Key + " " + r.Value));
-		identity.Identities.FirstOrDefault()?.AddClaims(roles);
+		// var roles = (await courseRolesRepo.GetRoles(user.Id))
+		// 	.Select(r => new Claim(courseRoleClaimType, r.Key + " " + r.Value));
+		// identity.Identities.FirstOrDefault()?.AddClaims(roles);
 		return identity;
 	}
 
