@@ -106,7 +106,7 @@ namespace Notifications
 				}
 
 				keepAliver.Ping(keepAliveInterval);
-				await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+				await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 			}
 		}
 	}
