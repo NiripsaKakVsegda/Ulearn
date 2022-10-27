@@ -88,8 +88,10 @@ public class Startup : VostokAspNetCoreApplication
 			.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, UserClaimsPrincipalFactory<ApplicationUser>>();
 
 		//Allows to use Http.Action, see HtmlHelperViewExtensions.cs
-		services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-		services.AddSingleton<IHttpContextAccessor, Extensions.HttpContextAccessor>();
+		//ATTENTION! Their lifetime should be equals to usermanager (ulearn user manager)
+		//https://stackoverflow.com/questions/44430868/asp-net-core-identity-canceled-when-using-findbyidasync
+		services.AddScoped<IActionContextAccessor, ActionContextAccessor>();
+		services.AddScoped<IHttpContextAccessor, Extensions.HttpContextAccessor>();
 
 		services.AddScoped<CertificateGenerator>();
 		services.AddScoped<AdminController>();
