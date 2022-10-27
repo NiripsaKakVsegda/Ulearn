@@ -85,6 +85,7 @@ public class LoginController : BaseUserController
 		if (ModelState.IsValid)
 		{
 			var user = await userManager.FindByNameAsync(model.UserName);
+			user ??= await userManager.FindByEmailAsync(model.UserName);
 			if (user != null)
 				if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
 					user = null;
