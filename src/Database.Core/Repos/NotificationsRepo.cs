@@ -93,7 +93,9 @@ namespace Database.Repos
 
 		public async Task<NotificationTransport> FindNotificationTransport(int transportId)
 		{
-			return await db.NotificationTransports.FindAsync(transportId);
+			return await db.NotificationTransports
+				.Include(t => t.User)
+				.FirstOrDefaultAsync(t => t.Id == transportId);
 		}
 
 		public async Task EnableNotificationTransport(int transportId, bool isEnabled = true)
@@ -146,7 +148,7 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId && s.NotificationType == type && transportIds.Contains(s.NotificationTransportId))
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => s.NotificationTransportId, s => s);
 			return settings.ToDefaultDictionary();
 		}
@@ -157,7 +159,7 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId && transportIds.Contains(s.NotificationTransportId))
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s);
 			return settings.ToDefaultDictionary(() => null);
 		}
@@ -168,18 +170,18 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId)
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s);
 			return settings.ToDefaultDictionary(() => null);
 		}
-		
+
 		// Dictionary<(notificationTransportId, NotificationType), NotificationTransportSettings>
 		public async Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, string userId)
 		{
 			return (await db.NotificationTransportSettings
-				.Include(s => s.NotificationTransport)
-				.Where(s => s.CourseId == courseId && s.NotificationTransport.UserId == userId)
-				.ToListAsync())
+					.Include(s => s.NotificationTransport)
+					.Where(s => s.CourseId == courseId && s.NotificationTransport.UserId == userId)
+					.ToListAsync())
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s)
 				.ToDefaultDictionary(() => null);
 		}
@@ -239,10 +241,11 @@ namespace Database.Repos
 		public async Task CreateDeliveries()
 		{
 			var minuteAgo = DateTime.Now.Subtract(sendNotificationsDelayAfterCreating);
-			var notifications = await db.Notifications.Where(n => !n.AreDeliveriesCreated && n.CreateTime < minuteAgo)
+			var notifications = await db.Notifications
+				.Include(n => n.InitiatedBy)
+				.Where(n => !n.AreDeliveriesCreated && n.CreateTime < minuteAgo)
 				.OrderBy(n => n.Id)
-				.ToListAsync()
-				;
+				.ToListAsync();
 			foreach (var notification in notifications)
 			{
 				try
@@ -300,11 +303,11 @@ namespace Database.Repos
 			{
 				log.Warn($"Recipients list for notification is too big {notification.Id}: {recipientsIds.Count} user(s)");
 				transportsSettings = (await db.NotificationTransportSettings
-					.Include(s => s.NotificationTransport)
-					.Where(s => s.CourseId == notification.CourseId &&
-								s.NotificationType == notificationType &&
-								!s.NotificationTransport.IsDeleted)
-					.ToListAsync())
+						.Include(s => s.NotificationTransport)
+						.Where(s => s.CourseId == notification.CourseId &&
+									s.NotificationType == notificationType &&
+									!s.NotificationTransport.IsDeleted)
+						.ToListAsync())
 					.Where(s => recipientsIds.Contains(s.NotificationTransport.UserId))
 					.ToList();
 			}
@@ -430,6 +433,7 @@ namespace Database.Repos
 					}
 				}
 			}
+
 			return recipientsIds;
 		}
 
@@ -511,8 +515,8 @@ namespace Database.Repos
 		public async Task<DateTime?> GetLastDeliveryTimestampAsync(int notificationTransportId)
 		{
 			var lastNotification = await db.NotificationDeliveries.Where(d => d.NotificationTransportId == notificationTransportId)
-				.OrderByDescending(d => d.CreateTime)
-				.FirstOrDefaultAsync()
+					.OrderByDescending(d => d.CreateTime)
+					.FirstOrDefaultAsync()
 				;
 			return lastNotification?.CreateTime;
 		}
