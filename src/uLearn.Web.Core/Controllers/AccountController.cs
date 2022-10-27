@@ -432,7 +432,7 @@ public class AccountController : BaseUserController
 
 
 	[AllowAnonymous]
-	public async Task<IActionResult> Register(string returnUrl = null)
+	public IActionResult Register(string returnUrl = null)
 	{
 		return View(new RegistrationViewModel { ReturnUrl = returnUrl });
 	}

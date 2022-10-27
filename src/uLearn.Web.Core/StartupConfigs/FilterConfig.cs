@@ -13,9 +13,10 @@ public static class FilterConfig
 		/* Next filter serves built index.html from ../Frontend/build/ (appSettings/ulearn.react.index.html).
 			Before running this code build Frontend project via `yarn build` or `npm run build` */
 		var appDirectory = new DirectoryInfo(Ulearn.Core.Utils.GetAppPath());
+		var index = configuration.OldWebConfig["ulearn.react.index.html"];
 		filters.Add(
 			new ServeStaticFileForEveryNonAjaxRequestAttribute(
-				appDirectory.GetFile(environment.ContentRootPath + "//wwwroot//index.html"),
+				appDirectory.GetFile(environment.ContentRootPath + index),
 				excludedPrefixes: new List<string>
 				{
 					//"/elmah/",

@@ -131,7 +131,6 @@ public class CourseController : BaseController
 		{
 			if (isGuest)
 				return NotFound();
-
 			var userGroups = (await groupMembersRepo.GetUserGroupsAsync(course.Id, User.GetUserId()))
 				.Select(g => g.Id)
 				.ToList();

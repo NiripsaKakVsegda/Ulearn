@@ -13,16 +13,15 @@ public class ErrorsController : Controller
 {
 	private string IndexHtmlPath => configuration.OldWebConfig["ulearn.react.index.html"];
 	private string CspHeader => configuration.OldWebConfig["ulearn.web.cspHeader"];
-	
+
 	private WebConfiguration configuration;
 	private static DirectoryInfo AppDirectory => new DirectoryInfo(Ulearn.Core.Utils.GetAppPath());
 
 	private readonly List<string> excludedPrefixes;
 	private readonly byte[] content;
 
-
-	public ErrorsController(WebConfiguration configuration)
-		: this(configuration, excludedPrefixes: new List<string>
+	public ErrorsController(WebConfiguration configuration, IHostEnvironment environment)
+		: this(configuration, environment, excludedPrefixes: new List<string>
 		{
 			//"/elmah/",
 			"/Certificate/",
@@ -33,11 +32,11 @@ public class ErrorsController : Controller
 	{
 	}
 
-	public ErrorsController(WebConfiguration configuration, List<string> excludedPrefixes)
+	public ErrorsController(WebConfiguration configuration, IHostEnvironment environment, List<string> excludedPrefixes )
 	{
-		var file = AppDirectory.GetFile(IndexHtmlPath);
 		this.configuration = configuration;
 		this.excludedPrefixes = excludedPrefixes;
+		var file = AppDirectory.GetFile(environment.ContentRootPath + configuration.OldWebConfig["ulearn.react.index.html"]);
 		content = System.IO.File.ReadAllBytes(file.FullName);
 		content = InsertFrontendConfiguration(content);
 	}
