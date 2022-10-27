@@ -59,9 +59,9 @@ public class RestorePasswordController : Controller
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	public async Task<ActionResult> Index(string username = "")
+	public async Task<ActionResult> Index(string username)
 	{
-		if (username.Length == 0)
+		if (string.IsNullOrEmpty(username) || string.IsNullOrWhiteSpace(username))
 		{
 			return View(new RestorePasswordModel
 			{
