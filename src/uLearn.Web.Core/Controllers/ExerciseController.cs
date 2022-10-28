@@ -53,17 +53,17 @@ public class ExerciseController : JsonDataContractController
 	private static ILog log => LogProvider.Get().ForContext(typeof(ExerciseController));
 
 	public ExerciseController(UlearnDb db,
-		ICourseStorage courseStorage, 
-		WebConfiguration configuration, 
-		IUserSolutionsRepo userSolutionsRepo, 
-		ISlideCheckingsRepo slideCheckingsRepo, 
-		IGroupsRepo groupsRepo, 
+		ICourseStorage courseStorage,
+		WebConfiguration configuration,
+		IUserSolutionsRepo userSolutionsRepo,
+		ISlideCheckingsRepo slideCheckingsRepo,
+		IGroupsRepo groupsRepo,
 		IVisitsRepo visitsRepo,
-		INotificationsRepo notificationsRepo, 
+		INotificationsRepo notificationsRepo,
 		IUsersRepo usersRepo,
 		IUnitsRepo unitsRepo,
-		IGroupAccessesRepo groupAccessesRepo, 
-		ICoursesRepo coursesRepo, 
+		IGroupAccessesRepo groupAccessesRepo,
+		ICoursesRepo coursesRepo,
 		ICourseRolesRepo courseRolesRepo)
 	{
 		this.db = db;
@@ -82,7 +82,7 @@ public class ExerciseController : JsonDataContractController
 		authCookieName = configuration.Web.CookieName;
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	[HttpPost]
 	public async Task<ActionResult> AddExerciseCodeReview(string courseId, int checkingId, [FromBody] ReviewInfo reviewInfo)
 	{
@@ -115,7 +115,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> DeleteExerciseCodeReview(string courseId, int reviewId)
 	{
 		var review = await slideCheckingsRepo.FindExerciseCodeReviewById(reviewId);
@@ -130,7 +130,7 @@ public class ExerciseController : JsonDataContractController
 		return Json(new CodeReviewOperationResult { Status = "ok" });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	[HttpPost]
 	public async Task<ActionResult> UpdateExerciseCodeReview(string courseId, int reviewId, string comment)
 	{
@@ -145,7 +145,7 @@ public class ExerciseController : JsonDataContractController
 		return Json(new CodeReviewOperationResult { Status = "ok" });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	[HttpPost]
 	public async Task<ActionResult> HideFromTopCodeReviewComments(string courseId, Guid slideId, string comment)
 	{
@@ -165,7 +165,7 @@ public class ExerciseController : JsonDataContractController
 		});
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
 	public async Task<ActionResult> SlideCodeReviewComments(string courseId, Guid slideId)
 	{
 		var comments = await slideCheckingsRepo.GetLastYearReviewComments(courseId, slideId);
@@ -231,7 +231,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> ScoreExercise(int id, string nextUrl, string exercisePercent, bool prohibitFurtherReview, string errorUrl = "", bool recheck = false)
 	{
 		if (string.IsNullOrEmpty(errorUrl))
@@ -285,7 +285,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> SimpleScoreExercise(int submissionId, int exercisePercent, bool ignoreNewestSubmission = false)
 	{
 		var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
@@ -421,7 +421,7 @@ public class ExerciseController : JsonDataContractController
 	}
 
 	[AllowAnonymous]
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> Submission(string courseId, Guid slideId, string userId = null, int? submissionId = null, int? manualCheckingId = null, bool isLti = false, bool showOutput = false, bool instructorView = false, bool onlyAccepted = true)
 	{
 		var currentUserId = userId ?? (User.Identity.IsAuthenticated ? User.GetUserId() : "");
@@ -517,14 +517,14 @@ public class ExerciseController : JsonDataContractController
 		return PartialView("~/Views/Exercise/_ExerciseScoreForm.cshtml", model);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> StudentSubmissions(string courseId, Guid slideId)
 	{
 		var model = await GetStudentSubmissionsModel(courseId, slideId, "");
 		return PartialView(model.Value);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> StudentSubmissionsTable(string courseId, Guid slideId, string name)
 	{
 		var model = await GetStudentSubmissionsModel(courseId, slideId, name);
@@ -602,6 +602,9 @@ public class ExerciseController : JsonDataContractController
 	[AllowAnonymous]
 	public async Task<ActionResult> StudentZip(string courseId, Guid slideId, string fileName)
 	{
+		if (string.IsNullOrEmpty(courseId) || string.IsNullOrEmpty(slideId.ToString()) || string.IsNullOrEmpty(fileName))
+			return BadRequest();
+		
 		log.Warn("StudentZip request {courseId} {slideId}");
 		var isInstructor = User.HasAccessFor(courseId, CourseRoleType.Instructor);
 		var course = courseStorage.GetCourse(courseId);
