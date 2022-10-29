@@ -10,6 +10,7 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Configuration;
@@ -24,7 +25,7 @@ using uLearn.Web.Core.Authorization;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 public class AntiPlagiarismController : JsonDataContractController
 {
 	private readonly IUserSolutionsRepo userSolutionsRepo;
@@ -142,13 +143,20 @@ public class AntiPlagiarismController : JsonDataContractController
 			MostSimilarSubmissionsHistogramData = mostSimilarSubmissionsHistogramData,
 			CanEditSuspicionLevels = isCourseOrSysAdmin,
 			SuspicionLevels = suspicionLevelsResponse.SuspicionLevels,
-			MaxAuthorSubmissionWeight = antiPlagiarismsResult.ResearchedSubmissions.Select(s => s.Plagiarisms.Select(p => p.Weight).DefaultIfEmpty(0).Max()).Max()
+			MaxAuthorSubmissionWeight = antiPlagiarismsResult.ResearchedSubmissions
+				.Select(s => s.Plagiarisms
+					.Select(p => p.Weight)
+					.DefaultIfEmpty(0)
+					.Max())
+				.DefaultIfEmpty(0)
+				.Max()
 		};
 		return View(details);
 	}
 
-	public async Task<ActionResult> SubmissionsPanel(int submissionId, Dictionary<int, double> submissionWeights)
+	public async Task<ActionResult> SubmissionsPanel(int submissionId, string submissionWeights)
 	{
+		var submissionWeightsDict = JsonConvert.DeserializeObject<Dictionary<int, double>>(submissionWeights);
 		var submission = await userSolutionsRepo.FindSubmissionById(submissionId);
 		if (submission == null)
 			return new NotFoundResult();
@@ -159,14 +167,14 @@ public class AntiPlagiarismController : JsonDataContractController
 		var slide = courseStorage.FindCourse(courseId)?.FindSlideByIdNotSafe(slideId);
 		if (slide == null)
 			return new NotFoundResult();
-		var submissions = userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).ToList();
+		var submissions = await userSolutionsRepo.GetAllAcceptedSubmissionsByUser(courseId, slideId, userId).ToListAsync();
 
 		return PartialView("~/Views/Exercise/SubmissionsPanel.cshtml", new ExerciseSubmissionsPanelModel(courseId, slide)
 		{
 			Submissions = submissions,
 			CurrentSubmissionId = submissionId,
 			CanTryAgain = false,
-			GetSubmissionDescription = s => GetSubmissionDescriptionForPanel(submissionWeights.ContainsKey(s.Id) ? (double?)submissionWeights[s.Id] : null),
+			GetSubmissionDescription = s => GetSubmissionDescriptionForPanel(submissionWeightsDict.ContainsKey(s.Id) ? (double?)submissionWeightsDict[s.Id] : null),
 			FormUrl = Url.Action("Details", new { courseId }),
 			ShowButtons = false,
 			SelectControlName = "submissionId",

@@ -2,6 +2,7 @@
 @using System.Web
 @using Database.Models
 @using Database.Repos.SystemAccessesRepo
+@using Newtonsoft.Json
 @using Ulearn.Common.Extensions
 @using Ulearn.Core.Extensions
 @using uLearn.Web.Core.Extensions
@@ -18,6 +19,7 @@
 }
 
 @functions{
+
 	public void PrintUserGroups(string userId)
 	{
 		<span class="antiplagiarism__user-groups">
@@ -140,7 +142,12 @@
 						@Model.Course.Title,
 						@Html.RouteLink(Model.Slide.Title, "Course.SlideById", new { courseId = Model.Course.Id, slideId = Model.Slide.Url })
 					</div>
-					@Html.Action("SubmissionsPanel", new { submissionId = submission.Id, submissionWeights })
+					@Html.Action("SubmissionsPanel",
+						new
+						{
+							submissionId = submission.Id,
+							submissionWeights = JsonConvert.SerializeObject(submissionWeights)
+						})
 				</div>
 			</div>
 			<div class="col-xs-6">
@@ -220,7 +227,7 @@
 							<div class="pull-right" title="Процент похожести. Чем больше, тем более подозрительна эта пара">
 								@((int)(plagiarism.Weight * 100))%
 							</div>
-							@{ SmallAvatar(plagiarismSubmission.User);}
+							@{ SmallAvatar(plagiarismSubmission.User); }
 							@if (await User.HasSystemAccess(systemAccessesRepo, SystemAccessType.ViewAllProfiles) || User.IsSystemAdministrator())
 							{
 								@Html.ActionLink(plagiarismSubmission.User.VisibleName, "Profile", "Account", new { userId = plagiarismSubmission.UserId }, new { title = plagiarismSubmission.User.UserName })<text>,</text>
@@ -266,6 +273,7 @@
 </div>
 
 @functions{
+
 	public void GetAvatarPlaceholderColor(ApplicationUser user)
 	{
 		var hashForColor = user.Id.Aggregate(0, (a, i) => a += i);
@@ -306,4 +314,5 @@
 	{
 		Avatar(user, "large " + classes);
 	}
+
 }
