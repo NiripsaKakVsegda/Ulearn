@@ -13,6 +13,26 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 	{
 		options.Notifiers.Add(new ElmahTelegram());
 
+		options.OnError += (context, msg) =>
+		{
+			var password = msg.Form["password"];
+			if (password != null)
+				msg.Form.Set("password", "***hidden***");
+
+			var token = msg.Form["__RequestVerificationToken"];
+			if (token != null)
+				msg.Form.Set("__RequestVerificationToken", "***hidden***");
+
+			var cookie = msg.Cookies["ulearn.auth"];
+			if (cookie != null)
+				msg.Cookies.Set("ulearn.auth", "***hidden***");
+
+			if (msg.ServerVariables["path"]!= null && msg.ServerVariables["path"].StartsWith("	/Login"))
+				msg.Body = null;
+
+			return Task.CompletedTask;
+		};
+
 		options.OnPermissionCheck = context =>
 		{
 			var isAuthenticated = context.User.Identity.IsAuthenticated;
