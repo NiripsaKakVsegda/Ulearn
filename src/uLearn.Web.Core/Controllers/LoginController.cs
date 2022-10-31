@@ -94,9 +94,12 @@ public class LoginController : BaseUserController
 				/* If user with this username is not exists then try to find user with this email.
 					It allows to login not only with username/password, but with email/password */
 				var usersWithEmail = await usersRepo.FindUsersByUsernameOrEmail(model.UserName);
-
 				/* For signing in via email/password we need to be sure that email is confirmed */
 				user = usersWithEmail.FirstOrDefault(u => u.EmailConfirmed);
+				// after updating to asp net core all FindByNameAsync are using normalized UserName
+				// so here we can have a case when user has no normalizer login and email is unconfirmed
+				// for backward compatibility we will look for user name case sensitive
+				user ??= usersWithEmail.FirstOrDefault(u => u.UserName == model.UserName);
 
 				if (user != null)
 					if (!await userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
