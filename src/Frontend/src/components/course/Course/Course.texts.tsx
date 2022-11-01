@@ -30,6 +30,8 @@ export default {
 
 	//deadlines
 	afterDeadLine: (deadLineInfo: DeadLineInfo, slideMaxScore: number,): string => {
+		if(deadLineInfo.scorePercent === 100) return '';
+
 		const score = Math.ceil(deadLineInfo.scorePercent * slideMaxScore / 100);
 
 		if(isTimeArrived(deadLineInfo.date)) {
