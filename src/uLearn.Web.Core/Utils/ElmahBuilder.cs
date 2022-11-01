@@ -27,7 +27,7 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 			if (cookie != null)
 				msg.Cookies.Set("ulearn.auth", "***hidden***");
 
-			if (msg.ServerVariables["path"]!= null && msg.ServerVariables["path"].StartsWith("	/Login"))
+			if (msg.ServerVariables["path"]!= null && msg.ServerVariables["path"].StartsWith("/Login"))
 				msg.Body = null;
 
 			return Task.CompletedTask;
