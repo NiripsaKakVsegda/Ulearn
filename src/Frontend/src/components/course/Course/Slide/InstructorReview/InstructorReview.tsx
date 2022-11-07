@@ -577,17 +577,20 @@ class InstructorReview extends React.Component<Props, State> {
 				/>
 				{
 					currentSubmission.automaticChecking
-					&& <ExerciseOutput
-						withoutMargin
-						solutionRunStatus={ SolutionRunStatus.Success }
-						message={ outputMessage }
-						expectedOutput={ expectedOutput }
-						automaticChecking={ currentSubmission.automaticChecking }
-						submissionColor={
-							currentSubmission.automaticChecking.result !== AutomaticExerciseCheckingResult.RightAnswer
-								? SubmissionColor.WrongAnswer
-								: SubmissionColor.MaxResult }
-					/>
+					&& outputMessage && outputMessage.length > 0
+					&& <div className={ styles.outputContainer }>
+						<ExerciseOutput
+							withoutMargin
+							solutionRunStatus={ SolutionRunStatus.Success }
+							message={ outputMessage }
+							expectedOutput={ expectedOutput }
+							automaticChecking={ currentSubmission.automaticChecking }
+							submissionColor={
+								currentSubmission.automaticChecking.result !== AutomaticExerciseCheckingResult.RightAnswer
+									? SubmissionColor.WrongAnswer
+									: SubmissionColor.MaxResult }
+						/>
+					</div>
 				}
 				{ (isEditable || submissionPercent !== null) &&
 					<ScoreControls
