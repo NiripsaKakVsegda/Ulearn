@@ -18,8 +18,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			},
 			[Common.Language.Python3] = new LanguageLaunchInfo
 			{
-				Compiler = "Python 3.8",
-				RunCommand = "python3.8 {source}"
+				Compiler = "Python 3.10",
+				RunCommand = "python3.10 {source}"
 			},
 			[Common.Language.JavaScript] = new LanguageLaunchInfo
 			{
