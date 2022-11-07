@@ -12,4 +12,4 @@ class PythonRunInfo(ISourceCodeRunInfo):
         return False
 
     def format_run_command(self, filename: str) -> str:
-        return f'python3.10 {filename}'
+        return f'python3.8 {filename}'

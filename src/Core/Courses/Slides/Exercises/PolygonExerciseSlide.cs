@@ -39,7 +39,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			polygonExercise.UserCodeFilePath = problem.PathAuthorSolution;
 			polygonExercise.Language = LanguageHelpers.GuessByExtension(new FileInfo(polygonExercise.UserCodeFilePath));
 			polygonExercise.DefaultLanguage = context.CourseSettings.DefaultLanguage;
-			polygonExercise.RunCommand = $"python3.10 main.py {polygonExercise.Language} {polygonExercise.TimeLimitPerTest} {polygonExercise.UserCodeFilePath.Split('/', '\\')[1]}";
+			polygonExercise.RunCommand = $"python3.8 main.py {polygonExercise.Language} {polygonExercise.TimeLimitPerTest} {polygonExercise.UserCodeFilePath.Split('/', '\\')[1]}";
 			Title = problem.Title;
 			PrepareSolution(Path.Combine(context.UnitDirectory.FullName, PolygonPath, polygonExercise.UserCodeFilePath));
 

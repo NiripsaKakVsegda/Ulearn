@@ -6,8 +6,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Ekaterinburg
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y wget && apt-get -y install curl \
-	# Python 3.10
-	&& apt-get -y install python3.10 \ 
+	# Python 3.8
+	&& apt-get -y install python3.8 \ 
 	# C, C++
 	&& apt-get -y install build-essential \
 	# C#

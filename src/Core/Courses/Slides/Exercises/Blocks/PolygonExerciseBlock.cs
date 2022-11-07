@@ -18,8 +18,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			},
 			[Common.Language.Python3] = new LanguageLaunchInfo
 			{
-				Compiler = "Python 3.10",
-				RunCommand = "python3.10 {source}"
+				Compiler = "Python 3.8",
+				RunCommand = "python3.8 {source}"
 			},
 			[Common.Language.JavaScript] = new LanguageLaunchInfo
 			{
@@ -73,7 +73,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		private string RunCommandWithArguments(Language language)
 		{
-			return $"python3.10 main.py {language} {TimeLimitPerTest} {UserCodeFilePath.Split('/', '\\')[1]}";
+			return $"python3.8 main.py {language} {TimeLimitPerTest} {UserCodeFilePath.Split('/', '\\')[1]}";
 		}
 	}
 }
