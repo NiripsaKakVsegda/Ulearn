@@ -72,6 +72,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const favReviews = favouriteReviews?.filter(r => !r.isFavourite);
 		const favouriteReviewsSet = new Set(favReviews?.map(r => r.text));
 		const favouriteByUserSet = new Set(favReviewsByUser?.map(r => r.text));
+		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 
 		if(studentSubmissions) {
 			const index = Math.max(
@@ -82,11 +83,10 @@ class InstructorReview extends React.Component<Props, State> {
 
 			currentSubmissionContext = this.getSubmissionContext(studentSubmissions, currentSubmission);
 
-			const allReviews = this.getReviewsFromSubmission(currentSubmission, diffInfo, false,);
+			const allReviews = this.getReviewsFromSubmission(currentSubmission, diffInfo, toggleInCache || false,);
 			reviews = allReviews.reviews;
 			outdatedReviews = allReviews.outdatedReviews;
 		}
-		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 
 		this.state = {
 			selectedReviewId: -1,
@@ -247,6 +247,7 @@ class InstructorReview extends React.Component<Props, State> {
 					diffInfo,
 					showDiff,
 				);
+
 				this.setState({
 					reviews: newReviews.reviews,
 					outdatedReviews: newReviews.outdatedReviews,
@@ -351,7 +352,6 @@ class InstructorReview extends React.Component<Props, State> {
 					finishLine: showDiff && diffInfo ? diffInfo.oldCodeNewLineIndex[r.finishLine] : r.finishLine,
 				}))
 			: [];
-
 		return { reviews, outdatedReviews, };
 	};
 

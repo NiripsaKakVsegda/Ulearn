@@ -73,10 +73,10 @@ import { FavouriteReviewRedux } from "src/redux/instructor";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
 import { assignBotReview, } from "src/api/submissions";
 import { Button } from "ui";
-import { MatchParams, WithRouter } from "src/models/router";
+import { WithRouter } from "src/models/router";
 import { skipLoki } from "../../../Navigation/stroies.data";
 import { mapStateToProps } from "./InstructorReview.redux";
-import { withOldRouter } from "../../../../../utils/router";
+import { withNavigate, withOldRouter } from "../../../../../utils/router";
 
 
 const user: UserInfo = getMockedUser({
@@ -192,6 +192,96 @@ const submissions: SubmissionInfo[] = [
 		manualCheckingPassed: false,
 		manualCheckingReviews: [],
 		automaticChecking: null,
+	},
+	{
+		"code": "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing System.Reflection;\n\nnamespace Reflection.Randomness\n{\n    public class FromDistributionAttribute : Attribute\n    {\n        public IContinuousDistribution DistributionType { get; }\n        public FromDistributionAttribute(Type type, params object[] args)\n        {\n            if (type.GetInterface(\"IContinuousDistribution\") == null)\n                throw new ArgumentException($\"Type {type.Name} doesn't implement IContinuousDistribution interface.\");\n            var constructor = type.GetConstructor(args.Select(x => x.GetType()).ToArray());\n            if (constructor is null)\n                throw new ArgumentException($\"{type.Name} has no constructor with given parameters.\");\n            DistributionType = (IContinuousDistribution)constructor.Invoke(args);\n        }\n    }\n\n    public class Generator<T> where T : new()\n    {\n        private static readonly List<(PropertyInfo, IContinuousDistribution)> _distributionAttributeProperties\n            = new List<(PropertyInfo, IContinuousDistribution)>();\n        static Generator()\n        {\n            foreach (var property in typeof(T).GetProperties())\n            {\n                var attribute = property.GetCustomAttributes(true).OfType<FromDistributionAttribute>().FirstOrDefault();\n                if (attribute != null)\n                    _distributionAttributeProperties.Add((property, attribute.DistributionType));\n            }\n        }\n\n        public T Generate(Random rnd)\n        {\n            var result = (T)typeof(T).GetConstructor(new Type[] { })?.Invoke(new object[] { });\n            foreach (var (propertyInfo, distribution) in _distributionAttributeProperties)\n                propertyInfo.SetValue(result, distribution.Generate(rnd));\n            return result;\n        }\n    }\n}\n",
+		"language": Language.cSharp,
+		"timestamp": "2022-11-02T01:26:44.003157",
+		"automaticChecking": {
+			"processStatus": AutomaticExerciseCheckingProcessStatus.Done,
+			"result": AutomaticExerciseCheckingResult.RightAnswer,
+			"output": "",
+			"checkerLogs": "",
+			"reviews": []
+		},
+		"manualChecking": {
+			"percent": 100,
+			"reviews": []
+		}
+	},
+	{
+		"code": "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing System.Reflection;\n\nnamespace Reflection.Randomness\n{\n    public class FromDistributionAttribute : Attribute\n    {\n        public IContinuousDistribution DistributionType { get; }\n        public FromDistributionAttribute(Type type, params object[] args)\n        {\n            if (type.GetInterface(\"IContinuousDistribution\") == null)\n                throw new ArgumentException($\"Type {type.Name} doesn't implement IContinuousDistribution interface.\");\n            var constructor = type.GetConstructor(args.Select(x => x.GetType()).ToArray());\n            if (constructor is null)\n                throw new ArgumentException($\"{type.Name} has no constructor with given parameters.\");\n            DistributionType = (IContinuousDistribution)constructor.Invoke(args);\n        }\n    }\n\n    public class Generator<T>\n    {\n        private readonly List<ValueTuple<PropertyInfo, IContinuousDistribution>> _distributionAttributeProperties \n            = new List<ValueTuple<PropertyInfo, IContinuousDistribution>>();\n        public Generator()\n        {\n            foreach (var property in typeof(T).GetProperties())\n            {\n                var attribute = property.GetCustomAttributes(true).OfType<FromDistributionAttribute>().FirstOrDefault();\n                if (attribute != null)\n                    _distributionAttributeProperties.Add((property, attribute.DistributionType));\n            }\n        }\n\n        public T Generate(Random rnd)\n        {\n            var result = (T)typeof(T).GetConstructor(new Type[] { })?.Invoke(new object[] { });\n            foreach (var (propertyInfo, distribution) in _distributionAttributeProperties)\n                propertyInfo.SetValue(result, distribution.Generate(rnd));\n            return result;\n        }\n    }\n}\n",
+		"language": Language.cSharp,
+		"timestamp": "2022-10-16T01:33:06.206783",
+		"automaticChecking": {
+			"processStatus": AutomaticExerciseCheckingProcessStatus.Done,
+			"result": AutomaticExerciseCheckingResult.RightAnswer,
+			"output": "",
+			"checkerLogs": "",
+			"reviews": []
+		},
+		"manualChecking": {
+			"percent": 50,
+			"reviews": [
+				{
+					"author": {
+						"id": "ecb1a90e-9024-4941-8d76-da5e920e335c",
+						"firstName": "Павел 👾",
+						"lastName": "Егоров",
+						"visibleName": "Павел 👾 Егоров",
+						"avatarUrl": "https://sun4-15.userapi.com/s/v1/ig2/0ok0q3gx42621oqFIfPBR5r2aZa9rGh7XY2KGKNfiIKhWH82tu_cUQh0u1MrIo8_yKcKsH8WGmLoLaE1ZfpyDqg7.jpg?size=50x50&quality=96&crop=1081,131,693,693&ava=1",
+						"gender": "male"
+					},
+					"startLine": 23,
+					"startPosition": 30,
+					"finishLine": 23,
+					"finishPosition": 41,
+					"comment": "используйте синтаксис: (int a, string b)",
+					"renderedComment": "используйте синтаксис: (int a, string b)",
+					"addingTime": "2022-10-17T12:04:04.744486",
+					"comments": [],
+					"id": 6263175
+				},
+				{
+					"author": {
+						"id": "ecb1a90e-9024-4941-8d76-da5e920e335c",
+						"firstName": "Павел 👾",
+						"lastName": "Егоров",
+						"visibleName": "Павел 👾 Егоров",
+						"avatarUrl": "https://sun4-15.userapi.com/s/v1/ig2/0ok0q3gx42621oqFIfPBR5r2aZa9rGh7XY2KGKNfiIKhWH82tu_cUQh0u1MrIo8_yKcKsH8WGmLoLaE1ZfpyDqg7.jpg?size=50x50&quality=96&crop=1081,131,693,693&ava=1",
+						"gender": "male"
+					},
+					"startLine": 37,
+					"startPosition": 38,
+					"finishLine": 37,
+					"finishPosition": 52,
+					"comment": "лучше пользоваться ограничением new для generic типа",
+					"renderedComment": "лучше пользоваться ограничением new для generic типа",
+					"addingTime": "2022-10-17T12:04:13.328486",
+					"comments": [],
+					"id": 6263180
+				},
+				{
+					"author": {
+						"id": "ecb1a90e-9024-4941-8d76-da5e920e335c",
+						"firstName": "Павел 👾",
+						"lastName": "Егоров",
+						"visibleName": "Павел 👾 Егоров",
+						"avatarUrl": "https://sun4-15.userapi.com/s/v1/ig2/0ok0q3gx42621oqFIfPBR5r2aZa9rGh7XY2KGKNfiIKhWH82tu_cUQh0u1MrIo8_yKcKsH8WGmLoLaE1ZfpyDqg7.jpg?size=50x50&quality=96&crop=1081,131,693,693&ava=1",
+						"gender": "male"
+					},
+					"startLine": 27,
+					"startPosition": 12,
+					"finishLine": 27,
+					"finishPosition": 63,
+					"comment": "Это можно было бы сделать один раз для каждого значения T. А вы сейчас делаете эту работу заново каждый раз, при создании нового генератора. Даже если каждый раз создавать генератор с одним и тем же значением T",
+					"renderedComment": "Это можно было бы сделать один раз для каждого значения T. А вы сейчас делаете эту работу заново каждый раз, при создании нового генератора. Даже если каждый раз создавать генератор с одним и тем же значением T",
+					"addingTime": "2022-10-17T12:05:27.537365",
+					"comments": [],
+					"id": 6263193
+				}
+			]
+		}
 	},
 	{
 		code: `\t\t\t\tif (course == null || tempCourse.LastUpdateTime < tempCourse.LoadingTime)
@@ -416,7 +506,7 @@ const submissions: SubmissionInfo[] = [
 			: null,
 		manualChecking: i > 0
 			? {
-				reviews: c.manualCheckingReviews.map(addIdToReview),
+				reviews: c.manualChecking?.reviews.map(addIdToReview) || [],
 				percent: i > 0 && i % 2 === 0 ? i * 10 : null,
 			}
 			: null,
@@ -711,10 +801,14 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 	};
 };
 
-const Connected = connect(mapStateToProps, mapDispatchToProps)(withOldRouter(InstructorReview));
+const Connected = connect(mapStateToProps, mapDispatchToProps)(withNavigate(InstructorReview));
 
 const Template: Story<PropsFromSlide & WithRouter> = (args: PropsFromSlide & WithRouter) => {
 	if(!reduxStore.getState().account.isAuthenticated) {
+		reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
+			submissions,
+			prohibitFurtherManualChecking: true,
+		}));
 		loadUserToRedux(user, courseId);
 	}
 
@@ -748,7 +842,7 @@ const args: PropsFromSlide = {
 		slideId,
 		courseId,
 		title: 'Angry Birds',
-		unitId:"unit",
+		unitId: "unit",
 		slideInfo: {
 			slideId,
 			courseId,
