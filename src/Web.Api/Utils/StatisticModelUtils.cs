@@ -262,11 +262,11 @@ namespace Ulearn.Web.Api.Utils
 			var scoreByUserAndSlide = await GetScoreByUserAndSlide(filterOptions, shouldBeSolvedSlidesIds);
 
 			var additionalScores = await GetAdditionalScores(courseId, visitedUsersIds);
-			var usersGroupsIds = await groupMembersRepo.GetUsersGroupsIdsAsync(courseId, visitedUsersIds);
+			var usersGroupsIds = await groupMembersRepo.GetUsersGroupsIdsAsync(courseId, visitedUsersIds, true);
 			var enabledAdditionalScoringGroupsForGroups = await GetEnabledAdditionalScoringGroupsForGroups(courseId);
 
 			/* Filter out only scoring groups which are affected in selected groups */
-			var additionalScoringGroupsForFilteredGroups = await controllerUtils.GetEnabledAdditionalScoringGroupsForGroups(course, groupsIds, userId);
+			var additionalScoringGroupsForFilteredGroups = await controllerUtils.GetEnabledAdditionalScoringGroupsForGroups(course, groupsIds, userId, true);
 			scoringGroups = scoringGroups
 				.Where(kv => kv.Value.MaxNotAdditionalScore > 0 || additionalScoringGroupsForFilteredGroups.Contains(kv.Key))
 				.ToDictionary(kv => kv.Key, kv => kv.Value)
@@ -385,7 +385,7 @@ namespace Ulearn.Web.Api.Utils
 
 		private async Task<Dictionary<int, List<string>>> GetEnabledAdditionalScoringGroupsForGroups(string courseId)
 		{
-			return (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(courseId))
+			return (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(courseId, true))
 				.GroupBy(e => e.GroupId)
 				.ToDictionary(g => g.Key,
 					g => g.Select(e => e.ScoringGroupId).ToList());

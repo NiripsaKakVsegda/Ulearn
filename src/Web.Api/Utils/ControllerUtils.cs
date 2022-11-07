@@ -30,7 +30,7 @@ namespace Ulearn.Web.Api.Utils
 		{
 			var result = new T { CourseId = courseId };
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor);
-			
+
 			/* if groupsIds contains "all" (it should be exclusive), get all users. Available only for course admins */
 			if (groupsIds.Contains("all") && isCourseAdmin)
 				return result;
@@ -70,23 +70,24 @@ namespace Ulearn.Web.Api.Utils
 				if (hasAccessToGroup)
 					usersIds.UnionWith(group2GroupMembersIds[groupIdInt]);
 			}
+
 			result.UserIds = usersIds.ToList();
 			return result;
 		}
-		
-		public async Task<List<string>> GetEnabledAdditionalScoringGroupsForGroups(Course course, List<string> groupsIds, string userId)
+
+		public async Task<List<string>> GetEnabledAdditionalScoringGroupsForGroups(Course course, List<string> groupsIds, string userId, bool includeArchived = false)
 		{
 			if (groupsIds.Contains("all") || groupsIds.Contains("not-in-group"))
 				return course.Settings.Scoring.Groups.Keys.ToList();
 
-			var enabledAdditionalScoringGroupsForGroups = (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(course.Id))
+			var enabledAdditionalScoringGroupsForGroups = (await groupsRepo.GetEnabledAdditionalScoringGroupsAsync(course.Id, includeArchived))
 				.GroupBy(e => e.GroupId)
 				.ToDictionary(g => g.Key, g => g.Select(e => e.ScoringGroupId).ToList());
 
 			/* if groupsIds is empty, get members of all own groups. Available for instructors */
 			if (groupsIds.Count == 0 || groupsIds.Any(string.IsNullOrEmpty))
 			{
-				var accessibleGroupsIds = (await groupsRepo.GetMyGroupsFilterAccessibleToUserAsync(course.Id, userId)).Select(g => g.Id).ToList();
+				var accessibleGroupsIds = (await groupsRepo.GetMyGroupsFilterAccessibleToUserAsync(course.Id, userId, includeArchived)).Select(g => g.Id).ToList();
 				return enabledAdditionalScoringGroupsForGroups.Where(kv => accessibleGroupsIds.Contains(kv.Key)).SelectMany(kv => kv.Value).ToList();
 			}
 

@@ -224,9 +224,9 @@ namespace Database.Repos.Groups
 			}
 		}
 
-		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId)
+		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId, bool includeArchived = false)
 		{
-			var groupsIds = GetCourseGroupsQueryable(courseId).Select(g => g.Id);
+			var groupsIds = GetCourseGroupsQueryable(courseId, includeArchived).Select(g => g.Id);
 			return db.EnabledAdditionalScoringGroups.Where(e => groupsIds.Contains(e.GroupId)).ToListAsync();
 		}
 
