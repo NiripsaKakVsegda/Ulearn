@@ -577,14 +577,16 @@ class InstructorReview extends React.Component<Props, State> {
 				/>
 				{
 					currentSubmission.automaticChecking
-					&& currentSubmission.automaticChecking.result !== AutomaticExerciseCheckingResult.RightAnswer
 					&& <ExerciseOutput
 						withoutMargin
 						solutionRunStatus={ SolutionRunStatus.Success }
 						message={ outputMessage }
 						expectedOutput={ expectedOutput }
 						automaticChecking={ currentSubmission.automaticChecking }
-						submissionColor={ SubmissionColor.WrongAnswer }
+						submissionColor={
+							currentSubmission.automaticChecking.result !== AutomaticExerciseCheckingResult.RightAnswer
+								? SubmissionColor.WrongAnswer
+								: SubmissionColor.MaxResult }
 					/>
 				}
 				{ (isEditable || submissionPercent !== null) &&

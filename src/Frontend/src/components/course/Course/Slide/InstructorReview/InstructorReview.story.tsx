@@ -387,7 +387,7 @@ const submissions: SubmissionInfo[] = [
 		automaticChecking: {
 			processStatus: AutomaticExerciseCheckingProcessStatus.Done,
 			result: AutomaticExerciseCheckingResult.RightAnswer,
-			output: null,
+			output: "Good job!",
 			checkerLogs: null,
 			reviews: [
 				{
