@@ -73,7 +73,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		private string RunCommandWithArguments(Language language)
 		{
-			return $"python3.8 main.py {language} {TimeLimitPerTest} {UserCodeFilePath.Split('/', '\\')[1]}";
+			return $"python3.10 main.py {language} {TimeLimitPerTest} {UserCodeFilePath.Split('/', '\\')[1]}";
 		}
 	}
 }
