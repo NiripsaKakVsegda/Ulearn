@@ -53,6 +53,12 @@ interface SpoilerBlock extends Block {
 	renderedBlocks: ReactNode[];
 }
 
+interface CodeBlock extends Block {
+	$type: BlockTypes.code;
+	code: string;
+	language: Language;
+}
+
 interface TexBlock extends Block {
 	$type: BlockTypes.tex;
 	content: string;
@@ -125,6 +131,7 @@ export type {
 	VideoBlock,
 	ExerciseBlock,
 	ExerciseBlockProps,
-	LanguageLaunchInfo
+	LanguageLaunchInfo,
+	CodeBlock,
 };
 

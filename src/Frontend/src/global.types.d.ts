@@ -1,5 +1,8 @@
 declare global {
 	interface Window {
+		ulearn: {
+			runExercisesCheck: () => void;
+		};
 		config: {
 			api: {
 				endpoint: string
@@ -28,6 +31,7 @@ declare global {
 			ym: unknown,
 		},
 	}
+
 	type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 }
 

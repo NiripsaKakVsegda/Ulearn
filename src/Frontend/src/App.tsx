@@ -24,7 +24,9 @@ import { deviceChangeAction } from "src/actions/device";
 import { DeviceType } from "src/consts/deviceType";
 import { getDeviceType } from "./utils/getDeviceType";
 import isInDevelopment from "./isInDevelopment";
+import injectUtils from 'src/utils/runExerciseCheck';
 
+injectUtils();
 const store = setupStore();
 
 // Update notifications count each minute
