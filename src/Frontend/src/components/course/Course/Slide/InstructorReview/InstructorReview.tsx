@@ -580,6 +580,7 @@ class InstructorReview extends React.Component<Props, State> {
 					&& outputMessage && outputMessage.length > 0
 					&& <div className={ styles.outputContainer }>
 						<ExerciseOutput
+							withoutLogs
 							withoutMargin
 							solutionRunStatus={ SolutionRunStatus.Success }
 							message={ outputMessage }
