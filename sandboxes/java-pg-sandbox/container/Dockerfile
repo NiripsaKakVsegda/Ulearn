@@ -1,10 +1,3 @@
-FROM ubuntu:20.04
-
-RUN apt update && \
-	apt install --yes openjdk-17-jdk && \
-	apt install tzdata
-	
-
 FROM postgres:alpine
 
 ENV \
@@ -38,6 +31,13 @@ RUN set -euo pipefail \
             && su-exec postgres pg_resetwal -o \
                 $( LANG=C pg_controldata $PGDATA | grep -oP '(?<=NextOID:\s{10})\d+' ) -x \
                 $( LANG=C pg_controldata $PGDATA | grep -oP '(?<=NextXID:\s{10}0[/:])\d+' ) -f $PGDATA
+				
+FROM ubuntu:20.04
+
+RUN apt update && \
+	apt install --yes openjdk-17-jdk && \
+	apt install tzdata
+	
 	
 WORKDIR /
 RUN mkdir /app
