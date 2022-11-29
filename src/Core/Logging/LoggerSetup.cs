@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Configuration;
@@ -45,6 +46,9 @@ namespace Ulearn.Core.Logging
 
 			var log = new CompositeLog(new[] { fileLog, consoleLog, telegramLog }.Where(l => l != null).ToArray())
 				.WithProperty("threadId", () => Environment.CurrentManagedThreadId);
+
+			if (hostLog.DropRequestRegex != null)
+				DropRequestRegex = new Regex(hostLog.DropRequestRegex);
 			log = FilterLogs(log, minimumLevel, dbMinimumLevel)
 				.WithMinimumLevel(min);
 
@@ -93,7 +97,8 @@ namespace Ulearn.Core.Logging
 		{
 			return log.WithMinimumLevelForSourceContext("ULearnDb", dbMinimumLevel) // Database
 				.DropEvents(e => IsDropDatabaseCoreLogEventForDrop(e, dbMinimumLevel))
-				.DropEvents(e => IsSchedulerLogEventForDrop(e, minimumLevel));
+				.DropEvents(e => IsSchedulerLogEventForDrop(e, minimumLevel))
+				.DropEvents(IfShouldBeDroppedByRegex);
 		}
 
 		private static bool IsDropDatabaseCoreLogEventForDrop(LogEvent e, LogLevel dbMinimumLevel)
@@ -116,6 +121,25 @@ namespace Ulearn.Core.Logging
 				return false;
 			bool IsJobWithName(string jobName) => GetOperationContext(e)?.Contains(jobName) ?? false;
 			return IsJobWithName(UpdateCoursesWorker.UpdateCoursesJobName) || IsJobWithName(UpdateCoursesWorker.UpdateTempCoursesJobName);
+		}
+
+		private static Regex DropRequestRegex;
+
+		private static bool IfShouldBeDroppedByRegex(LogEvent e)
+		{
+			if (DropRequestRegex == null || e.Exception != null) return false;
+
+			var isLoggingMiddleware = GetSourceContext(e)?.Contains("LoggingMiddleware") ?? false;
+			if (!isLoggingMiddleware)
+				return false;
+			
+			var operationContext = GetOperationContext(e);
+			if (operationContext == null)
+				return false;
+			
+			var requestPath = operationContext.FirstOrDefault(c => c.StartsWith("RequestPath"));
+			
+			return requestPath != null && DropRequestRegex.IsMatch(requestPath);
 		}
 
 		[CanBeNull]
