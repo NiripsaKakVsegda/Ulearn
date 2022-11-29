@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Ulearn.Common.Api;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Telegram;
 using Ulearn.Web.Api.Models.Parameters.Exercise;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Logging.Abstractions;
@@ -19,12 +20,14 @@ namespace Ulearn.Web.Api.Controllers
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(PythonVisualizerController));
 		private readonly IPythonVisualizerClient pythonVisualizerClient;
+		private readonly ErrorsBot errorsBot;
 
-		public PythonVisualizerController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
+		public PythonVisualizerController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,ErrorsBot errorsBot,
 			IPythonVisualizerClient pythonVisualizerClient)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.pythonVisualizerClient = pythonVisualizerClient;
+			this.errorsBot = errorsBot;
 		}
 
 		/// <summary>
@@ -38,7 +41,11 @@ namespace Ulearn.Web.Api.Controllers
 			if (response == null)
 				return StatusCode((int)HttpStatusCode.InternalServerError);
 			if (response.Code == ResponseCode.RequestTimeout)
-				log.Error($"Request timed out with user code {parameters.Code}");
+			{
+				log.Error($"Python Visualizer request timed out, posting data to errors bot");
+				await errorsBot.PostToChannelAsync($"Визуализатор питона не смог обработать запрос для code=[{parameters.Code}] input=[{parameters.InputData}]");
+			}
+
 			if (response.Code != ResponseCode.Ok)
 				return StatusCode((int)response.Code);
 			if (response.HasStream)
