@@ -97,7 +97,7 @@ public class Startup : VostokAspNetCoreApplication
 		services.AddScoped<AdminController>();
 		services.AddSingleton<IWebCourseManager, WebCourseManager>();
 
-		services.AddSingleton<LtiAuthentication>();
+		services.AddScoped<LtiAuthentication>();
 
 		ConfigureAuthServices(services);
 
