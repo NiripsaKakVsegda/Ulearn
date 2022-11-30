@@ -156,11 +156,7 @@ public class LtiAuthentication
 	private async Task<ApplicationUser> GetIdentityForLtiLogin(HttpContext context, LtiRequest ltiRequest, UserLoginInfo ltiLogin)
 	{
 		log.Info($"Ищу пользователя по LTI-логину {ltiLogin.LoginProvider}-{ltiLogin.ProviderKey}");
-		var userLogin = await db.UserLogins
-			.FirstOrDefaultAsync(l => l.LoginProvider == ltiLogin.LoginProvider && l.ProviderKey == ltiLogin.ProviderKey);
-		var ltiLoginUser = userLogin != null
-			? await userManager.FindByIdAsync(userLogin.UserId)
-			: null;
+		var ltiLoginUser = await userManager.FindByLoginAsync(ltiLogin.LoginProvider, ltiLogin.ProviderKey);
 		if (ltiLoginUser != null)
 		{
 			log.Info($"Нашёл LTI-логин: провайдер {ltiLogin.LoginProvider}, идентификатор {ltiLogin.ProviderKey}, он принадлежит пользователю {ltiLoginUser.UserName} (Id = {ltiLoginUser.Id})");
