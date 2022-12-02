@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.FileProviders;
 using uLearn.Web.Core.Controllers;
 using uLearn.Web.Core.Utils;
@@ -176,6 +177,10 @@ public class Startup : VostokAspNetCoreApplication
 		{
 			Secure = CookieSecurePolicy.Always
 		});
+		
+		var options = new RewriteOptions() 
+			.AddRedirect(@"schema\/v2(\.xsd)*$", "/schema/v2.xsd"); 
+		app.UseRewriter(options);
 
 		app.UseMvc(RouteConfig.RegisterRoutes);
 
