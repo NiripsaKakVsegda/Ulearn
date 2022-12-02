@@ -1,6 +1,5 @@
 import { SlideInfo } from "../CourseUtils";
 import { Block } from "src/models/slide";
-import { ReduxData } from "../../../../redux";
 
 export interface SlideContext {
 	courseId: string;

@@ -168,70 +168,6 @@
   display: inline-block;
 }
 
-.overview {
-  padding: 16px;
-  margin-bottom: 16px;
-
-  list-style: none;
-
-  font-family: @defaultFonts;
-  font-style: normal;
-  font-weight: 400;
-
-  background: @white;
-
-  border: 1px solid @accentColor;
-  box-sizing: border-box;
-  border-radius: 8px;
-}
-
-.overview li:last-child {
-  margin-bottom: 0;
-}
-
-.overviewLine {
-  margin-bottom: 16px;
-}
-
-.overview h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-
-  font-size: 16px;
-  line-height: 22px;
-
-  font-weight: 600;
-}
-
-.overviewComment {
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.overviewSelfCheckList {
-  list-style: none;
-
-  padding: 0;
-}
-
-.overviewSelfCheckList li {
-  display: flex;
-
-  margin-bottom: 16px;
-}
-
-.overviewSelfCheckList li .selfCheckText {
-  margin-left: 8px;
-  word-break: break-word;
-}
-
-.overviewSelfCheckComment {
-  .overviewComment;
-  position: relative;
-  top: -8px;
-  color: @additionalColor;
-}
-
 :global {
   //removing border from line gutters
   .CodeMirror-gutters {
@@ -255,11 +191,11 @@
     line-height: 20px;
   }
 
-  .overview {
+  .selfCheckingContainer {
     padding: 24px 40px;
   }
 
-  .overview h3 {
+  .selfCheckingContainer h3 {
     font-size: 20px;
     line-height: 28px;
   }

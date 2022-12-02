@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 
 namespace Ulearn.Core.Courses.Slides.Quizzes
@@ -20,7 +21,10 @@ namespace Ulearn.Core.Courses.Slides.Quizzes
 			MaxTriesCount = 2,
 		};
 
-		protected override Type[] AllowedBlockTypes => base.AllowedBlockTypes.Concat(new[] { typeof(AbstractQuestionBlock) }).ToArray();
+		protected override Type[] AllowedBlockTypes => base.AllowedBlockTypes
+			.Where(b => b != typeof(SelfCheckupsBlock))
+			.Concat(new[] { typeof(AbstractQuestionBlock) })
+			.ToArray();
 
 		public override bool ShouldBeSolved => true;
 

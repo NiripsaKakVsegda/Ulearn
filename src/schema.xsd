@@ -226,7 +226,6 @@
 	<xs:group name="SlideInternals">
 		<xs:sequence>
 			<xs:group ref="Blocks" minOccurs="0" maxOccurs="unbounded"/>
-
 			<xs:element name="meta" type="SlideMeta" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">Slide's meta: keywords, description, image</xs:documentation>
@@ -372,6 +371,7 @@
 			<xs:element name="galleryImages" type="GalleryImages"/>
 			<xs:element name="tex" type="Tex"/>
 			<xs:element name="markdown" type="MarkdownBlock"/>
+			<xs:element name="selfCheckups" type="SelfCheckups"/>
 			<xs:element name="code" type="Code"/>
 			<xs:element name="youtube" type="NonEmptyString"/>
 			<xs:element name="includeCode" type="IncludeCodeBlock"/>
@@ -438,6 +438,12 @@
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="hide" type="xs:boolean" use="optional"/>
+	</xs:complexType>
+	
+	<xs:complexType name="SelfCheckups">
+		<xs:sequence minOccurs="1" maxOccurs="unbounded">
+			<xs:element name="checkup" type="NonEmptyString"/>
+		</xs:sequence>
 	</xs:complexType>
 
 	<xs:complexType name="MarkdownBlock" mixed="true">
@@ -514,6 +520,7 @@
 						</xs:complexType>
 					</xs:element>
 					<xs:element name="texts" type="Texts" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="checkup" type="NonEmptyString" minOccurs="0"/>
 				</xs:choice>
 				<xs:attribute name="type" use="optional">
 					<xs:simpleType>

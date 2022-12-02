@@ -1,0 +1,97 @@
+@import "../../../courseVariables";
+
+.selfCheckingContainer {
+  padding: 16px;
+  margin-bottom: 24px;
+
+  background: @white;
+
+  border: 1px solid @accentColor;
+  box-sizing: border-box;
+  border-radius: 8px;
+
+  list-style: none;
+
+  font-family: @defaultFonts;
+  font-style: normal;
+  font-weight: 400;
+
+  &.completed {
+    border: 1px solid @progressBarGreen;
+  }
+
+  &.collapsed {
+    width: 100%;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: space-between;
+
+    h3 {
+      margin: 0;
+    }
+  }
+}
+
+.selfCheckingContainer li:last-child {
+  margin-bottom: 0;
+}
+
+.overviewLine {
+  margin-bottom: 16px;
+}
+
+.selfCheckingContainer h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+
+  font-family: @defaultFonts;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.overviewSelfCheckList {
+  list-style: none;
+  padding: 0;
+}
+
+.overviewSelfCheckList li {
+  display: flex;
+  min-height: 32px;
+  align-items: baseline;
+}
+
+.overviewSelfCheckList li .selfCheckText {
+  .overviewComment;
+  line-height: 100%;
+  word-break: break-word;
+}
+
+.overviewComment {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.overviewSelfCheckComment {
+  .overviewComment;
+  position: relative;
+  top: -8px;
+  color: @additionalColor;
+}
+
+.collapseLinkText {
+  .overviewComment;
+}
+
+@media (min-width: @minTabletWidth) {
+  .selfCheckingContainer {
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .overviewSelfCheckList li {
+    min-height: 40px;
+  }
+}
+

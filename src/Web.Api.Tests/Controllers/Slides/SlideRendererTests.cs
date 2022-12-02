@@ -28,13 +28,13 @@ namespace Web.Api.Tests.Controllers.Slides
 		{
 			Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
 			videoAnnotationsClient = Mock.Of<IUlearnVideoAnnotationsClient>();
-			slideRenderer = new SlideRenderer(videoAnnotationsClient, null, null, null);
+			slideRenderer = new SlideRenderer(videoAnnotationsClient, null, null, null, null, null);
 			loader = new XmlSlideLoader();
 			courseSettings = new CourseSettings(CourseSettings.DefaultSettings);
 			courseSettings.Scoring.Groups.Add("ScoringGroup1", new ScoringGroup { Id = "ScoringGroup1" });
 			unit = new Unit(UnitSettings.CreateByTitle("Unit title", courseSettings), "");
 		}
-		
+
 		private Slide LoadSlideFromXmlFile(string filename)
 		{
 			var slideFile = new DirectoryInfo(testDataDirectory).GetFile(filename);
@@ -101,7 +101,7 @@ namespace Web.Api.Tests.Controllers.Slides
 			var apiSlideBlocks = GetApiSlideBlocks(slide, true);
 			Assert.AreEqual(3, apiSlideBlocks.Length);
 			var img = apiSlideBlocks[1] as ImageGalleryBlockResponse;
-			Assert.AreEqual(new []{"api.test.me/courses/course/files/manipulator.png"}, img.ImageUrls);
+			Assert.AreEqual(new[] { "api.test.me/courses/course/files/manipulator.png" }, img.ImageUrls);
 		}
 	}
 }

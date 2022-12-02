@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Database.Models;
 using JetBrains.Annotations;
 using Ulearn.Core.Courses.Slides;
 

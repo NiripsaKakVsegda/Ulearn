@@ -95,6 +95,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IFavouriteReviewsRepo, FavouriteReviewsRepo>();
 		services.AddScoped<IAdditionalContentPublicationsRepo, AdditionalContentPublicationsRepo>();
 		services.AddScoped<IDeadLinesRepo, DeadLinesRepo>();
+		services.AddScoped<ISelfCheckupsRepo, SelfCheckupsRepo>();
 
 		return services;
 	}

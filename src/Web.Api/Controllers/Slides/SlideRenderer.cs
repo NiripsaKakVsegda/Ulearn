@@ -6,6 +6,7 @@ using AngleSharp.Html.Parser;
 using Database.Models;
 using Database.Repos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
@@ -28,14 +29,19 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly IUserSolutionsRepo solutionsRepo;
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
+		private readonly ISelfCheckupsRepo selfCheckupsRepo;
+		private readonly IUserSolutionsRepo userSolutionsRepo;
 
 		public SlideRenderer(IUlearnVideoAnnotationsClient videoAnnotationsClient,
-			IUserSolutionsRepo solutionsRepo, ISlideCheckingsRepo slideCheckingsRepo, ICourseRolesRepo courseRolesRepo)
+			IUserSolutionsRepo solutionsRepo, ISlideCheckingsRepo slideCheckingsRepo, ICourseRolesRepo courseRolesRepo,
+			ISelfCheckupsRepo selfCheckupsRepo, IUserSolutionsRepo userSolutionsRepo)
 		{
 			this.videoAnnotationsClient = videoAnnotationsClient;
 			this.solutionsRepo = solutionsRepo;
 			this.slideCheckingsRepo = slideCheckingsRepo;
 			this.courseRolesRepo = courseRolesRepo;
+			this.selfCheckupsRepo = selfCheckupsRepo;
+			this.userSolutionsRepo = userSolutionsRepo;
 		}
 
 		public ShortSlideInfo BuildShortSlideInfo(string courseId, Slide slide, Func<Slide, int> getSlideMaxScoreFunc, Func<Slide, string> getGitEditLink, IUrlHelper urlHelper)
@@ -97,13 +103,13 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		public async Task<IEnumerable<IApiSlideBlock>> ToApiSlideBlocks(SlideBlock slideBlock, SlideRenderContext context)
 		{
 			if (context.RemoveHiddenBlocks && slideBlock.Hide)
-				return new IApiSlideBlock[] {};
+				return new IApiSlideBlock[] { };
 			var apiSlideBlocks = (IEnumerable<IApiSlideBlock>)await RenderBlock((dynamic)slideBlock, context);
 			if (context.RemoveHiddenBlocks)
 				apiSlideBlocks = apiSlideBlocks.Where(b => !b.Hide);
 			return apiSlideBlocks;
 		}
-		
+
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(SlideBlock b, SlideRenderContext context)
 		{
 			return Enumerable.Empty<IApiSlideBlock>();
@@ -113,17 +119,17 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		{
 			return new[] { new CodeBlockResponse(b) };
 		}
-		
+
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(HtmlBlock b, SlideRenderContext context)
 		{
 			return new[] { new HtmlBlockResponse(b, false, context.BaseUrlApi) };
 		}
-		
+
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(ImageGalleryBlock b, SlideRenderContext context)
 		{
 			return new[] { new ImageGalleryBlockResponse(b, context.BaseUrlApi, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse) };
 		}
-		
+
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(TexBlock b, SlideRenderContext context)
 		{
 			return new[] { new TexBlockResponse(b) };
@@ -136,7 +142,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				innerBlocks.AddRange(await ToApiSlideBlocks(b, context));
 			if (sb.Hide)
 				innerBlocks.ForEach(b => b.Hide = true);
-			return new [] { new SpoilerBlockResponse(sb, innerBlocks) };
+			return new[] { new SpoilerBlockResponse(sb, innerBlocks) };
 		}
 
 		private static async Task<IEnumerable<IApiSlideBlock>> RenderBlock(MarkdownBlock mb, SlideRenderContext context)
@@ -154,14 +160,30 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			var googleDocLink = string.IsNullOrEmpty(context.VideoAnnotationsGoogleDoc) ? null
 				: "https://docs.google.com/document/d/" + context.VideoAnnotationsGoogleDoc;
 			var response = new YoutubeBlockResponse(yb, annotation, googleDocLink);
-			return new [] { response };
+			return new[] { response };
+		}
+
+		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(SelfCheckupsBlock b, SlideRenderContext context)
+		{
+			var checkups = await selfCheckupsRepo.GetSelfCheckups(context.UserId, context.CourseId, context.Slide.Id);
+
+			return new[]
+			{
+				new SelfCheckupBlockResponse(
+					b.Checkups
+						.Select(c => new SlideSelfCheckup(c) as ISelfCheckup)
+						.ToList(),
+					checkups) { Hide = b.Hide }
+			};
 		}
 
 		private async Task<IEnumerable<IApiSlideBlock>> RenderBlock(AbstractExerciseBlock b, SlideRenderContext context)
 		{
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(context.UserId, context.CourseId, CourseRoleType.CourseAdmin);
-			
+
 			ExerciseAttemptsStatistics exerciseAttemptsStatistics = null;
+			List<SelfCheckupResponse> selfCheckups = null;
+
 			if (b.HasAutomaticChecking())
 			{
 				var exerciseUsersCount = await slideCheckingsRepo.GetExerciseUsersCount(context.CourseId, context.Slide.Id);
@@ -175,11 +197,31 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				};
 			}
 
+			if (b.Checkups.Count > 0)
+			{
+				var checkups = await selfCheckupsRepo.GetSelfCheckups(context.UserId, context.CourseId, context.Slide.Id);
+
+				var slideCheckups = b.Checkups
+					.Select(c => new SlideSelfCheckup(c) as ISelfCheckup)
+					.ToList();
+				var lastSubmissionWithReview = (await userSolutionsRepo
+						.GetAllSubmissionsByUserAllInclude(context.CourseId, context.Slide.Id, context.UserId)
+						.OrderByDescending(s => s.Timestamp)
+						.ToListAsync())
+					.FirstOrDefault(s => s.ManualChecking != null && s.ManualChecking.Reviews.Count > 0);
+				if (lastSubmissionWithReview != null)
+					slideCheckups = slideCheckups
+						.Prepend(new ExerciseSelfCheckup(lastSubmissionWithReview.Id))
+						.ToList();
+				selfCheckups = SelfCheckupBlockResponse.BuildCheckups(slideCheckups, checkups);
+			}
+
 			var exerciseSlideRendererContext = new ExerciseSlideRendererContext
 			{
 				CanSeeCheckerLogs = isCourseAdmin,
 				AttemptsStatistics = exerciseAttemptsStatistics,
-				markdownRenderContext = new (context.BaseUrlApi, context.BaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse)
+				Checkups = selfCheckups,
+				markdownRenderContext = new(context.BaseUrlApi, context.BaseUrlWeb, context.CourseId, context.Slide.Unit.UnitDirectoryRelativeToCourse)
 			};
 			return new[] { new ExerciseBlockResponse(b, exerciseSlideRendererContext) };
 		}
@@ -225,6 +267,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 						blocks.Add(new HtmlBlockResponse { Content = htmlContent, FromMarkdown = true });
 				}
 			}
+
 			return blocks;
 		}
 	}

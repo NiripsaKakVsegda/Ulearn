@@ -1,6 +1,6 @@
 import React from "react";
 
-import { BlocksWrapper, Exercise, Image, Spoiler, StaticCode, Text, Video } from "./Blocks";
+import { BlocksWrapper, Exercise, Image, Spoiler, StaticCode, Text, Video, SlideSelfChecking, } from "./Blocks";
 
 import { Block, BlockTypes } from "src/models/slide";
 import { SlideContext } from "./Slide.types";
@@ -32,6 +32,7 @@ const mapTypeToBlock
 	[BlockTypes.tex]: Text,
 	[BlockTypes.image]: Image,
 	[BlockTypes.spoiler]: Spoiler,
+	[BlockTypes.selfCheckups]: SlideSelfChecking,
 };
 
 interface BlockToRender {
@@ -48,6 +49,7 @@ const fullSizeBlockTypes: { [T in BlockTypes]: boolean } = {
 	[BlockTypes.text]: false,
 	[BlockTypes.tex]: false,
 	[BlockTypes.image]: false,
+	[BlockTypes.selfCheckups]: false,
 };
 
 class BlocksRenderer {

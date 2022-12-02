@@ -25,6 +25,7 @@ namespace Database
 				NpgsqlLogManager.Provider = new UlearnDbLoggingProvider();
 				NpgsqlLogManager.IsParameterLoggingEnabled = true;
 			}
+
 			AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 		}
 
@@ -221,7 +222,7 @@ namespace Database
 			modelBuilder.Entity<ExerciseUsersWithRightAnswerCount>()
 				.ToView(ExerciseUsersWithRightAnswerCount.ViewName)
 				.HasNoKey();
-			
+
 			modelBuilder.Entity<DeadLine>(builder =>
 			{
 				if (!Database.IsNpgsql())
@@ -416,6 +417,10 @@ namespace Database
 			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, });
 			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UserIds });
 			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideType, c.SlideValue, c.UserIds });
+
+			AddIndex<SelfCheckup>(modelBuilder, c => new { c.UserId, c.CourseId, c.SlideId }); // getting all user checkups for slide
+			AddIndex<SelfCheckup>(modelBuilder, c => new { c.UserId, c.CourseId, c.SlideId, c.CheckupId }); // updating single user checkup for slide
+			AddIndex<SelfCheckup>(modelBuilder, c => new { c.CheckupId }); // delete outdated checkup
 		}
 
 		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class
@@ -551,5 +556,7 @@ namespace Database
 		public DbSet<FavouriteReviewByUser> FavouriteReviewsByUsers { get; set; }
 		public DbSet<AdditionalContentPublication> AdditionalContentPublications { get; set; }
 		public DbSet<DeadLine> DeadLines { get; set; }
+
+		public DbSet<SelfCheckup> SelfCheckups { get; set; }
 	}
 }

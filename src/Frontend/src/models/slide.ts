@@ -38,6 +38,7 @@ export enum BlockTypes {
 	spoiler = "spoiler",
 	tex = 'tex',
 	exercise = 'exercise',
+	selfCheckups = 'selfCheckups',
 }
 
 interface Block {
@@ -79,6 +80,23 @@ interface ExerciseBlockProps {
 	exerciseTexts: ExerciseTexts;
 }
 
+export interface SelfCheckupsBlock extends Block {
+	$type: BlockTypes.selfCheckups;
+	hide: false;
+	checkups: SelfCheckup[];
+}
+
+export interface SelfCheckupsBlockWithIds extends Omit<SelfCheckupsBlock, 'checkups'> {
+	checkupsIds: string[];
+}
+
+export interface SelfCheckup {
+	content: string;
+	///Format: Type_Id (Slide_TextHash, Exercise_SubmissionId)
+	id: string;
+	isChecked: boolean;
+}
+
 export interface ExerciseTexts {
 	// «Все тесты пройдены». Показывается тем, у кого потенциально бывает код-ревью, но это решение не отправлено на него.
 	// Например, потому что есть более новое решение.
@@ -113,6 +131,10 @@ interface ExerciseBlock extends Block {
 	expectedOutput: string;
 	attemptsStatistics: AttemptsStatistics | null;
 	pythonVisualizerEnabled?: boolean;
+	// DON'T USE IT!
+	// From api its selfCheckup[], but in redux we separate it, so in block there's only ids
+	checkups: SelfCheckup[] | null;
+	checkupsIds: string[] | null;
 }
 
 interface LanguageLaunchInfo {

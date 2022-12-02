@@ -8,6 +8,7 @@ using System.Xml.Serialization;
 using JetBrains.Annotations;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
+using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.RunCheckerJobApi;
 
 namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
@@ -21,6 +22,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlAttribute("type")]
 		public ExerciseType ExerciseType { get; set; } = ExerciseType.CheckOutput;
+		
+		[XmlElement("checkup")]
+		public List<string> Checkups { get; set; }
 
 		/* .NET XML Serializer doesn't understand nullable fields, so we use this hack to make Language? field */
 		[XmlIgnore]
@@ -121,6 +125,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				var hashCode = ExerciseInitialCode?.GetHashCode() ?? 0;
 				hashCode = (hashCode * 397) ^ (ExpectedOutput?.GetHashCode() ?? 0);
 				hashCode = (hashCode * 397) ^ (HintsMd?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Checkups?.GetHashCode() ?? 0);
 				return hashCode;
 			}
 		}
@@ -129,7 +134,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		public override string ToString()
 		{
-			return $"Exercise: {ExerciseInitialCode}, Hints: {string.Join("; ", HintsMd)}";
+			return $"Exercise: {ExerciseInitialCode}, Hints: {string.Join("; ", HintsMd)}, Checkupss: {string.Join("; ", Checkups)}";
 		}
 
 		public override string TryGetText()

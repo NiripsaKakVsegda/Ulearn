@@ -15,7 +15,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			PassedTestsScore = 5,
 		};
 
-		protected override Type[] AllowedBlockTypes => base.AllowedBlockTypes.Concat(new[] { typeof(AbstractExerciseBlock) }).ToArray();
+		protected override Type[] AllowedBlockTypes => base.AllowedBlockTypes
+			.Concat(new[] { typeof(AbstractExerciseBlock) })
+			.ToArray();
 
 		public override bool ShouldBeSolved => true;
 
