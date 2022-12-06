@@ -69,7 +69,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		public string RunCommand { get; set; } // см. RunCommandRegex
 
 		[XmlIgnore]
-		public static readonly Regex RunCommandRegex = new Regex("^[-_a-zA-Z.0-9 ;,|>]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		public static readonly Regex RunCommandRegex = new Regex("^[-_a-zA-Z.0-9 ;,|&>]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		[XmlIgnore]
 		public string UnitDirectoryPathRelativeToCourse { get; set; }

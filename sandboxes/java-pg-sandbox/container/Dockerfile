@@ -1,4 +1,4 @@
-FROM postgres:alpine
+FROM postgres:latest
 
 ENV \
 	POSTGRES_USERNAME=postgres \
@@ -7,8 +7,10 @@ ENV \
 	TZ=Europe/Ekaterinburg \
 	DEBIAN_FRONTEND=noninteractive
 	
-run apk add openjdk17 && \
-    apk add maven
-    
-ARG JAR_FILE=*.jar
-COPY ${JAR_FILE} application.jar
+run apt update && \
+	apt install -y openjdk-17-jdk && \
+    apt install -y maven
+	
+WORKDIR /
+RUN mkdir /app
+WORKDIR app
