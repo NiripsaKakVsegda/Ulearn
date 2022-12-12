@@ -1,8 +1,8 @@
 @import "../../../courseVariables";
 
 .selfCheckingContainer {
-  padding: 16px;
-  margin-bottom: 24px;
+  padding: 16px 16px 12px 16px;
+  margin-bottom: 16px;
 
   background: @white;
 
@@ -30,6 +30,14 @@
       margin: 0;
     }
   }
+
+  &.onSlide {
+    padding: 12px 12px 8px 12px;
+
+    .overviewSelfCheckList li {
+      margin: -6px 0 -11px 0;
+    }
+  }
 }
 
 .selfCheckingContainer li:last-child {
@@ -45,8 +53,8 @@
   margin-bottom: 8px;
 
   font-family: @defaultFonts;
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 16px;
+  line-height: 22px;
   font-weight: 600;
 }
 
@@ -68,8 +76,8 @@
 }
 
 .overviewComment {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 400;
 }
 
@@ -85,13 +93,36 @@
 }
 
 @media (min-width: @minTabletWidth) {
+  .overviewComment {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .collapseLinkText {
+    .overviewComment;
+  }
+
+  .overviewSelfCheckList li .selfCheckText {
+    font-size: 16px;
+  }
+
   .selfCheckingContainer {
-    padding: 24px;
+    padding: 24px 24px 12px 24px;
     margin-bottom: 24px;
+
+    h3 {
+      font-size: 20px;
+      line-height: 28px;
+    }
+
+    &.onSlide {
+      padding: 18px;
+    }
   }
 
   .overviewSelfCheckList li {
     min-height: 40px;
+    margin: 0;
   }
 }
 

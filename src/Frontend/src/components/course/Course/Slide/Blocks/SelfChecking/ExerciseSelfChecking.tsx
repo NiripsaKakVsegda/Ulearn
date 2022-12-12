@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Link } from "ui";
-import { SelfCheckingBlock, RenderedSelfCheckup } from "./SelfCheckingContainer";
+import { SelfCheckingSection, RenderedSelfCheckup } from "./SelfCheckingContainer";
 import SlideSelfChecking, { SlideSelfCheckingProps } from "./SlideSelfChecking";
 import { SubmissionInfo } from "src/models/exercise";
 import getPluralForm from "src/utils/getPluralForm";
@@ -21,17 +21,18 @@ function ExerciseSelfChecking({
 	lastSubmissionWithReview,
 	checkups,
 	onCheckupClick,
-	blocks,
+	sections,
 	showFirstComment,
 	showFirstBotComment,
+	className,
 }: ExerciseSelfCheckingProps) {
 	const automaticReviewsCount = lastSubmission?.automaticChecking?.reviews?.length || 0;
 	const manualReviewsCount = lastSubmissionWithReview?.manualChecking?.reviews?.length || 0;
-	const blocksToRender: SelfCheckingBlock[] = blocks?.map(b => ({ ...b })) ?? [];
+	const sectionsToRender: SelfCheckingSection[] = sections?.map(b => ({ ...b })) ?? [];
 	const selfCheckups: RenderedSelfCheckup[] = [...checkups];
 
 	if(automaticReviewsCount !== 0) {
-		blocksToRender.unshift(buildAutomaticCheckingBlock(showFirstBotComment));
+		sectionsToRender.unshift(buildAutomaticCheckingBlock(showFirstBotComment));
 	}
 
 	if(manualReviewsCount !== 0 && lastSubmissionWithReview) {
@@ -39,7 +40,11 @@ function ExerciseSelfChecking({
 	}
 
 	return (
-		<SlideSelfChecking blocks={ blocksToRender } checkups={ selfCheckups } onCheckupClick={ onCheckupClick }/>
+		<SlideSelfChecking
+			sections={ sectionsToRender }
+			checkups={ selfCheckups }
+			onCheckupClick={ onCheckupClick }
+			className={ className }/>
 	);
 
 	function buildAutomaticCheckingBlock(showFirstBotComment: () => void) {

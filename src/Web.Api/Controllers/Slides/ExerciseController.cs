@@ -11,6 +11,7 @@ using Database.Repos.Users;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Common;
 using Ulearn.Common.Api.Models.Responses;
@@ -47,6 +48,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly IMasterCourseManager courseManager;
 		private readonly StyleErrorsResultObserver styleErrorsResultObserver;
 		private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
+		private readonly ISelfCheckupsRepo selfCheckupsRepo;
 		private readonly ErrorsBot errorsBot;
 		private static ILog log => LogProvider.Get().ForContext(typeof(ExerciseController));
 
@@ -54,6 +56,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			IUsersRepo usersRepo, IUserSolutionsRepo userSolutionsRepo, ICourseRolesRepo courseRolesRepo, IVisitsRepo visitsRepo,
 			ISlideCheckingsRepo slideCheckingsRepo, IGroupsRepo groupsRepo, StyleErrorsResultObserver styleErrorsResultObserver,
 			IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
+			ISelfCheckupsRepo selfCheckupsRepo,
 			IStyleErrorsRepo styleErrorsRepo, IUnitsRepo unitsRepo, ErrorsBot errorsBot, IServiceScopeFactory serviceScopeFactory)
 			: base(courseStorage, db, usersRepo)
 		{
@@ -69,6 +72,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			this.styleErrorsResultObserver = styleErrorsResultObserver;
 			this.serviceScopeFactory = serviceScopeFactory;
 			this.courseManager = courseManager;
+			this.selfCheckupsRepo = selfCheckupsRepo;
 			this.errorsBot = errorsBot;
 		}
 
@@ -81,7 +85,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			[FromQuery] Language language)
 		{
 			var courseId = course.Id;
-
 			/* Check that no checking solution by this user in last time */
 			var delta = TimeSpan.FromSeconds(30);
 			var halfMinuteAgo = DateTime.Now.Subtract(delta);
@@ -213,6 +216,22 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			var score = await visitsRepo.GetScore(courseId, exerciseSlide.Id, userId);
 			var waitingForManualChecking = !submissionNoTracking.ManualChecking?.IsChecked;
 			var prohibitFurtherManualChecking = submissionNoTracking.ManualChecking?.ProhibitFurtherManualCheckings ?? false;
+
+			var checkups = exerciseBlock.Checkups;
+			if (checkups.Count > 0)
+			{
+				var checkedSelfCheckups = await selfCheckupsRepo.GetSelfCheckups(userId, courseId, exerciseSlide.Id);
+				var unCheckedCount = checkups.Count - checkedSelfCheckups.Count(c => c.IsChecked);
+				metricSender.SendCount($"exercise.accepted.selfCheckupCount.{unCheckedCount}");
+				var firstAcceptedSubmission = await userSolutionsRepo
+					.GetAllAcceptedSubmissions(courseId, exerciseSlide.Id)
+					.Where(s => s.UserId == userId)
+					.OrderBy(s => s.Timestamp)
+					.FirstOrDefaultAsync();
+				if (firstAcceptedSubmission != null && (DateTime.UtcNow - firstAcceptedSubmission.Timestamp).TotalHours < 1)
+					metricSender.SendCount($"exercise.fresh.accepted.selfCheckupCount.{unCheckedCount}");
+			}
+
 			var result = new RunSolutionResponse(SolutionRunStatus.Success)
 			{
 				Score = score,

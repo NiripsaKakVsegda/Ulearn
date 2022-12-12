@@ -2,24 +2,34 @@ import React, { useEffect, useState } from "react";
 
 import { Checkbox } from "ui";
 import SelfCheckingContainer, {
-	SelfCheckingBlock,
+	SelfCheckingSection,
 	SelfCheckingContainerProps,
 	RenderedSelfCheckup,
 } from "./SelfCheckingContainer";
+import { BlockProps } from "../../BlocksRenderer";
 
 import texts from "./SelfChecking.texts";
 import styles from "./SelfChecking.less";
+import cn from "classnames";
 
 export interface SelfCheckingBlockProps {
 	checkups: RenderedSelfCheckup[];
+	collapsed?: boolean;
 	onCheckupClick: (id: string, isChecked: boolean,) => void;
 }
 
-export type SlideSelfCheckingProps = SelfCheckingBlockProps & Partial<SelfCheckingContainerProps>;
+export type SlideSelfCheckingProps = SelfCheckingBlockProps & BlockProps & Partial<SelfCheckingContainerProps>;
 
-function SlideSelfChecking({ blocks, checkups, onCheckupClick, }: SlideSelfCheckingProps) {
+function SlideSelfChecking({
+	sections,
+	checkups,
+	onCheckupClick,
+	collapsed,
+	className,
+	...blockProps
+}: SlideSelfCheckingProps) {
 	const [checkupsState, setCheckupsState] = useState<RenderedSelfCheckup[]>(checkups.map(c => ({ ...c })));
-	const blocksToRender: SelfCheckingBlock[] = blocks?.map(b => ({ ...b })) ?? [];
+	const blocksToRender: SelfCheckingSection[] = sections?.map(b => ({ ...b })) ?? [];
 
 	useEffect(() => {
 		setCheckupsState(checkups.map(c => ({ ...c })));
@@ -30,7 +40,10 @@ function SlideSelfChecking({ blocks, checkups, onCheckupClick, }: SlideSelfCheck
 	}
 
 	return (
-		<SelfCheckingContainer blocks={ blocksToRender }/>
+		<SelfCheckingContainer
+			sections={ blocksToRender }
+			className={ cn({ [styles.onSlide]: collapsed }, className) }
+			{ ...blockProps }/>
 	);
 
 	function buildSelfCheckingBlock() {

@@ -5,32 +5,33 @@ import { SelfCheckup } from "src/models/slide";
 import cn from "classnames";
 import styles from "./SelfChecking.less";
 import texts from "./SelfChecking.texts";
+import { BlockProps } from "../../BlocksRenderer";
 
 export interface RenderedSelfCheckup extends Omit<SelfCheckup, 'content'> {
 	content: string | React.ReactElement,
 }
 
-export interface SelfCheckingBlock {
+export interface SelfCheckingSection {
 	title: string;
 	content: React.ReactElement;
 	isCompleted?: boolean;
 }
 
 export interface SelfCheckingContainerProps {
-	blocks: SelfCheckingBlock[];
+	sections: SelfCheckingSection[];
 }
 
-function SelfCheckingContainer({ blocks }: SelfCheckingContainerProps) {
-	const isCompleted = blocks.every(c => c.isCompleted);
+function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerProps & BlockProps) {
+	const isCompleted = sections.every(c => c.isCompleted);
 	const [isCollapsed, setCollapsed] = useState(isCompleted);
 
-	if(blocks.length === 0) {
+	if(sections.length === 0) {
 		return null;
 	}
 
 	if(isCollapsed) {
 		return (
-			<div className={ cn(styles.selfCheckingContainer, styles.collapsed, styles.completed) }>
+			<div className={ cn(styles.selfCheckingContainer, styles.collapsed, styles.completed, className) }>
 				<h3>{ texts.checkups.self.title } </h3>
 				<Link className={ styles.collapseLinkText } onClick={ show }>
 					<Gapped gap={ 4 }>
@@ -44,9 +45,9 @@ function SelfCheckingContainer({ blocks }: SelfCheckingContainerProps) {
 	}
 
 	return (
-		<ul className={ cn(styles.selfCheckingContainer, { [styles.completed]: isCompleted }) }>
+		<ul className={ cn(styles.selfCheckingContainer, { [styles.completed]: isCompleted }, className) }>
 			{
-				blocks.map(({ title, content }) =>
+				sections.map(({ title, content }) =>
 					<li key={ title } className={ styles.overviewLine } title={ title }>
 						<h3>{ title } </h3>
 						{ content }

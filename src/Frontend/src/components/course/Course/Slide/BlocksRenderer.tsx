@@ -22,6 +22,12 @@ export interface BlockRenderContext {
 	renderer?: typeof BlocksRenderer;
 }
 
+export interface BlockProps {
+	slideContext: SlideContext;
+	renderContext: BlockRenderContext;
+	className?: string;
+}
+
 const mapTypeToBlock
 	: { [T in BlockTypes]: React.ComponentType | React.ElementType }
 	= {

@@ -16,6 +16,7 @@ using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 using Ulearn.Core.Markdown;
+using Ulearn.Core.Metrics;
 using Ulearn.Web.Api.Clients;
 using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Responses.Exercise;
@@ -31,9 +32,12 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
 		private readonly ISelfCheckupsRepo selfCheckupsRepo;
 		private readonly IUserSolutionsRepo userSolutionsRepo;
+		private readonly MetricSender metricSender;
 
 		public SlideRenderer(IUlearnVideoAnnotationsClient videoAnnotationsClient,
-			IUserSolutionsRepo solutionsRepo, ISlideCheckingsRepo slideCheckingsRepo, ICourseRolesRepo courseRolesRepo,
+			IUserSolutionsRepo solutionsRepo,
+			MetricSender metricSender,
+			ISlideCheckingsRepo slideCheckingsRepo, ICourseRolesRepo courseRolesRepo,
 			ISelfCheckupsRepo selfCheckupsRepo, IUserSolutionsRepo userSolutionsRepo)
 		{
 			this.videoAnnotationsClient = videoAnnotationsClient;
@@ -42,6 +46,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			this.courseRolesRepo = courseRolesRepo;
 			this.selfCheckupsRepo = selfCheckupsRepo;
 			this.userSolutionsRepo = userSolutionsRepo;
+			this.metricSender = metricSender;
 		}
 
 		public ShortSlideInfo BuildShortSlideInfo(string courseId, Slide slide, Func<Slide, int> getSlideMaxScoreFunc, Func<Slide, string> getGitEditLink, IUrlHelper urlHelper)
@@ -167,6 +172,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 		{
 			var checkups = await selfCheckupsRepo.GetSelfCheckups(context.UserId, context.CourseId, context.Slide.Id);
 
+			metricSender.SendCount("slide.selfCheckups.show", b.Checkups.Count);
 			return new[]
 			{
 				new SelfCheckupBlockResponse(
@@ -213,6 +219,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 					slideCheckups = slideCheckups
 						.Prepend(new ExerciseSelfCheckup(lastSubmissionWithReview.Id))
 						.ToList();
+				metricSender.SendCount("exercise.selfCheckups.show", slideCheckups.Count);
 				selfCheckups = SelfCheckupBlockResponse.BuildCheckups(slideCheckups, checkups);
 			}
 

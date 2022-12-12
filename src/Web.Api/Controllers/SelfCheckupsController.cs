@@ -10,17 +10,20 @@ using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises.Blocks;
+using Ulearn.Core.Metrics;
 
 namespace Ulearn.Web.Api.Controllers;
 
 public class SelfCheckupsController : BaseController
 {
-	private ISelfCheckupsRepo selfCheckupsRepo;
+	private readonly ISelfCheckupsRepo selfCheckupsRepo;
+	private readonly MetricSender sender;
 
-	public SelfCheckupsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, ISelfCheckupsRepo selfCheckupsRepo)
+	public SelfCheckupsController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, ISelfCheckupsRepo selfCheckupsRepo, MetricSender sender)
 		: base(courseStorage, db, usersRepo)
 	{
 		this.selfCheckupsRepo = selfCheckupsRepo;
+		this.sender = sender;
 	}
 
 	[HttpPost("course/{courseId}/{slideId:guid}/checkups/{checkupId}")]
@@ -40,6 +43,7 @@ public class SelfCheckupsController : BaseController
 			))
 			return BadRequest("Checkup doesn't exists");
 
+		sender.SendCount($"slide.selfCheckup.check.{isChecked}");
 		await selfCheckupsRepo.AddOrUpdateSelfCheckup(UserId, courseId, slideId, checkupId, isChecked);
 
 		return NoContent();

@@ -2,11 +2,12 @@ import React from "react";
 import CheckupsIdsSwapper, { WithCheckupsIds } from "./CheckupsIdsToCheckupsSwapper.redux";
 import ExerciseSelfChecking, { ExerciseSelfCheckingProps } from "./ExerciseSelfChecking";
 import { SlideSelfCheckingProps } from "./SlideSelfChecking";
+import { BlockProps } from "../../BlocksRenderer";
 
 function ExerciseSelfCheckingRedux({
 	checkupsIds,
 	...prosFromExercise
-}: Omit<ExerciseSelfCheckingProps & WithCheckupsIds, keyof SlideSelfCheckingProps>) {
+}: Omit<ExerciseSelfCheckingProps & WithCheckupsIds & BlockProps, keyof SlideSelfCheckingProps>) {
 	return (<CheckupsIdsSwapper
 		checkupsIds={ checkupsIds }
 		selfChecking={
