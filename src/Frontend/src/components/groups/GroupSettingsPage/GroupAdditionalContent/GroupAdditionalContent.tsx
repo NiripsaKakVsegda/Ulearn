@@ -24,6 +24,7 @@ import {
 import styles from './groupAdditionalContent.less';
 import texts from './GroupAdditionalContent.texts';
 import { isDateValid, itTimeValid } from "./utils";
+import { ShortUserInfo } from "../../../../models/users";
 
 const gmtOffsetInHours = moment().utcOffset() / 60;
 const gmtOffsetInHoursAsString = `${ gmtOffsetInHours >= 0 ? '+' : '-' }${ gmtOffsetInHours }`;
@@ -43,22 +44,23 @@ function GroupAdditionalContent({
 	groupId,
 	user,
 }: Props): React.ReactElement {
+	const isLoading = 'isLoading';
 	const [state, setState] = useState<State | null | 'isLoading'>(null);
 
-	if(!state && state !== 'isLoading') {
-		setState('isLoading');
+	if(!state && state !== isLoading) {
+		setState(isLoading);
 		loadData();
 	}
 
 	return (
-		<Loader type={ "big" } active={ state === null || state === 'isLoading' } className={ styles.text }>
+		<Loader type={ "big" } active={ state === null || state === isLoading } className={ styles.text }>
 			<Gapped gap={ 12 } vertical>
 				<p>{ texts.info }</p>
 
 				<ValidationContainer>
 					<table className={ styles.table }>
 						<tbody>
-						{ state && state !== 'isLoading' && (
+						{ state && state !== isLoading && (
 							state.units.length === 0
 								? <p>{ texts.noAdditionalContent }</p>
 								: state.units.map(renderUnitInfo)
@@ -153,7 +155,7 @@ function GroupAdditionalContent({
 	}
 
 	function renderUnitInfo(unit: UnitInfo) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 		const publicationInfo = state.actual.units[unit.id];
@@ -198,7 +200,7 @@ function GroupAdditionalContent({
 		isUnit: boolean,
 		value: string,
 	) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -209,14 +211,14 @@ function GroupAdditionalContent({
 			actualInfo.publication = {
 				...actualInfo.publication,
 				date: value,
-				author: user,
+				author: user as ShortUserInfo,
 			};
 			if(isDateValid(value) && !actualInfo.publication.time) {
 				actualInfo.publication.time = defaultTime;
 			}
 		}
 
-		setState(prevState => (prevState && prevState !== 'isLoading'
+		setState(prevState => (prevState && prevState !== isLoading
 			? {
 				...prevState,
 				actual: newState,
@@ -229,7 +231,7 @@ function GroupAdditionalContent({
 		isUnit: boolean,
 		value: string,
 	) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -239,11 +241,11 @@ function GroupAdditionalContent({
 			actualInfo.publication = {
 				...actualInfo.publication,
 				time: value,
-				author: user,
+				author: user as ShortUserInfo,
 			};
 		}
 
-		setState(prevState => (prevState && prevState !== 'isLoading'
+		setState(prevState => (prevState && prevState !== isLoading
 			? {
 				...prevState,
 				actual: newState,
@@ -252,7 +254,7 @@ function GroupAdditionalContent({
 	}
 
 	function save({ unitId, slideId }: ParsedInputAttrData) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -300,7 +302,7 @@ function GroupAdditionalContent({
 		updateType: 'actual' | 'response',
 		publication: StateAdditionalContentPublication
 	) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -318,7 +320,7 @@ function GroupAdditionalContent({
 		}
 
 		setState(prevState => {
-			return prevState && prevState !== 'isLoading'
+			return prevState && prevState !== isLoading
 				? {
 					...prevState,
 					...stateUpdater,
@@ -328,7 +330,7 @@ function GroupAdditionalContent({
 	}
 
 	function cancel({ unitId, slideId }: ParsedInputAttrData) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -345,7 +347,7 @@ function GroupAdditionalContent({
 	}
 
 	function hide({ unitId, slideId, }: ParsedInputAttrData) {
-		if(!state || state === 'isLoading') {
+		if(!state || state === isLoading) {
 			return;
 		}
 
@@ -476,7 +478,8 @@ function AdditionalContentPublication({
 						</Button>
 						: <span className={ styles.additionalText }>
 								{
-									texts.buildPublicationText(publication.publication?.author.visibleName)
+									texts.buildPublicationText(publication.publication?.author.gender,
+										publication.publication?.author.visibleName)
 								}
 							</span>
 			}

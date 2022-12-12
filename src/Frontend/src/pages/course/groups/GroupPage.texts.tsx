@@ -7,7 +7,7 @@ export default {
 
 	members: 'Преподаватели и студенты',
 
-	additionalContent: 'Дополнительный контент',
+	additionalContent: 'Отложенная публикация',
 
 	deadLines: 'Настройка дедлайнов',
 };
