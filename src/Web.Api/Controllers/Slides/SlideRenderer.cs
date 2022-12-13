@@ -173,6 +173,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			var checkups = await selfCheckupsRepo.GetSelfCheckups(context.UserId, context.CourseId, context.Slide.Id);
 
 			metricSender.SendCount("slide.selfCheckups.show", b.Checkups.Count);
+			metricSender.SendCount($"slide.selfCheckups.show.{context.CourseId}", b.Checkups.Count);
 			return new[]
 			{
 				new SelfCheckupBlockResponse(
@@ -219,7 +220,8 @@ namespace Ulearn.Web.Api.Controllers.Slides
 					slideCheckups = slideCheckups
 						.Prepend(new ExerciseSelfCheckup(lastSubmissionWithReview.Id))
 						.ToList();
-				metricSender.SendCount("exercise.selfCheckups.show", slideCheckups.Count);
+				metricSender.SendCount($"exercise.selfCheckups.show", slideCheckups.Count);
+				metricSender.SendCount($"exercise.selfCheckups.show.{context.CourseId}", slideCheckups.Count);
 				selfCheckups = SelfCheckupBlockResponse.BuildCheckups(slideCheckups, checkups);
 			}
 

@@ -218,18 +218,15 @@ namespace Ulearn.Web.Api.Controllers.Slides
 			var prohibitFurtherManualChecking = submissionNoTracking.ManualChecking?.ProhibitFurtherManualCheckings ?? false;
 
 			var checkups = exerciseBlock.Checkups;
-			if (checkups.Count > 0)
+			var firstAcceptedSubmission = await userSolutionsRepo
+				.GetAllAcceptedSubmissions(courseId, exerciseSlide.Id)
+				.Where(s => s.UserId == userId)
+				.OrderBy(s => s.Timestamp)
+				.FirstOrDefaultAsync();
+			if (firstAcceptedSubmission != null && (DateTime.UtcNow - firstAcceptedSubmission.Timestamp).TotalHours < 1)
 			{
-				var checkedSelfCheckups = await selfCheckupsRepo.GetSelfCheckups(userId, courseId, exerciseSlide.Id);
-				var unCheckedCount = checkups.Count - checkedSelfCheckups.Count(c => c.IsChecked);
-				metricSender.SendCount($"exercise.accepted.selfCheckupCount.{unCheckedCount}");
-				var firstAcceptedSubmission = await userSolutionsRepo
-					.GetAllAcceptedSubmissions(courseId, exerciseSlide.Id)
-					.Where(s => s.UserId == userId)
-					.OrderBy(s => s.Timestamp)
-					.FirstOrDefaultAsync();
-				if (firstAcceptedSubmission != null && (DateTime.UtcNow - firstAcceptedSubmission.Timestamp).TotalHours < 1)
-					metricSender.SendCount($"exercise.fresh.accepted.selfCheckupCount.{unCheckedCount}");
+				metricSender.SendCount($"exercise.{exerciseMetricId}.accepted.resend-in-hour.has-checkups.{checkups.Count > 0}");
+				metricSender.SendCount($"exercise.accepted.resend-in-hour.has-checkups.{checkups.Count > 0}");
 			}
 
 			var result = new RunSolutionResponse(SolutionRunStatus.Success)

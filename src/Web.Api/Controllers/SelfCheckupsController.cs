@@ -44,6 +44,7 @@ public class SelfCheckupsController : BaseController
 			return BadRequest("Checkup doesn't exists");
 
 		sender.SendCount($"slide.selfCheckup.check.{isChecked}");
+		sender.SendCount($"slide.selfCheckup.check.{courseId}.{isChecked}");
 		await selfCheckupsRepo.AddOrUpdateSelfCheckup(UserId, courseId, slideId, checkupId, isChecked);
 
 		return NoContent();
