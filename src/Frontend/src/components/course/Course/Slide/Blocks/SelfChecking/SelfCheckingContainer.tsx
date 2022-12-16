@@ -21,7 +21,7 @@ export interface SelfCheckingContainerProps {
 	sections: SelfCheckingSection[];
 }
 
-function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerProps & BlockProps) {
+function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerProps & Partial<BlockProps>) {
 	const isCompleted = sections.every(c => c.isCompleted);
 	const [isCollapsed, setCollapsed] = useState(isCompleted);
 
@@ -31,12 +31,12 @@ function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerPr
 
 	if(isCollapsed) {
 		return (
-			<div className={ cn(styles.selfCheckingContainer, styles.collapsed, styles.completed, className) }>
+			<div className={ cn(styles.wrapper, styles.collapsed, styles.completed, className) }>
 				<h3>{ texts.checkups.self.title } </h3>
 				<Link className={ styles.collapseLinkText } onClick={ show }>
 					<Gapped gap={ 4 }>
 						{ texts.checkups.collapseText }
-						<ArrowChevronDown/>
+						<ArrowChevronDown size={ 14 }/>
 					</Gapped>
 
 				</Link>
@@ -45,7 +45,7 @@ function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerPr
 	}
 
 	return (
-		<ul className={ cn(styles.selfCheckingContainer, { [styles.completed]: isCompleted }, className) }>
+		<ul className={ cn(styles.wrapper, { [styles.completed]: isCompleted }, className) }>
 			{
 				sections.map(({ title, content }) =>
 					<li key={ title } className={ styles.overviewLine } title={ title }>

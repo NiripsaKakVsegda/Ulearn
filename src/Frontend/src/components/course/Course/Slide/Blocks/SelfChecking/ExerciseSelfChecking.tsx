@@ -9,7 +9,7 @@ import getPluralForm from "src/utils/getPluralForm";
 import styles from "./SelfChecking.less";
 import texts from "./SelfChecking.texts";
 
-export interface ExerciseSelfCheckingProps extends SlideSelfCheckingProps {
+export interface ExerciseSelfCheckingProps extends PartialBy<SlideSelfCheckingProps, 'sections'> {
 	lastSubmission: SubmissionInfo;
 	lastSubmissionWithReview?: SubmissionInfo;
 	showFirstComment: () => void;

@@ -18,7 +18,7 @@ export interface SelfCheckingBlockProps {
 	onCheckupClick: (id: string, isChecked: boolean,) => void;
 }
 
-export type SlideSelfCheckingProps = SelfCheckingBlockProps & BlockProps & Partial<SelfCheckingContainerProps>;
+export type SlideSelfCheckingProps = SelfCheckingBlockProps & Partial<BlockProps> & Partial<SelfCheckingContainerProps>;
 
 function SlideSelfChecking({
 	sections,
