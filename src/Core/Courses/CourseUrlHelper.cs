@@ -17,6 +17,11 @@ namespace Ulearn.Core.Courses
 			return GetUrlFromParts(baseUrlApi, $"slides/{courseId}/{slideId}/exercise/student-zip/{studentZipName}");
 		}
 
+		public static string GetAbsoluteUrlToLeaderBord(string baseUrlWeb, string courseId, Guid slideId)
+		{
+			return GetUrlFromParts(baseUrlWeb, $"Analytics/RatingByPoints?courseId={courseId}&amp;slideId={slideId}");
+		}
+
 		private static string GetUrlFromParts(params string[] parts)
 		{
 			var ps = parts
