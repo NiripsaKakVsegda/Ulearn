@@ -4,5 +4,9 @@
 	<exercise.file file="Main.cs">
 		<initialCode>Initial code</initialCode>
 		<solution>Solution</solution>
+		<checkup>exercise self checkup</checkup>
 	</exercise.file>
+	<selfCheckups>
+		<checkup>exercise self checkup</checkup>
+	</selfCheckups>
 </slide.exercise>

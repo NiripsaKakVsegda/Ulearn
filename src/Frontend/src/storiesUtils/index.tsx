@@ -1,11 +1,29 @@
 import React from "react";
-import { CourseAccessType, CourseRoleType, SystemAccessType } from "../consts/accessType";
-import { UserInfo } from "../utils/courseRoles";
-import setupStore from "../setupStore";
-import { ShortUserInfo } from "../models/users";
-import { GroupInfo } from "../models/groups";
-import { ShortGroupInfo } from "../models/comments";
-import { accountInfoUpdateAction, rolesUpdateAction } from "../actions/account";
+import { CourseAccessType, CourseRoleType, SystemAccessType } from "src/consts/accessType";
+import { UserInfo } from "src/utils/courseRoles";
+import setupStore from "src/setupStore";
+import { ShortUserInfo } from "src/models/users";
+import { GroupInfo } from "src/models/groups";
+import { ShortGroupInfo } from "src/models/comments";
+import { accountInfoUpdateAction, rolesUpdateAction } from "src/actions/account";
+import {
+	AutomaticExerciseCheckingProcessStatus,
+	AutomaticExerciseCheckingResult,
+	ExerciseAutomaticCheckingResponse,
+	ExerciseManualCheckingResponse
+	, ReviewCommentResponse,
+	ReviewInfo, SubmissionInfo,
+} from "src/models/exercise";
+import { botId, botName } from "src/consts/common";
+import { Story } from "@storybook/react";
+import { ViewportWrapper } from "../components/course/Navigation/stroies.data";
+import { Language } from "../consts/languages";
+import {
+	CheckupsBuilder,
+	defaultCheckups
+} from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
+import { clone } from "../utils/jsonExtensions";
+import getPluralForm from "../utils/getPluralForm";
 
 export const mock = (): unknown => ({});
 
@@ -20,6 +38,7 @@ interface State<T> {
 	args: T;
 }
 
+
 export const reduxStore = setupStore();
 
 export function renderMd(text: string): string {
@@ -30,6 +49,24 @@ export function renderMd(text: string): string {
 	text = text.replace(regexItalic, '<i>$1</i>');
 	text = text.replace(regexCode, '<code>$1</code>');
 	return (text.replace('**', '<b>'));
+}
+
+export interface ListItem<T> {
+	title: string;
+	props: T;
+}
+
+export function buildListTemplate<T>(createElement: (args: T) => React.ReactNode): Story<ListItem<T>[]> {
+	return (items: ListItem<T>[]) =>
+		<ViewportWrapper>
+			{
+				Object.values(items).map(a =>
+					<div id={ a.title }>
+						<h2>{ a.title }</h2>
+						{ createElement(a.props) }
+					</div>)
+			}
+		</ViewportWrapper>;
 }
 
 
@@ -213,3 +250,109 @@ export const loadUserToRedux = (user: UserInfo, courseId: string): void => {
 		isSystemAdministrator: user.isSystemAdministrator,
 	}));
 };
+
+export const getMockedAutomaticChecking = (checking?: Partial<ExerciseAutomaticCheckingResponse>): ExerciseAutomaticCheckingResponse => {
+	return {
+		checkerLogs: checking?.checkerLogs ?? 'Some Admin logs',
+		output: checking?.output ?? 'Output',
+		reviews: checking?.reviews ?? [getMockedReviewInfo(
+			{ author: { id: botId, firstName: botName, lastName: botName, visibleName: botName, avatarUrl: null } })],
+		processStatus: checking?.processStatus ?? AutomaticExerciseCheckingProcessStatus.Done,
+		result: checking?.result ?? AutomaticExerciseCheckingResult.RightAnswer,
+	};
+};
+
+export const getMockedManualChecking = (checking?: Partial<ExerciseManualCheckingResponse>): ExerciseManualCheckingResponse => {
+	return {
+		reviews: checking?.reviews ?? [getMockedReviewInfo()],
+		percent: checking?.percent ?? 100,
+	};
+};
+
+export const getMockedSubmissionInfo = (submissions?: Partial<SubmissionInfo>): SubmissionInfo => {
+	return {
+		id: submissions?.id ?? 1,
+		code: submissions?.code ?? "public class HelloWorld{}",
+		language: submissions?.language ?? Language.cSharp,
+		automaticChecking: submissions?.automaticChecking ?? null,
+		manualChecking: submissions?.manualChecking ?? null,
+		timestamp: "2022-02-02",
+	};
+};
+
+export const getMockedReviewInfo = (review?: Partial<ReviewInfo>): ReviewInfo => {
+	return {
+		id: review?.id ?? 1,
+		addingTime: review?.addingTime ?? "2020-01-15T12:00:00.000",
+		author: review?.author ?? getMockedUser(),
+		comment: review?.comment ?? 'comment',
+		renderedComment: review?.renderedComment ?? 'comment',
+		comments: review?.comments ?? [getMockedReviewComment()],
+		finishLine: review?.finishLine ?? 1,
+		finishPosition: review?.finishPosition ?? 1,
+		startPosition: review?.startPosition ?? 0,
+		startLine: review?.startLine ?? 0,
+	};
+};
+
+export const getMockedReviewComment = (comment?: Partial<ReviewCommentResponse>): ReviewCommentResponse => {
+	return {
+		id: comment?.id ?? 100,
+		author: comment?.author ?? getMockedUser(),
+		publishTime: comment?.publishTime ?? "2020-01-15T12:00:00.000",
+		text: comment?.text ?? 'Comment reply',
+		renderedText: comment?.renderedText ?? 'CommentReply'
+	};
+};
+
+
+export class GetMock {
+	public static get OfCheckups() {
+		return new CheckupsBuilder();
+	}
+	public static get OfSubmission() {
+		return new SubmissionInfoBuilder();
+	}
+}
+
+export class SubmissionInfoBuilder {
+	public submission = clone(getMockedSubmissionInfo());
+
+	public withId = (id: number) => {
+		this.submission.id = id;
+		return this;
+	};
+
+	public withCode = (code: string) => {
+		this.submission.code = code;
+		return this;
+	};
+
+	public withLanguage = (language: Language) => {
+		this.submission.language = language;
+		return this;
+	};
+
+	public withAutomaticChecking = (checking: ExerciseAutomaticCheckingResponse) => {
+		this.submission.automaticChecking = checking;
+		return this;
+	};
+
+	public withMockedAutomaticChecking = () => {
+		return this.withAutomaticChecking(getMockedAutomaticChecking());
+	};
+
+	public withManualChecking = (checking: ExerciseManualCheckingResponse) => {
+		this.submission.manualChecking = checking;
+		return this;
+	};
+
+	public withMockedManualChecking = () => {
+		return this.withManualChecking(getMockedManualChecking());
+	};
+
+	public withTimestamp = (timestamp: string) => {
+		this.submission.timestamp = timestamp;
+		return this;
+	};
+}

@@ -88,7 +88,7 @@ namespace Ulearn.Web.Api.Controllers.Notifications
 				LastTimestamp = unreadCountAndLastTimestamp.Item2,
 			};
 		}
-		
+
 		/// <summary>
 		/// Уведомление в плашке под шапкой
 		/// </summary>
@@ -99,6 +99,7 @@ namespace Ulearn.Web.Api.Controllers.Notifications
 			{
 				Message = configuration.NotificationBar,
 				Force = configuration.ForceNotificationBar,
+				Overlap = configuration.OverlapNotificationBar
 			};
 		}
 

@@ -38,6 +38,7 @@ export enum BlockTypes {
 	spoiler = "spoiler",
 	tex = 'tex',
 	exercise = 'exercise',
+	selfCheckups = 'selfCheckups',
 }
 
 interface Block {
@@ -51,6 +52,12 @@ interface SpoilerBlock extends Block {
 	blocksId: string;
 	isPreviousBlockHidden: boolean;
 	renderedBlocks: ReactNode[];
+}
+
+interface CodeBlock extends Block {
+	$type: BlockTypes.code;
+	code: string;
+	language: Language;
 }
 
 interface TexBlock extends Block {
@@ -71,6 +78,23 @@ interface ExerciseBlockProps {
 	courseId: string;
 	forceInitialCode: boolean;
 	exerciseTexts: ExerciseTexts;
+}
+
+export interface SelfCheckupsBlock extends Block {
+	$type: BlockTypes.selfCheckups;
+	hide: false;
+	checkups: SelfCheckup[];
+}
+
+export interface SelfCheckupsBlockWithIds extends Omit<SelfCheckupsBlock, 'checkups'> {
+	checkupsIds: string[];
+}
+
+export interface SelfCheckup {
+	content: string;
+	///Format: Type_Id (Slide_TextHash, Exercise_SubmissionId)
+	id: string;
+	isChecked: boolean;
 }
 
 export interface ExerciseTexts {
@@ -107,6 +131,10 @@ interface ExerciseBlock extends Block {
 	expectedOutput: string;
 	attemptsStatistics: AttemptsStatistics | null;
 	pythonVisualizerEnabled?: boolean;
+	// DON'T USE IT!
+	// From api its selfCheckup[], but in redux we separate it, so in block there's only ids
+	checkups: SelfCheckup[] | null;
+	checkupsIds: string[] | null;
 }
 
 interface LanguageLaunchInfo {
@@ -125,6 +153,7 @@ export type {
 	VideoBlock,
 	ExerciseBlock,
 	ExerciseBlockProps,
-	LanguageLaunchInfo
+	LanguageLaunchInfo,
+	CodeBlock,
 };
 

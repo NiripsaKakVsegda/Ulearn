@@ -15,6 +15,7 @@ namespace Database.Repos.Groups
 		private readonly UlearnDb db;
 		private readonly IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder;
 		private readonly IGroupsRepo groupsRepo;
+		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private static ILog log => LogProvider.Get().ForContext(typeof(GroupMembersRepo));
 
 		public GroupMembersRepo(UlearnDb db, IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder,
@@ -41,19 +42,19 @@ namespace Database.Repos.Groups
 				return new List<GroupMember>();
 			return await db.GroupMembers.Include(m => m.User).Where(m => groupsIds.Contains(m.GroupId) && !m.User.IsDeleted).ToListAsync();
 		}
-		
+
 		public async Task<List<string>> GetGroupsMembersIdsAsync(ICollection<int> groupsIds)
 		{
 			if (!groupsIds.Any())
 				return new List<string>();
 			return await db.GroupMembers.Include(m => m.User).Where(m => groupsIds.Contains(m.GroupId) && !m.User.IsDeleted).Select(u => u.UserId).ToListAsync();
 		}
-		
+
 		public async Task<List<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(ICollection<int> groupIds)
 		{
 			return (await db.GroupMembers.Include(m => m.User).Where(m => !m.User.IsDeleted && groupIds.Contains(m.GroupId))
-				.Select(m => new { m.GroupId, m.UserId })
-				.ToListAsync())
+					.Select(m => new { m.GroupId, m.UserId })
+					.ToListAsync())
 				.Select(m => (m.GroupId, m.UserId)).ToList();
 		}
 
@@ -151,9 +152,9 @@ namespace Database.Repos.Groups
 		{
 			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, includeArchived).Select(g => g.Id);
 			return (await db.GroupMembers
-				.Where(m => groupsIds.Contains(m.GroupId) && usersIds.Contains(m.UserId))
-				.Select(m => new {m.UserId, m.GroupId})
-				.ToListAsync())
+					.Where(m => groupsIds.Contains(m.GroupId) && usersIds.Contains(m.UserId))
+					.Select(m => new { m.UserId, m.GroupId })
+					.ToListAsync())
 				.GroupBy(m => m.UserId)
 				.ToDictionary(g => g.Key, g => g.Select(m => m.GroupId).ToList());
 		}
@@ -167,7 +168,16 @@ namespace Database.Repos.Groups
 		public async Task<List<Group>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false)
 		{
 			var userGroupsIds = await GetUserGroupsIdsAsync(courseId, userId).ConfigureAwait(false);
-			return groupsRepo.GetCourseGroupsQueryable(courseId, includeArchived).Where(g => userGroupsIds.Contains(g.Id)).ToList();
+			return await groupsRepo
+				.GetCourseGroupsQueryable(courseId, includeArchived)
+				.Where(g => userGroupsIds.Contains(g.Id))
+				.ToListAsync();
+		}
+
+		public async Task<string> GetUserGroupsNamesAsString(string courseId, string userId, bool includeArchived = false)
+		{
+			var usersGroups = await GetUserGroupsAsync(courseId, userId, includeArchived);
+			return string.Join(", ", usersGroups.Select(g => g.Name));
 		}
 
 		public async Task<List<Group>> GetUserGroupsAsync(string userId)

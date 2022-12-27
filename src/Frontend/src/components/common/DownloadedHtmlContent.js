@@ -167,6 +167,22 @@ class DownloadedHtmlContent extends Component {
 		});
 	}
 
+	loadContentByClass() {
+		const className = 'load-content';
+		let elements = Array.from(document.body.getElementsByClassName(className));
+		elements.forEach(e => {
+			let url = e.dataset.url;
+			this.props.load(url, { credentials: 'include' })
+				.then(r => r.text())
+				.then(data => {
+					e.innerHTML = data;
+					let allScriptTags = Array.from(body.getElementsByTagName('script'));
+					/* Eval embedded scripts */
+					allScriptTags.filter(s => !s.src).forEach(s => runLegacy(s.innerHTML));
+				});
+		});
+	}
+
 	processNewHtmlContent(url, data) {
 		/* In case if we haven't do it yet, get courseId from URL now */
 		let courseId = this._getCourseIdFromUrl();
@@ -186,9 +202,11 @@ class DownloadedHtmlContent extends Component {
 			bodyClassName: body.className,
 			links: links
 		}, () => {
-			runLegacy(documentReadyFunctions);
+			this.loadContentByClass();
 			this.setPostFormSubmitHandler();
+			runLegacy(documentReadyFunctions);
 		});
+
 		DownloadedHtmlContent.removeStickyHeaderAndColumn();
 
 		/* Run scripts */
@@ -274,7 +292,8 @@ class DownloadedHtmlContent extends Component {
 		let forms = Array.from(document.body.getElementsByTagName('form'));
 		let postForms = forms.filter(f => f.method.toLowerCase() === 'post' && !f.onsubmit && f.action);
 		postForms.forEach(f => {
-			let formUrl = f.action;
+			const url = new URL(f.action);
+			let formUrl = url.pathname + url.search;
 			if(exceptions.some(e => getUrlParts(formUrl).pathname.toUpperCase() === e.toUpperCase()))
 				return;
 
@@ -292,7 +311,9 @@ class DownloadedHtmlContent extends Component {
 				if(button && button.name && button.value)
 					formData.append(button.name, button.value);
 
-				this.props.load(getUrlParts(formUrl).pathname, {
+				const urlParts = getUrlParts(formUrl);
+
+				this.props.load(urlParts.pathname + urlParts.search, {
 					method: 'POST',
 					credentials: 'include',
 					body: formData

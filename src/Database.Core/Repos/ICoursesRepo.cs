@@ -11,6 +11,7 @@ namespace Database.Repos
 	{
 		[ItemCanBeNull]
 		Task<CourseVersion> GetPublishedCourseVersion(string courseId);
+
 		Task<List<CourseVersion>> GetCourseVersions(string courseId);
 
 		Task<CourseVersion> AddCourseVersion(string courseId, string courseName, Guid versionId, string authorId,
@@ -31,5 +32,11 @@ namespace Database.Repos
 		Task<CourseVersionFile> GetVersionFile(Guid courseVersion);
 		Task<CourseVersionFile> GetPublishedVersionFile(string courseId);
 		Task<CourseGit> GetCourseRepoSettings(string courseId);
+		Task<List<CourseAccess>> GetUserAccessHistoryByCourseId(string userId, string courseId);
+		Task<List<CourseAccess>> GetUserAccessHistory(string userId);
+		Task<List<CourseGit>> FindCoursesByRepoUrl(string repoUrl);
+		Task SetCourseRepoSettings(CourseGit courseGit);
+		Task RemoveCourseRepoSettings(string courseId);
+		Task UpdateKeysByRepoUrl(string repoUrl, string publicKey, string privateKey);
 	}
 }

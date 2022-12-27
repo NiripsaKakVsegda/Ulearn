@@ -21,4 +21,4 @@ export interface DeadLinesResponse {
 	deadLines: DeadLineInfo[];
 }
 
-export type ScorePercent = 0 | 25 | 50 | 75;
+export type ScorePercent = 0 | 25 | 50 | 75 | 100;

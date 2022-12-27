@@ -45,7 +45,9 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public string RenderMarkdown(Slide slide, MarkdownRenderContext context)
 		{
-			return GetMarkdownWithReplacedLinksToStudentZips(Markdown, context.CourseId, slide, context.BaseUrlApi).RenderMarkdown(context);
+			var md = GetMarkdownWithReplacedLinksToLeaderBord(Markdown, context.CourseId, slide, context.BaseUrlWeb);
+			return GetMarkdownWithReplacedLinksToStudentZips(md, context.CourseId, slide, context.BaseUrlApi)
+				.RenderMarkdown(context);
 		}
 
 		/* Replace links to (/Exercise/StudentZip) and to (ExerciseZip): automagically add courseId and slideId */
@@ -61,6 +63,21 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			var studentZipName = (exerciseSlide.Exercise as CsProjectExerciseBlock)?.CsprojFileName ?? new DirectoryInfo((exerciseSlide.Exercise as UniversalExerciseBlock).ExerciseDirPath).Name;
 			var studentZipFullPath = CourseUrlHelper.GetAbsoluteUrlToStudentZip(baseUrlApi, courseId, slide.Id, $"{studentZipName}.zip");
 			return markdown.Replace("(/Exercise/StudentZip)", $"({studentZipFullPath})").Replace("(ExerciseZip)", $"({studentZipFullPath})");
+		}
+		
+		private static string GetMarkdownWithReplacedLinksToLeaderBord(string markdown, string courseId, Slide slide, string baseUrlWeb)
+		{
+			if (string.IsNullOrEmpty(markdown))
+				return "";
+			var exerciseSlide = slide as ExerciseSlide;
+			if (exerciseSlide == null || exerciseSlide.Exercise.ExerciseType != ExerciseType.CheckPoints)
+				return markdown;
+			if (!(markdown.Contains("(/Analytics/RatingByPoints)") || markdown.Contains("(LeaderBord)")))
+				return markdown;
+			var path = CourseUrlHelper.GetAbsoluteUrlToLeaderBord(baseUrlWeb, courseId, slide.Id);
+			return markdown
+				.Replace("(/Analytics/RatingByPoints)", $"({path})")
+				.Replace("(LeaderBord)", $"({path})");
 		}
 
 		public override string ToString()

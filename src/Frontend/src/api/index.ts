@@ -15,6 +15,7 @@ import * as favouriteReviews from "./favouriteReviews";
 import * as googleSheet from "./googleSheet";
 import * as deadLines from "./deadLines";
 import * as additionalContent from "./additionalContent";
+import * as selfCheckups from "./selfCheckups";
 import * as signalR from "@microsoft/signalr";
 import config from 'src/proxyConfig';
 
@@ -243,6 +244,7 @@ const api = {
 	googleSheet,
 	deadLines,
 	additionalContent,
+	selfCheckups,
 };
 
 export default api;

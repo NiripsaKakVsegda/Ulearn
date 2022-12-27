@@ -58,7 +58,7 @@ namespace Database.Repos
 			notificationTypesCache = Enum.GetValues(typeof(NotificationType)).Cast<NotificationType>().ToList();
 		}
 
-		private static List<NotificationType> GetAllNotificationTypes()
+		public static List<NotificationType> GetAllNotificationTypes()
 		{
 			BuildNotificationTypesCache();
 			return notificationTypesCache;
@@ -93,7 +93,9 @@ namespace Database.Repos
 
 		public async Task<NotificationTransport> FindNotificationTransport(int transportId)
 		{
-			return await db.NotificationTransports.FindAsync(transportId);
+			return await db.NotificationTransports
+				.Include(t => t.User)
+				.FirstOrDefaultAsync(t => t.Id == transportId);
 		}
 
 		public async Task EnableNotificationTransport(int transportId, bool isEnabled = true)
@@ -146,7 +148,7 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId && s.NotificationType == type && transportIds.Contains(s.NotificationTransportId))
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => s.NotificationTransportId, s => s);
 			return settings.ToDefaultDictionary();
 		}
@@ -157,7 +159,7 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId && transportIds.Contains(s.NotificationTransportId))
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s);
 			return settings.ToDefaultDictionary(() => null);
 		}
@@ -168,9 +170,20 @@ namespace Database.Repos
 			var settings = (await db.NotificationTransportSettings
 					.Where(s => s.CourseId == courseId)
 					.ToListAsync()
-					)
+				)
 				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s);
 			return settings.ToDefaultDictionary(() => null);
+		}
+
+		// Dictionary<(notificationTransportId, NotificationType), NotificationTransportSettings>
+		public async Task<DefaultDictionary<Tuple<int, NotificationType>, NotificationTransportSettings>> GetNotificationTransportsSettings(string courseId, string userId)
+		{
+			return (await db.NotificationTransportSettings
+					.Include(s => s.NotificationTransport)
+					.Where(s => s.CourseId == courseId && s.NotificationTransport.UserId == userId)
+					.ToListAsync())
+				.ToDictSafe(s => Tuple.Create(s.NotificationTransportId, s.NotificationType), s => s)
+				.ToDefaultDictionary(() => null);
 		}
 
 		public async Task AddNotification(string courseId, Notification notification, string initiatedUserId)
@@ -228,10 +241,11 @@ namespace Database.Repos
 		public async Task CreateDeliveries()
 		{
 			var minuteAgo = DateTime.Now.Subtract(sendNotificationsDelayAfterCreating);
-			var notifications = await db.Notifications.Where(n => !n.AreDeliveriesCreated && n.CreateTime < minuteAgo)
+			var notifications = await db.Notifications
+				.Include(n => n.InitiatedBy)
+				.Where(n => !n.AreDeliveriesCreated && n.CreateTime < minuteAgo)
 				.OrderBy(n => n.Id)
-				.ToListAsync()
-				;
+				.ToListAsync();
 			foreach (var notification in notifications)
 			{
 				try
@@ -289,11 +303,11 @@ namespace Database.Repos
 			{
 				log.Warn($"Recipients list for notification is too big {notification.Id}: {recipientsIds.Count} user(s)");
 				transportsSettings = (await db.NotificationTransportSettings
-					.Include(s => s.NotificationTransport)
-					.Where(s => s.CourseId == notification.CourseId &&
-								s.NotificationType == notificationType &&
-								!s.NotificationTransport.IsDeleted)
-					.ToListAsync())
+						.Include(s => s.NotificationTransport)
+						.Where(s => s.CourseId == notification.CourseId &&
+									s.NotificationType == notificationType &&
+									!s.NotificationTransport.IsDeleted)
+						.ToListAsync())
 					.Where(s => recipientsIds.Contains(s.NotificationTransport.UserId))
 					.ToList();
 			}
@@ -308,7 +322,7 @@ namespace Database.Repos
 					.ToListAsync();
 			}
 
-			var commonTransports = db.NotificationTransports.Where(t => t.UserId == null && t.IsEnabled).ToList();
+			var commonTransports = await db.NotificationTransports.Where(t => t.UserId == null && t.IsEnabled).ToListAsync();
 
 			var isEnabledByDefault = notificationType.IsEnabledByDefault();
 
@@ -316,11 +330,11 @@ namespace Database.Repos
 			{
 				log.Info($"Notification #{notification.Id}. This notification type is enabled by default, so collecting data for it");
 
-				var recipientsTransports = db.NotificationTransports.Where(
+				var recipientsTransports = await db.NotificationTransports.Where(
 					t => recipientsIds.Contains(t.UserId) &&
 						!t.IsDeleted &&
 						t.IsEnabled
-				).ToList();
+				).ToListAsync();
 				var notFoundTransports = recipientsTransports.Except(transportsSettings.Select(c => c.NotificationTransport), new NotificationTransportIdComparer());
 
 				foreach (var transport in notFoundTransports)
@@ -351,8 +365,9 @@ namespace Database.Repos
 			}
 
 			var blockerNotificationsSentToTransports = new HashSet<int>(
-				GetNotificationsDeliveries(blockerNotifications.Select(n => n.Id), transportsSettings.Select(s => s.NotificationTransportId))
+				await GetNotificationsDeliveries(blockerNotifications.Select(n => n.Id), transportsSettings.Select(s => s.NotificationTransportId))
 					.Select(d => d.NotificationTransportId)
+					.ToListAsync()
 			);
 			if (blockerNotificationsSentToTransports.Count > 0)
 			{
@@ -366,20 +381,20 @@ namespace Database.Repos
 
 			foreach (var transportSettings in transportsSettings)
 			{
-				log.Info($"Notification #{notification.Id}: add delivery to {transportSettings.NotificationTransport}, isEnabled: {transportSettings.IsEnabled}");
+				log.Info($"Notification #{notification.Id}: add delivery to {transportSettings.NotificationTransport.ToString()}, isEnabled: {transportSettings.IsEnabled}");
 				if (!transportSettings.IsEnabled)
 					continue;
 
 				if (!transportSettings.NotificationTransport.IsEnabled)
 				{
-					log.Info($"Transport {transportSettings.NotificationTransport} is fully disabled, ignore it");
+					log.Info($"Transport {transportSettings.NotificationTransport.ToString()} is fully disabled, ignore it");
 					continue;
 				}
 
 				/* Always ignore to send notification to user initiated this notification */
 				if (transportSettings.NotificationTransport.UserId == notification.InitiatedById)
 				{
-					log.Info($"Don't sent notification to the transport {transportSettings.NotificationTransport} because it has been initiated by this user");
+					log.Info($"Don't sent notification to the transport {transportSettings.NotificationTransport.ToString()} because it has been initiated by this user");
 					continue;
 				}
 
@@ -390,7 +405,7 @@ namespace Database.Repos
 				}
 
 				log.Info($"Notification #{notification.Id}: add delivery to {transportSettings.NotificationTransport}, sending at {now}");
-				db.NotificationDeliveries.Add(new NotificationDelivery
+				await db.NotificationDeliveries.AddAsync(new NotificationDelivery
 				{
 					Notification = notification,
 					NotificationTransportId = transportSettings.NotificationTransportId,
@@ -418,6 +433,7 @@ namespace Database.Repos
 					}
 				}
 			}
+
 			return recipientsIds;
 		}
 
@@ -499,8 +515,8 @@ namespace Database.Repos
 		public async Task<DateTime?> GetLastDeliveryTimestampAsync(int notificationTransportId)
 		{
 			var lastNotification = await db.NotificationDeliveries.Where(d => d.NotificationTransportId == notificationTransportId)
-				.OrderByDescending(d => d.CreateTime)
-				.FirstOrDefaultAsync()
+					.OrderByDescending(d => d.CreateTime)
+					.FirstOrDefaultAsync()
 				;
 			return lastNotification?.CreateTime;
 		}

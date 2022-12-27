@@ -58,6 +58,7 @@ interface OutputTypeProps {
 	automaticChecking?: ExerciseAutomaticCheckingResponse | null;
 	submissionColor: SubmissionColor;
 	withoutMargin?: boolean;
+	withoutLogs?: boolean;
 }
 
 class ExerciseOutput extends React.Component<OutputTypeProps> {
@@ -90,7 +91,7 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 	}
 
 	getOutputTypeAndBody(): OutputTypeAndBody {
-		const { solutionRunStatus, message, automaticChecking } = this.props;
+		const { solutionRunStatus, message, automaticChecking, withoutLogs, } = this.props;
 		switch (solutionRunStatus) {
 			case SolutionRunStatus.CompilationError:
 				return { outputType: OutputType.CompilationError, body: message };
@@ -101,7 +102,7 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 				return { outputType: OutputType.ServerError, body: message };
 			case SolutionRunStatus.Success:
 				if(automaticChecking) {
-					return ExerciseOutput.getOutputTypeAndBodyFromAutomaticChecking(automaticChecking);
+					return ExerciseOutput.getOutputTypeAndBodyFromAutomaticChecking(automaticChecking, withoutLogs);
 				} else {
 					console.error(
 						new Error(`automaticChecking is null when solutionRunStatuses is ${ solutionRunStatus }`));
@@ -113,9 +114,11 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 		}
 	}
 
-	static getOutputTypeAndBodyFromAutomaticChecking(automaticChecking: ExerciseAutomaticCheckingResponse): OutputTypeAndBody {
+	static getOutputTypeAndBodyFromAutomaticChecking(automaticChecking: ExerciseAutomaticCheckingResponse,
+		withoutLogs: boolean
+	): OutputTypeAndBody {
 		let outputType: OutputType;
-		const checkerLogs = automaticChecking.checkerLogs ? `\n\nЛоги (для админов курса): \n${ automaticChecking.checkerLogs }` : "";
+		const checkerLogs = !withoutLogs && automaticChecking.checkerLogs ? `\n\nЛоги (для админов курса): \n${ automaticChecking.checkerLogs }` : "";
 		const output = automaticChecking.output + checkerLogs;
 		switch (automaticChecking.processStatus) {
 			case ProcessStatus.Done:

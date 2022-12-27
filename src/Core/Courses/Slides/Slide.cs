@@ -66,6 +66,7 @@ namespace Ulearn.Core.Courses.Slides
 		[XmlElement(typeof(IncludeImageGalleryBlock))]
 		[XmlElement("html", typeof(HtmlBlock))]
 		[XmlElement(typeof(SpoilerBlock))]
+		[XmlElement(typeof(SelfCheckupsBlock))]
 		/* Quiz blocks */
 		[XmlElement(typeof(IsTrueBlock))]
 		[XmlElement(typeof(ChoiceBlock))]
@@ -96,6 +97,7 @@ namespace Ulearn.Core.Courses.Slides
 			typeof(IncludeMarkdownBlock),
 			typeof(IncludeImageGalleryBlock),
 			typeof(HtmlBlock),
+			typeof(SelfCheckupsBlock),
 			typeof(SpoilerBlock)
 		};
 

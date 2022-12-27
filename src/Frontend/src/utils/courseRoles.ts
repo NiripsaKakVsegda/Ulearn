@@ -39,4 +39,6 @@ interface UserInfo extends ShortUserInfo, UserRoles {
 	courseAccesses: CourseAccessType[];
 }
 
-export { isCourseAdmin, isInstructor, UserRoles, UserInfo, };
+export { isCourseAdmin, isInstructor };
+export type { UserRoles, UserInfo };
+

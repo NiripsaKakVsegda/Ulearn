@@ -1,0 +1,48 @@
+﻿@using System.Web
+@using Database.Models
+@using uLearn.Web.Core.Extensions
+
+@functions{
+
+	public void GetAvatarPlaceholderColor(ApplicationUser user)
+	{
+		var hashForColor = user.Id.Aggregate(0, (a, i) => a += i);
+		var hue = Math.Abs(hashForColor) % 360;
+		<text>hsl(@hue, 64%, 75%)</text>
+	}
+
+	public void GetAvatarPlaceholderLetter(ApplicationUser user)
+	{
+		<text>@char.ToUpper(user.VisibleName.FindFirstLetter('O'))</text>
+	}
+
+	public void Avatar(ApplicationUser user, string classes = "")
+	{
+		if (user.HasAvatar)
+		{
+			<img class="user__avatar @classes" src="@user.AvatarUrl" alt="@HttpUtility.HtmlAttributeEncode(user.VisibleName)"/>
+		}
+		else
+		{
+			<div class="user__avatar user__avatar__placeholder @classes" style="background-color: @{ GetAvatarPlaceholderColor(user); }">
+				@{ GetAvatarPlaceholderLetter(user); }
+			</div>
+		}
+	}
+
+	public void SmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "small " + classes);
+	}
+
+	public void ExtraSmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "xsmall " + classes);
+	}
+
+	public void LargeAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "large " + classes);
+	}
+
+}

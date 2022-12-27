@@ -29,7 +29,9 @@ export default {
 	slideIsNotPublished: 'Слайд ещё не опубликован',
 
 	//deadlines
-	afterDeadLine: (deadLineInfo: DeadLineInfo, slideMaxScore: number,): React.ReactText => {
+	afterDeadLine: (deadLineInfo: DeadLineInfo, slideMaxScore: number,): string => {
+		if(deadLineInfo.scorePercent === 100) return '';
+
 		const score = Math.ceil(deadLineInfo.scorePercent * slideMaxScore / 100);
 
 		if(isTimeArrived(deadLineInfo.date)) {
@@ -42,7 +44,7 @@ export default {
 				'баллов', 'баллов') } за авто-проверку`
 		);
 	},
-	renderDeadLineInfo: (deadLineInfo: DeadLineInfo, isAnyDeadLineArrivedBefore = false): React.ReactText => {
+	renderDeadLineInfo: (deadLineInfo: DeadLineInfo, isAnyDeadLineArrivedBefore = false): string => {
 		if(isTimeArrived(deadLineInfo.date)) {
 			return `Дедлайн для сдачи прошёл`;
 		}

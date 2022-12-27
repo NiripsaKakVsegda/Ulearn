@@ -8,6 +8,7 @@ using Community.AspNetCore.ExceptionHandling;
 using Community.AspNetCore.ExceptionHandling.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -53,6 +54,7 @@ namespace Ulearn.Common.Api
 
 					UseStaticFiles(app);
 
+					app.UseHttpsRedirection();
 					app.UseAuthentication();
 					app.UseAuthorization();
 
@@ -155,7 +157,7 @@ namespace Ulearn.Common.Api
 					c.IncludeXmlComments(xmlPath);
 
 				ConfigureSwaggerDocumentationGeneration(c);
-			}).AddSwaggerGenNewtonsoftSupport();
+			});//.AddSwaggerGenNewtonsoftSupport();
 		}
 
 		protected virtual OpenApiInfo GetApiNameAndDescription()

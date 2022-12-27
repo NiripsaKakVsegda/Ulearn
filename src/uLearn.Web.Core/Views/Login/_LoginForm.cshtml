@@ -1,0 +1,43 @@
+﻿@model uLearn.Web.Core.Models.LoginViewModel
+
+<section class="login-and-registration-form">
+	@using (Html.BeginForm("Index", "Login", new { ViewBag.ReturnUrl }, FormMethod.Post, null, new { role = "form" }))
+	{
+		@Html.AntiForgeryToken()
+		<div class="form-group">
+			@Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "Логин или емэйл", autofocus = "autofocus", autocomplete = "username" })
+			@Html.ValidationMessageFor(m => m.UserName)
+		</div>
+		<div class="form-group">
+			@Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Пароль", autocomplete = "current-password" })
+			@Html.ValidationMessageFor(m => m.Password)
+		</div>
+		<div class="form-group">
+			<div class="checkbox checkbox-default">
+				<input @((Model?.RememberMe ?? false) ? "checked=\"checked\"" : "") id="MainRememberMe" name="@nameof(Model.RememberMe)" type="checkbox" value="true"
+																					onchange="if(document.getElementById('ExternalLoginRememberMeCheckbox')) document.getElementById('ExternalLoginRememberMeCheckbox').checked = document.getElementById('MainRememberMe').checked;"/>
+				<label for="MainRememberMe">Запомнить меня</label>
+			</div>
+		</div>
+		<div class="form-group">
+			<input type="submit" value="Войти" class="ph-btn ph-btn-green btn-block"/>
+		</div>
+		{
+			/* See private method ValidationExtensions.GetModelStateList(Html, true) */
+			ViewData.ModelState.TryGetValue(ViewData.TemplateInfo.HtmlFieldPrefix, out var modelState);
+			if (modelState != null && modelState.Errors.Any())
+			{
+				/* Show validation summary only if at least one error exists */
+				@Html.ValidationSummary(true)
+			}
+		}
+		<div class="form-group">
+			<p>
+				@Html.ActionLink("Зарегистрироваться", "Register", "Account", new { ViewBag.ReturnUrl }) — если у вас ещё нет аккаунта
+			</p>
+			<p>
+				<a href="@Url.Action("Index", "RestorePassword")">Восстановить забытый пароль</a>
+			</p>
+		</div>
+	}
+</section>

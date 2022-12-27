@@ -26,5 +26,10 @@ namespace Database.Repos.Groups
 		Task<List<ApplicationUser>> GetInstructorsOfAllGroupsVisibleForUserAsync(string userId);
 		Task<List<string>> GetInstructorsOfAllGroupsWhereUserIsMemberAsync(string courseId, string userId);
 		Task<bool> CanUserSeeAllCourseGroupsAsync(string userId, string courseId, bool? isSystemAdministrator = null);
+		Task<Dictionary<string, string>> GetUsersGroupsNamesAsStrings(List<string> courseIds, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3);
+		Task<Dictionary<string, string>> GetUsersGroupsNamesAsStrings(string courseId, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3);
+		DefaultDictionary<int, List<GroupAccess>> GetGroupsAccesses(IEnumerable<int> groupsIds);
+		Task<Dictionary<string, List<int>>> GetUsersActualGroupsIds(List<string> courseIds, IEnumerable<string> userIds, string userId, int maxCount = 3);
+		Task<bool> CanInstructorViewStudent(string instructorId, string studentId, string courseId);
 	}
 }

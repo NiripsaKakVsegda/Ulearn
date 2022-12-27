@@ -39,6 +39,8 @@ import {
 import { getDataFromReviewToCompareChanges, getReviewAnchorTop } from "../../InstructorReview/utils";
 import checker from "../../InstructorReview/reviewPolicyChecker";
 import { clone } from "src/utils/jsonExtensions";
+import ExerciseSelfChecking from "../SelfChecking/ExerciseSelfChecking";
+import CheckupsIdsSwapper from "../SelfChecking/CheckupsIdsToCheckupsSwapper.redux";
 
 import { Language, } from "src/consts/languages";
 import { DeviceType } from "src/consts/deviceType";
@@ -67,6 +69,7 @@ import registerCodeMirrorHelpers from "./CodeMirrorAutocompleteExtension";
 import styles from './Exercise.less';
 
 import texts from './Exercise.texts';
+import ExerciseSelfCheckingRedux from "../SelfChecking/ExerciseSelfChecking.redux";
 
 
 export interface FromReduxDispatch {
@@ -113,12 +116,6 @@ interface CongratsModalData extends ModalData<ModalType.congrats> {
 	waitingForManualChecking: boolean | null;
 }
 
-interface SelfCheckup {
-	text: string;
-	checked: boolean;
-	onClick: () => void;
-}
-
 interface State {
 	value: string;
 	valueChanged: boolean;
@@ -140,8 +137,6 @@ interface State {
 	editor: null | Editor;
 	exerciseCodeDoc: null | Doc;
 	savedPositionOfExercise: DOMRect | undefined;
-
-	selfChecks: SelfCheckup[];
 }
 
 interface ExerciseCode {
@@ -190,12 +185,6 @@ class Exercise extends React.Component<Props, State> {
 			editor: null,
 			exerciseCodeDoc: null,
 			savedPositionOfExercise: undefined,
-
-			selfChecks: texts.checkups.self.checks.map((ch, i) => ({
-				text: ch,
-				checked: false,
-				onClick: () => this.onSelfCheckBoxClick(i)
-			})),
 		};
 	}
 
@@ -441,15 +430,22 @@ class Exercise extends React.Component<Props, State> {
 		};
 	}
 
-	renderControlledCodeMirror = (opts: EditorConfiguration, submissions: SubmissionInfo[]): React.ReactElement => {
+	renderControlledCodeMirror = (opts: EditorConfiguration, submissions: SubmissionInfo[]): React.ReactNode => {
 		const {
-			expectedOutput, user,
-			slideProgress, maxScore, languages,
-			hideSolutions, renderedHints,
-			attemptsStatistics, isAuthenticated,
+			expectedOutput,
+			user,
+			slideProgress,
+			maxScore,
+			languages,
+			hideSolutions,
+			renderedHints,
+			attemptsStatistics,
+			isAuthenticated,
+			checkupsIds,
 		} = this.props;
 		const {
-			value, currentSubmission,
+			value,
+			currentSubmission,
 			isEditable, exerciseCodeDoc, modalData,
 			currentReviews, showOutput, selectedReviewId, visibleCheckingResponse,
 			submissionLoading, isAllHintsShowed, editor,
@@ -482,6 +478,10 @@ class Exercise extends React.Component<Props, State> {
 		const isSafeShowAcceptedSolutions = isAcceptedSolutionsWillNotDiscardScore(submissions,
 			slideProgress.isSkipped);
 		const outputMessage = visibleCheckingResponse?.message || visibleCheckingResponse?.submission?.automaticChecking?.output;
+
+		const lastSuccessfulSubmission = getLastSuccessSubmission(submissions);
+		const lastReviewedSubmission = submissions
+			.find(s => s.manualChecking && s.manualChecking.reviews.length > 0);
 
 		return (
 			<React.Fragment>
@@ -518,7 +518,15 @@ class Exercise extends React.Component<Props, State> {
 						/>
 					}
 				</div>
-				{/* TODO not included in current release !isEditable && currentSubmission && this.renderOverview(currentSubmission)*/ }
+				{ checkupsIds && lastSuccessfulSubmission &&
+					<ExerciseSelfCheckingRedux
+						checkupsIds={ checkupsIds }
+						lastSubmission={ lastSuccessfulSubmission }
+						lastSubmissionWithReview={ lastReviewedSubmission }
+						showFirstComment={ this.showFirstComment }
+						showFirstBotComment={ this.showFirstBotComment }
+					/>
+				}
 				{ isAuthenticated && <Controls>
 					<Controls.SubmitButton
 						isLoading={ submissionLoading }
@@ -727,7 +735,7 @@ class Exercise extends React.Component<Props, State> {
 		);
 	};
 
-	loadSubmissionToState = (submission?: SubmissionInfo): void => {
+	loadSubmissionToState = (submission?: SubmissionInfo, callback?: () => void): void => {
 		this.clearAllTextMarkers();
 
 		// Firstly we updating code in code mirror
@@ -743,7 +751,7 @@ class Exercise extends React.Component<Props, State> {
 					visibleCheckingResponse: undefined,
 					currentReviews: [],
 				}, () =>
-					this.setCurrentSubmission(submission)
+					this.setCurrentSubmission(submission, callback)
 			);
 		}
 	};
@@ -784,82 +792,6 @@ class Exercise extends React.Component<Props, State> {
 				this.openModal({ type: ModalType.acceptedSolutions });
 			});
 		}
-	};
-
-	renderOverview = (submission: SubmissionInfo): React.ReactElement => {
-		const { selfChecks } = this.state;
-		const checkups = [
-			{
-				title: texts.checkups.self.title,
-				content:
-					<React.Fragment>
-						<span className={ styles.overviewSelfCheckComment }>
-							{ texts.checkups.self.text }
-						</span>
-						<ul className={ styles.overviewSelfCheckList }>
-							{ this.renderSelfCheckBoxes(selfChecks) }
-						</ul>
-					</React.Fragment>
-			},
-		];
-
-		const reviewsLength = submission?.automaticChecking?.reviews?.length || 0;
-		if(reviewsLength !== 0) {
-			checkups.unshift(
-				{
-					title: texts.checkups.bot.title,
-					content:
-						<span className={ styles.overviewComment }>
-						{ texts.checkups.bot.countBotComments(reviewsLength) }
-							<a onClick={ this.showFirstBotComment }>{ texts.checkups.showReview }</a>
-					</span>
-				});
-		}
-
-		const reviewsCount = submission?.manualChecking?.reviews?.length || 0;
-		if(reviewsCount !== 0) {
-			checkups.unshift({
-				title: texts.checkups.teacher.title,
-				content:
-					<span className={ styles.overviewComment }>
-						{ texts.checkups.teacher.countTeacherReviews(reviewsCount) }
-						<a onClick={ this.showFirstComment }>{ texts.checkups.showReview }</a>
-					</span>
-			});
-		}
-
-		return (
-			<ul className={ styles.overview }>
-				{ checkups.map(({ title, content }) =>
-					<li key={ title } className={ styles.overviewLine } title={ title }>
-						<h3>{ title }</h3>
-						{ content }
-					</li>
-				) }
-			</ul>
-		);
-	};
-
-	renderSelfCheckBoxes = (selfChecks: SelfCheckup[]): React.ReactNode => {
-		return (
-			selfChecks.map(({ text, checked, onClick, }, i) =>
-				<li key={ i }>
-					<Checkbox checked={ checked } onClick={ onClick }/> <span
-					className={ styles.selfCheckText }>{ text }</span>
-				</li>
-			)
-		);
-	};
-
-	onSelfCheckBoxClick = (i: number): void => {
-		const { selfChecks } = this.state;
-		const newSelfChecks = [...selfChecks];
-
-		newSelfChecks[i].checked = !newSelfChecks[i].checked;
-
-		this.setState({
-			selfChecks: newSelfChecks,
-		});
 	};
 
 	renderModal = (modalData: ModalData<ModalType>): React.ReactNode => {
@@ -911,12 +843,52 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
+	loadSubmissionAndShowReview = (
+		getSubmission: (submissions: SubmissionInfo[]) => SubmissionInfo | null | undefined,
+		getReview: (submission: ReviewInfoWithMarker[]) => ReviewInfoWithMarker | undefined,
+	): void => {
+		const { currentSubmission, } = this.state;
+		const { submissions, } = this.props;
+
+		if(!submissions) {
+			return;
+		}
+
+		const submissionToLoad = getSubmission(submissions);
+
+		if(!submissionToLoad) {
+			return;
+		}
+		const showReview = () => {
+			const { currentReviews, } = this.state;
+			const reviewToShow = getReview(currentReviews);
+			if(reviewToShow) {
+				this.highlightReview(reviewToShow.id);
+			}
+		};
+
+		if(currentSubmission?.id !== submissionToLoad.id) {
+			this.saveCodeDraftToCache();
+			this.loadSubmissionToState(submissionToLoad, showReview);
+			return;
+		}
+
+		showReview();
+	};
+
 	showFirstComment = (): void => {
-		//TODO
+		this.loadSubmissionAndShowReview(
+			(submissions) => submissions
+				.find(s => s.manualChecking && s.manualChecking.reviews.length > 0),
+			(reviews) => reviews.find(r => r.author !== null)
+		);
 	};
 
 	showFirstBotComment = (): void => {
-		//TODO
+		this.loadSubmissionAndShowReview(
+			getLastSuccessSubmission,
+			(reviews) => reviews.find(r => r.author === null)
+		);
 	};
 
 	selectComment = (e: React.MouseEvent<Element, MouseEvent> | React.FocusEvent, id: number,): void => {

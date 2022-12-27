@@ -45,6 +45,10 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 		[CanBeNull]
 		[DataMember]
 		public string ExpectedOutput { get; set; } // В том числе может быть не пуст, но скрыт от студента, тогда и здесь null
+		
+		[CanBeNull]
+		[DataMember]
+		public List<SelfCheckupResponse> Checkups { get; set; }
 
 		[NotNull]
 		[DataMember]
@@ -59,6 +63,7 @@ namespace Ulearn.Web.Api.Models.Responses.SlideBlocks
 		public ExerciseBlockResponse(AbstractExerciseBlock exerciseBlock,
 			ExerciseSlideRendererContext context)
 		{
+			Checkups = context.Checkups;
 			ExerciseTexts = exerciseBlock.Texts;
 			if (exerciseBlock is PolygonExerciseBlock polygonExerciseBlock)
 			{

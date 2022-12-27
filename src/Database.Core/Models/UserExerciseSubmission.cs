@@ -61,5 +61,11 @@ namespace Database.Models
 
 		[NotMapped]
 		public List<ExerciseCodeReview> NotDeletedReviews => Reviews.Where(r => !r.IsDeleted).ToList();
+		
+		public List<ExerciseCodeReview> GetAllReviews()
+		{
+			var manualCheckingReviews = (ManualChecking?.NotDeletedReviews).EmptyIfNull();
+			return manualCheckingReviews.Concat(NotDeletedReviews).ToList();
+		}
 	}
 }

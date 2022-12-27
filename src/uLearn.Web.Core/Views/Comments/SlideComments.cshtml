@@ -1,0 +1,33 @@
+﻿@using Database.Extensions
+@using Ulearn.Common.Extensions
+@using uLearn.Web.Core.Extensions
+
+@model uLearn.Web.Core.Controllers.SlideCommentsModel
+
+@* Used for ajax in addAntiForgeryToken() *@
+<form id="__AjaxAntiForgeryForm" action="#" method="post">@Html.AntiForgeryToken()</form>
+
+@{
+	var commentsWrapperUser = new
+	{
+		id = Model.CurrentUser == null ? null : Model.CurrentUser.Id,
+		isAuthenticated = User.Identity.IsAuthenticated,
+		visibleName = Model.CurrentUser == null ? null : Model.CurrentUser.VisibleName,
+		avatarUrl = Model.CurrentUser == null ? null : Model.CurrentUser.AvatarUrl,
+		systemAccesses = Model.SystemAccesses.Select(a => a.AccessType.ToString("G")).Select(a => char.ToLowerInvariant(a[0]) + a.Substring(1)).ToList()
+	};
+	var courseRole = User == null ? null : User.GetCourseRole(Model.CourseId);
+	var courseRoleString = courseRole == null ? null : courseRole.Value.ToString("G");
+	courseRoleString = courseRole == null ? null : char.ToLowerInvariant(courseRoleString[0]) + courseRoleString.Substring(1);
+	var courseAccesses = Model.CourseAccesses.Select(a => a.AccessType.ToString("G")).Select(a => char.ToLowerInvariant(a[0]) + a.Substring(1)).ToList();
+	var commentsWrapperUserRoles = User == null ? null : new
+	{
+		isSystemAdministrator = User.IsSystemAdministrator(),
+		courseRole = courseRoleString,
+		courseAccesses = courseAccesses
+	};
+	var slideType = Model.SlideType;
+	var commentsViewModel = new { slideId = Model.Slide.Id, courseId = Model.CourseId, user = commentsWrapperUser, userRoles = commentsWrapperUserRoles, slideType = slideType, openInstructorsComments = Model.OpenInstructorsComments }.JsonSerialize();
+}
+
+<div class="react-render" data-component="CommentsView" data-props="@commentsViewModel"></div>

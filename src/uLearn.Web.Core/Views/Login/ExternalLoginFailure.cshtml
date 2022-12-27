@@ -1,0 +1,18 @@
+﻿@using uLearn.Web.Core.Models
+@{
+	ViewBag.Title = "Не удалось войти";
+}
+<div class="container">
+	<div class="row">
+		<div class="col-md-offset-4 col-md-4">
+			<h2>@ViewBag.Title</h2>
+			<p>Не удалось войти с помощью стороннего сервиса аутентификации.</p>
+
+			<section id="socialLoginForm">
+				@await Html.PartialAsync("ExternalLoginsListPartial", new ExternalLoginsListModel { ActionName = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl })
+			</section>
+
+			или <a href="/">вернуться на главную</a>
+		</div>
+	</div>
+</div>

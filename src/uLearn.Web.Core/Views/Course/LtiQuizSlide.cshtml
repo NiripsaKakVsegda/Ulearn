@@ -1,0 +1,27 @@
+﻿@using Database.Models
+@using uLearn.Web.Core.Extensions
+@model uLearn.Web.Core.Models.LtiQuizModel
+
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Quiz</title>
+</head>
+<body class="lti-component">
+@if (Model != null)
+{
+	@Html.Action("Quiz", "Quiz", new
+	{
+		slide = Model.Slide,
+		courseId = Model.CourseId,
+		isLti = true,
+		isGuest = false,
+		manualQuizCheckQueueItem = (ManualQuizChecking)null,
+	})
+}
+</body>
+</html>

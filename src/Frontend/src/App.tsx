@@ -9,6 +9,7 @@ import { Provider, connect, } from "react-redux";
 import { ThemeContext, Toast } from "ui";
 import ErrorBoundary from "src/components/common/ErrorBoundary";
 import NotFoundErrorBoundary from "src/components/common/Error/NotFoundErrorBoundary";
+import NotificationBar from "src/components/notificationBar/NotificationBar";
 import YandexMetrika from "src/components/common/YandexMetrika";
 import Header from "src/components/common/Header";
 import EmailNotConfirmedModal from "src/components/notificationModal/EmailNotConfirmedModal";
@@ -23,7 +24,9 @@ import { deviceChangeAction } from "src/actions/device";
 import { DeviceType } from "src/consts/deviceType";
 import { getDeviceType } from "./utils/getDeviceType";
 import isInDevelopment from "./isInDevelopment";
+import injectUtils from 'src/utils/runExerciseCheck';
 
+injectUtils();
 const store = setupStore();
 
 // Update notifications count each minute
@@ -133,6 +136,7 @@ class InternalUlearnApp extends Component<Props, State> {
 				<ThemeContext.Provider value={ theme }>
 					<ErrorBoundary>
 						{ isHeaderVisible && <Header initializing={ initializing }/> }
+						<NotificationBar isSystemAdministrator={ account?.isSystemAdministrator || false }/>
 						<NotFoundErrorBoundary>
 							{ !initializing && // Avoiding bug: don't show page while initializing.
 								// Otherwise we make two GET requests sequentially.

@@ -105,7 +105,9 @@ namespace Database.Repos
 
 		private IQueryable<T> GetSlideCheckingsByUser<T>(string courseId, Guid slideId, string userId) where T : AbstractSlideChecking
 		{
-			return db.Set<T>().Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId);
+			return db
+				.Set<T>()
+				.Where(c => c.CourseId == courseId && c.SlideId == slideId && c.UserId == userId);
 		}
 
 		public async Task RemoveAttempts(string courseId, Guid slideId, string userId, bool saveChanges = true)
@@ -170,8 +172,11 @@ namespace Database.Repos
 
 		public async Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 100)
 		{
-			var manualScore = await GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
-			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).DefaultIfEmpty(0).MaxAsync();
+			var manualScore = await GetSlideCheckingsByUser<ManualQuizChecking>(courseId, slideId, userId)
+				.Select(c => c.Score)
+				.DefaultIfEmpty()
+				.MaxAsync();
+			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).MaxAsync();
 			return ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent) + manualScore;
 		}
 
@@ -615,6 +620,15 @@ namespace Database.Repos
 			await db.RefreshMaterializedView(ExerciseAttemptedUsersCount.ViewName);
 			await db.RefreshMaterializedView(ExerciseUsersWithRightAnswerCount.ViewName);
 			db.Database.SetCommandTimeout(TimeSpan.FromSeconds(30));
+		}
+
+		public async Task<HashSet<Guid>> GetManualCheckingQueueSlideIds<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		{
+			return (await GetManualCheckingQueue<T>(options))
+				.Select(c => c.SlideId)
+				.Distinct()
+				.AsEnumerable()
+				.ToHashSet();
 		}
 	}
 }

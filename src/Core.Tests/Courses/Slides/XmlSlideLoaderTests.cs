@@ -6,6 +6,7 @@ using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Blocks;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Courses.Slides.Exercises.Blocks;
 using Ulearn.Core.Courses.Slides.Flashcards;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
@@ -110,6 +111,9 @@ namespace Ulearn.Core.Tests.Courses.Slides
 			var slide = (ExerciseSlide)LoadSlideFromXmlFile("ExerciseWithDefaultScore.xml");
 
 			Assert.AreEqual(5, slide.Scoring.PassedTestsScore);
+			Assert.AreEqual(typeof(SingleFileExerciseBlock), slide.Blocks[0].GetType());
+			Assert.AreEqual("exercise self checkup", (slide.Blocks[0] as SingleFileExerciseBlock).Checkups[0]);
+			Assert.AreEqual(typeof(SelfCheckupsBlock), slide.Blocks[1].GetType());
 		}
 
 		[Test]

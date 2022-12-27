@@ -44,7 +44,7 @@ function Text(props: Props): React.ReactElement {
 		const anchors = Array.from(textContainer.current.getElementsByTagName('a'));
 		//if href equal to origin + pathname + hash => <a href="#hash"> that means its navigation on slide via headers, we need to handle this via our modificated scrolling
 		const hashAnchorsLinks = anchors.filter(
-			a => (window.location.origin + window.location.pathname + a.hash).toLowerCase() === a.href.toLowerCase());
+			a => (window.location.origin + window.location.pathname + a.search + a.hash).toLowerCase() === a.href.toLowerCase());
 
 		const hashInUrl = window.location.hash;
 		if(hashInUrl) {

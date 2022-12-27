@@ -1,0 +1,25 @@
+﻿@using uLearn.Web.Core.Models
+@model uLearn.Web.Core.Models.LoginViewModel
+
+@{
+	ViewBag.Title = "Вход";
+}
+<div class="container">
+	<div class="row">
+		<div class="col-md-offset-4 col-md-4">
+			<h2>@ViewBag.Title</h2>
+
+			<section id="socialLoginForm">
+				@await Html.PartialAsync("ExternalLoginsListPartial", new ExternalLoginsListModel { ActionName = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl, Type = ExternalLoginListType.Login })
+			</section>
+
+			<div class="strike-line grey">
+				<span>
+					<i>или введите логин и пароль</i>
+				</span>
+			</div>
+
+			@await Html.PartialAsync("_LoginForm", Model)
+		</div>
+	</div>
+</div>

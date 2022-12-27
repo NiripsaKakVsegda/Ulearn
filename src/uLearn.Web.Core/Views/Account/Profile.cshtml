@@ -1,0 +1,211 @@
+﻿@using System.Web
+@using Database.Models
+@using Ulearn.Common
+@using uLearn.Web.Core.Authentication.External.Kontur
+@using uLearn.Web.Core.Authentication.External.Vkontakte
+@using uLearn.Web.Core.Extensions
+
+@model uLearn.Web.Core.Controllers.ProfileModel
+
+@{
+	ViewBag.Title = Model.User.VisibleName;
+}
+
+@functions{
+
+	public void GetAvatarPlaceholderColor(ApplicationUser user)
+	{
+		var hashForColor = user.Id.Aggregate(0, (a, i) => a += i);
+		var hue = Math.Abs(hashForColor) % 360;
+		<text>hsl(@hue, 64%, 75%)</text>
+	}
+
+	public void GetAvatarPlaceholderLetter(ApplicationUser user)
+	{
+		<text>@char.ToUpper(user.VisibleName.FindFirstLetter('O'))</text>
+	}
+
+	public void Avatar(ApplicationUser user, string classes = "")
+	{
+		if (user.HasAvatar)
+		{
+			<img class="user__avatar @classes" src="@user.AvatarUrl" alt="@HttpUtility.HtmlAttributeEncode(user.VisibleName)"/>
+		}
+		else
+		{
+			<div class="user__avatar user__avatar__placeholder @classes" style="background-color: @{ GetAvatarPlaceholderColor(user); }">
+				@{ GetAvatarPlaceholderLetter(user); }
+			</div>
+		}
+	}
+
+	public void SmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "small " + classes);
+	}
+
+	public void ExtraSmallAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "xsmall " + classes);
+	}
+
+	public void LargeAvatar(ApplicationUser user, string classes = "")
+	{
+		Avatar(user, "large " + classes);
+	}
+
+}
+
+<div class="container">
+	<h2>@Model.User.VisibleName</h2>
+
+	<div class="user-profile__info">
+		<div class="pull-left user-profile__avatar">
+			@{ LargeAvatar(Model.User); }
+		</div>
+		<div>
+			<div>@Model.User.UserName, <a href="mailto:@Model.User.Email">@Model.User.Email</a><i>@(!Model.User.EmailConfirmed ? " (почта не подтверждена)" : "")</i></div>
+			@{
+				var vkLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == VkontakteConstants.DefaultAuthenticationType);
+				if (vkLogin != null)
+				{
+					<div>
+						<b>ВКонтакте:</b> <a href="https://vk.com/id@(vkLogin.ProviderKey)" target="_blank" title="Откроется в новой вкладке">id@(vkLogin.ProviderKey)</a>
+					</div>
+				}
+			
+				var konturPassportLogin = Model.Logins.FirstOrDefault(l => l.LoginProvider == KonturPassportConstants.AuthenticationType);
+				if (konturPassportLogin != null)
+				{
+					<div>
+						<b>Контур.Паспорт:</b>
+						@if (!string.IsNullOrEmpty(Model.User.KonturLogin))
+						{
+							<a href="https://staff.skbkontur.ru/profile/@Model.User.KonturLogin" target="_blank" title="Откроется в новой вкладке">@Model.User.KonturLogin</a>
+							<span class="text-muted small">@konturPassportLogin.ProviderKey</span>
+						}
+						else
+						{
+							<span class="text-muted small">@konturPassportLogin.ProviderKey</span>
+						}
+					</div>
+				}
+			
+				if (Model.User.HasTelegram)
+				{
+					<div>
+						<b>Телеграм:</b>
+						@if (!string.IsNullOrEmpty(Model.User.TelegramChatTitle) && Model.User.TelegramChatTitle != "@")
+						{
+							<a href="https://t.me/@(Model.User.TelegramChatTitle.Substring(1))" target="_blank" title="Откроется в новой вкладке">@Model.User.TelegramChatTitle</a>
+						}
+						else
+						{
+							<span class="text-muted small">@Model.User.TelegramChatId (никнейм не&nbsp;указан)</span>
+						}
+					</div>
+				}
+			}
+
+			@if (User.IsSystemAdministrator())
+			{
+				<div class="hijack__enter">
+					@using (Html.BeginForm("Hijack", "Account", new { userId = Model.User.Id }, FormMethod.Post))
+					{
+						@Html.AntiForgeryToken()
+						<button type="submit" class="btn btn-warning btn-xs">Войти как @Model.User.VisibleName</button>
+					}
+				</div>
+			}
+		</div>
+	</div>
+
+	<div class="user-profile__courses">
+		<h2>Статистика по&nbsp;курсам</h2>
+		@if (Model.UserCourses.Count == 0)
+		{
+			<p class="help-block">Нет курсов</p>
+		}
+		<ol>
+			@foreach (var course in Model.UserCourses)
+			{
+				var isTempCourse = Model.AllTempCourses.ContainsKey(course.Id);
+				var visibleCourseName = isTempCourse ? Model.AllTempCourses[course.Id].GetVisibleName(course.Title) : course.Title;
+				<li>
+					@Html.ActionLink(visibleCourseName, "CourseInfo", "Account", new { userId = Model.User.Id, courseId = course.Id })
+					@if (!string.IsNullOrEmpty(Model.CourseGroups[course.Id]))
+					{
+						<div title="Группы, в которых состоит студент">
+							Группы: @Model.CourseGroups[course.Id]
+						</div>
+					}
+					@if (!string.IsNullOrEmpty(Model.CourseArchivedGroups[course.Id]))
+					{
+						<div title="Архивные группы, в которых состоит студент" class="text-muted">
+							Архивные: @Model.CourseArchivedGroups[course.Id]
+						</div>
+					}
+
+				</li>
+			}
+		</ol>
+	</div>
+
+	<div class="user-profile__rights-history">
+		<h2>История назначений ролей и прав</h2>
+		@if (Model.CoursesWithRoles.Count == 0 && Model.CoursesWithAccess.Count == 0)
+		{
+			<p class="help-block">Отсуствует</p>
+		}
+		<ol>
+			@{
+				var courseIds = Model.CoursesWithAccess.Concat(Model.CoursesWithRoles).Distinct();
+			}
+			@foreach (var courseId in courseIds)
+			{
+				if (Model.AllCourses.TryGetValue(courseId, out var course))
+				{
+					var isTempCourse = Model.AllTempCourses.ContainsKey(course.Id);
+					var visibleCourseName = isTempCourse ? Model.AllTempCourses[course.Id].GetVisibleName(course.Title) : course.Title;
+					<li>
+						@Html.ActionLink(visibleCourseName, "ToggleRolesHistory", new { userId = Model.User.Id, courseId = course.Id })
+					</li>
+				}
+			}
+		</ol>
+	</div>
+
+	<div class="user-profile__certificates">
+		<h2>
+			@Html.ActionLink("Сертификаты", "Index", "Certificates", new { userId = Model.User.Id })
+		</h2>
+		@if (Model.Certificates.Count == 0)
+		{
+			<p class="help-block">Нет сертификатов</p>
+		}
+		<ol>
+			@foreach (var certificate in Model.Certificates)
+			{
+				<li>
+					@Html.RouteLink(Model.AllCourses[certificate.Template.CourseId].Title, "Certificate", new { certificateId = certificate.Id }),
+					выдал@(certificate.Instructor.Gender.ChooseEnding()) @certificate.Instructor.VisibleName
+					@certificate.Timestamp.ToAgoPrettyString()
+				</li>
+			}
+		</ol>
+	</div>
+
+	<div class="user-profile__password-reset">
+		@if (User.IsSystemAdministrator())
+		{
+			var newPassword = (DateTime.Now.Ticks % 1000000).ToString();
+			using (Html.BeginForm("ResetPassword", "Account", new { newPassword, userId = Model.User.Id }))
+			{
+				@Html.AntiForgeryToken()
+				<h2>Сброс пароля</h2>
+				<div class="help-block">Установить пароль <b>@newPassword</b>?</div>
+				<button class="btn btn-danger"> Установить </button>
+			}
+		}
+	</div>
+</div>

@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Ulearn.Core.Configuration;
 
 /* Move it to Web.Api.Configuration after disabling Ulearn.Web. Now it's here because Ulearn.Web should know about CookieKeyRingDirectory */
@@ -13,8 +14,19 @@ namespace Web.Api.Configuration
 		public FrontendConfiguration Frontend { get; set; }
 
 		public string NotificationBar { get; set; } // сообщение в плашке на фронте. Показывается сверху, обычно о технических работах
+		
+		public bool OverlapNotificationBar { get; set; } // плашка на весь экран, не мешает админам
 
 		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки
+	}
+
+	public class WebConfiguration : WebApiConfiguration
+	{
+		public Dictionary<string, string> OldWebConfig { get; set; }
+
+		public string Culture { get; set; }
+
+		public string ElmahXmlLogPath { get; set; }
 	}
 
 	public class UlearnWebConfiguration
@@ -23,6 +35,8 @@ namespace Web.Api.Configuration
 		public string CookieName { get; set; }
 		public string CookieDomain { get; set; }
 		public bool CookieSecure { get; set; }
+
+		public string CspHeader { get; set; }
 
 		public CorsConfiguration Cors { get; set; }
 

@@ -38,6 +38,9 @@ namespace Ulearn.Core.Courses.Slides
 
 		[XmlEnum("html")]
 		Html,
+		
+		[XmlEnum("selfCheckups")]
+		SelfCheckups,
 
 		[XmlEnum("spoiler")]
 		Spoiler,
@@ -86,6 +89,7 @@ namespace Ulearn.Core.Courses.Slides
 				case TexBlock _: return BlockType.Tex;
 				case HtmlBlock _: return BlockType.Html;
 				case SpoilerBlock _: return BlockType.Spoiler;
+				case SelfCheckupsBlock _: return BlockType.SelfCheckups;
 
 				case FillInBlock _: return BlockType.TextQuestion;
 				case ChoiceBlock _: return BlockType.ChoiceQuestion;

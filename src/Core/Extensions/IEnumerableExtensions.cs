@@ -5,7 +5,7 @@ namespace Ulearn.Core.Extensions
 {
 	public static class IEnumerableExtensions
 	{
-		public static TSource MaxBy<TSource, TProperty>(this IEnumerable<TSource> source, Func<TSource, TProperty> selector, Comparer<TProperty> comparer)
+		public static TSource Deprecated_MaxBy<TSource, TProperty>(this IEnumerable<TSource> source, Func<TSource, TProperty> selector, Comparer<TProperty> comparer)
 		{
 			if (source == null)
 				throw new ArgumentNullException(nameof(source));
@@ -38,9 +38,9 @@ namespace Ulearn.Core.Extensions
 			}
 		}
 
-		public static TSource MaxBy<TSource, TProperty>(this IEnumerable<TSource> source, Func<TSource, TProperty> selector)
+		public static TSource Deprecated_MaxBy<TSource, TProperty>(this IEnumerable<TSource> source, Func<TSource, TProperty> selector)
 		{
-			return source.MaxBy(selector, Comparer<TProperty>.Default);
+			return source.Deprecated_MaxBy(selector, Comparer<TProperty>.Default);
 		}
 	}
 }

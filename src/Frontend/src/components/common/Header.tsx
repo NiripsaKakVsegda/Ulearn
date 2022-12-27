@@ -16,7 +16,6 @@ import SysAdminMenu from "./HeaderElements/SysAdminMenu";
 import MyCoursesMenu from "./HeaderElements/CoursesMenus/MyCoursesMenu";
 import CourseMenu from "./HeaderElements/CoursesMenus/CourseMenu";
 import MobileCourseMenu from "./HeaderElements/CoursesMenus/MobileCourseMenu";
-import NotificationBar from "../notificationBar/NotificationBar";
 import { Menu as MenuIcon } from 'icons';
 
 import { CourseAccessType, CourseRoleType } from "src/consts/accessType";
@@ -122,28 +121,25 @@ class Header extends Component<Props, State> {
 		const { isSystemAdministrator, courseRole, } = this.state;
 
 		return (
-			<React.Fragment>
-				<div className={ styles.header + " header" } id="header">
-					<div className={ styles.controlsWrapper }>
-						{ this.renderLogo() }
-						{ courses.currentCourseId && this.renderNavMenuIcon() }
-						<Hijack name={ account.visibleName }/>
-						{ !initializing && this.renderUserRoleMenu() }
-						{ isInstructor({ isSystemAdministrator, courseRole })
-							&& <StudentMode
-								deviceType={ deviceType }
-								containerClass={ cn(styles.headerElement, styles.button) }
-							/> }
-					</div>
-					<HeaderComponentErrorBoundary className={ styles.headerElement }>
-						<Menu
+			<div className={ styles.header + " header" } id="header">
+				<div className={ styles.controlsWrapper }>
+					{ this.renderLogo() }
+					{ courses.currentCourseId && this.renderNavMenuIcon() }
+					<Hijack name={ account.visibleName }/>
+					{ !initializing && this.renderUserRoleMenu() }
+					{ isInstructor({ isSystemAdministrator, courseRole })
+						&& <StudentMode
 							deviceType={ deviceType }
-							account={ account }
-						/>
-					</HeaderComponentErrorBoundary>
+							containerClass={ cn(styles.headerElement, styles.button) }
+						/> }
 				</div>
-				<NotificationBar/>
-			</React.Fragment>
+				<HeaderComponentErrorBoundary className={ styles.headerElement }>
+					<Menu
+						deviceType={ deviceType }
+						account={ account }
+					/>
+				</HeaderComponentErrorBoundary>
+			</div>
 		);
 	}
 

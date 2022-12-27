@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <RootNamespace>XQueueWatcher</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -24,7 +24,7 @@
   <ItemGroup>
     <Content Update="appsettings.local.json">
       <DependentUpon>appsettings.json</DependentUpon>
-      <CopyToPublishDirectory>Newer</CopyToPublishDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="appsettings.json">

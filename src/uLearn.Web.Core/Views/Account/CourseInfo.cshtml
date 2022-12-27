@@ -1,0 +1,36 @@
+﻿@model uLearn.Web.Core.Models.UserCourseModel
+
+@{
+	ViewBag.Title = "User Course Stats";
+}
+
+<div class="container">
+	<h2 class="space-after">@Html.ActionLink(Model.User.VisibleName, "Profile", "Account", new { userId = Model.User.Id }, new { title = Model.User.UserName }) — @Model.Course.Title</h2>
+
+	<table class="table">
+		<tr>
+			<th>Модуль</th>
+			<th style="text-align: center !important">Посещено слайдов</th>
+			<th style="text-align: center !important">Задачи</th>
+			<th style="text-align: center !important">Тесты</th>
+			<th style="text-align: center !important">Итого</th>
+		</tr>
+		@foreach (var unit in Model.Units)
+		{
+			<tr style="text-align: center">
+				<td style="text-align: left">@unit.Unit.Title</td>
+				<td title="@unit.SlideVisits.Earned из @unit.SlideVisits.Total">@unit.SlideVisits</td>
+				<td title="@unit.Exercises.Earned из @unit.Exercises.Total">@unit.Exercises</td>
+				<td title="@unit.Quizes.Earned из @unit.Quizes.Total">@unit.Quizes</td>
+				<td title="@unit.Total.Earned из @unit.Total.Total">@unit.Total</td>
+			</tr>
+		}
+		<tr style="font-weight: bold;text-align: center">
+			<td style="text-align: left">Всего по&nbsp;курсу</td>
+			<td title="@Model.Total.SlideVisits.Earned из @Model.Total.SlideVisits.Total">@Model.Total.SlideVisits</td>
+			<td title="@Model.Total.Exercises.Earned из @Model.Total.Exercises.Total">@Model.Total.Exercises</td>
+			<td title="@Model.Total.Quizes.Earned из @Model.Total.Quizes.Total">@Model.Total.Quizes</td>
+			<td title="@Model.Total.Total.Earned из @Model.Total.Total.Total">@Model.Total.Total</td>
+		</tr>
+	</table>
+</div>

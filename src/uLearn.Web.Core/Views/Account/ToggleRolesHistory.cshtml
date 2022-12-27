@@ -1,0 +1,55 @@
+@using System.Globalization
+@model uLearn.Web.Core.Models.UserCourseToggleHistoryModel
+
+@{
+	ViewBag.Title = "User Course Roles History";
+}
+
+<div class="container">
+	<h2 class="space-after">
+		@Html.ActionLink(Model.User.VisibleName, "Profile", "Account", new { userId = Model.User.Id }, new { title = "" })
+		— «@Model.Course.Title». Роли и права
+	</h2>
+	<h4>
+		@Html.ActionLink("Изменить права", "Users", "Admin", new { courseId = Model.Course.Id, namePrefix = Model.User.VisibleName })
+	</h4>
+
+	<table class="table">
+		<tr>
+			<th style="text-align: left ">Роль или права</th>
+			<th style="text-align: left ">Выданы или отозваны</th>
+			<th style="text-align: left">Выданы пользователем</th>
+			<th style="text-align: left">Дата и время</th>
+			<th style="text-align: left">Комментарий</th>
+		</tr>
+		@foreach (var grant in Model.UserGrantsHistory)
+		{
+			var dateCulture = CultureInfo.CreateSpecificCulture("en-US");
+			var date = grant.GrantTimeUtc.ToString("G", dateCulture) + " UTC";
+			var timestamp = grant.GrantTimeUtc == DateTime.MinValue ? "Неизвестно" : date;
+			var grantedBy = string.IsNullOrEmpty(grant.GrantedBy) ? "Неизвестно" : grant.GrantedBy;
+			var comment = string.IsNullOrEmpty(grant.Comment) ? "Без комментария" : grant.Comment;
+			var enabled = grant.IsEnabled ? "Выданы" : "Отозваны";
+			<tr style="text-align: center">
+				<td style="text-align: left;"> @grant.Grant</td>
+				<td style="text-align: left;">@enabled</td>
+				<td style="text-align: left;">@grantedBy </td>
+				<td class="grantTime" style="text-align: left; white-space: pre-wrap;">@timestamp</td>
+				<td style="table-layout: fixed; white-space: pre-wrap; word-wrap: break-word; word-break: break-word ;text-align: left; width:30%">@comment</td>
+			</tr>
+		}
+	</table>
+
+	<script>
+	$(document).ready(function($) {
+			   
+		const allTimes = document.getElementsByClassName("grantTime");
+		for (const time in allTimes){
+			const localDate = new Date(allTimes[time].innerHTML);
+			if (!isNaN(localDate.getTime())){
+				allTimes[time].innerHTML = localDate.toLocaleString().replace(',','\r\n');
+			}
+		} 
+		})
+	</script>
+</div>

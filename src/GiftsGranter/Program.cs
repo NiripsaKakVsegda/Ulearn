@@ -6,13 +6,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Database.DataContexts;
+using System.Threading.Tasks;
+using Database;
+using Database.Di;
+using Database.Models;
+using Database.Repos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Vostok.Logging.Abstractions;
 using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types.Enums;
 using Ulearn.Core.Configuration;
+using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Helpers;
 using Ulearn.Core.Logging;
 using Vostok.Logging.File;
+using Microsoft.AspNetCore.Identity;
 
 namespace GiftsGranter
 {
@@ -20,13 +29,15 @@ namespace GiftsGranter
 	{
 		private static ILog Log => LogProvider.Get().ForContext(typeof(Program));
 		private readonly int maxGiftsPerRun;
-		private readonly VisitsRepo repo;
+		private readonly IVisitsRepo repo;
+		private readonly UlearnDb db;
 		private readonly JObject settings;
 		private readonly StaffClient staffClient;
 		private readonly GiftsTelegramBot telegramBot;
 
-		public Program(VisitsRepo repo, StaffClient staffClient, int maxGiftsPerRun, JObject settings, GiftsTelegramBot telegramBot)
+		public Program(UlearnDb db, IVisitsRepo repo, StaffClient staffClient, int maxGiftsPerRun, JObject settings, GiftsTelegramBot telegramBot)
 		{
+			this.db = db;
 			this.repo = repo;
 			this.staffClient = staffClient;
 			this.maxGiftsPerRun = maxGiftsPerRun;
@@ -67,16 +78,20 @@ namespace GiftsGranter
 			return password.ToString();
 		}
 
-		private static void Main(string[] args)
+		private static async Task Main(string[] args)
 		{
 			var settings = JObject.Parse(File.ReadAllText("appsettings.json"));
 			var staff = new StaffClient(settings["staff"]["clientAuth"].Value<string>());
 			var hostLog = settings["hostLog"].ToObject<HostLogConfiguration>();
 			var graphiteServiceName = settings["graphiteServiceName"].Value<string>();
+			var database = settings["database"].Value<string>();
 			LoggerSetup.Setup(hostLog, graphiteServiceName);
+			var (db, sp) = await CreateServiceProviderAndDb(database);
+
 			try
 			{
-				CreateCliCommands(settings, staff).Invoke(args);
+				CreateCliCommands(settings, staff, db, sp)
+					.Invoke(args);
 			}
 			finally
 			{
@@ -84,11 +99,11 @@ namespace GiftsGranter
 			}
 		}
 
-		private static RootCommand CreateCliCommands(JObject settings, StaffClient staff)
+		private static RootCommand CreateCliCommands(JObject settings, StaffClient staff, UlearnDb db, IServiceProvider sp)
 		{
 			var root = new RootCommand();
 			root.AddOption(new Option<int?>("-c", () => settings["maxGiftsPerRun"]!.Value<int>(), "Max gifts to grant per run per course"));
-			root.Handler = CommandHandler.Create<int>(c => GrantGiftsCommand(settings, staff, c));
+			root.Handler = CommandHandler.Create<int>(c => GrantGiftsCommand(settings, staff, c, db, sp.GetService<IVisitsRepo>()));
 
 			var updateRefreshToken = new Command("update-staff-refresh-token");
 			updateRefreshToken.AddAlias("r");
@@ -104,17 +119,49 @@ namespace GiftsGranter
 			return root;
 		}
 
-		private static void GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun)
+
+		public static async Task<(UlearnDb, IServiceProvider)> CreateServiceProviderAndDb(string databaseConnectionString)
+		{
+			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
+			try
+			{
+				var optionsBuilder = new DbContextOptionsBuilder<UlearnDb>()
+					.UseLazyLoadingProxies()
+					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2));
+				var db = new UlearnDb(optionsBuilder.Options);
+				var serviceProvider = ConfigureDI(db);
+
+				var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
+				await courseManager.UpdateCoursesAsync();
+				await courseManager.UpdateTempCoursesAsync();
+
+				return (db, serviceProvider);
+			}
+			finally
+			{
+			}
+		}
+
+		private static IServiceProvider ConfigureDI(UlearnDb db)
+		{
+			var services = new ServiceCollection();
+
+			services.AddSingleton(db);
+			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
+			services.AddDatabaseServices(false);
+
+			return services.BuildServiceProvider();
+		}
+
+		private static void GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun, UlearnDb db, IVisitsRepo visitsRepo)
 		{
 			staff.UseRefreshToken(settings["staff"]["refreshToken"].Value<string>());
 			var telegramBot = new GiftsTelegramBot();
 			try
 			{
 				Log.Info("UseGiftGrantsLimitPerRun\t" + maxGiftsPerRun);
-				var db = new ULearnDb();
-				var repo = new VisitsRepo(db);
 				var courses = settings["courses"].Values<string>();
-				var program = new Program(repo, staff, maxGiftsPerRun, settings, telegramBot);
+				var program = new Program(db, visitsRepo, staff, maxGiftsPerRun, settings, telegramBot);
 				foreach (var courseId in courses)
 					program.GrantGiftsForCourse(courseId);
 			}
@@ -156,23 +203,33 @@ namespace GiftsGranter
 			Log.Info($"DoneCourse\t{courseId}");
 		}
 
-		private void GrantGifts(string courseId)
+		private async Task GrantGifts(string courseId)
 		{
 			var courseSettings = settings[courseId].ToObject<CourseSettings>();
 			var passScore = courseSettings.passScore;
 			var requiredSlides = courseSettings.requiredSlides;
-			var rating = repo.GetCourseRating(courseId, passScore, requiredSlides);
-			var konturRating = rating
-				.Where(e => e.User.Logins.Any(login => login.LoginProvider == "Контур.Паспорт"))
+			var rating = await repo.GetCourseRating(courseId, passScore, requiredSlides);
+			var ratingById = rating.ToDictionary(r => r.UserId);
+			var ratingUserIds = rating
+				.Select(r => r.UserId)
+				.ToHashSet();
+			var konturRating = (await db.UserLogins
+					.Where(ul => ul.LoginProvider == "Контур.Паспорт" && ratingUserIds.Contains(ul.UserId))
+					.Select(ul => ul.UserId)
+					.ToListAsync())
+				.Select(id => ratingById[id])
 				.ToList();
+			// var konturRating = rating
+			// 	.Where(e => e.User.Logins.Any(login => login.LoginProvider == "Контур.Паспорт"))
+			// 	.ToList();
 			var stabilizedKonturCompleted = konturRating.Where(e => e.LastVisitTime < DateTime.Now - TimeSpan.FromDays(1)).ToList();
 			Log.Info($"TotalCompleted\t{rating.Count}");
 			Log.Info($"KonturCompleted\t{konturRating.Count}");
 			Log.Info($"StabilizedKonturCompleted\t{stabilizedKonturCompleted.Count}");
-			EnsureHaveGifts(stabilizedKonturCompleted, courseSettings, courseId);
+			await EnsureHaveGifts(stabilizedKonturCompleted, courseSettings, courseId);
 		}
 
-		private void EnsureHaveGifts(List<RatingEntry> entries, CourseSettings courseSettings, string courseId)
+		private async Task EnsureHaveGifts(List<RatingEntry> entries, CourseSettings courseSettings, string courseId)
 		{
 			var delayMs = settings["delayBetweenStaffRequests"].Value<int>();
 			var granted = 0;
@@ -184,17 +241,19 @@ namespace GiftsGranter
 					return;
 				}
 
-				if (GrantGiftsIfNone(ratingEntry, courseSettings, courseId))
+				if (await GrantGiftsIfNone(ratingEntry, courseSettings, courseId))
 					granted++;
 				Thread.Sleep(delayMs);
 			}
 		}
 
-		private bool GrantGiftsIfNone(RatingEntry entry, CourseSettings courseSettings, string courseId)
+		private async Task<bool> GrantGiftsIfNone(RatingEntry entry, CourseSettings courseSettings, string courseId)
 		{
+			var user = await db.Users.FindAsync(entry.UserId);
 			try
 			{
-				var sid = entry.User.Logins.First(login => login.LoginProvider == "Контур.Паспорт").ProviderKey;
+				var sid = (await db.UserLogins.FirstOrDefaultAsync(ul => ul.UserId == entry.UserId && ul.LoginProvider == "Контур.Паспорт"))?.ProviderKey;
+				//var sid = entry.User.Logins.First(login => login.LoginProvider == "Контур.Паспорт").ProviderKey;
 				var staffUserId = GetUserId(sid);
 				var gifts = staffClient.GetUserGifts(staffUserId);
 				var giftImagePath = courseSettings.giftImagePath;
@@ -202,18 +261,19 @@ namespace GiftsGranter
 				var hasComplexityGift = gifts["gifts"].Children().Any(gift => gift["imagePath"].Value<string>() == giftImagePath);
 				if (!hasComplexityGift)
 				{
-					Log.Info($"NoGiftYet\t{entry.Score}\t{entry.User.VisibleName}");
+					Log.Info($"NoGiftYet\t{entry.Score}\t{user.VisibleName}");
 					staffClient.GrantGift(staffUserId, entry.Score, courseSettings);
-					Log.Info($"ComplexityGiftGrantedFor\t{entry.User.VisibleName}\t{entry.User.KonturLogin}");
-					telegramBot.PostToChannel($"Granted gift for course {courseId}\n{entry.Score} points for user {entry.User.VisibleName} {entry.User.KonturLogin}");
+					Log.Info($"ComplexityGiftGrantedFor\t{user.VisibleName}\t{user.KonturLogin}");
+					telegramBot.PostToChannel($"Granted gift for course {courseId}\n{entry.Score} points for user {user.VisibleName} {user.KonturLogin}");
 					return true;
 				}
-				Log.Debug($"HasGiftAlready {entry.User.VisibleName}\t{staffUserId}");
+
+				Log.Debug($"HasGiftAlready {user.VisibleName}\t{staffUserId}");
 				return false;
 			}
 			catch (Exception e)
 			{
-				var message = $"Can't grant gift to {entry.User.VisibleName} (kontur-login: {entry.User.KonturLogin} ulearn-username: {entry.User.UserName})";
+				var message = $"Can't grant gift to {user.VisibleName} (kontur-login: {user.KonturLogin} ulearn-username: {user.UserName})";
 				Log.Error(e, message);
 				telegramBot.PostToChannel(message);
 				telegramBot.PostToChannel($"```{e}```", ParseMode.Markdown);

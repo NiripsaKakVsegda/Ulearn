@@ -4,7 +4,7 @@ import fs from "fs";
 const testPath = 'tests';
 const screenshotsPath = testPath + '/screenshots';
 
-const baseUrl = 'http://localhost:3000';
+const baseUrl = 'https://localhost:3000';
 const pathToCookie = testPath + '/cookie.json';
 
 const authAccounts = {

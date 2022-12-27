@@ -1,0 +1,153 @@
+﻿@model uLearn.Web.Core.Controllers.PreviewCertificatesViewModel
+
+@{
+	ViewBag.Title = "Предпросмотр сертификатов " + Model.Template.Name;
+}
+
+<div class="container">
+	<h1>
+		Сертификаты для «@Model.Template.Name»
+	</h1>
+	@if (!string.IsNullOrEmpty(Model.Error))
+	{
+		<div class="alert alert-error">
+			@Model.Error. <a href="javascript:history.back()">Вернитесь назад</a> и попробуйте ещё раз.
+		</div>
+	}
+	else
+	{
+		using (Html.BeginForm("GenerateCertificates", "Admin", new { courseId = Model.CourseId, templateId = Model.Template.Id }))
+		{
+			@Html.Hidden("maxCertificateId", Model.Certificates.Count)
+			var certificateIndex = 0;
+
+			<div class="loading-spinner loading-spinner-template">
+				<img src="/Content/loading-ring.gif"/>
+			</div>
+
+			<table class="table table-striped  preview-certificates" data-builtin-parameters-value-url="@Url.Action("GetBuiltinCertificateParametersForUser", new { Model.CourseId, templateId = Model.Template.Id, userId = "USER_ID" })">
+				<thead>
+				<tr>
+					<th></th>
+					<th>№</th>
+					<th class="min-width-200">Фамилия и Имя</th>
+					<th class="min-width-400">Пользователь</th>
+					@foreach (var parameter in Model.NotBuiltinTemplateParameters)
+					{
+						<th>
+							%@parameter%
+						</th>
+					}
+					@foreach (var parameter in Model.BuiltinTemplateParameters)
+					{
+						<th data-parameter="@parameter">
+							%@parameter%
+							<nobr>
+								<a href="#" class="remove-certificate-preview-parameter-link" title="Не показывать эту подстановку">
+									<i class="glyphicon glyphicon-remove"></i>
+								</a>
+							</nobr>
+						</th>
+					}
+				</tr>
+				</thead>
+				@foreach (var certificate in Model.Certificates)
+				{
+					<tr class="certificate">
+						<td>
+							<a href="#" class="remove-certificate-preview-link" title="Не выдавать сертификат">
+								<i class="glyphicon glyphicon-remove"></i>
+							</a>
+						</td>
+						<td>@(certificateIndex + 1)</td>
+						<td>@certificate.UserNames</td>
+						<td>
+							@if (certificate.Users.Count == 1)
+							{
+								var user = certificate.Users[0];
+								<div class="certificate__user">
+									@Html.Hidden("user-" + certificateIndex, certificate.Users[0].UserId, new { @class = "user-id" })
+									<span class="user-name">
+										@user.UserVisibleName
+										(@user.UserName)@(Model.GroupsNames.ContainsKey(user.UserId) ? ": " + Model.GroupsNames[user.UserId] : "")
+									</span>
+									<a href="#" class="select-another-user-link internal-page-link">другой</a>
+									<div class="select-another-user-block ib">
+										<input type="text"
+												class="select-another-user-input form-control ib"
+												data-url="@Url.Action("FindUsers", "Admin", new { courseId = Model.CourseId })"
+												placeholder="Начните вводить имя или фамилию">
+										<a href="#" class="cancel-select-another-user-link internal-page-link">отмена</a>
+									</div>
+								</div>
+							}
+							else if (certificate.Users.Count > 1)
+							{
+								<div class="certificate__user">
+									@Html.Hidden("user-" + certificateIndex, "", new { @class = "user-id" })
+									<span class="user-name"></span>
+									<select class="select-another-user-predefined-select form-control ib">
+										<option value="">Выберите пользователя</option>
+										@foreach (var user in certificate.Users)
+										{
+											<option value="@user.UserId">
+												@user.UserVisibleName (@user.UserName)@(Model.GroupsNames.ContainsKey(user.UserId) ? ": " + Model.GroupsNames[user.UserId] : "")
+											</option>
+										}
+									</select>
+									<a href="#" class="select-another-user-link internal-page-link">другой</a>
+									<div class="select-another-user-block ib">
+										<input type="text"
+												class="select-another-user-input form-control ib"
+												data-url="@Url.Action("FindUsers", "Admin", new { courseId = Model.CourseId })"
+												placeholder="Начните вводить имя или фамилию">
+										<a href="#" class="cancel-select-another-user-link internal-page-link">отмена</a>
+									</div>
+								</div>
+							}
+							else
+							{
+								<div class="certificate__user">
+									@Html.Hidden("user-" + certificateIndex, "", new { @class = "user-id" })
+									<span class="user-name"></span>
+
+									<div class="nobody-found">
+										Никого не найдено. Выберите пользователя:
+									</div>
+
+									<a href="#" class="select-another-user-link internal-page-link" style="display: none">другой</a>
+
+									<div class="select-another-user-block shown-by-default">
+										<input type="text"
+												class="select-another-user-input form-control ib"
+												data-url="@Url.Action("FindUsers", "Admin", new { courseId = Model.CourseId })"
+												placeholder="Начните вводить имя или фамилию">
+									</div>
+								</div>
+							}
+						</td>
+						@foreach (var parameter in Model.NotBuiltinTemplateParameters)
+						{
+							<td>
+								@certificate.Parameters[parameter]
+								@Html.Hidden("parameter-" + certificateIndex + "-" + parameter, certificate.Parameters[parameter])
+							</td>
+						}
+						@foreach (var parameter in Model.BuiltinTemplateParameters)
+						{
+							<td data-parameter="@parameter">
+							</td>
+						}
+					</tr>
+
+					certificateIndex++;
+				}
+			</table>
+
+			<button class="btn btn-lg btn-success  generate-certificates-button" disabled="disabled">Генерировать</button>
+			<div class="generate-certificates-status">
+				Выберите пользователя для&nbsp;каждого сертификата или&nbsp;нажмите крестик слева от&nbsp;него
+			</div>
+		}
+	}
+</div>

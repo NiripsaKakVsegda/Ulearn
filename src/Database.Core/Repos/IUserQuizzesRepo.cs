@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Database.Models.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes;
+using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 
 namespace Database.Repos
 {
@@ -24,5 +25,7 @@ namespace Database.Repos
 		Task<bool> IsQuizScoredMaximumAsync(string courseId, Guid slideId, string userId);
 		Task SetScoreForQuizBlock(int submissionId, string blockId, int score);
 		Task<Dictionary<string, int>> GetAnswersFrequencyForChoiceBlock(string courseId, Guid slideId, string quizId);
+		Task<Dictionary<string, Dictionary<string, int>>> GetAnswersFrequencyForChoiceBlocks(string courseId, Guid slideId, List<ChoiceBlock> choiceBlock);
+		int GetUsedAttemptsCountForQuizWithAutomaticChecking(string courseId, string userId, Guid slideId);
 	}
 }

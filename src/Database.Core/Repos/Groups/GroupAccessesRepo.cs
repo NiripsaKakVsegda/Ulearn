@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Extensions;
 
 namespace Database.Repos.Groups
 {
@@ -160,11 +161,11 @@ namespace Database.Repos.Groups
 
 			var groupsWithAccess = new HashSet<int>(db.GroupAccesses.Where(a => a.UserId == userId && a.IsEnabled).Select(a => a.GroupId));
 			var groups = (await db.Groups
-				.Include(g => g.Owner)
-				.Where(g => !g.IsDeleted &&
-					(actual && !g.IsArchived || archived && g.IsArchived) &&
-					(coursesIds == null || coursesIds.Contains(g.CourseId)))
-				.ToListAsync().ConfigureAwait(false))
+					.Include(g => g.Owner)
+					.Where(g => !g.IsDeleted &&
+								(actual && !g.IsArchived || archived && g.IsArchived) &&
+								(coursesIds == null || coursesIds.Contains(g.CourseId)))
+					.ToListAsync().ConfigureAwait(false))
 				.Where(g =>
 					/* Course admins can see all groups */
 					!needEditAccess && coursesWhereUserCanSeeAllGroups.Contains(g.CourseId, StringComparer.OrdinalIgnoreCase) ||
@@ -286,6 +287,78 @@ namespace Database.Repos.Groups
 			var canViewAllGroupMembersInCourse = await coursesRepo.HasCourseAccess(userId, courseId, CourseAccessType.ViewAllGroupMembers).ConfigureAwait(false);
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.CourseAdmin).ConfigureAwait(false);
 			return isCourseAdmin || canViewAllGroupMembersGlobal || canViewAllGroupMembersInCourse;
+		}
+
+		public async Task<Dictionary<string, string>> GetUsersGroupsNamesAsStrings(List<string> courseIds, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3)
+		{
+			var usersGroups = (await GetUsersGroupsAsync(courseIds, userIds, userId, actual, archived, maxCount))
+				.ToDictSafe(
+					kv => kv.Key,
+					kv => kv.Value.Select((g, idx) => idx >= maxCount ? "..." : g.Name.TruncateWithEllipsis(40)).ToList());
+			return usersGroups.ToDictSafe(kv => kv.Key, kv => string.Join(", ", kv.Value));
+		}
+
+		public async Task<Dictionary<string, string>> GetUsersGroupsNamesAsStrings(string courseId, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3)
+		{
+			return await GetUsersGroupsNamesAsStrings(new List<string> { courseId }, userIds, userId, actual, archived, maxCount);
+		}
+
+		public async Task<Dictionary<string, List<Group>>> GetUsersGroupsAsync(List<string> courseIds, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3)
+		{
+			var canSeeAllGroups = new Dictionary<string, bool>();
+			foreach (var courseId in courseIds)
+				canSeeAllGroups[courseId.ToLower()] = await CanUserSeeAllCourseGroupsAsync(userId, courseId);
+
+			var groupsWithAccess = new HashSet<int>(db.GroupAccesses.Where(a => a.UserId == userId && a.IsEnabled).Select(a => a.GroupId));
+			var usersGroups = db.GroupMembers
+				.Include(m => m.Group)
+				.Where(m => userIds.Contains(m.UserId) && courseIds.Contains(m.Group.CourseId))
+				.ToList()
+				.GroupBy(m => m.UserId)
+				.ToDictionary(group => group.Key, group => group.ToList())
+				.ToDictionary(
+					kv => kv.Key,
+					kv => kv.Value.Select(m => m.Group)
+						.Distinct()
+						.Where(g => (g.OwnerId == userId || groupsWithAccess.Contains(g.Id) || canSeeAllGroups[g.CourseId.ToLower()]) && !g.IsDeleted)
+						.Where(g => actual != g.IsArchived || archived == g.IsArchived)
+						.OrderBy(g => g.OwnerId != userId)
+						.Take(maxCount)
+						.ToList()
+				);
+
+			return usersGroups;
+		}
+
+		public DefaultDictionary<int, List<GroupAccess>> GetGroupsAccesses(IEnumerable<int> groupsIds)
+		{
+			return db.GroupAccesses
+				.Include(a => a.User)
+				.Where(a => groupsIds.Contains(a.GroupId) && a.IsEnabled && !a.User.IsDeleted)
+				.AsEnumerable()
+				.GroupBy(a => a.GroupId)
+				.ToDictionary(g => g.Key, g => g.ToList())
+				.ToDefaultDictionary();
+		}
+
+		public async Task<Dictionary<string, List<int>>> GetUsersActualGroupsIds(List<string> courseIds, IEnumerable<string> userIds, string userId, int maxCount = 3)
+		{
+			var usersGroups = await GetUsersGroupsAsync(courseIds, userIds, userId, actual: true, archived: false, maxCount);
+			return usersGroups.ToDictSafe(
+				kv => kv.Key,
+				kv => kv.Value.Select(g => g.Id).ToList());
+		}
+
+		public async Task<bool> CanInstructorViewStudent(string instructorId, string studentId, string courseId)
+		{
+			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(instructorId, courseId, CourseRoleType.CourseAdmin).ConfigureAwait(false);
+			if (isCourseAdmin)
+				return true;
+
+			var coursesIds = courseStorage.GetCourses().Select(c => c.Id).ToList();
+			var groups = await GetAvailableForUserGroupsAsync(coursesIds, instructorId, false, true, true);
+			var members = await groupMembersRepo.GetGroupsMembersAsync(groups.Select(g => g.Id).ToList());
+			return members.Select(m => m.UserId).Contains(studentId);
 		}
 	}
 }

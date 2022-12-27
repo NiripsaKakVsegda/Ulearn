@@ -70,6 +70,8 @@ namespace Ulearn.Core.Configuration
 	public class HostLogConfiguration
 	{
 		public bool Console { get; set; } // Печатать ли логи на консоль
+		
+		public string DropRequestRegex { get; set; } // Какие логи запросов не логировать (например notifications)
 
 		public bool ErrorLogsToTelegram { get; set; } // Отправлять ли логи в телеграм
 

@@ -88,12 +88,14 @@ namespace Notifications
 		{
 			while (true)
 			{
+				keepAliver.Ping(keepAliveInterval);
 				try
 				{
 					using (var scope = serviceProvider.CreateScope())
 					{
 						var sender = scope.ServiceProvider.GetService<DeliveriesProcessor>();
 						await sender!.CreateDeliveries().ConfigureAwait(false);
+						keepAliver.Ping(keepAliveInterval);
 						await sender.SendDeliveries().ConfigureAwait(false);
 					}
 				}
@@ -104,7 +106,7 @@ namespace Notifications
 				}
 
 				keepAliver.Ping(keepAliveInterval);
-				await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+				await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 			}
 		}
 	}

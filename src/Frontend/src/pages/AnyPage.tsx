@@ -1,12 +1,13 @@
 import React, {useEffect, useState } from 'react';
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import DownloadedHtmlContent from 'src/components/common/DownloadedHtmlContent.js';
 import LinkClickCapturer from "src/components/common/LinkClickCapturer";
 
 function AnyPage(): React.ReactElement {
+	const navigate = useNavigate();
 	const location = useLocation();
-	window.legacy.reactHistory = location;
+	window.legacy.reactHistory = navigate;
 
 	const [href, setState] = useState<string>(location.pathname + location.search);
 

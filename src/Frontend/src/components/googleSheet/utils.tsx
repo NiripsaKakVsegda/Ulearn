@@ -12,7 +12,7 @@ export const linkExample = 'https://docs.google.com/spreadsheets/d/{spreadsheet-
 export const texts = {
 	task: {
 		refreshTime: 'Интервал обновлений',
-		buildAuthor: (authorName: string): React.ReactText => `Создатель выгрузки: ${ authorName }`,
+		buildAuthor: (authorName: string): string => `Создатель выгрузки: ${ authorName }`,
 		isVisibleForStudents: 'Студенты увидят ссылку на гугл таблицу на странице ведомости курса',
 		refreshStartDate: 'Дата начала выгрузки',
 		refreshEndDate: 'Дата окончания выгрузки',
@@ -24,7 +24,7 @@ export const texts = {
 		create: 'Создать',
 	},
 	extra: {
-		buildLastUploadDate: (lastUpdateDate: string): React.ReactText => `Последняя выгрузка была произведена ${ getDateDDMMYY(
+		buildLastUploadDate: (lastUpdateDate: string): string => `Последняя выгрузка была произведена ${ getDateDDMMYY(
 			moment.tz(lastUpdateDate, serverFormat, 'UTC').local().format()) }`,
 		buildErrorWhileUploading: (errMessage: string): string => `Во время последней выгрузки произошла ошибка: ${ errMessage }`,
 	},

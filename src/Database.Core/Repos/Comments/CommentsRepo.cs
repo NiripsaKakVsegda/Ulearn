@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
@@ -166,6 +167,23 @@ namespace Database.Repos.Comments
 
 			var boundComment = await lastComments.FirstOrDefaultAsync().ConfigureAwait(false);
 			return boundComment == null || boundComment.PublishTime >= DateTime.Now - lastTime;
+		}
+
+		public Dictionary<int, int> GetCommentsLikesCounts(IEnumerable<Comment> comments)
+		{
+			var commentsIds = comments.Select(x => x.Id).ToImmutableHashSet();
+			return db.CommentLikes.Where(x => commentsIds.Contains(x.CommentId))
+				.GroupBy(x => x.CommentId)
+				.Select(g => new { g.Key, Count = g.Count() })
+				.ToDictionary(p => p.Key, p => p.Count);
+		}
+		
+		public async Task<List<int>> GetCourseCommentsLikedByUserAsync(string courseId, string userId)
+		{
+			return await db.CommentLikes
+				.Where(x => x.UserId == userId && x.Comment.CourseId == courseId)
+				.Select(x => x.CommentId)
+				.ToListAsync();
 		}
 	}
 }

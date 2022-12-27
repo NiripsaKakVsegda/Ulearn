@@ -417,10 +417,7 @@ export const areReviewsSame = (
 };
 
 export {
-	SubmissionColor,
-	ReviewInfoWithMarker,
-
-	getSubmissionColor,
+	SubmissionColor, getSubmissionColor,
 	hasSuccessSubmission,
 	submissionIsLast,
 	getLastSuccessSubmission,
@@ -434,3 +431,5 @@ export {
 	replaceReviewMarker,
 	isAcceptedSolutionsWillNotDiscardScore
 };
+export type { ReviewInfoWithMarker };
+

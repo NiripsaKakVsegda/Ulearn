@@ -1,111 +1,137 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net48</TargetFramework>
-    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
-    <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <AssemblyTitle>RunCsJob</AssemblyTitle>
-    <Product>ULearn</Product>
-    <Description>Run-C# Service for ulearn mooc platform</Description>
-    <Copyright>Copyright 2014–2018 SKB Kontur</Copyright>
-    <Version>1.0.0.0</Version>
-    <Authors>SKB Kontur</Authors>
-    <PackageId>Kontur.Ulearn.RunCsJob</PackageId>
-    <PackageLicenseUrl>https://ulearn.me/Home/Terms</PackageLicenseUrl>
-    <PackageProjectUrl>https://ulearn.me</PackageProjectUrl>
-    <PackageTags>ulearn education mooc</PackageTags>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <LangVersion>default</LangVersion>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <WarningLevel>0</WarningLevel>
-    <NoWarn />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="DotNetZip" Version="1.15.0" />
-    <PackageReference Include="FluentAssertions" Version="5.10.3" />
-    <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
-    <PackageReference Include="Microsoft.Build" Version="16.11.0" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.11.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.11.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Web.WebJobs.Publish" Version="2.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.10.0" />
-    <PackageReference Include="OctoPack" Version="3.6.5">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="StatsdClient" Version="2.0.68" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include=".\WellKnownLibs\*.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <AdditionalFiles Include=".\WellKnownLibs\README.md" />
-    <None Include="run.cmd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\CsSandboxer\CsSandboxer.csproj" />
-    <ProjectReference Include="..\RunCheckerJob\RunCheckerJob.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\packages\Microsoft.Net.Compilers.3.11.0\tools\*.*">
-      <Link>Microsoft.Net.Compilers.3.11.0\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="appsettings.json" />
-    <Content Include="appsettings.local.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="appsettings.local.json">
-      <DependentUpon>appsettings.json</DependentUpon>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="appsettings.json">
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="test\Program.cs" />
-    <None Remove="test\*" />
-      <Content Include="test\*">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+		<AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<AssemblyTitle>RunCsJob</AssemblyTitle>
+		<Product>ULearn</Product>
+		<Description>Run-C# Service for ulearn mooc platform</Description>
+		<Copyright>Copyright 2014–2018 SKB Kontur</Copyright>
+		<Version>1.0.0.0</Version>
+		<Authors>SKB Kontur</Authors>
+		<PackageId>Kontur.Ulearn.RunCsJob</PackageId>
+		<PackageLicenseUrl>https://ulearn.me/Home/Terms</PackageLicenseUrl>
+		<PackageProjectUrl>https://ulearn.me</PackageProjectUrl>
+		<PackageTags>ulearn education mooc</PackageTags>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<LangVersion>default</LangVersion>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<OutputType>Exe</OutputType>
+		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>full</DebugType>
+		<WarningLevel>0</WarningLevel>
+		<NoWarn />
+		<Prefer32bit>false</Prefer32bit>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+		<Prefer32bit>false</Prefer32bit>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup>
+		<NoWin32Manifest>true</NoWin32Manifest>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="DotNetZip" Version="1.16.0" />
+		<PackageReference Include="FluentAssertions" Version="6.7.0" />
+		<PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
+		<PackageReference Include="Microsoft.Build" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.2.0" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.2.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
+		<PackageReference Include="Microsoft.NET.Build.Extensions" Version="2.2.101" />
+		<PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.2.2146">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Web.WebJobs.Publish" Version="2.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="NUnit" Version="3.10.0" />
+		<PackageReference Include="StatsdClient" Version="2.0.68" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="Microsoft.CSharp" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include=".\Microsoft.Net.Compilers.Toolset.4.2.0\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include=".\WellKnownLibs\*.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include=".\ResourcesLibs\*.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<AdditionalFiles Include=".\WellKnownLibs\README.md" />
+		<None Include="run.cmd">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Core\Core.csproj" />
+		<ProjectReference Include="..\CsSandboxer\CsSandboxer.csproj" />
+		<ProjectReference Include="..\RunCheckerJob\RunCheckerJob.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include=".\OldAssembly\*.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<Content Include="appsettings.json" />
+		<Content Include="appsettings.local.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="appsettings.local.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="appsettings.json">
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="test\Program.cs" />
+		<None Remove="test\*" />
+		<Content Include="test\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="deploy\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Microsoft.Net.Compilers.Toolset.4.2.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="packages\**" />
+		<None Remove="packages\**" />
+	</ItemGroup>
 </Project>

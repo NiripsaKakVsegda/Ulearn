@@ -71,7 +71,11 @@ class TaskCodeRunner:
     def run(self, test_file: str):
         command = self.__source_code_run_info.format_run_command(self.__runnable_file)
         run_command = ['su', STUDENT_USER, '-c', f"{command}"]
-        process = Popen(run_command, stdin=open(test_file, 'rb'), stdout=open(f'{test_file}.o', 'wb'), stderr=PIPE)
+        #convert CR LF -> LF
+        with open(test_file, 'r') as infile, \
+             open(f'{test_file}.in', 'w', newline='\n') as outfile:
+            outfile.writelines(infile.readlines())         
+        process = Popen(run_command, stdin=open(f'{test_file}.in', 'rb'), stdout=open(f'{test_file}.o', 'wb'), stderr=PIPE)
         try:
             err = process.communicate(timeout=time_limit)
         except TimeoutExpired:

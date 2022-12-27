@@ -21,7 +21,7 @@ import ShowControlsTextContext from "./ShowControlsTextContext";
 import styles from './Controls.less';
 
 interface Props {
-	children?: React.ReactNode[];
+	children?: React.ReactNode[] | React.ReactNode;
 	deviceType: DeviceType;
 }
 
@@ -40,9 +40,11 @@ class Controls extends React.Component<Props, State> {
 	public static AcceptedSolutionsButton = AcceptedSolutionsButton;
 	public static VisualizerButton = VisualizerButton;
 	public static ButtonsContainer = (props: HasReactChild) => (
-		props.children && <span className={ styles.exerciseControlsButtonsContainer }>
+		props.children
+			? <span className={ styles.exerciseControlsButtonsContainer }>
 			{ props.children }
-		</span>);
+		</span>
+			: null);
 
 	constructor(props: Props) {
 		super(props);

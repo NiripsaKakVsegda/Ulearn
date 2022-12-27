@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
@@ -12,7 +13,7 @@ namespace RunCsJob
 {
 	public class MsBuildSettings
 	{
-		private const string compilersFolderName = "Microsoft.Net.Compilers.3.11.0";
+		private const string compilersFolderName = "Microsoft.Net.Compilers.Toolset.4.2.0";
 		private const string wellKnownLibsFolderName = "WellKnownLibs";
 
 		public MsBuildSettings()
@@ -38,7 +39,7 @@ namespace RunCsJob
 			var path = Path.Combine(dir.FullName, projectFileName);
 			MsBuildLocationHelper.InitPathToMsBuild();
 			return FuncUtils.Using(
-				new ProjectCollection(),
+				new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile),
 				projectCollection =>
 				{
 					var project = new Project(path, null, settings.MsBuildToolsVersion, projectCollection);
@@ -97,7 +98,7 @@ namespace RunCsJob
 		}
 
 		private static volatile object buildLock = new object();
-
+		
 		private static bool SyncBuild(Project project, ILogger log)
 		{
 			lock (buildLock)

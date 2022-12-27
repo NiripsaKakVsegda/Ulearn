@@ -1,0 +1,119 @@
+﻿@using Ulearn.Core.Courses.Slides.Exercises
+@using Ulearn.Core.Extensions
+@using uLearn.Web.Core.Controllers
+@using uLearn.Web.Core.Extensions
+@model uLearn.Web.Core.Controllers.UserUnitStatisticsPageModel
+
+@{
+	ViewBag.Title = Model.User.VisibleName + ", " + Model.Unit.Title;
+}
+
+<div class="container">
+	<h2>@Model.User.VisibleName, «@Model.Unit.Title»</h2>
+
+	@if (Model.PreviousUnit != null || Model.NextUnit != null)
+	{
+		<div class="analytics__other-units-link">
+			@if (Model.PreviousUnit != null)
+			{
+				<div>
+					@Html.ActionLink("← " + Model.PreviousUnit.Title, "UserUnitStatistics", new { courseId = Model.Course.Id, userId = Model.User.Id, unitId = Model.PreviousUnit.Id })
+				</div>
+			}
+			&nbsp;
+			@if (Model.NextUnit != null)
+			{
+				<div class="pull-right">
+					@Html.ActionLink(Model.NextUnit.Title + " →", "UserUnitStatistics", new { courseId = Model.Course.Id, userId = Model.User.Id, unitId = Model.NextUnit.Id })
+				</div>
+			}
+		</div>
+	}
+
+	<div class="user-submissions">
+		@{
+			var shownAnySubmission = false;
+		}
+		@foreach (var submission in Model.Submissions)
+		{
+			var slide = (ExerciseSlide)Model.Slides[submission.SlideId];
+			int? manualPercent = null;
+			if (!slide.Scoring.RequireReview)
+			{
+				continue;
+			}
+			shownAnySubmission = true;
+			<div class="user-submission">
+				<div class="user-submission__info">
+					<h3 class="title">
+						@slide.Title.TruncateWithEllipsis(30) (<span class="total-score">@Model.Scores[slide.Id]</span> из @slide.MaxScore)
+					</h3>
+					<div class="date">
+						Сдана <span title="@submission.Timestamp.ToPrettyString(true)">@submission.Timestamp.ToAgoPrettyString(true)</span>,
+						<a href="@Url.Action("UserSolutions", "Analytics", new { courseId = submission.CourseId, slideId = slide.Id, userId = submission.UserId, version = submission.Id })" target="_blank">
+							<span class="hidden-xs-inline">смотреть</span> код
+						</a>
+					</div>
+					<div class="hint">смахните вправо для оценки &rarr;</div>
+				</div>
+
+				<form method="POST" action="@Url.Action("SimpleScoreExercise", "Exercise")" class="exercise__simple-score-form">
+					<input type="hidden" name="submissionId" value="@submission.Id"/>
+
+					<p>
+						Код-ревью
+						@{
+							manualPercent = submission.ManualChecking?.Percent;
+							var isChecked = manualPercent != null;
+							if (isChecked)
+							{
+								<span> (текущая оценка @manualPercent%)</span>
+							}
+							else
+							{
+								<span> (это первое ревью этой посылки)</span>
+							}
+						}
+					</p>
+					<div class="exercise__score">
+						<input type="hidden" name="exercisePercent"/>
+						<div class="btn-group" role="group">
+							@foreach (var percentOnButton in new[] { 0, 25, 50, 75, 100 })
+							{
+								var isActive = slide.Scoring.ScoreWithCodeReview > 4 && percentOnButton == manualPercent ? "active" : "";
+								var isDisabled = percentOnButton < manualPercent ? "disabled" : "";
+								<button type="button"
+										class="btn btn-default @isActive @isDisabled"
+										data-percent="@percentOnButton">
+									@percentOnButton%
+								</button>
+							}
+						</div>
+						<div class="status"></div>
+					</div>
+				</form>
+
+				@{
+					var reviewedSubmission = Model.ReviewedSubmissions.FirstOrDefault(s => s.SlideId == submission.SlideId);
+					var manualChecking = reviewedSubmission?.ManualChecking;
+				}
+				@if (manualChecking != null && manualChecking.NotDeletedReviews.Any())
+				{
+					@await Html.PartialAsync(
+						"~/Views/Exercise/_ExerciseLastReviewComments.cshtml",
+						new ExerciseLastReviewCommentModel
+						{
+							ReviewedSubmission = reviewedSubmission,
+							NotDeletedReviews = manualChecking.NotDeletedReviews
+						})
+				}
+			</div>
+		}
+		@if (!shownAnySubmission)
+		{
+			<div class="text-muted">
+				Нет сданных задач, требующих код-ревью
+			</div>
+		}
+	</div>
+</div>

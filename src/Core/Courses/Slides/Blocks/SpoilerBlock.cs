@@ -24,6 +24,7 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 		[XmlElement(typeof(IncludeMarkdownBlock))]
 		[XmlElement(typeof(IncludeImageGalleryBlock))]
 		[XmlElement("html", typeof(HtmlBlock))]
+		[XmlElement(typeof(SelfCheckupsBlock))]
 		[XmlChoiceIdentifier(nameof(DefineBlockType))]
 		public SlideBlock[] Blocks { get; set; }
 

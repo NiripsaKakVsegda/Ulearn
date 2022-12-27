@@ -787,7 +787,7 @@ function DeadLine(
 						maxWidth={ '100%' }
 						width={ '100%' }
 						value={ deadLineInfo.scorePercent }
-						items={ [0, 25, 50, 75] }
+						items={ [0, 25, 50, 75, 100] }
 						onValueChange={ changePercentWithId }
 					/>
 				</span>

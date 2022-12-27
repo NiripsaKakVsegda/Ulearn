@@ -127,12 +127,13 @@ namespace Ulearn.Core.Tests.Courses.Slides
 		{
 			var slide = DeserializeSlideFromXmlFile("SimpleSlideWithDifferentBlocks.xml");
 
-			Assert.AreEqual(5, slide.Blocks.Length);
+			Assert.AreEqual(6, slide.Blocks.Length);
 			Assert.AreEqual(typeof(MarkdownBlock), slide.Blocks[0].GetType());
 			Assert.AreEqual(typeof(YoutubeBlock), slide.Blocks[1].GetType());
 			Assert.AreEqual(typeof(CodeBlock), slide.Blocks[2].GetType());
 			Assert.AreEqual(typeof(TexBlock), slide.Blocks[3].GetType());
 			Assert.AreEqual(typeof(ImageGalleryBlock), slide.Blocks[4].GetType());
+			Assert.AreEqual(typeof(SelfCheckupsBlock), slide.Blocks[5].GetType());
 			Assert.AreEqual("123456", ((YoutubeBlock)slide.Blocks[1]).VideoId);
 			Assert.AreEqual(Language.CSharp, ((CodeBlock)slide.Blocks[2]).Language);
 			CollectionAssert.AreEqual(new string[2]
@@ -141,11 +142,16 @@ namespace Ulearn.Core.Tests.Courses.Slides
 				"a_i = \\left{(}\\frac{n(n+1)}{2}\\right{)}"
 			}, ((TexBlock)slide.Blocks[3]).TexLines);
 			var imageGalleryBlock = (ImageGalleryBlock)slide.Blocks[4];
-			CollectionAssert.AreEqual(new []
+			CollectionAssert.AreEqual(new[]
 			{
 				"https://api.ulearn.me/courses/courseId/files/unit/image1.png",
 				"https://api.ulearn.me/courses/courseId/files/unit/image2.png"
 			}, imageGalleryBlock.GetAbsoluteImageUrls("https://api.ulearn.me/", "courseId", "unit"));
+			CollectionAssert.AreEqual(new[]
+			{
+				"Проверь себя и найди это",
+				"Не забудь подписаться"
+			}, (slide.Blocks[5] as SelfCheckupsBlock).Checkups.ToArray());
 		}
 	}
 }

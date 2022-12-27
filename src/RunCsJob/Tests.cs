@@ -18,12 +18,21 @@ namespace RunCsJob
 		public static void SetUp()
 		{
 			Directory.CreateDirectory(compilationDirectory);
+			var dir = new DirectoryInfo("OldAssembly");
+			var newAssembly = Path.Combine(compilationDirectory, "OldAssembly");
+			Directory.CreateDirectory(newAssembly);
+			foreach (var file in dir.GetFiles())
+			{
+				var targetFilePath = Path.Combine(newAssembly, file.Name);
+				file.CopyTo(targetFilePath);
+			}
 			Directory.SetCurrentDirectory(compilationDirectory);
 		}
 
 		[TearDown]
 		public static void TearDown()
 		{
+			Directory.SetCurrentDirectory(TestContext.CurrentContext.TestDirectory);
 			try
 			{
 				Directory.Delete(compilationDirectory, true);
@@ -190,8 +199,8 @@ Thread.Sleep(50000);
 		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { 
 const int memory = 63 * 1024 * 1024; 
 var a = new byte[memory]; 
-for (var j = 0; j < 2; j++)
-for (var i = 0; i < 2*1000*1000*1000; ++i) a[i % memory] = (byte)i;
+for (var j = 0; j < int.MaxValue; j++)
+for (var i = 0; i < int.MaxValue; ++i) a[i % memory] = (byte)i;
 }}",
 			TestName = "many assignation")]
 		public static void TestTimeLimitError(string code)

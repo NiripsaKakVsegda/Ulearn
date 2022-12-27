@@ -9,7 +9,7 @@ namespace Database.Repos
 {
 	public static class AppUserQueryExtensions
 	{
-		public static IQueryable<ApplicationUser> FilterByRole(this IQueryable<ApplicationUser> applicationUsers, IdentityRole role, UserManager<ApplicationUser> userManager)
+		public static IQueryable<ApplicationUser> FilterByRole(this IQueryable<ApplicationUser> applicationUsers, IdentityRole role)
 		{
 			return role == null
 				? applicationUsers
@@ -42,7 +42,7 @@ namespace Database.Repos
 			var userRolesInfos = new List<UserRolesInfo>();
 			foreach (var user in await users.ToListAsync())
 			{
-				userRolesInfos.Append(new UserRolesInfo
+				userRolesInfos.Add(new UserRolesInfo
 				{
 					UserId = user.Id,
 					UserName = user.UserName,

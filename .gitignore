@@ -196,6 +196,8 @@ private.settings
 *.exercise.zip
 /src/uLearn.Web/App_Data/error*.xml
 #Copied from frontend build
+/src/uLearn.Web.Core/wwwroot/
+/src/uLearn.Web.Core/Certificates/
 /src/uLearn.Web/static/
 /src/uLearn.Web/workbox*
 /src/uLearn.Web/sw.js

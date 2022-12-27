@@ -130,7 +130,7 @@ const config: Configuration = {
 					},
 					{
 						loader: 'file-loader',
-						exclude: [/\.(js|jsx|mjs|ts|tsx)$/, /\.html$/, /\.json$/],
+						exclude: [/\.(js|jsx|mjs|ts|tsx)$/, /\.html$/, /\.json$/, /^$/,],
 						options: {
 							name: paths.static.media + '/[name].[contenthash:8].[ext]',
 						},

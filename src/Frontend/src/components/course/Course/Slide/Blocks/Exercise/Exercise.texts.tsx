@@ -6,6 +6,7 @@ import { convertDefaultTimezoneToLocal, getMoment } from "src/utils/momentUtils"
 import { Language } from "src/consts/languages";
 import { capitalize } from "src/utils/stringUtils";
 import { LanguageLaunchInfo } from "src/models/slide";
+import { Link } from "@skbkontur/react-ui";
 
 const texts = {
 	submissions: {
@@ -57,31 +58,6 @@ const texts = {
 	},
 
 	compilationText: 'Как компилируется код?',
-
-	checkups: {
-		showReview: 'Посмотреть',
-
-		self: {
-			title: 'Самопроверка',
-			text: 'Посмотрите, всё ли вы учли и отметьте сделанное',
-
-			checks: [
-				'Проверьте оформление',
-				'Проверьте, у всех полей и методов правильно выбраны модификаторы доступа.',
-				'Метод точно работает корректно?',
-			],
-		},
-		teacher: {
-			title: 'Код-ревью',
-			countTeacherReviews: (reviewsCount: number): string => `Преподаватель оставил ${ reviewsCount } ${ getPluralForm(
-				reviewsCount, 'комментарий', 'комментария', 'комментариев') }. `,
-		},
-		bot: {
-			title: 'Ulearn Bot',
-			countBotComments: (botCommentsLength: number): string => `Бот нашёл ${ botCommentsLength } ${ getPluralForm(
-				botCommentsLength, 'ошибку', 'ошибки', 'ошибок') }. `,
-		},
-	},
 
 	controls: {
 		submitCode: {

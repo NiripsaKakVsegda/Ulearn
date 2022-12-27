@@ -9,6 +9,8 @@ import { Profile } from './Profile';
 
 import { Mobile, NotMobile } from "src/utils/responsive";
 import { withParams } from "src/utils/router";
+import { momentToServerFormat } from "src/utils/momentUtils";
+import moment from "moment-timezone";
 
 import { CourseRoleType, } from "src/consts/accessType";
 import { ShortUserInfo } from "src/models/users";
@@ -296,7 +298,7 @@ function GroupMembers(props: Props) {
 					.concat({
 						user: item as ShortUserInfo,
 						grantedBy,
-						grantTime: new Date().toDateString(),
+						grantTime: momentToServerFormat(moment()),
 					} as GroupAccessesInfo);
 
 				setState(oldState => ({

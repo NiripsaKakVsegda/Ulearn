@@ -29,7 +29,7 @@ namespace Ulearn.Core
 		{
 			MsBuildLocationHelper.InitPathToMsBuild();
 			return FuncUtils.Using(
-				new ProjectCollection(),
+				new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile),
 				projectCollection =>
 				{
 					var proj = new Project(csproj.FullName, null, toolsVersion, projectCollection);
@@ -78,6 +78,8 @@ namespace Ulearn.Core
 
 		private static bool IsChecking(ProjectItem item)
 		{
+			return item.EvaluatedInclude.StartsWith("checking" + Path.DirectorySeparatorChar) && item.UnevaluatedInclude != "**/*$(DefaultLanguageSourceExtension)"
+				|| item.DirectMetadata.Any(md => md.Name == "Link" && md.UnevaluatedValue != "**/*$(DefaultLanguageSourceExtension)" && md.EvaluatedValue.StartsWith("checking" + Path.DirectorySeparatorChar));
 			return
 				item.EvaluatedInclude.StartsWith("checking" + Path.DirectorySeparatorChar)
 				|| item.DirectMetadata.Any(md => md.Name == "Link" && md.EvaluatedValue.StartsWith("checking" + Path.DirectorySeparatorChar));

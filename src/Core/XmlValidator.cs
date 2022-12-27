@@ -13,29 +13,25 @@ namespace Ulearn.Core
 
 		public XmlValidator(string schemaPath)
 		{
-			var schemaSet = new XmlSchemaSet();
-
-			using (var r = XmlReader.Create(schemaPath))
-			{
-				schemaSet.Add(XmlSchema.Read(r, null));
-			}
-
 			AppContext.SetSwitch("Switch.System.Xml.AllowDefaultResolver", true);
-			schemaSet.XmlResolver = new XmlUrlResolver();
 
-			schemaSet.CompilationSettings = new XmlSchemaCompilationSettings();
-			schemaSet.Compile();
-
-			settings = new XmlReaderSettings
+			XmlReaderSettings xmlReaderSettings = new()
 			{
 				CloseInput = true,
 				ValidationType = ValidationType.Schema,
-				Schemas = schemaSet,
 				ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings |
 								XmlSchemaValidationFlags.ProcessIdentityConstraints |
 								XmlSchemaValidationFlags.ProcessInlineSchema |
-								XmlSchemaValidationFlags.ProcessSchemaLocation
+								XmlSchemaValidationFlags.ProcessSchemaLocation,
+				XmlResolver = new XmlUrlResolver(),
 			};
+			
+			using (var r = XmlReader.Create(schemaPath))
+			{
+				xmlReaderSettings.Schemas.Add(XmlSchema.Read(r, null));
+			}
+
+			settings = xmlReaderSettings;
 		}
 
 		public string ValidateSlideFile(FileInfo file)

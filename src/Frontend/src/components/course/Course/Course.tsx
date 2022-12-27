@@ -441,10 +441,11 @@ class Course extends Component<CourseProps, State> {
 					&& <p className={ styles.deadLine }>
 						<Gapped gap={ 5 }>
 							{ texts.renderDeadLineInfo(slideInfo.deadLineInfo.current) }
-							<Hint
+							{ slideInfo.deadLineInfo.current.scorePercent < 100 && <Hint
 								text={ texts.afterDeadLine(slideInfo.deadLineInfo.current, currentSlideInfo.maxScore) }>
 								<HelpDot/>
 							</Hint>
+							}
 						</Gapped>
 					</p>
 				}
@@ -454,10 +455,10 @@ class Course extends Component<CourseProps, State> {
 						<Gapped gap={ 5 }>
 							{ texts.renderDeadLineInfo(slideInfo.deadLineInfo.next,
 								slideInfo.deadLineInfo.current !== null) }
-							<Hint
+							{ slideInfo.deadLineInfo.next.scorePercent < 100 && <Hint
 								text={ texts.afterDeadLine(slideInfo.deadLineInfo.next, currentSlideInfo.maxScore) }>
 								<HelpDot/>
-							</Hint>
+							</Hint> }
 						</Gapped>
 					</p>
 				}

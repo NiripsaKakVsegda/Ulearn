@@ -1,0 +1,92 @@
+﻿@using Ulearn.Common
+@using System.Web
+@using uLearn.Web.Core.Extensions
+@using uLearn.Web.Core.Models
+@model uLearn.Web.Core.Models.RegistrationViewModel
+@{
+	ViewBag.Title = "Регистрация";
+}
+
+@if (!Model.RegistrationFinished)
+{
+	<div class="container">
+		<div class="row">
+			<div class="col-md-offset-4 col-md-4">
+				<h2>@ViewBag.Title</h2>
+
+				<section id="socialLoginForm">
+					@await Html.PartialAsync("../Login/ExternalLoginsListPartial", 
+						new ExternalLoginsListModel { ActionName = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl, Type = ExternalLoginListType.Registration })
+				</section>
+
+				<div class="strike-line grey">
+					<span>
+						<i>или введите логин, почту и пароль</i>
+					</span>
+				</div>
+
+				<section class="login-and-registration-form">
+					@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form", @class = "form-horizontal" }))
+					{
+						@Html.HiddenFor(m => m.ReturnUrl)
+						@Html.AntiForgeryToken()
+						<div class="form-group">
+							@Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "Логин", autofocus = "autofocus" })
+							@Html.ValidationMessageFor(m => m.UserName)
+						</div>
+						<div class="form-group">
+							@Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Эл. почта" })
+							@Html.ValidationMessageFor(m => m.Email)
+						</div>
+						<div class="form-group radio-form-group">
+							<div class="control-label for-non-text-fields ib">Пол</div>
+							<div class="pull-right">
+								<div class="radio radio-default ib">
+									@Html.RadioButtonFor(m => m.Gender, Gender.Male, new { id = "profile__gender__male" }) <label for="profile__gender__male">Мужской</label>
+								</div>
+								<div class="radio radio-default ib">
+									@Html.RadioButtonFor(m => m.Gender, Gender.Female, new { id = "profile__gender__female" }) <label for="profile__gender__female">Женский</label>
+								</div>
+							</div>
+							@Html.ValidationMessageFor(m => m.Gender)
+						</div>
+						<div class="form-group">
+							@Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Пароль", autocomplete = "on" })
+							@Html.ValidationMessageFor(m => m.Password)
+						</div>
+						<div class="form-group">
+							@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Ещё раз", autocomplete = "new-password" })
+							@Html.ValidationMessageFor(m => m.ConfirmPassword)
+						</div>
+						<div class="form-group">
+							<div class="checkbox checkbox-default">
+								@Html.CheckBoxFor(m => m.AgreeWithTerms)
+								@* We can't use Html.LabelFor() here because display name for AgreeWithTerms is HTML, but Html.LabelFor() doesn't support this *@
+								<label for="@Html.NameFor(m => m.AgreeWithTerms)">
+									@Html.Raw(HttpUtility.HtmlDecode(Html.DisplayNameFor(m => m.AgreeWithTerms).ToString()))
+								</label>
+								@Html.ValidationMessageFor(m => m.AgreeWithTerms)
+							</div>
+						</div>
+
+						@Html.UlearnValidationSummary(true)
+
+						<div class="form-group">
+							<input type="submit" value="Поехали" class="ph-btn ph-btn-green btn-block"/>
+						</div>
+					}
+				</section>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+@section scripts {
+	<script> 
+ 		$(document).ready(function() { 
+			window.legacy.ym('reachGoal', 'registration'); 
+ 			window.location.replace("@HttpUtility.HtmlAttributeEncode(Model.ReturnUrl)"); 
+		}); 
+ 	</script>
+}}

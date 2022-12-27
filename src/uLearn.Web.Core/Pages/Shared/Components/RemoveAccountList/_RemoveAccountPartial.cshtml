@@ -1,0 +1,47 @@
+﻿@using uLearn.Web.Core.Authentication.External.Kontur
+@using uLearn.Web.Core.Authentication.External.Vkontakte
+@model  IList<Microsoft.AspNetCore.Identity.UserLoginInfo>
+
+@if (Model.Count > 0)
+{
+	<table class="table">
+		<tbody>
+		@foreach (var account in Model)
+		{
+			<tr>
+				<td>
+					@account.LoginProvider
+					<span class="text-muted">
+						@if (account.LoginProvider == VkontakteConstants.DefaultAuthenticationType)
+						{
+							<text>id@(account.ProviderKey)</text>
+						}
+						@if (account.LoginProvider == KonturPassportConstants.AuthenticationType)
+						{
+							<text>@ViewBag.User.KonturLogin</text>
+						}
+					</span>
+				</td>
+				<td>
+					@if (ViewBag.ShowRemoveButton)
+					{
+						using (Html.BeginForm("Disassociate", "Account"))
+						{
+							@Html.AntiForgeryToken()
+							<div>
+								@Html.Hidden("loginProvider", account.LoginProvider)
+								@Html.Hidden("providerKey", account.ProviderKey)
+								<input type="submit" class="btn btn-danger btn-sm pull-right" value="Отвязать" title="Удалить привязку @account.LoginProvider"/>
+							</div>
+						}
+					}
+					else
+					{
+						@: &nbsp;
+					}
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}

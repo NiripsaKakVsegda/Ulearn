@@ -13,7 +13,7 @@ namespace Database.Repos
 			List<int> groupsIds, string spreadsheetId, int listId);
 
 		Task<GoogleSheetExportTask> GetTaskById(int taskId);
-		
+
 		Task<List<GoogleSheetExportTask>> GetTasks(string courseId, string authorId = null);
 
 		Task<List<GoogleSheetExportTask>> GetAllTasks();
@@ -24,5 +24,6 @@ namespace Database.Repos
 		Task DeleteTask(GoogleSheetExportTask exportTask);
 
 		Task SaveTaskUploadResult(GoogleSheetExportTask exportTask, DateTime lastUpdateTime, string error = null);
+		Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<Group> groups, string userId);
 	}
 }

@@ -32,6 +32,7 @@ export default function AcceptedSolutionsButtonFC({
 		<ThemeContext.Provider value={ defaultTheme }>
 				<span className={ styles.exerciseControls } onClick={ showAcceptedSolutionsWarning }>
 					<Tooltip
+						useWrapper
 						ref={ tooltip }
 						pos={ "bottom left" }
 						trigger={ tooltipTrigger }
