@@ -72,12 +72,12 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			var exerciseSlide = slide as ExerciseSlide;
 			if (exerciseSlide == null || exerciseSlide.Exercise.ExerciseType != ExerciseType.CheckPoints)
 				return markdown;
-			if (!(markdown.Contains("(/Analytics/RatingByPoints)") || markdown.Contains("(LeaderBord)")))
+			if (!(markdown.Contains("(/Analytics/RatingByPoints)") || markdown.Contains("(Leaderboard)")))
 				return markdown;
 			var path = CourseUrlHelper.GetAbsoluteUrlToLeaderBord(baseUrlWeb, courseId, slide.Id);
 			return markdown
 				.Replace("(/Analytics/RatingByPoints)", $"({path})")
-				.Replace("(LeaderBord)", $"({path})");
+				.Replace("(Leaderboard)", $"({path})");
 		}
 
 		public override string ToString()
