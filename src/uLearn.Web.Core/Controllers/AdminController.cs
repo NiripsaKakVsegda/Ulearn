@@ -39,7 +39,7 @@ using Group = Database.Models.Group;
 
 namespace uLearn.Web.Core.Controllers;
 
-[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
+[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 public class AdminController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(AdminController));
@@ -120,7 +120,7 @@ public class AdminController : Controller
 		antiPlagiarismClient = new AntiPlagiarismClient(antiplagiarismClientConfiguration.Endpoint, antiplagiarismClientConfiguration.Token);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> SpellingErrors(Guid versionId)
 	{
 		var versionFile = await coursesRepo.GetVersionFile(versionId);
@@ -134,7 +134,7 @@ public class AdminController : Controller
 		}
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> Units(string courseId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -146,7 +146,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<RedirectToActionResult> SetPublishTime(string courseId, Guid unitId, string publishTime)
 	{
 		var oldInfo = await db.UnitAppearances.Where(u => u.CourseId == courseId && u.UnitId == unitId).ToListAsync();
@@ -164,7 +164,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<RedirectToActionResult> RemovePublishTime(string courseId, Guid unitId)
 	{
 		var unitAppearance = await db.UnitAppearances.FirstOrDefaultAsync(u => u.CourseId == courseId && u.UnitId == unitId);
@@ -177,7 +177,7 @@ public class AdminController : Controller
 		return RedirectToAction("Units", new { courseId });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> DownloadPackage(string courseId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -193,7 +193,7 @@ public class AdminController : Controller
 		return File(content, "application/zip", courseId + ".zip");
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> DownloadVersion(string courseId, Guid versionId)
 	{
 		var publishedVersionFile = await coursesRepo.GetVersionFile(versionId);
@@ -225,7 +225,7 @@ public class AdminController : Controller
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> SaveCourseRepoSettings(string courseId, string repoUrl, string branch, string pathToCourseXml, bool isWebhookEnabled, string submitButton)
 	{
 		if (submitButton == "Save")
@@ -279,7 +279,7 @@ public class AdminController : Controller
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> GenerateCourseRepoKey(string courseId, string repoUrl)
 	{
 		var keys = SshKeyGenerator.Generate();
@@ -288,7 +288,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> UploadCourse(string courseId, IFormFile file)
 	{
 		if (file == null || file.Length <= 0)
@@ -389,7 +389,7 @@ public class AdminController : Controller
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> UploadCourseWithGit(string courseId)
 	{
 		var courseRepo = await coursesRepo.GetCourseRepoSettings(courseId);
@@ -492,7 +492,7 @@ public class AdminController : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)] 
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> CreateCourse(string courseId, string courseTitle)
 	{
@@ -513,7 +513,7 @@ public class AdminController : Controller
 		return RedirectToAction("Packages", new { courseId, onlyPrivileged = true });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> Packages(string courseId, string error = "")
 	{
 		var isTempCourse = courseStorage.GetCourse(courseId).IsTempCourse();
@@ -653,27 +653,22 @@ public class AdminController : Controller
 		{
 			CourseId = courseId,
 			/* TODO (andgein): Merge FindSlideById() and following GetSlideById() calls */
-			Checkings = checkings
-				.Take(maxShownQueueSize)
-				.Where(c => course.FindSlideByIdNotSafe(c.SlideId) != null)
-				.Select(c =>
+			Checkings = checkings.Take(maxShownQueueSize).Where(c => course.FindSlideByIdNotSafe(c.SlideId) != null).Select(c =>
+			{
+				var slide = course.GetSlideByIdNotSafe(c.SlideId);
+				return new ManualCheckingQueueItemViewModel
 				{
-					var slide = course.GetSlideByIdNotSafe(c.SlideId);
-					return new ManualCheckingQueueItemViewModel
-					{
-						CheckingQueueItem = c,
-						ContextSlideId = slide.Id,
-						ContextSlideTitle = slide.Title,
-						ContextMaxScore = (slide as ExerciseSlide)?.Scoring.ScoreWithCodeReview ?? slide.MaxScore,
-						ContextTimestamp = c.Timestamp,
-						ContextReviews = alreadyChecked ? reviews.GetOrDefault(c.Id, new List<ExerciseCodeReview>()) : new List<ExerciseCodeReview>(),
-						ContextExerciseSolution = alreadyChecked && c is ManualExerciseChecking checking ?
-							solutions.GetOrDefault(checking.Id, "") :
-							"",
-					};
-				})
-				.OrderBy(c => c.ContextTimestamp)
-				.ToList(),
+					CheckingQueueItem = c,
+					ContextSlideId = slide.Id,
+					ContextSlideTitle = slide.Title,
+					ContextMaxScore = (slide as ExerciseSlide)?.Scoring.ScoreWithCodeReview ?? slide.MaxScore,
+					ContextTimestamp = c.Timestamp,
+					ContextReviews = alreadyChecked ? reviews.GetOrDefault(c.Id, new List<ExerciseCodeReview>()) : new List<ExerciseCodeReview>(),
+					ContextExerciseSolution = alreadyChecked && c is ManualExerciseChecking checking ?
+						solutions.GetOrDefault(checking.Id, "") :
+						"",
+				};
+			}).ToList(),
 			Groups = groups,
 			GroupsAccesses = groupsAccesses,
 			SelectedGroupsIds = groupsIds,
@@ -843,7 +838,7 @@ public class AdminController : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	[HandleHttpAntiForgeryException]
 	public async Task<ActionResult> SaveCommentsPolicy(AdminCommentsViewModel model)
 	{
@@ -859,7 +854,7 @@ public class AdminController : Controller
 		return RedirectToAction("Comments", new { courseId });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
 	public async Task<ActionResult> Users(UserSearchQueryModel queryModel)
 	{
 		var isCourseAdmin = User.HasAccessFor(queryModel.CourseId, CourseRoleType.CourseAdmin);
@@ -967,7 +962,7 @@ public class AdminController : Controller
 		return model;
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> Diagnostics(string courseId, Guid? versionId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -1005,7 +1000,7 @@ public class AdminController : Controller
 		}
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> TempCourseDiagnostics(string courseId)
 	{
 		var authorId = (await tempCoursesRepo.Find(courseId)).AuthorId;
@@ -1036,7 +1031,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> PublishVersion(string courseId, Guid versionId)
 	{
 		log.Info($"Публикую версию курса {courseId}. ID версии: {versionId}");
@@ -1099,7 +1094,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> DeleteVersion(string courseId, Guid versionId)
 	{
 		await RemoveCourseVersion(courseId, versionId);
@@ -1186,7 +1181,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> CreateCertificateTemplate(string courseId, string name, IFormFile archive)
 	{
 		if (archive == null || archive.Length <= 0)
@@ -1228,7 +1223,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> EditCertificateTemplate(string courseId, Guid templateId, string name, IFormFile archive)
 	{
 		var template = await certificatesRepo.FindTemplateById(templateId);
@@ -1251,7 +1246,7 @@ public class AdminController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	public async Task<ActionResult> RemoveCertificateTemplate(string courseId, Guid templateId)
 	{
 		var template = await certificatesRepo.FindTemplateById(templateId);
@@ -1531,7 +1526,7 @@ public class AdminController : Controller
 		return Json(new { status = "ok", score = scoreInt });
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> ToggleCourseAccess(string courseId, string userId, CourseAccessType accessType, bool isEnabled)
 	{
@@ -1568,7 +1563,7 @@ public class AdminController : Controller
 
 	[ValidateAntiForgeryToken]
 	[HandleHttpAntiForgeryException]
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
 	[HttpPost]
 	public async Task<ActionResult> SetSuspicionLevels(string courseId, Guid slideId, Language language, string faintSuspicion = null, string strongSuspicion = null)
 	{
