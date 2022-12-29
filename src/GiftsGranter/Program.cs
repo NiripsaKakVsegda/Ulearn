@@ -84,9 +84,8 @@ namespace GiftsGranter
 			var staff = new StaffClient(settings["staff"]["clientAuth"].Value<string>());
 			var hostLog = settings["hostLog"].ToObject<HostLogConfiguration>();
 			var graphiteServiceName = settings["graphiteServiceName"].Value<string>();
-			var database = settings["database"].Value<string>();
 			LoggerSetup.Setup(hostLog, graphiteServiceName);
-			var (db, sp) = await CreateServiceProviderAndDb(database);
+			var (db, sp) = await CreateServiceProviderAndDb();
 
 			try
 			{
@@ -120,7 +119,7 @@ namespace GiftsGranter
 		}
 
 
-		public static async Task<(UlearnDb, IServiceProvider)> CreateServiceProviderAndDb(string databaseConnectionString)
+		public static async Task<(UlearnDb, IServiceProvider)> CreateServiceProviderAndDb()
 		{
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			try
@@ -148,7 +147,7 @@ namespace GiftsGranter
 
 			services.AddSingleton(db);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
-			services.AddDatabaseServices(false);
+			services.AddDatabaseServices(true);
 
 			return services.BuildServiceProvider();
 		}
