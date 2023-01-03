@@ -85,24 +85,24 @@ namespace GiftsGranter
 			var hostLog = settings["hostLog"].ToObject<HostLogConfiguration>();
 			var graphiteServiceName = settings["graphiteServiceName"].Value<string>();
 			LoggerSetup.Setup(hostLog, graphiteServiceName);
-			var (db, sp) = await CreateServiceProviderAndDb();
+			var sp = CreateServiceProvider();
 
 			try
 			{
-				CreateCliCommands(settings, staff, db, sp)
-					.Invoke(args);
+				await CreateCliCommands(settings, staff, sp)
+					.InvokeAsync(args);
 			}
 			finally
 			{
-				FileLog.FlushAll();
+				await FileLog.FlushAllAsync();
 			}
 		}
 
-		private static RootCommand CreateCliCommands(JObject settings, StaffClient staff, UlearnDb db, IServiceProvider sp)
+		private static RootCommand CreateCliCommands(JObject settings, StaffClient staff, IServiceProvider sp)
 		{
 			var root = new RootCommand();
 			root.AddOption(new Option<int?>("-c", () => settings["maxGiftsPerRun"]!.Value<int>(), "Max gifts to grant per run per course"));
-			root.Handler = CommandHandler.Create<int>(c => GrantGiftsCommand(settings, staff, c, db, sp.GetService<IVisitsRepo>()));
+			root.Handler = CommandHandler.Create<int>(c => GrantGiftsCommand(settings, staff, c, sp.GetService<UlearnDb>(), sp.GetService<IVisitsRepo>()));
 
 			var updateRefreshToken = new Command("update-staff-refresh-token");
 			updateRefreshToken.AddAlias("r");
@@ -119,7 +119,7 @@ namespace GiftsGranter
 		}
 
 
-		public static async Task<(UlearnDb, IServiceProvider)> CreateServiceProviderAndDb()
+		public static IServiceProvider CreateServiceProvider()
 		{
 			var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 			try
@@ -128,16 +128,12 @@ namespace GiftsGranter
 					.UseLazyLoadingProxies()
 					.UseNpgsql(configuration.Database, o => o.SetPostgresVersion(13, 2));
 				var db = new UlearnDb(optionsBuilder.Options);
-				var serviceProvider = ConfigureDI(db);
-
-				var courseManager = serviceProvider.GetService<ISlaveCourseManager>();
-				await courseManager.UpdateCoursesAsync();
-				await courseManager.UpdateTempCoursesAsync();
-
-				return (db, serviceProvider);
+				return ConfigureDI(db);
 			}
-			finally
+			catch (Exception e)
 			{
+				Log.Error(e);
+				throw;
 			}
 		}
 
@@ -147,12 +143,12 @@ namespace GiftsGranter
 
 			services.AddSingleton(db);
 			services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UlearnDb>();
-			services.AddDatabaseServices(true);
+			services.AddDatabaseServices(false);
 
 			return services.BuildServiceProvider();
 		}
 
-		private static void GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun, UlearnDb db, IVisitsRepo visitsRepo)
+		private static async Task GrantGiftsCommand(JObject settings, StaffClient staff, int maxGiftsPerRun, UlearnDb db, IVisitsRepo visitsRepo)
 		{
 			staff.UseRefreshToken(settings["staff"]["refreshToken"].Value<string>());
 			var telegramBot = new GiftsTelegramBot();
@@ -162,11 +158,11 @@ namespace GiftsGranter
 				var courses = settings["courses"].Values<string>();
 				var program = new Program(db, visitsRepo, staff, maxGiftsPerRun, settings, telegramBot);
 				foreach (var courseId in courses)
-					program.GrantGiftsForCourse(courseId);
+					await program.GrantGiftsForCourse(courseId);
 			}
 			catch (Exception e)
 			{
-				telegramBot.PostToChannel($"Error while grant staff gifts.\n\n{e}");
+				await telegramBot.PostToChannelAsync($"Error while grant staff gifts.\n\n{e}");
 				Log.Error(e, "UnhandledException");
 			}
 		}
@@ -195,10 +191,10 @@ namespace GiftsGranter
 			Console.WriteLine($"RefreshToken: {refreshToken}");
 		}
 
-		private void GrantGiftsForCourse(string courseId)
+		private async Task GrantGiftsForCourse(string courseId)
 		{
 			Log.Info($"StartProcessingCourse\t{courseId}");
-			GrantGifts(courseId);
+			await GrantGifts(courseId);
 			Log.Info($"DoneCourse\t{courseId}");
 		}
 
