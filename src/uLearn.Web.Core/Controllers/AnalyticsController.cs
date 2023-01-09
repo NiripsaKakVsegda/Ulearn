@@ -115,18 +115,18 @@ public class AnalyticsController : JsonDataContractController
 		filterOptions.SlidesIds = slidesIds;
 		filterOptions.PeriodStart = periodStart;
 		filterOptions.PeriodFinish = realPeriodFinish;
-
-		var slidesVisits = await visitsRepo.GetVisitsInPeriodForEachSlide(filterOptions);
-
-		List<string> usersIds;
-		/* If we filtered out users from one or several groups show them all */
-		if (filterOptions.UserIds != null && !filterOptions.IsUserIdsSupplement)
-			usersIds = filterOptions.UserIds;
-		else
-			usersIds = visitsRepo.GetVisitsInPeriod(filterOptions).Select(v => v.UserId).Distinct().ToList();
-
+		var usersIds =
+			/* If we filtered out users from one or several groups show them all */
+			filterOptions is { UserIds: { }, IsUserIdsSupplement: false }
+				? filterOptions.UserIds
+				: visitsRepo.GetVisitsInPeriod(filterOptions).Select(v => v.UserId).Distinct().ToList();
 		var visitedUsers = GetUnitStatisticUserInfos(usersIds);
+
 		var isMore = visitedUsers.Count > usersLimit;
+		if (isMore)
+			filterOptions.UserIds = usersIds.Take(usersLimit).ToList();
+		
+		var slidesVisits = await visitsRepo.GetVisitsInPeriodForEachSlide(filterOptions);
 
 		var visitedSlidesCountByUser = GetVisitedSlidesCountByUser(filterOptions);
 		var visitedSlidesCountByUserAllTime = GetVisitedSlidesCountByUserAllTime(filterOptions);
@@ -173,7 +173,7 @@ public class AnalyticsController : JsonDataContractController
 		return View(model);
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.CourseAdminsPolicyName)]
 	public async Task<ActionResult> UnitStatistics(UnitSheetParams param)
 	{
 		if (param.CourseId == null)
@@ -533,7 +533,7 @@ public class AnalyticsController : JsonDataContractController
 			.ToDefaultDictionary();
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> UserUnitStatistics(string courseId, Guid unitId, string userId)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -688,7 +688,7 @@ public class AnalyticsController : JsonDataContractController
 		return ordered.Select(p => p.Key).ToList();
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> UsersProgress(string courseId, Guid unitId, DateTime periodStart)
 	{
 		var course = courseStorage.GetCourse(courseId);
@@ -763,7 +763,7 @@ public class AnalyticsController : JsonDataContractController
 			.ToArray();
 	}
 
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)] 
+	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<ActionResult> UserSolutions(string courseId, string userId, Guid slideId, int? version = null)
 	{
 		var user = await db.Users.FindAsync(userId);

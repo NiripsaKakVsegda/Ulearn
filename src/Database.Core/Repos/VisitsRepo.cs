@@ -326,6 +326,7 @@ namespace Database.Repos
 
 		public IQueryable<Visit> GetVisitsInPeriod(VisitsFilterOptions options)
 		{
+			//Context.Database.SetCommandTimeout(TimeSpan.FromMinutes(2)) for long run requests? like for BP course admin at urfu
 			var filteredVisits = db.Visits.Where(v => v.CourseId == options.CourseId);
 			if (options.PeriodStart != DateTime.MinValue || options.PeriodFinish < DateTime.Now.AddSeconds(-10))
 				filteredVisits = filteredVisits.Where(v => options.PeriodStart <= v.Timestamp && v.Timestamp <= options.PeriodFinish);
