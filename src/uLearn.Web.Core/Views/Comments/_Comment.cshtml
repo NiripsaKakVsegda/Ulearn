@@ -123,7 +123,7 @@
 				{
 					<div>
 						— слайд
-						<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId, })">
+						<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId.ToString(), })">
 							«@Model.ContextSlideTitle»
 						</a>
 					</div>
@@ -133,8 +133,8 @@
 					{
 						<div>
 							, в ответ на
-							<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId, })#comment-@Model.Comment.ParentCommentId"
-								title="@Html.Encode(Model.ContextParentComment.TruncateWithEllipsis(200))">
+							<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId.ToString(), })#comment-@Model.Comment.ParentCommentId"
+								title="@(Model.ContextParentComment.TruncateWithEllipsis(200))">
 								«@(Model.ContextParentComment.TruncateWithEllipsis(40))»
 							</a>
 						</div>
@@ -210,7 +210,7 @@
 					</span>
 				</div>
 				<div class="comment__publish-time" title="@Model.Comment.PublishTime.ToPrettyString()">
-					<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId })#comment-@Model.Comment.Id">
+					<a href="@Url.Action("SlideById", "Course", new { courseId = Model.Comment.CourseId, slideId = Model.Comment.SlideId.ToString() })#comment-@Model.Comment.Id">
 						@Model.Comment.PublishTime.ToAgoPrettyString()
 					</a>
 				</div>
