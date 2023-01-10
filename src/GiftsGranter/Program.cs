@@ -259,7 +259,7 @@ namespace GiftsGranter
 					Log.Info($"NoGiftYet\t{entry.Score}\t{user.VisibleName}");
 					staffClient.GrantGift(staffUserId, entry.Score, courseSettings);
 					Log.Info($"ComplexityGiftGrantedFor\t{user.VisibleName}\t{user.KonturLogin}");
-					telegramBot.PostToChannel($"Granted gift for course {courseId}\n{entry.Score} points for user {user.VisibleName} {user.KonturLogin}");
+					await telegramBot.PostToChannelAsync($"Granted gift for course {courseId}\n{entry.Score} points for user {user.VisibleName} {user.KonturLogin}");
 					return true;
 				}
 
@@ -270,8 +270,8 @@ namespace GiftsGranter
 			{
 				var message = $"Can't grant gift to {user.VisibleName} (kontur-login: {user.KonturLogin} ulearn-username: {user.UserName})";
 				Log.Error(e, message);
-				telegramBot.PostToChannel(message);
-				telegramBot.PostToChannel($"```{e}```", ParseMode.Markdown);
+				await telegramBot.PostToChannelAsync(message);
+				await telegramBot.PostToChannelAsync($"```{e}```", ParseMode.Markdown);
 				return false;
 			}
 		}
