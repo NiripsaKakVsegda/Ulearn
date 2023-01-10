@@ -125,8 +125,10 @@ public class AnalyticsController : JsonDataContractController
 		var isMore = visitedUsers.Count > usersLimit;
 		if (isMore)
 			filterOptions.UserIds = usersIds.Take(usersLimit).ToList();
-		
-		var slidesVisits = await visitsRepo.GetVisitsInPeriodForEachSlide(filterOptions);
+
+		var slidesVisits = isMore && groupsIds.Count == 0
+			? null
+			: await visitsRepo.GetVisitsInPeriodForEachSlide(filterOptions);
 
 		var visitedSlidesCountByUser = GetVisitedSlidesCountByUser(filterOptions);
 		var visitedSlidesCountByUserAllTime = GetVisitedSlidesCountByUserAllTime(filterOptions);

@@ -31,65 +31,73 @@
 <body>
 <div class="container">
 
-	<h2>
-		@Model.Unit.Title.TruncateWithEllipsis(35)
+<h2>
+	@Model.Unit.Title.TruncateWithEllipsis(35)
 
-		<small>
-			<a href="#filters" class="visible-xs-inline ml10" data-toggle="true" data-scroll="false">
-				<span class="no-underline glyphicon glyphicon-filter"></span>
-			</a>
-		</small>
-		<br class="visible-xs"/>
-		<small class="visible-xs">с @Model.PeriodStart.ToShortDateString() по @Model.PeriodFinish.ToShortDateString()</small>
-	</h2>
-	<div class="analytics__dashboard">
-		@using (Html.BeginForm("UnitSheet", "Analytics", FormMethod.Get, new { @class = "form-inline", id = "unit-statistics-filter-form" }))
-		{
-			@Html.Hidden("courseId", Model.CourseId)
+	<small>
+		<a href="#filters" class="visible-xs-inline ml10" data-toggle="true" data-scroll="false">
+			<span class="no-underline glyphicon glyphicon-filter"></span>
+		</a>
+	</small>
+	<br class="visible-xs"/>
+	<small class="visible-xs">с @Model.PeriodStart.ToShortDateString() по @Model.PeriodFinish.ToShortDateString()</small>
+</h2>
+<div class="analytics__dashboard">
+	@using (Html.BeginForm("UnitSheet", "Analytics", FormMethod.Get, new { @class = "form-inline", id = "unit-statistics-filter-form" }))
+	{
+		@Html.Hidden("courseId", Model.CourseId)
 
-			<div id="filters" class="hidden-xs-inline">
-				<div class="form-group">
-					@Html.DropDownList("unitId",
-						Model.Units.Select(unit => new SelectListItem { Text = unit.Title, Selected = unit == Model.Unit, Value = unit.Id.ToString() }),
-						new { @class = "form-control selectpicker show-tick" })
-				</div>
-
-				<div class="form-group sm-ml10 ib">
-					с @Html.TextBox("periodStart", Model.PeriodStart.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
-				</div>
-
-				<div class="form-group ib">
-					по @Html.TextBox("periodFinish", Model.PeriodFinish.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
-				</div>
-
-				@await Html.PartialAsync("~/Views/Shared/_GroupsFilter.cshtml", new GroupsFilterViewModel
-				{
-					CourseId = Model.CourseId,
-					SelectedGroupsIds = Model.SelectedGroupsIds,
-					Groups = Model.Groups,
-					UsersIdsWithGroupsAccess = Model.GroupsAccesses.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(s => s.UserId).ToList()),
-				})
-
-				<div class="form-group">
-					<button role="button" class="btn btn-primary">Отфильтровать</button>
-				</div>
+		<div id="filters" class="hidden-xs-inline">
+			<div class="form-group">
+				@Html.DropDownList("unitId",
+					Model.Units.Select(unit => new SelectListItem { Text = unit.Title, Selected = unit == Model.Unit, Value = unit.Id.ToString() }),
+					new { @class = "form-control selectpicker show-tick" })
 			</div>
-		}
 
-		<div class="vspace-20 hidden-xs hidden-sm"></div>
+			<div class="form-group sm-ml10 ib">
+				с @Html.TextBox("periodStart", Model.PeriodStart.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
+			</div>
 
-		@if (Model.ShowStatisticsLink)
-		{
-			<h2>
-				@Html.ActionLink("Статистика", "UnitStatistics", new
-				{
-					courseId = Model.CourseId, unitId = Model.Unit.Id,
-					periodStart = Model.PeriodStart.ToString("dd.MM.yyyy"), periodFinish = Model.PeriodFinish.ToString("dd.MM.yyyy"),
-					group = Model.SelectedGroupsIdsJoined
-				})
-			</h2>
-		}
+			<div class="form-group ib">
+				по @Html.TextBox("periodFinish", Model.PeriodFinish.ToString("dd.MM.yyyy"), new { @class = "form-control form-control-date datetimepicker ib" })
+			</div>
 
+			@await Html.PartialAsync("~/Views/Shared/_GroupsFilter.cshtml", new GroupsFilterViewModel
+			       {
+				       CourseId = Model.CourseId,
+				       SelectedGroupsIds = Model.SelectedGroupsIds,
+				       Groups = Model.Groups,
+				       UsersIdsWithGroupsAccess = Model.GroupsAccesses.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(s => s.UserId).ToList()),
+			       })
+
+			<div class="form-group">
+				<button role="button" class="btn btn-primary">Отфильтровать</button>
+			</div>
+		</div>
+	}
+
+	<div class="vspace-20 hidden-xs hidden-sm"></div>
+
+	@if (Model.ShowStatisticsLink)
+	{
+		<h2>
+			@Html.ActionLink("Статистика", "UnitStatistics", new
+			{
+				courseId = Model.CourseId, unitId = Model.Unit.Id,
+				periodStart = Model.PeriodStart.ToString("dd.MM.yyyy"), periodFinish = Model.PeriodFinish.ToString("dd.MM.yyyy"),
+				group = Model.SelectedGroupsIdsJoined
+			})
+		</h2>
+	}
+
+	@if (Model.SlidesVisits == null)
+	{
+		<div class="text-muted">
+			У вас слишком много групп, выберите конкректную группу
+		</div>
+	}
+	else
+	{
 		<div id="students">
 			@{
 				var exercisesAndQuizzes = Model.Slides.Where(s => s is QuizSlide || s is ExerciseSlide).ToList();
@@ -222,12 +230,12 @@
 			}
 		</div>
 
-		@if (Model.VisitedUsersIsMore)
-		{
+		if (Model.VisitedUsersIsMore)
 			<div class="text-muted">
 				Показаны <b>200</b> лучших студентов
 			</div>
-		}
-	</div>
+	}
+
+</div>
 </div>
 </body>
