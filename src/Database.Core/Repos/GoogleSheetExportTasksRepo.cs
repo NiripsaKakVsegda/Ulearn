@@ -108,7 +108,7 @@ namespace Database.Repos
 			await db.SaveChangesAsync();
 		}
 
-		public async Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<Group> groups, string userId)
+		public async Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<SingleGroup> groups, string userId)
 		{
 			if (groups == null)
 				return null;
@@ -120,7 +120,7 @@ namespace Database.Repos
 				.Select(g => g.GroupId)
 				.ToHashSet();
 			var accessibleCourseGroupsIds = (await groupAccessesRepo
-					.GetAvailableForUserGroupsAsync(courseId, userId, true, true, true))
+					.GetAvailableForUserGroupsAsync(courseId, userId, true, true, true, GroupQueryType.Group))
 				.Select(g => g.Id);
 
 			accessibleAsMemberGroupsIds.UnionWith(accessibleCourseGroupsIds);

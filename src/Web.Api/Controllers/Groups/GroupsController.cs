@@ -51,7 +51,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 		private async Task<GroupsListResponse> GetGroupsListResponseAsync(GroupsListParameters parameters)
 		{
-			var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(parameters.CourseId, UserId, false, true, parameters.Archived);
+			var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(parameters.CourseId, UserId, false, true, parameters.Archived, GroupQueryType.All);
 
 			if (parameters.UserId != null)
 			{
@@ -120,6 +120,11 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				Id = group.Id,
 				ApiUrl = url,
 			});
+		}
+
+		public async Task CreateSuperGroup()
+		{
+			
 		}
 	}
 }

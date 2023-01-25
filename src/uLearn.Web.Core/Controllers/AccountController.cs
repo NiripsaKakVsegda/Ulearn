@@ -199,7 +199,7 @@ public class AccountController : BaseUserController
 		return user;
 	}
 
-	private async Task NotifyAboutUserJoinedToGroup(Group group, string userId)
+	private async Task NotifyAboutUserJoinedToGroup(SingleGroup group, string userId)
 	{
 		var notification = new JoinedToYourGroupNotification
 		{
@@ -212,7 +212,7 @@ public class AccountController : BaseUserController
 	public async Task<ActionResult> JoinGroup(Guid hash)
 	{
 		var userId = User.GetUserId();
-		var group = await groupsRepo.FindGroupByInviteHashAsync(hash);
+		var group = await groupsRepo.FindGroupByInviteHashAsync(hash) as SingleGroup;
 
 		if (group != null && group.Members.Any(u => u.UserId == userId))
 			return Redirect(Url.RouteUrl("Course.Slide", new { courseId = group.CourseId }));
@@ -361,7 +361,7 @@ public class AccountController : BaseUserController
 		var courseArchivedGroups = new Dictionary<string, string>();
 		foreach (var course in userCourses)
 		{
-			var groups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId, true);
+			var groups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
 			courseActualGroups[course.Id] = string.Join(',', groups.Where(g => !g.IsArchived).Select(g => g.Name));
 			courseArchivedGroups[course.Id] = string.Join(',', groups.Where(g => g.IsArchived).Select(g => g.Name));
 		}

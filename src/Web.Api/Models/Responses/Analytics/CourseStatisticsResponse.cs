@@ -190,7 +190,7 @@ namespace Ulearn.Web.Api.Models.Responses.Analytics
 		{
 		}
 
-		public CourseStatisticsGroupInfo(Group g)
+		public CourseStatisticsGroupInfo(SingleGroup g)
 		{
 			Id = g.Id;
 			Title = g.Name;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Database.Models;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Web.Api.Models.Common;
 
@@ -11,6 +12,9 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 	{
 		[DataMember]
 		public int Id { get; set; }
+		
+		[DataMember]
+		public GroupType GroupType { get; set; }
 
 		[DataMember]
 		public DateTime? CreateTime { get; set; }
@@ -35,16 +39,16 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 
 
 		[DataMember]
-		public bool IsManualCheckingEnabled { get; set; }
+		public bool? IsManualCheckingEnabled { get; set; }
 
 		[DataMember]
-		public bool IsManualCheckingEnabledForOldSolutions { get; set; }
+		public bool? IsManualCheckingEnabledForOldSolutions { get; set; }
 
 		[DataMember]
-		public bool DefaultProhibitFurtherReview { get; set; }
+		public bool? DefaultProhibitFurtherReview { get; set; }
 
 		[DataMember]
-		public bool CanStudentsSeeGroupProgress { get; set; }
+		public bool? CanStudentsSeeGroupProgress { get; set; }
 
 
 		[DataMember(EmitDefaultValue = false)]

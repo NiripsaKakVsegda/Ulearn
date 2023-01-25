@@ -109,7 +109,7 @@ public class AnalyticsController : JsonDataContractController
 		var slides = selectedUnit.GetSlides(false);
 		var slidesIds = slides.Select(s => s.Id).ToList();
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
+		var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false, GroupQueryType.Group)).AsGroups().ToList();
 		var groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		var filterOptions = await ControllerUtils.GetFilterOptionsByGroup<VisitsFilterOptions>(groupsRepo, groupAccessesRepo, User, courseId, groupsIds);
 		filterOptions.SlidesIds = slidesIds;
@@ -207,7 +207,7 @@ public class AnalyticsController : JsonDataContractController
 		var slides = selectedUnit.GetSlides(false);
 		var slidesIds = slides.Select(s => s.Id).ToList();
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
+		var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false, GroupQueryType.Group)).AsGroups().ToList();
 		var groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		var filterOptions = await ControllerUtils.GetFilterOptionsByGroup<VisitsFilterOptions>(groupsRepo, groupAccessesRepo, User, courseId, groupsIds);
 		filterOptions.SlidesIds = slidesIds;
@@ -414,11 +414,11 @@ public class AnalyticsController : JsonDataContractController
 			.ToDictionary(kv => kv.Key, kv => kv.Value)
 			.ToSortedDictionary();
 
-		List<Group> groups;
+		List<SingleGroup> groups;
 		Dictionary<int, List<GroupAccess>> groupsAccesses = null;
 		if (isInstructor)
 		{
-			groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
+			groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false, GroupQueryType.Group)).AsGroups().ToList();
 			groupsAccesses = groupAccessesRepo.GetGroupsAccesses(groups.Select(g => g.Id));
 		}
 		else
@@ -602,14 +602,14 @@ public class AnalyticsController : JsonDataContractController
 		var isAdministrator = User.HasAccessFor(courseId, CourseRoleType.CourseAdmin);
 		var isStudent = !isInstructor;
 
-		Group selectedGroup = null;
-		List<Group> availableGroups = null;
+		SingleGroup selectedGroup = null;
+		List<SingleGroup> availableGroups = null;
 		List<ApplicationUser> users = null; // null, если все пользователи
 		var hideOtherUsersNames = false;
 		var showAllUsers = false;
 		if (groupId != null)
 		{
-			selectedGroup = await groupsRepo.FindGroupByIdAsync(groupId.Value);
+			selectedGroup = await groupsRepo.FindGroupByIdAsync(groupId.Value) as SingleGroup;
 			if (selectedGroup == null)
 				return new NotFoundResult();
 			users = await groupMembersRepo.GetGroupMembersAsUsersAsync(groupId.Value);
@@ -622,7 +622,8 @@ public class AnalyticsController : JsonDataContractController
 		{
 			if (isInstructor)
 			{
-				availableGroups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
+				availableGroups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false, GroupQueryType.Group))
+					.Cast<SingleGroup>().ToList();
 				if (isAdministrator)
 				{
 					showAllUsers = true;
@@ -637,7 +638,8 @@ public class AnalyticsController : JsonDataContractController
 			}
 			else
 			{
-				availableGroups = await groupMembersRepo.GetUserGroupsAsync(courseId, currentUserId);
+				availableGroups = (await groupMembersRepo.GetUserGroupsAsync(courseId, currentUserId))
+					.Cast<SingleGroup>().ToList();
 				if (availableGroups.Count > 0)
 					users = groupsRepo.GetGroupsMembersAsUsers(availableGroups.Select(g => g.Id).ToList());
 				else
@@ -862,8 +864,8 @@ public class ExerciseRatingByPointsModel
 {
 	public Course Course { get; set; }
 	public Slide Slide { get; set; }
-	public Group SelectedGroup { get; set; }
-	public List<Group> AvailableGroups { get; set; }
+	public SingleGroup SelectedGroup { get; set; }
+	public List<SingleGroup> AvailableGroups { get; set; }
 	public Dictionary<string, ApplicationUser> Users { get; set; }
 	public bool HideOtherUsersNames { get; set; }
 	public Dictionary<string, (float Points, DateTime Timestamp)> PointsByUser { get; set; }

@@ -38,8 +38,8 @@ namespace Ulearn.Web.Api.Controllers
 			var course = courseStorage.FindCourse(courseId);
 			if (course == null)
 				return NotFound();
-			var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(course.Id, UserId, true, actual: true, archived: false);
-			if (groups.Count == 0)
+			var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(course.Id, UserId, true, actual: true, archived: false, groupType: GroupQueryType.Group)).AsGroups().ToArray();
+			if (groups.Length == 0)
 			{
 				return BadRequest("You don't have access to any group in course");
 			}
@@ -57,7 +57,7 @@ namespace Ulearn.Web.Api.Controllers
 			return result;
 		}
 
-		private async Task<UserFlashcardStatistics> GetUserFlashcardStatistics(GroupMember member, Group group, Course course)
+		private async Task<UserFlashcardStatistics> GetUserFlashcardStatistics(GroupMember member, SingleGroup group, Course course)
 		{
 			var userStat = new UserFlashcardStatistics
 			{

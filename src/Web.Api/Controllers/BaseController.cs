@@ -104,7 +104,7 @@ namespace Ulearn.Web.Api.Controllers
 			};
 		}
 
-		protected ShortGroupInfo BuildShortGroupInfo(Group g)
+		protected ShortGroupInfo BuildShortGroupInfo(GroupBase g)
 		{
 			return new ShortGroupInfo
 			{
@@ -150,7 +150,7 @@ namespace Ulearn.Web.Api.Controllers
 			};
 		}
 
-		public static Func<Slide, int> BuildGetSlideMaxScoreFunc(Course course, Group group)
+		public static Func<Slide, int> BuildGetSlideMaxScoreFunc(Course course, SingleGroup group)
 		{
 			var enabledManualCheckingForGroup = course.Settings.IsManualCheckingEnabled || group.IsManualCheckingEnabled;
 			return s => GetMaxScoreForUsersSlide(s, false, false, enabledManualCheckingForGroup);

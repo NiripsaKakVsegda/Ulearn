@@ -5,7 +5,7 @@ namespace Database.Repos.Groups
 {
 	public interface IGroupsCreatorAndCopier
 	{
-		Task<Group> CreateGroupAsync(
+		Task<SingleGroup> CreateGroupAsync(
 			string courseId,
 			string name,
 			string ownerId,
@@ -15,6 +15,6 @@ namespace Database.Repos.Groups
 			bool defaultProhibitFurtherReview = true,
 			bool isInviteLinkEnabled = true);
 
-		Task<Group> CopyGroupAsync(Group group, string courseId, string newOwnerId = null);
+		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = null);
 	}
 }

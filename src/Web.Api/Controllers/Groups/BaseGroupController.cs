@@ -17,7 +17,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		{
 		}
 
-		protected GroupInfo BuildGroupInfo(Group group,
+		protected GroupInfo BuildGroupInfo(GroupBase group,
 			int? membersCount = null,
 			IEnumerable<GroupAccess> accesses = null,
 			bool addGroupApiUrl = false,
@@ -26,9 +26,23 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (group == null)
 				throw new ArgumentNullException(nameof(group));
 
+			var isManualCheckingEnabled = false;
+			var isManualCheckingEnabledForOldSolutions = false;
+			var defaultProhibitFutherReview = false;
+			var canUsersSeeGroupProgress = false;
+
+			if (group is SingleGroup singleGroup)
+			{
+				isManualCheckingEnabled = singleGroup.IsManualCheckingEnabled;
+				isManualCheckingEnabledForOldSolutions = singleGroup.IsManualCheckingEnabledForOldSolutions;
+				defaultProhibitFutherReview = singleGroup.DefaultProhibitFutherReview;
+				canUsersSeeGroupProgress = singleGroup.CanUsersSeeGroupProgress;
+			}
+			
 			return new GroupInfo
 			{
 				Id = group.Id,
+				GroupType = group.GroupType,
 				CreateTime = group.CreateTime,
 				Name = group.Name,
 				Owner = BuildShortUserInfo(group.Owner),
@@ -37,10 +51,10 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				IsArchived = group.IsArchived,
 				AreYouStudent = isUserMemberOfGroup,
 
-				IsManualCheckingEnabled = group.IsManualCheckingEnabled,
-				IsManualCheckingEnabledForOldSolutions = group.IsManualCheckingEnabledForOldSolutions,
-				DefaultProhibitFurtherReview = group.DefaultProhibitFutherReview,
-				CanStudentsSeeGroupProgress = group.CanUsersSeeGroupProgress,
+				IsManualCheckingEnabled = isManualCheckingEnabled,
+				IsManualCheckingEnabledForOldSolutions = isManualCheckingEnabledForOldSolutions,
+				DefaultProhibitFurtherReview = defaultProhibitFutherReview,
+				CanStudentsSeeGroupProgress = canUsersSeeGroupProgress,
 
 				StudentsCount = membersCount,
 				Accesses = accesses?.Select(BuildGroupAccessesInfo).ToList(),

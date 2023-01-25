@@ -130,7 +130,7 @@ namespace Database.Repos.Groups
 			return await IsGroupVisibleForUserAsync(group, userId).ConfigureAwait(false);
 		}
 
-		public async Task<bool> IsGroupVisibleForUserAsync(Group group, string userId)
+		public async Task<bool> IsGroupVisibleForUserAsync(GroupBase group, string userId)
 		{
 			/* Course admins and other privileged users can see all groups in the course */
 			if (await CanUserSeeAllCourseGroupsAsync(userId, group.CourseId).ConfigureAwait(false))
@@ -142,7 +142,7 @@ namespace Database.Repos.Groups
 			return await HasUserGrantedAccessToGroupOrIsOwnerAsync(group.Id, userId).ConfigureAwait(false);
 		}
 
-		private async Task<List<Group>> InternalGetAvailableForUserGroupsAsync([CanBeNull] List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived)
+		private async Task<List<GroupBase>> InternalGetAvailableForUserGroupsAsync([CanBeNull] List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived)
 		{
 			List<string> coursesWhereUserCanSeeAllGroups = null;
 			List<string> coursesWhereUserCanEditAllGroups = null;
@@ -181,20 +181,20 @@ namespace Database.Repos.Groups
 				.ToList();
 		}
 
-		public async Task<List<Group>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived)
+		public async Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType)
 		{
 			if (!await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor).ConfigureAwait(false))
-				return new List<Group>();
+				return new List<GroupBase>();
 
 			return await InternalGetAvailableForUserGroupsAsync(new List<string> { courseId }, userId, needEditAccess, actual, archived).ConfigureAwait(false);
 		}
 
-		public Task<List<Group>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived)
+		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived)
 		{
 			return InternalGetAvailableForUserGroupsAsync(coursesIds, userId, needEditAccess, actual, archived);
 		}
 
-		public Task<List<Group>> GetAvailableForUserGroupsAsync(string userId, bool needEditAccess, bool actual, bool archived)
+		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string userId, bool needEditAccess, bool actual, bool archived)
 		{
 			return InternalGetAvailableForUserGroupsAsync(null, userId, needEditAccess, actual, archived);
 		}
@@ -303,7 +303,7 @@ namespace Database.Repos.Groups
 			return await GetUsersGroupsNamesAsStrings(new List<string> { courseId }, userIds, userId, actual, archived, maxCount);
 		}
 
-		public async Task<Dictionary<string, List<Group>>> GetUsersGroupsAsync(List<string> courseIds, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3)
+		public async Task<Dictionary<string, List<SingleGroup>>> GetUsersGroupsAsync(List<string> courseIds, IEnumerable<string> userIds, string userId, bool actual, bool archived, int maxCount = 3)
 		{
 			var canSeeAllGroups = new Dictionary<string, bool>();
 			foreach (var courseId in courseIds)

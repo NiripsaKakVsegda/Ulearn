@@ -35,7 +35,6 @@ using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
 using uLearn.Web.Core.Utils;
 using Vostok.Logging.Abstractions;
-using Group = Database.Models.Group;
 
 namespace uLearn.Web.Core.Controllers;
 
@@ -634,7 +633,7 @@ public class AdminController : Controller
 		if (!checkings.Any() && !string.IsNullOrEmpty(message))
 			return RedirectToAction("CheckingQueue", new { courseId, group = string.Join(",", groupsIds) });
 
-		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false);
+		var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, User.GetUserId(), true, true, false, GroupQueryType.Group)).AsGroups().ToList();
 		var groupsAccesses = await groupAccessesRepo.GetGroupAccessesAsync(groups.Select(g => g.Id));
 
 		var alreadyChecked = done;
@@ -1714,7 +1713,7 @@ public class ManualCheckingQueueViewModel
 	public Guid? QueueSlideId { get; set; }
 	public List<ManualCheckingQueueItemViewModel> Checkings { get; set; }
 	public string Message { get; set; }
-	public List<Group> Groups { get; set; }
+	public List<SingleGroup> Groups { get; set; }
 	public Dictionary<int, List<GroupAccess>> GroupsAccesses { get; set; }
 	public List<string> SelectedGroupsIds { get; set; }
 	public string SelectedGroupsIdsJoined => string.Join(",", SelectedGroupsIds);

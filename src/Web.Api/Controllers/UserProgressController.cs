@@ -144,9 +144,9 @@ namespace Ulearn.Web.Api.Controllers
 			if (await groupAccessesRepo.CanUserSeeAllCourseGroupsAsync(UserId, courseId))
 				return null;
 			var userRole = await courseRolesRepo.GetRole(UserId, courseId).ConfigureAwait(false);
-			var groups = userRole == CourseRoleType.Instructor ? await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, false, true, false) : new List<Group>();
+			var groups = userRole == CourseRoleType.Instructor ? (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, false, true, false, GroupQueryType.Group)).AsGroups() : new List<SingleGroup>();
 			groups = groups
-				.Concat((await groupMembersRepo.GetUserGroupsAsync(courseId, UserId, false)).Where(g => g.CanUsersSeeGroupProgress))
+				.Concat((await groupMembersRepo.GetUserGroupsAsync(courseId, UserId)).AsGroups().Where(g => g.CanUsersSeeGroupProgress))
 				.Distinct().ToList();
 			var members = new[] { UserId }.Concat(await groupMembersRepo.GetGroupsMembersIdsAsync(groups.Select(g => g.Id).ToList())).ToHashSet();
 			var allIdsInMembers = members.IsSupersetOf(userIds);

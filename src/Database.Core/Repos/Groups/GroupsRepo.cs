@@ -25,7 +25,7 @@ namespace Database.Repos.Groups
 			this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
 		}
 
-		public Task<Group> CreateGroupAsync(
+		public Task<SingleGroup> CreateGroupAsync(
 			string courseId,
 			string name,
 			string ownerId,
@@ -48,12 +48,12 @@ namespace Database.Repos.Groups
 		}
 
 		/* Copy group from one course to another. Replace owner only if newOwnerId is not empty */
-		public Task<Group> CopyGroupAsync(Group group, string courseId, string newOwnerId = "")
+		public Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "")
 		{
 			return groupsCreatorAndCopier.CopyGroupAsync(group, courseId, newOwnerId);
 		}
 
-		public async Task<Group> ModifyGroupAsync(
+		public async Task<SingleGroup> ModifyGroupAsync(
 			int groupId,
 			string newName,
 			bool newIsManualCheckingEnabled,
@@ -61,8 +61,11 @@ namespace Database.Repos.Groups
 			bool newDefaultProhibitFurtherReview,
 			bool newCanUsersSeeGroupProgress)
 		{
-			var group = await FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
+			var groupBase = await FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
+			if (groupBase.GroupType != GroupType.SingleGroup)
+				throw new ArgumentException($"Group {groupId} isn't single group");
 
+			var group = groupBase as SingleGroup;
 			group.Name = newName;
 			group.IsManualCheckingEnabled = newIsManualCheckingEnabled;
 
@@ -89,7 +92,7 @@ namespace Database.Repos.Groups
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		public async Task<Group> ArchiveGroupAsync(int groupId, bool isArchived)
+		public async Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived)
 		{
 			var group = await FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
 			group.IsArchived = isArchived;
@@ -122,31 +125,34 @@ namespace Database.Repos.Groups
 		}
 
 		[ItemCanBeNull]
-		public Task<Group> FindGroupByIdAsync(int groupId)
+		public Task<GroupBase> FindGroupByIdAsync(int groupId)
 		{
 			return db.Groups.FirstOrDefaultAsync(g => g.Id == groupId && !g.IsDeleted);
 		}
 
 		[ItemCanBeNull]
-		public Task<Group> FindGroupByInviteHashAsync(Guid hash)
+		public Task<GroupBase> FindGroupByInviteHashAsync(Guid hash)
 		{
 			return db.Groups.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
 		}
 
-		public IQueryable<Group> GetCourseGroupsQueryable(string courseId, bool includeArchived = false)
+		public IQueryable<GroupBase> GetCourseGroupsQueryable(string courseId, GroupQueryType groupType, bool includeArchived = false)
 		{
-			var groups = db.Groups.Where(g => g.CourseId == courseId && !g.IsDeleted);
+			var queryGroup = groupType.HasFlag(GroupQueryType.Group);
+			var querySuperGroup = groupType.HasFlag(GroupQueryType.SuperGroup);
+			var groups = db.Groups.Where(g => g.CourseId == courseId && !g.IsDeleted &&
+											(g.GroupType == GroupType.SingleGroup && queryGroup || g.GroupType == GroupType.SuperGroup && querySuperGroup));
 			if (!includeArchived)
 				groups = groups.Where(g => !g.IsArchived);
 			return groups;
 		}
 
-		public Task<List<Group>> GetCourseGroupsAsync(string courseId, bool includeArchived = false)
+		public Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false)
 		{
-			return GetCourseGroupsQueryable(courseId, includeArchived).ToListAsync();
+			return GetCourseGroupsQueryable(courseId, groupType, includeArchived).ToListAsync();
 		}
 
-		public Task<List<Group>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false)
+		public Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false)
 		{
 			var accessibleGroupsIds = db.GroupAccesses.Where(a => a.Group.CourseId == courseId && a.UserId == userId && a.IsEnabled).Select(a => a.GroupId);
 
@@ -226,7 +232,7 @@ namespace Database.Repos.Groups
 
 		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId, bool includeArchived = false)
 		{
-			var groupsIds = GetCourseGroupsQueryable(courseId, includeArchived).Select(g => g.Id);
+			var groupsIds = GetCourseGroupsQueryable(courseId, GroupQueryType.Group, includeArchived).Select(g => g.Id);
 			return db.EnabledAdditionalScoringGroups.Where(e => groupsIds.Contains(e.GroupId)).ToListAsync();
 		}
 
@@ -237,7 +243,7 @@ namespace Database.Repos.Groups
 
 		public async Task<List<string>> GetUsersIdsForAllGroups(string courseId)
 		{
-			var groupsIdsQueryable = GetCourseGroupsQueryable(courseId)
+			var groupsIdsQueryable = GetCourseGroupsQueryable(courseId, GroupQueryType.Group)
 				.Select(g => g.Id);
 
 			return await db.GroupMembers
@@ -246,7 +252,8 @@ namespace Database.Repos.Groups
 				.ToListAsync();
 		}
 
-		public async Task<List<Group>> GetMyGroupsFilterAccessibleToUser(string courseId, string userId, bool includeArchived = false)
+		// khapov todo: duplicate GetMyGroupsFilterAccessibleToUserAsync?
+		public async Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUser(string courseId, string userId, bool includeArchived = false)
 		{
 			//var userId = user.Identity.GetUserId();
 			var accessableGroupsIds = db.GroupAccesses

@@ -17,6 +17,6 @@ namespace Database.Models
 		[Required]
 		public int GroupId { get; set; }
 		
-		public virtual Group Group { get; set; }
+		public virtual SingleGroup Group { get; set; }
 	}
 }

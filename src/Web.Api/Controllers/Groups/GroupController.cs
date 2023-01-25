@@ -83,10 +83,15 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[ProducesResponseType((int)HttpStatusCode.OK)]
 		public async Task<ActionResult<GroupInfo>> Group(int groupId)
 		{
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
 			var members = await groupMembersRepo.GetGroupMembersAsync(groupId).ConfigureAwait(false);
 			var accesses = await groupAccessesRepo.GetGroupAccessesAsync(groupId).ConfigureAwait(false);
 			return BuildGroupInfo(group, members.Count, accesses);
+		}
+
+		public async Task UpdateSuperGroup()
+		{
+			
 		}
 
 		/// <summary>
@@ -102,7 +107,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You have no edit access to this group"));
 			}
 
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
 
 			var newName = parameters.Name ?? group.Name;
 			var newIsManualCheckingEnabled = parameters.IsManualCheckingEnabled ?? group.IsManualCheckingEnabled;
@@ -131,7 +136,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (parameters.IsInviteLinkEnabled.HasValue)
 				await groupsRepo.EnableInviteLinkAsync(groupId, parameters.IsInviteLinkEnabled.Value).ConfigureAwait(false);
 
-			return BuildGroupInfo(await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false));
+			return BuildGroupInfo(await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup);
 		}
 
 		/// <summary>
@@ -193,7 +198,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, Description = "You have no access to destination course. You should be instructor or course admin.")]
 		public async Task<ActionResult<CopyGroupResponse>> Copy(int groupId, [FromQuery] CopyGroupParameters parameters)
 		{
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
 			if (! courseStorage.HasCourse(parameters.DestinationCourseId))
 				return NotFound(new ErrorResponse($"Course {parameters.DestinationCourseId} not found"));
 			if (!await CanCreateGroupInCourseAsync(UserId, parameters.DestinationCourseId).ConfigureAwait(false))

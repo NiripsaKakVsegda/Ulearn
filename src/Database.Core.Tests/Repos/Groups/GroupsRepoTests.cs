@@ -74,7 +74,7 @@ namespace Database.Core.Tests.Repos.Groups
 
 			Assert.AreEqual(groupId, group.Id);
 
-			group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
 
 			Assert.IsNotNull(group);
 			Assert.AreEqual("NewGroupName", group.Name);
@@ -103,7 +103,7 @@ namespace Database.Core.Tests.Repos.Groups
 
 			var newOwnerId = Guid.NewGuid().ToString();
 			await groupsRepo.ChangeGroupOwnerAsync(group.Id, newOwnerId).ConfigureAwait(false);
-			group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false);
+			group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false) as SingleGroup;
 			Assert.IsNotNull(group);
 			Assert.AreEqual(newOwnerId, group.OwnerId);
 		}
@@ -117,7 +117,7 @@ namespace Database.Core.Tests.Repos.Groups
 			for (var i = 0; i < 3; i++)
 			{
 				await groupsRepo.ArchiveGroupAsync(group.Id, true).ConfigureAwait(false);
-				group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false);
+				group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false) as SingleGroup;
 				Assert.IsNotNull(group);
 				Assert.IsTrue(group.IsArchived);
 			}
@@ -125,7 +125,7 @@ namespace Database.Core.Tests.Repos.Groups
 			for (var i = 0; i < 3; i++)
 			{
 				await groupsRepo.ArchiveGroupAsync(group.Id, false).ConfigureAwait(false);
-				group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false);
+				group = await groupsRepo.FindGroupByIdAsync(group.Id).ConfigureAwait(false) as SingleGroup;
 				Assert.IsNotNull(group);
 				Assert.IsFalse(group.IsArchived);
 			}
@@ -141,16 +141,16 @@ namespace Database.Core.Tests.Repos.Groups
 			var group4 = await groupsRepo.CreateGroupAsync("CourseId2", "Group4", ownerId).ConfigureAwait(false);
 			var group5 = await groupsRepo.CreateGroupAsync("CourseId1", "Group5", ownerId).ConfigureAwait(false);
 
-			var course1Groups = await groupsRepo.GetCourseGroupsAsync("CourseId1").ConfigureAwait(false);
-			CollectionAssert.AreEqual(new List<Group> { group1, group2, group5 }, course1Groups);
+			var course1Groups = await groupsRepo.GetCourseGroupsAsync("CourseId1", GroupQueryType.Group).ConfigureAwait(false);
+			CollectionAssert.AreEqual(new List<SingleGroup> { group1, group2, group5 }, course1Groups);
 
 			await groupsRepo.ArchiveGroupAsync(group5.Id, isArchived: true).ConfigureAwait(false);
 
-			var nonArchivedGroups = await groupsRepo.GetCourseGroupsAsync("CourseId1").ConfigureAwait(false);
-			CollectionAssert.AreEqual(new List<Group> { group1, group2 }, nonArchivedGroups);
+			var nonArchivedGroups = await groupsRepo.GetCourseGroupsAsync("CourseId1", GroupQueryType.Group).ConfigureAwait(false);
+			CollectionAssert.AreEqual(new List<SingleGroup> { group1, group2 }, nonArchivedGroups);
 
-			var allGroupsIncludeArchived = await groupsRepo.GetCourseGroupsAsync("CourseId1", includeArchived: true).ConfigureAwait(false);
-			CollectionAssert.AreEqual(new List<Group> { group1, group2, group5 }, allGroupsIncludeArchived);
+			var allGroupsIncludeArchived = await groupsRepo.GetCourseGroupsAsync("CourseId1", GroupQueryType.Group, includeArchived: true).ConfigureAwait(false);
+			CollectionAssert.AreEqual(new List<SingleGroup> { group1, group2, group5 }, allGroupsIncludeArchived);
 		}
 	}
 }
