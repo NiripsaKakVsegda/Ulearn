@@ -57,10 +57,10 @@ export interface GroupInfo {
 	inviteHash: string;
 	isInviteLinkEnabled: boolean;
 	areYouStudent: boolean;
-	isManualCheckingEnabled: boolean;
-	isManualCheckingEnabledForOldSolutions: boolean;
-	defaultProhibitFurtherReview: boolean;
-	canStudentsSeeGroupProgress: boolean;
+	isManualCheckingEnabled?: boolean;
+	isManualCheckingEnabledForOldSolutions?: boolean;
+	defaultProhibitFurtherReview?: boolean;
+	canStudentsSeeGroupProgress?: boolean;
 	studentsCount: number;
 	accesses: GroupAccessesInfo[];
 	apiUrl: string;
@@ -71,10 +71,20 @@ export interface CopyGroupResponse {
 	apiUrl: string;
 }
 
+export interface CreateGroupResponse {
+	id: string;
+	apiUrl: string;
+}
+
 export interface GroupsListParameters {
 	courseId: string;
 	archived: boolean;
 	userId: string;
 	offset: number;
 	count: number;
+}
+
+export enum GroupType {
+	SingleGroup = "SingleGroup",
+	SuperGroup = "SuperGroup",
 }

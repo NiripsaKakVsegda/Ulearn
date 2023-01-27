@@ -54,6 +54,29 @@ namespace Database.Repos.Groups
 
 			return group;
 		}
+		
+		public async Task<SuperGroup> CreateSuperGroupAsync(
+			string courseId,
+			string name,
+			string ownerId,
+			bool isInviteLinkEnabled = true)
+		{
+			log.Info($"Создаю новый поток в курсе {courseId}: «{name}»");
+			var group = new SuperGroup
+			{
+				CourseId = courseId,
+				Name = name,
+				OwnerId = ownerId,
+				CreateTime = DateTime.Now,
+
+				InviteHash = Guid.NewGuid(),
+				IsInviteLinkEnabled = isInviteLinkEnabled,
+			};
+			db.SuperGroups.Add(group);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+
+			return group;
+		}
 
 		/* Copy group from one course to another. Replace owner only if newOwnerId is not empty */
 		public async Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = null)

@@ -1,17 +1,26 @@
-import React, { Component } from 'react';
-import PropTypes from "prop-types";
-import api from "src/api";
-import { Modal, Input, Button, Tooltip } from 'ui';
+import React, { Component } from "react";
+import { Modal, Input, Button, Tooltip, Link } from 'ui';
 
-import styles from "./createGroupModal.less";
+import styles from "./createSuperGroupModal.less";
+import api from "../../../../api";
 import { GroupType } from "../../../../models/groups";
 
-class CreateGroupModal extends Component {
+interface State {
+	name: string,
+	error: string,
+	loading: boolean,
+}
 
+interface Props {
+	onCloseModal: () => void;
+	onSubmit: (groupId: string) => void;
+	courseId: string;
+}
+
+export default class CreateSuperGroupModal extends Component<Props, State> {
 	state = {
-		name: '',
-		hasError: false,
-		error: null,
+		name: "",
+		error: "",
 		loading: false,
 	};
 
@@ -20,7 +29,7 @@ class CreateGroupModal extends Component {
 
 		return (
 			<Modal onClose={ onCloseModal } width="100%" alignTop={ true }>
-				<Modal.Header>Название группы</Modal.Header>
+				<Modal.Header>Название потока</Modal.Header>
 				<Modal.Body>
 					<form onSubmit={ this.onSubmit }>
 						{ this.renderModalBody() }
@@ -39,30 +48,29 @@ class CreateGroupModal extends Component {
 	}
 
 	renderModalBody() {
-		const { name, hasError } = this.state;
+		const { name, error } = this.state;
 
 		return (
 			<div className={ styles["modal-content"] }>
 				<Tooltip render={ this.checkError } trigger='focus' pos="right top">
 					<Input placeholder="КН-201 УрФУ 2017"
-						   maxLength="300"
+						   maxLength={300}
 						   value={ name || '' }
-						   error={ hasError }
+						   error={ !error }
 						   onValueChange={ this.onChangeInput }
 						   onFocus={ this.onFocus }
 						   autoFocus/>
 				</Tooltip>
 				<p className={ styles["common-info"] }>
-					Студенты увидят название группы, поэтому постарайтесь сделать его понятным.<br/>
-					Пример хорошего названия группы: <span className={ styles["good-name"] }>
-					КН-201 УрФУ 2017,</span><br/>
-					пример плохого: <span className={ styles["bad-name"] }>Моя группа 2</span>
+					Вы можете создать как поток групп, так и одиночную группу.<br/>
+					Создание сразу нескольких групп может быть упрощено через автоматическое<br/>
+					создание через гугл-таблицу (<Link>инструкция</Link>).
 				</p>
 			</div>
 		)
 	}
 
-	onSubmit = async (e) => {
+	onSubmit = async (e: React.SyntheticEvent) => {
 		const { name } = this.state;
 		const { onCloseModal, onSubmit, courseId } = this.props;
 
@@ -70,15 +78,14 @@ class CreateGroupModal extends Component {
 
 		if(!name) {
 			this.setState({
-				hasError: true,
-				error: 'Введите название группы',
+				error: 'Введите название потока',
 			});
 			return;
 		}
 
 		this.setState({ loading: true, });
 		try {
-			const newGroup = await api.groups.createGroup(courseId, name, GroupType.SingleGroup);
+			const newGroup = await api.groups.createGroup(courseId, name, GroupType.SuperGroup);
 			onCloseModal();
 			onSubmit(newGroup.id);
 		} catch (e) {
@@ -99,21 +106,13 @@ class CreateGroupModal extends Component {
 
 	onFocus = () => {
 		this.setState({
-			hasError: false,
+			error: "",
 		});
 	};
 
-	onChangeInput = (value) => {
+	onChangeInput = (value: string) => {
 		this.setState({
 			name: value,
 		});
 	};
 }
-
-CreateGroupModal.propTypes = {
-	onCloseModal: PropTypes.func,
-	courseId: PropTypes.string,
-	onSubmit: PropTypes.func,
-};
-
-export default CreateGroupModal;

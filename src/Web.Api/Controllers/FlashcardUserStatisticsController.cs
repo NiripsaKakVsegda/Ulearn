@@ -38,7 +38,7 @@ namespace Ulearn.Web.Api.Controllers
 			var course = courseStorage.FindCourse(courseId);
 			if (course == null)
 				return NotFound();
-			var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(course.Id, UserId, true, actual: true, archived: false, groupType: GroupQueryType.Group)).AsGroups().ToArray();
+			var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(course.Id, UserId, true, actual: true, archived: false, groupType: GroupQueryType.SingleGroup)).AsGroups().ToArray();
 			if (groups.Length == 0)
 			{
 				return BadRequest("You don't have access to any group in course");

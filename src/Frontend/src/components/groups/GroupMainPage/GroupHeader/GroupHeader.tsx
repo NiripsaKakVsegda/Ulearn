@@ -5,6 +5,7 @@ import { Mobile, NotMobile } from "src/utils/responsive";
 
 import CreateGroupModal from "../CreateGroupModal/CreateGroupModal.js";
 import CopyGroupModal from "../CopyGroupModal/CopyGroupModal.js";
+import CreateSuperGroupModal from "../CreateSuperGroupModal/CreateSuperGroupModal";
 
 import { CourseInfo } from "src/models/course";
 
@@ -24,8 +25,9 @@ interface Props {
 }
 
 function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.ReactElement {
-	const [{ modalCreateGroup, modalCopyGroup, }, setState] = useState({
+	const [{ modalCreateGroup, modalCreateSuperGroup, modalCopyGroup, }, setState] = useState({
 		modalCreateGroup: false,
+		modalCreateSuperGroup: false,
 		modalCopyGroup: false,
 	});
 
@@ -46,6 +48,12 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 				onSubmit={ addGroup }
 			/>
 			}
+			{modalCreateSuperGroup &&
+			<CreateSuperGroupModal
+				courseId={ course.id }
+				onCloseModal={ onCloseModal }
+				onSubmit={ () => {} }
+			/>}
 		</React.Fragment>
 	);
 
@@ -65,6 +73,8 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 						</Mobile>
 						<NotMobile>
 							<Gapped gap={ 20 }>
+								<Button use="primary" size="medium" onClick={ openCreateSuperGroupModal }>Создать
+									поток</Button>
 								<Button use="primary" size="medium" onClick={ openCreateGroupModal }>Создать
 									группу</Button>
 								<Button use="default" size="medium" onClick={ openCopyGroupModal }>Скопировать
@@ -83,9 +93,18 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 		);
 	}
 
+	function openCreateSuperGroupModal() {
+		setState({
+			modalCreateSuperGroup: true,
+			modalCreateGroup: false,
+			modalCopyGroup: false,
+		});
+	}
+
 	function openCreateGroupModal() {
 		setState({
 			modalCreateGroup: true,
+			modalCreateSuperGroup: false,
 			modalCopyGroup: false,
 		});
 	}
@@ -93,6 +112,7 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 	function openCopyGroupModal() {
 		setState({
 			modalCopyGroup: true,
+			modalCreateSuperGroup: false,
 			modalCreateGroup: false,
 		});
 	}
@@ -101,6 +121,7 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 		setState({
 			modalCreateGroup: false,
 			modalCopyGroup: false,
+			modalCreateSuperGroup: false,
 		});
 	}
 

@@ -1,11 +1,11 @@
 import api from "src/api/index";
 import { groups, resetStudentsLimits } from "src/consts/routes";
 import {
-	CopyGroupResponse,
+	CopyGroupResponse, CreateGroupResponse,
 	GroupAccessesResponse,
 	GroupInfo,
 	GroupScoringGroupsResponse, GroupsInfoResponse, GroupsListParameters,
-	GroupStudentsResponse
+	GroupStudentsResponse, GroupType
 } from "src/models/groups";
 import { buildQuery } from "src/utils";
 import { Dispatch } from "redux";
@@ -45,9 +45,9 @@ export function getGroup(groupId: number): Promise<GroupInfo> {
 	return api.get(`${ groups }/${ groupId }`);
 }
 
-export function createGroup(courseId: string, name: string): Promise<Response> {
+export function createGroup(courseId: string, name: string, groupType: GroupType): Promise<CreateGroupResponse> {
 	const url = groups + buildQuery({ courseId });
-	return api.post(url, api.createRequestParams({ name }));
+	return api.post(url, api.createRequestParams({ name, groupType }));
 }
 
 export function copyGroup(groupId: number, destinationCourseId: string,

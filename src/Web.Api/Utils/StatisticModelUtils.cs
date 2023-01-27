@@ -276,7 +276,7 @@ namespace Ulearn.Web.Api.Utils
 			Dictionary<int, List<GroupAccess>> groupsAccesses = null;
 			if (isInstructor)
 			{
-				groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, userId, true, true, false, GroupQueryType.Group)).AsGroups().ToList();
+				groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, userId, true, true, false, GroupQueryType.SingleGroup)).AsGroups().ToList();
 				groupsAccesses = await groupAccessesRepo.GetGroupAccessesAsync(groups.Select(g => g.Id));
 			}
 			else

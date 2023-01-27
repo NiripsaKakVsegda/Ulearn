@@ -9,10 +9,11 @@ namespace Database.Repos.Groups
 {
 	public interface IGroupsRepo
 	{
-		Task<SingleGroup> CreateGroupAsync(
+		Task<GroupBase> CreateGroupAsync(
 			string courseId,
 			string name,
 			string ownerId,
+			GroupType groupType,
 			bool isManualCheckingEnabled = false,
 			bool isManualCheckingEnabledForOldSolutions = false,
 			bool canUsersSeeGroupProgress = true,
@@ -21,13 +22,12 @@ namespace Database.Repos.Groups
 
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
 
-		Task<SingleGroup> ModifyGroupAsync(
-			int groupId,
+		Task<GroupBase> ModifyGroupAsync(int groupId,
 			string newName,
-			bool newIsManualCheckingEnabled,
-			bool newIsManualCheckingEnabledForOldSolutions,
-			bool newDefaultProhibitFurtherReview,
-			bool newCanUsersSeeGroupProgress);
+			bool? newIsManualCheckingEnabled,
+			bool? newIsManualCheckingEnabledForOldSolutions,
+			bool? newDefaultProhibitFurtherReview,
+			bool? newCanUsersSeeGroupProgress);
 
 		Task ChangeGroupOwnerAsync(int groupId, string newOwnerId);
 		Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived);

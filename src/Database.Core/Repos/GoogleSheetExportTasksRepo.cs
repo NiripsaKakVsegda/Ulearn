@@ -120,7 +120,7 @@ namespace Database.Repos
 				.Select(g => g.GroupId)
 				.ToHashSet();
 			var accessibleCourseGroupsIds = (await groupAccessesRepo
-					.GetAvailableForUserGroupsAsync(courseId, userId, true, true, true, GroupQueryType.Group))
+					.GetAvailableForUserGroupsAsync(courseId, userId, true, true, true, GroupQueryType.SingleGroup))
 				.Select(g => g.Id);
 
 			accessibleAsMemberGroupsIds.UnionWith(accessibleCourseGroupsIds);

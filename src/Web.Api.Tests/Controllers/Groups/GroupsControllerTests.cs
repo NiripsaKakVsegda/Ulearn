@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Database.Models;
 using Database.Repos.Groups;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -30,7 +31,7 @@ namespace Web.Api.Tests.Controllers.Groups
 			var course = new Mock<ICourse>();
 			course.Setup(c => c.Id).Returns("courseId");
 
-			await groupsRepo.CreateGroupAsync("courseId", "Test group", TestUsers.Admin.Id).ConfigureAwait(false);
+			await groupsRepo.CreateGroupAsync("courseId", "Test group", TestUsers.Admin.Id, GroupType.SingleGroup).ConfigureAwait(false);
 
 			await AuthenticateUserInControllerAsync(groupsController, TestUsers.Admin).ConfigureAwait(false);
 

@@ -145,14 +145,14 @@ namespace Database.Repos.Groups
 
 		public Task<List<string>> GetUsersIdsForAllCourseGroupsAsync(string courseId, bool includeArchived = false)
 		{
-			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.Group, includeArchived).Select(g => g.Id);
+			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Select(g => g.Id);
 			return db.GroupMembers.Where(m => groupsIds.Contains(m.GroupId)).Select(m => m.UserId).ToListAsync();
 		}
 
 		/* Return Dictionary<userId, List<groupId>> */
 		public async Task<Dictionary<string, List<int>>> GetUsersGroupsIdsAsync(string courseId, List<string> usersIds, bool includeArchived = false)
 		{
-			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.Group, includeArchived).Select(g => g.Id);
+			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Select(g => g.Id);
 			return (await db.GroupMembers
 					.Where(m => groupsIds.Contains(m.GroupId) && usersIds.Contains(m.UserId))
 					.Select(m => new { m.UserId, m.GroupId })
@@ -171,7 +171,7 @@ namespace Database.Repos.Groups
 		{
 			var userGroupsIds = await GetUserGroupsIdsAsync(courseId, userId).ConfigureAwait(false);
 			return (await groupsRepo
-				.GetCourseGroupsQueryable(courseId, GroupQueryType.Group, includeArchived)
+				.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived)
 				.Where(g => userGroupsIds.Contains(g.Id))
 				.ToListAsync())
 				.AsGroups()
@@ -193,7 +193,7 @@ namespace Database.Repos.Groups
 		{
 			var userGroupsIds = await GetUsersGroupsIdsAsync(courseId, usersIds, includeArchived).ConfigureAwait(false);
 			var ids = userGroupsIds.Values.SelectMany(g => g).Distinct().ToList();
-			var groups = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.Group, includeArchived).Where(g => ids.Contains(g.Id)).ToDictionary(g => g.Id, g => (SingleGroup)g);
+			var groups = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Where(g => ids.Contains(g.Id)).ToDictionary(g => g.Id, g => (SingleGroup)g);
 			return userGroupsIds.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(id => groups[id]).ToList());
 		}
 	}

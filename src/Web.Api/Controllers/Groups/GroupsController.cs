@@ -106,7 +106,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		public async Task<ActionResult<CreateGroupResponse>> CreateGroup([FromQuery] CourseAuthorizationParameters courseAuthorizationParameters, CreateGroupParameters parameters)
 		{
 			var ownerId = User.GetUserId();
-			var group = await groupsRepo.CreateGroupAsync(courseAuthorizationParameters.CourseId, parameters.Name, ownerId);
+			var group = await groupsRepo.CreateGroupAsync(courseAuthorizationParameters.CourseId, parameters.Name, ownerId, parameters.GroupType);
 
 			await notificationsRepo.AddNotification(
 				group.CourseId,
@@ -120,11 +120,6 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				Id = group.Id,
 				ApiUrl = url,
 			});
-		}
-
-		public async Task CreateSuperGroup()
-		{
-			
 		}
 	}
 }
