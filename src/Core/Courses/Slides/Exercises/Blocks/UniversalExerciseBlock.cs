@@ -12,6 +12,7 @@ using Ulearn.Common;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Blocks;
+using Ulearn.Core.Extensions;
 using Ulearn.Core.Helpers;
 using Ulearn.Core.Model;
 using Ulearn.Core.RunCheckerJobApi;
@@ -41,7 +42,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		[CanBeNull]
 		[XmlElement("includePathForChecker")]
 		public string[] PathsToIncludeForChecker { get; set; } // Пути до директорий относительно директории с Unit, чьё содержимое нужно включить в архив. Перетирают файлы из ExerciseDir в архиве
-		
+
 		[CanBeNull]
 		[XmlElement("includePathForStudent")]
 		public string[] PathsToIncludeForStudent { get; set; }
@@ -54,7 +55,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlAttribute("noStudentZip")] // Не отдавать zip студенту
 		public virtual bool NoStudentZip { get; set; }
-		
+
 
 		[XmlElement("interpretNonJsonOutputAs")]
 		public virtual InterpretNonJsonOutputType? InterpretNonJsonOutputAs { get; set; }
@@ -108,7 +109,10 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlIgnore]
 		public Lazy<string> InitialRegionContent;
-
+		
+		[XmlIgnore]
+		public CommonSingleRegionExtractor Extractor;
+		
 		[XmlIgnore]
 		public Slide Slide { get; private set; }
 
@@ -139,6 +143,8 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			ExerciseInitialCode = NoStudentZip
 				? GetNoStudentZipInitialCode(fp)
 				: ExerciseInitialCode ?? $"{commentSymbols} Вставьте сюда финальное содержимое файла {UserCodeFilePath}";
+			Validator.ValidatorName = string.Join(" ", Language.GetName(), Validator.ValidatorName ?? "");
+			Extractor = new CommonSingleRegionExtractor((fp.InitialUserCodeFile.Exists ? fp.InitialUserCodeFile : fp.UserCodeFile).ContentAsUtf8());
 			yield return this;
 
 			var correctSolution = GetCorrectSolution(fp);
@@ -174,10 +180,19 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				? null
 				: new CommonSingleRegionExtractor(file.ContentAsUtf8()).GetRegion(new Label { Name = Region });
 		}
-
+		
 		public override SolutionBuildResult BuildSolution(string userWrittenCode)
 		{
-			return new SolutionBuildResult(userWrittenCode);
+			var validator = ValidatorsRepository.Get(Validator);
+			var fullCode = userWrittenCode;
+			if (Region != null)
+				fullCode =  Extractor
+					.ReplaceRegionContent(new Label { Name = Region }, userWrittenCode)
+					.RemoveCommonNesting();
+
+			return validator != null
+				? validator.ValidateSingleFileSolution(userWrittenCode, fullCode)
+				: new SolutionBuildResult(userWrittenCode);
 		}
 
 		public override RunnerSubmission CreateSubmission(string submissionId, string code, string courseDirectory)
@@ -257,7 +272,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 					.Select(d => d.FullName)
 					.Append(fp.ExerciseDirectory.FullName)
 					.ToList();
-				
+
 				var toUpdate = ReplaceWithInitialFiles(fp).ToList();
 
 				var zipMemoryStream = ZipUtils.CreateZipFromDirectory(directoriesToInclude, excluded, toUpdate);
