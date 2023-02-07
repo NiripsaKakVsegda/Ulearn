@@ -185,13 +185,16 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		{
 			var validator = ValidatorsRepository.Get(Validator);
 			var fullCode = userWrittenCode;
-			if (Region != null)
-				fullCode =  Extractor
+			if (Region != null && validator != null)
+			{
+				fullCode = Extractor
 					.ReplaceRegionContent(new Label { Name = Region }, userWrittenCode)
 					.RemoveCommonNesting();
+				return validator.ValidateSingleFileSolution(userWrittenCode, fullCode);
+			}
 
 			return validator != null
-				? validator.ValidateSingleFileSolution(userWrittenCode, fullCode)
+				? validator.ValidateSolution(userWrittenCode, fullCode)
 				: new SolutionBuildResult(userWrittenCode);
 		}
 
