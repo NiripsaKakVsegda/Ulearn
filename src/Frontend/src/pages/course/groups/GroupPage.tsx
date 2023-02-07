@@ -15,13 +15,14 @@ import GroupAdditionalContent
 	from "src/components/groups/GroupSettingsPage/GroupAdditionalContent/GroupAdditionalContent";
 import GroupDeadLines from "src/components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
 import { withOldRouter } from "src/utils/router";
-import { GroupAccessesInfo, GroupInfo, GroupScoringGroupInfo } from "src/models/groups";
+import { GroupAccessesInfo, GroupInfo, GroupScoringGroupInfo, GroupType } from "src/models/groups";
 import { ShortUserInfo } from "src/models/users";
 import { RootState } from "src/redux/reducers";
 
-import { Props, State, PropsFromRedux, DispatchFromRedux, } from './GroupPage.types';
+import { DispatchFromRedux, Props, PropsFromRedux, State, } from './GroupPage.types';
 import styles from "./groupPage.less";
 import texts from "./GroupPage.texts";
+import { SuperGroupPage } from "./SuperGroupPage";
 
 const pages = ['settings', 'members', 'additional-content', 'dead-lines'];
 
@@ -64,7 +65,7 @@ function GroupPage(props: Props) {
 	const { groupPage } = params;
 	const groupId = parseInt(params.groupId || '0');
 
-	if(!group) {
+	if(!group || loadingScores || loadingAllSettings) {
 		return <CourseLoader/>;
 	}
 
@@ -76,6 +77,10 @@ function GroupPage(props: Props) {
 	function render() {
 		if(status === "error") {
 			return <Error404/>;
+		}
+
+		if(loadedGroup.groupType === GroupType.SuperGroup) {
+			return <SuperGroupPage groupInfo={loadedGroup} goToPrevPage={goToPrevPage} scores={scores}/>;
 		}
 
 		if(!groupPage) {
@@ -228,12 +233,17 @@ function GroupPage(props: Props) {
 				<GroupSettings
 					loading={ loadingScores && loadingGroup }
 					name={ updatedFields.name !== undefined ? updatedFields.name : loadedGroup.name }
-					group={ group }
 					scores={ scores }
 					error={ error }
 					onChangeName={ onChangeName }
 					onChangeSettings={ onChangeSettings }
-					onChangeScores={ onChangeScores }/>
+					onChangeScores={ onChangeScores }
+					isManualCheckingEnabled={group?.isManualCheckingEnabled || false}
+					canStudentsSeeGroupProgress={group?.canStudentsSeeGroupProgress || false}
+					isManualCheckingEnabledForOldSolutions={group?.isManualCheckingEnabledForOldSolutions || false}
+					defaultProhibitFurtherReview={group?.defaultProhibitFurtherReview || false}
+					canChangeName={true}
+				/>
 				<Button
 					size="medium"
 					use="primary"

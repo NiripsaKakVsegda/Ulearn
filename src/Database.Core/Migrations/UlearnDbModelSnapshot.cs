@@ -3032,8 +3032,8 @@ namespace Database.Migrations
                     b.Property<bool>("IsManualCheckingEnabledForOldSolutions")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("SuperGroupId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("SuperGroupId")
+                        .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue(0);
                 });

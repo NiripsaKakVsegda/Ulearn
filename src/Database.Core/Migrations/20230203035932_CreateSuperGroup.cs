@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Database.Migrations
 {
-    public partial class CreateSuperGroups : Migration
+    public partial class CreateSuperGroup : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -55,10 +54,10 @@ namespace Database.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<int>(
                 name: "SuperGroupId",
                 table: "Groups",
-                type: "uuid",
+                type: "integer",
                 nullable: true);
         }
 

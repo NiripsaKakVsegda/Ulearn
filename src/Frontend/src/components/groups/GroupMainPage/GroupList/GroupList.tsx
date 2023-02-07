@@ -2,7 +2,7 @@ import React from "react";
 import { Loader } from "ui";
 import GroupInfo from "../GroupInfo/GroupInfo";
 
-import { GroupInfo as GroupInfoType } from "src/models/groups";
+import { GroupInfo as GroupInfoType, GroupType } from "src/models/groups";
 
 import styles from "./groupList.less";
 import { getQueryStringParameter } from "../../../../utils";
@@ -72,15 +72,7 @@ function GroupList({
 
 						return a.name.localeCompare(b.name);
 					})
-					.map(group =>
-						<GroupInfo
-							key={ group.id }
-							courseId={ courseId }
-							group={ group }
-							deleteGroup={ deleteGroup }
-							toggleArchived={ toggleArchived }
-							page={ page }
-						/>)
+					.map(renderGroup)
 				}
 			</div>
 			}
@@ -91,6 +83,35 @@ function GroupList({
 			}
 		</section>
 	);
+
+	function renderGroup(group: GroupInfoType) {
+		if (group.groupType === GroupType.SingleGroup) {
+			if (!group.superGroupId) {
+				return renderSingleGroup(group);
+			}
+
+			//return <div />;
+		}
+
+		return renderSuperGroup(group);
+	}
+
+	function renderSingleGroup(group: GroupInfoType) {
+		return (
+			<GroupInfo
+				key={ group.id }
+				courseId={ courseId }
+				group={ group }
+				deleteGroup={ deleteGroup }
+				toggleArchived={ toggleArchived }
+				page={ page }
+			/>
+		);
+	}
+
+	function renderSuperGroup(group: GroupInfoType) {
+		return renderSingleGroup(group);
+	}
 }
 
 export default GroupList;

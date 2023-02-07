@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { Modal, Input, Button, Tooltip, Link } from 'ui';
 
 import styles from "./createSuperGroupModal.less";
-import api from "../../../../api";
-import { GroupType } from "../../../../models/groups";
+import api from "src/api";
+import { GroupType } from "src/models/groups";
 
 interface State {
 	name: string,
@@ -64,7 +64,7 @@ export default class CreateSuperGroupModal extends Component<Props, State> {
 				<p className={ styles["common-info"] }>
 					Вы можете создать как поток групп, так и одиночную группу.<br/>
 					Создание сразу нескольких групп может быть упрощено через автоматическое<br/>
-					создание через гугл-таблицу (<Link>инструкция</Link>).
+					создание с помощью гугл-таблицы (<Link>инструкция</Link>).
 				</p>
 			</div>
 		)

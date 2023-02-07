@@ -64,30 +64,30 @@ namespace Database.Repos.Groups
 			return groupsCreatorAndCopier.CopyGroupAsync(group, courseId, newOwnerId);
 		}
 
-		public async Task<GroupBase> ModifyGroupAsync(
-			int groupId,
-			string newName,
-			bool? newIsManualCheckingEnabled = null,
-			bool? newIsManualCheckingEnabledForOldSolutions = null,
-			bool? newDefaultProhibitFurtherReview = null,
-			bool? newCanUsersSeeGroupProgress = null)
+		public async Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings newSettings)
 		{
 			var groupBase = await FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
-			groupBase.Name = newName;
+			groupBase.Name = newSettings.NewName ?? groupBase.Name;
 
 			if (groupBase is SingleGroup singleGroup)
 			{
-				singleGroup.IsManualCheckingEnabled = newIsManualCheckingEnabled ?? singleGroup.IsManualCheckingEnabled;
+				singleGroup.IsManualCheckingEnabled = newSettings.NewIsManualCheckingEnabled ?? singleGroup.IsManualCheckingEnabled;
 
-				if (!singleGroup.IsManualCheckingEnabledForOldSolutions && newIsManualCheckingEnabledForOldSolutions == true)
+				if (!singleGroup.IsManualCheckingEnabledForOldSolutions && newSettings.NewIsManualCheckingEnabledForOldSolutions == true)
 				{
 					var groupMembers = singleGroup.NotDeletedMembers.Select(m => m.UserId).ToList();
 					await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(singleGroup.CourseId, groupMembers).ConfigureAwait(false);
 				}
 
-				singleGroup.IsManualCheckingEnabledForOldSolutions = newIsManualCheckingEnabledForOldSolutions ?? singleGroup.IsManualCheckingEnabledForOldSolutions;
-				singleGroup.DefaultProhibitFutherReview = newDefaultProhibitFurtherReview ?? singleGroup.DefaultProhibitFutherReview;
-				singleGroup.CanUsersSeeGroupProgress = newCanUsersSeeGroupProgress ?? singleGroup.CanUsersSeeGroupProgress;
+				singleGroup.IsManualCheckingEnabledForOldSolutions = newSettings.NewIsManualCheckingEnabledForOldSolutions ?? singleGroup.IsManualCheckingEnabledForOldSolutions;
+				singleGroup.DefaultProhibitFutherReview = newSettings.NewDefaultProhibitFurtherReview ?? singleGroup.DefaultProhibitFutherReview;
+				singleGroup.CanUsersSeeGroupProgress = newSettings.NewCanUsersSeeGroupProgress ?? singleGroup.CanUsersSeeGroupProgress;
+				singleGroup.SuperGroupId = newSettings.SuperGroupId ?? singleGroup.SuperGroupId;
+			}
+
+			if (groupBase is SuperGroup superGroup)
+			{
+				superGroup.DistributionTableLink = newSettings.DistributionTableLink;
 			}
 
 			await db.SaveChangesAsync().ConfigureAwait(false);

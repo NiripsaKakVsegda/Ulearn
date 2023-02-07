@@ -273,6 +273,7 @@ namespace Ulearn.Web.Api
 			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<MasterCourseManager>());
+			services.AddSingleton<AutoGroupManager>();
 
 			services.AddScoped<IAuthorizationHandler, CourseRoleAuthorizationHandler>();
 			services.AddScoped<IAuthorizationHandler, CourseAccessAuthorizationHandler>();

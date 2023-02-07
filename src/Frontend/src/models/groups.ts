@@ -50,6 +50,7 @@ export interface GroupScoringGroupInfo extends AbstractScoringGroupInfo {
 
 export interface GroupInfo {
 	id: number;
+	groupType: GroupType;
 	createTime?: string | null;
 	name: string;
 	isArchived: boolean;
@@ -64,6 +65,8 @@ export interface GroupInfo {
 	studentsCount: number;
 	accesses: GroupAccessesInfo[];
 	apiUrl: string;
+	superGroupId: number | null;
+	distributionTableLink: string | null;
 }
 
 export interface CopyGroupResponse {

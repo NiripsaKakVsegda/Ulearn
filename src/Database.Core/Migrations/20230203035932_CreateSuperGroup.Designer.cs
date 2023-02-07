@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(UlearnDb))]
-    [Migration("20230125143650_CreateSuperGroups")]
-    partial class CreateSuperGroups
+    [Migration("20230203035932_CreateSuperGroup")]
+    partial class CreateSuperGroup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3034,8 +3034,8 @@ namespace Database.Migrations
                     b.Property<bool>("IsManualCheckingEnabledForOldSolutions")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("SuperGroupId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("SuperGroupId")
+                        .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue(0);
                 });

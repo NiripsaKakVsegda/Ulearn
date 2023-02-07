@@ -26,10 +26,12 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (group == null)
 				throw new ArgumentNullException(nameof(group));
 
-			var isManualCheckingEnabled = false;
-			var isManualCheckingEnabledForOldSolutions = false;
-			var defaultProhibitFutherReview = false;
-			var canUsersSeeGroupProgress = false;
+			var isManualCheckingEnabled = (bool?)null;
+			var isManualCheckingEnabledForOldSolutions = (bool?)null;
+			var defaultProhibitFutherReview = (bool?)null;
+			var canUsersSeeGroupProgress = (bool?)null;
+			var superGroupId = (int?)null;
+			var distributionTableLink = (string)null;
 
 			if (group is SingleGroup singleGroup)
 			{
@@ -37,6 +39,12 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				isManualCheckingEnabledForOldSolutions = singleGroup.IsManualCheckingEnabledForOldSolutions;
 				defaultProhibitFutherReview = singleGroup.DefaultProhibitFutherReview;
 				canUsersSeeGroupProgress = singleGroup.CanUsersSeeGroupProgress;
+				superGroupId = singleGroup.SuperGroupId;
+			}
+
+			if (group is SuperGroup superGroup)
+			{
+				distributionTableLink = superGroup.DistributionTableLink;
 			}
 			
 			return new GroupInfo
@@ -60,6 +68,8 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				Accesses = accesses?.Select(BuildGroupAccessesInfo).ToList(),
 
 				ApiUrl = addGroupApiUrl ? Url.Action(new UrlActionContext { Action = nameof(GroupController.Group), Controller = "Group", Values = new { groupId = group.Id } }) : null,
+				SuperGroupId = superGroupId,
+				DistributionTableLink = distributionTableLink
 			};
 		}
 

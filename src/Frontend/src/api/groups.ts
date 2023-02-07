@@ -10,6 +10,7 @@ import {
 import { buildQuery } from "src/utils";
 import { Dispatch } from "redux";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
+import { ApplyMergeRequest } from "../models/autoGroup";
 
 // Groups
 export function getCourseGroups(courseId: string, userId?: string,): Promise<{ groups: GroupInfo[] }> {
@@ -112,4 +113,9 @@ export function copyStudents(groupId: number, studentIds: string[]): Promise<Res
 export function resetLimitsForStudents(groupId: number, studentIds: string[]): Promise<Response> {
 	return api.post(`${ groups }/${ groupId }/${ resetStudentsLimits }`,
 		api.createRequestParams({ studentIds }));
+}
+
+// AutoGroup
+export function updateSupergroup(groupId: number, request: ApplyMergeRequest): Promise<number[]> {
+	return api.post(`${ groups }/${ groupId }/update-supergroup`, api.createRequestParams({ ...request }))
 }

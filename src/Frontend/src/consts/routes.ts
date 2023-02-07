@@ -41,6 +41,7 @@ export const pythonVisualizer = 'python-visualizer';
 export const studentZipDownloadUrl = '/exercise/studentzip';
 export const additionalContent = 'additional-content-publications';
 export const deadLines = 'dead-lines';
+export const autoGroup = 'autoGroup';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return `/${ coursePath }/${ courseId }/${ slideId }`;

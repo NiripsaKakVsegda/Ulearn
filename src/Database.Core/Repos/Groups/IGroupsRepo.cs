@@ -22,12 +22,7 @@ namespace Database.Repos.Groups
 
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
 
-		Task<GroupBase> ModifyGroupAsync(int groupId,
-			string newName,
-			bool? newIsManualCheckingEnabled,
-			bool? newIsManualCheckingEnabledForOldSolutions,
-			bool? newDefaultProhibitFurtherReview,
-			bool? newCanUsersSeeGroupProgress);
+		Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings settings);
 
 		Task ChangeGroupOwnerAsync(int groupId, string newOwnerId);
 		Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived);

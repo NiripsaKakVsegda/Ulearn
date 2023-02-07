@@ -17,6 +17,7 @@ using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Units;
+using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Parameters.Groups;
 using Ulearn.Web.Api.Models.Responses.Groups;
 
@@ -83,15 +84,10 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[ProducesResponseType((int)HttpStatusCode.OK)]
 		public async Task<ActionResult<GroupInfo>> Group(int groupId)
 		{
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 			var members = await groupMembersRepo.GetGroupMembersAsync(groupId).ConfigureAwait(false);
 			var accesses = await groupAccessesRepo.GetGroupAccessesAsync(groupId).ConfigureAwait(false);
 			return BuildGroupInfo(group, members.Count, accesses);
-		}
-
-		public async Task UpdateSuperGroup()
-		{
-			
 		}
 
 		/// <summary>
@@ -107,20 +103,19 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You have no edit access to this group"));
 			}
 
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 
 			var newName = parameters.Name ?? group.Name;
-			var newIsManualCheckingEnabled = parameters.IsManualCheckingEnabled ?? group.IsManualCheckingEnabled;
-			var newIsManualCheckingEnabledForOldSolutions = parameters.IsManualCheckingEnabledForOldSolutions ?? group.IsManualCheckingEnabledForOldSolutions;
-			var newDefaultProhibitFurtherReview = parameters.DefaultProhibitFurtherReview ?? group.DefaultProhibitFutherReview;
-			var newCanUsersSeeGroupProgress = parameters.CanStudentsSeeGroupProgress ?? group.CanUsersSeeGroupProgress;
 			await groupsRepo.ModifyGroupAsync(
-				groupId,
-				newName,
-				newIsManualCheckingEnabled,
-				newIsManualCheckingEnabledForOldSolutions,
-				newDefaultProhibitFurtherReview,
-				newCanUsersSeeGroupProgress
+				groupId, new GroupSettings
+				{
+					NewName = newName,
+					NewIsManualCheckingEnabled = parameters.IsManualCheckingEnabled,
+					NewIsManualCheckingEnabledForOldSolutions = parameters.IsManualCheckingEnabledForOldSolutions,
+					NewDefaultProhibitFurtherReview = parameters.DefaultProhibitFurtherReview,
+					NewCanUsersSeeGroupProgress = parameters.CanStudentsSeeGroupProgress
+				}
+				
 			).ConfigureAwait(false);
 
 			if (parameters.IsArchived.HasValue)
@@ -136,7 +131,34 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (parameters.IsInviteLinkEnabled.HasValue)
 				await groupsRepo.EnableInviteLinkAsync(groupId, parameters.IsInviteLinkEnabled.Value).ConfigureAwait(false);
 
-			return BuildGroupInfo(await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup);
+			return BuildGroupInfo(await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false));
+		}
+
+		[HttpPost]
+		[Route("update-supergroup")]
+		[ProducesResponseType((int)HttpStatusCode.OK)]
+		public async Task<ActionResult<int[]>> UpdateSupergroup(int groupId, [FromBody] ApplyMergeRequest request)
+		{
+			// todo khapov: перенести (или вообще убрать и просто дергать апи)
+			var superGroup = await groupsRepo.FindGroupByIdAsync(groupId) as SuperGroup;
+			var newGroups = new List<int>(request.Merge.NewGroups.Length);
+			foreach (var groupName in request.Merge.NewGroups)
+			{
+				var newGroup = await groupsRepo.CreateGroupAsync(superGroup.CourseId,
+					groupName,
+					superGroup.OwnerId,
+					GroupType.SingleGroup,
+					request.IsManualCheckingEnabled,
+					request.IsManualCheckingEnabledForOldSolutions,
+					request.CanStudentsSeeGroupProgress,
+					request.DefaultProhibitFurtherReview);
+				newGroups.Add(newGroup.Id);
+				await groupsRepo.ModifyGroupAsync(newGroup.Id, new GroupSettings { SuperGroupId = superGroup.Id });
+			}
+
+			await groupsRepo.ModifyGroupAsync(groupId, new GroupSettings { DistributionTableLink = request.DistributionLink });
+			
+			return Ok(newGroups.ToArray());
 		}
 
 		/// <summary>

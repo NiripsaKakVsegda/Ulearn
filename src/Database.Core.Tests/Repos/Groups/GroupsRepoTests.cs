@@ -64,13 +64,14 @@ namespace Database.Core.Tests.Repos.Groups
 			var groupId = group.Id;
 
 			group = await groupsRepo.ModifyGroupAsync(
-				group.Id,
-				"NewGroupName",
-				newIsManualCheckingEnabled: true,
-				newIsManualCheckingEnabledForOldSolutions: true,
-				newDefaultProhibitFurtherReview: false,
-				newCanUsersSeeGroupProgress: false
-			).ConfigureAwait(false) as SingleGroup;
+				group.Id, new GroupSettings
+				{
+					NewName = "NewGroupName",
+					NewIsManualCheckingEnabled = true,
+					NewIsManualCheckingEnabledForOldSolutions = true,
+					NewDefaultProhibitFurtherReview = false,
+					NewCanUsersSeeGroupProgress = false
+				}).ConfigureAwait(false) as SingleGroup;
 
 			Assert.AreEqual(groupId, group.Id);
 

@@ -60,5 +60,11 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 
 		[DataMember(EmitDefaultValue = false)]
 		public string ApiUrl { get; set; }
+		
+		[DataMember]
+		public int? SuperGroupId { get; set; }
+		
+		[DataMember]
+		public string DistributionTableLink { get; set; }
 	}
 }

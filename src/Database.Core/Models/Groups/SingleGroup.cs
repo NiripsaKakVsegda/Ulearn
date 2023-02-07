@@ -12,7 +12,7 @@ namespace Database.Models
 		[Required]
 		public override GroupType GroupType => GroupType.SingleGroup;
 		
-		public Guid? SuperGroupId { get; set; }
+		public int? SuperGroupId { get; set; }
 		
 		[Required]
 		/* Если в курсе выключена ручная проверка, то можно включить её для этой группы */
@@ -30,7 +30,6 @@ namespace Database.Models
 		/* Значение по умолчанию для галочки «Не принимать больше код-ревью у этого студента по этой задаче» */
 		public bool DefaultProhibitFutherReview { get; set; }
 		
-		// todo khapov: remove to base?
 		public virtual ICollection<GroupMember> Members { get; set; }
 
 		/* TODO (andgein): Use ToListAsync()? */

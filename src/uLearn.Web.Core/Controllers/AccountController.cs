@@ -41,6 +41,7 @@ public class AccountController : BaseUserController
 	private readonly ISlideCheckingsRepo slideCheckingsRepo;
 	private readonly AuthenticationManager authenticationManager;
 	private readonly UlearnDb db;
+	private readonly AutoGroupManager autoGroupManager;
 
 	private readonly string telegramSecret;
 	private static readonly WebConfiguration configuration;
@@ -70,7 +71,8 @@ public class AccountController : BaseUserController
 		IGroupMembersRepo groupMembersRepo,
 		IGroupAccessesRepo groupAccessesRepo,
 		WebConfiguration configuration,
-		AuthenticationManager authenticationManager)
+		AuthenticationManager authenticationManager, 
+		AutoGroupManager autoGroupManager)
 		: base(userManager, usersRepo, configuration)
 	{
 		this.db = db;
@@ -84,6 +86,7 @@ public class AccountController : BaseUserController
 		this.tempCoursesRepo = tempCoursesRepo;
 		this.slideCheckingsRepo = slideCheckingsRepo;
 		this.authenticationManager = authenticationManager;
+		this.autoGroupManager = autoGroupManager;
 		this.groupMembersRepo = groupMembersRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 
@@ -212,24 +215,45 @@ public class AccountController : BaseUserController
 	public async Task<ActionResult> JoinGroup(Guid hash)
 	{
 		var userId = User.GetUserId();
-		var group = await groupsRepo.FindGroupByInviteHashAsync(hash) as SingleGroup;
-
-		if (group != null && group.Members.Any(u => u.UserId == userId))
-			return Redirect(Url.RouteUrl("Course.Slide", new { courseId = group.CourseId }));
-
+		var group = await groupsRepo.FindGroupByInviteHashAsync(hash);
+		
 		if (group is not { IsInviteLinkEnabled: true })
 			return new NotFoundResult();
 
 		if (Request.Method != "POST")
 			return View(group);
 
-		var alreadyInGroup = await groupMembersRepo.AddUserToGroupAsync(group.Id, userId) == null;
-		if (!alreadyInGroup)
-			await NotifyAboutUserJoinedToGroup(group, userId);
+		async Task<bool> TryJoin(SingleGroup group)
+		{
+			var success = await groupMembersRepo.AddUserToGroupAsync(group.Id, userId) != null;
+			if (success)
+			{
+				await NotifyAboutUserJoinedToGroup(group, userId);
+				await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, userId).ConfigureAwait(false);
+			}
 
-		await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, userId).ConfigureAwait(false);
+			return success;
+		}
 
-		return View("JoinedToGroup", group);
+		if (group is SingleGroup singleGroup)
+		{
+			if (await TryJoin(singleGroup))
+				return View("JoinedToGroup", singleGroup);
+			return Redirect(Url.RouteUrl("Course.Slide", new { courseId = singleGroup.CourseId }));
+		}
+
+		if (group is SuperGroup superGroup)
+		{
+			var groups = await groupsRepo.GetCourseGroupsQueryable(group.CourseId, GroupQueryType.SingleGroup)
+				.Where(x => ((SingleGroup)x).SuperGroupId == superGroup.Id)
+				.ToDictionaryAsync(x => x.Name, x => (SingleGroup)x);
+			var remoteData = await autoGroupManager.GetRemoteDataAsync(superGroup.DistributionTableLink);
+			var user = await usersRepo.FindUserById(userId);
+			foreach (var data in remoteData.Where(x => x.student == $"{user.FirstName} {user.LastName}" || x.student == $"{user.LastName} {user.FirstName}"))
+				await TryJoin(groups[data.group]);
+		}
+		
+		return View(group);
 	}
 
 	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)]
