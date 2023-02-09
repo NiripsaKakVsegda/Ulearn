@@ -144,7 +144,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				? GetNoStudentZipInitialCode(fp)
 				: ExerciseInitialCode ?? $"{commentSymbols} Вставьте сюда финальное содержимое файла {UserCodeFilePath}";
 			Validator.ValidatorName = string.Join(" ", Language.GetName(), Validator.ValidatorName ?? "");
-			Extractor = new CommonSingleRegionExtractor((fp.InitialUserCodeFile.Exists ? fp.InitialUserCodeFile : fp.UserCodeFile).ContentAsUtf8());
+			Extractor = Region != null
+				? new CommonSingleRegionExtractor((fp.InitialUserCodeFile.Exists ? fp.InitialUserCodeFile : fp.UserCodeFile).ContentAsUtf8())
+				: null;
 			yield return this;
 
 			var correctSolution = GetCorrectSolution(fp);
@@ -185,7 +187,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		{
 			var validator = ValidatorsRepository.Get(Validator);
 			var fullCode = userWrittenCode;
-			if (Region != null && validator != null)
+			if (validator != null && Extractor != null)
 			{
 				fullCode = Extractor
 					.ReplaceRegionContent(new Label { Name = Region }, userWrittenCode)
