@@ -97,7 +97,7 @@ namespace RunCsJob
 				});
 		}
 
-		private static volatile object buildLock = new object();
+		private static volatile object buildLock = new();
 		
 		private static bool SyncBuild(Project project, ILogger log)
 		{

@@ -11,7 +11,7 @@ namespace uLearn.CSharp
 	[TestFixture]
 	public class ProjModifier_Should
 	{
-		private Project CreateTestProject() => new Project(TestProjectFilename, null, null, new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile));
+		private Project CreateTestProject() => new(TestProjectFilename, null, null, new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile));
 		private string TestProjectFilename => Path.Combine(TestsHelper.TestDirectory, "CSharp", "TestProject", "ProjDir", "test.csproj");
 
 		[OneTimeSetUp]

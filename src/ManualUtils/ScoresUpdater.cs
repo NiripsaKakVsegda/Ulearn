@@ -127,7 +127,7 @@ namespace ManualUtils
 			var blockScore = isTrue ? isTrueBlock.MaxScore : 0;
 			return new List<QuizInfoForDb>
 			{
-				new QuizInfoForDb
+				new()
 				{
 					BlockId = isTrueBlock.Id,
 					ItemId = null,
@@ -150,7 +150,7 @@ namespace ManualUtils
 				blockScore = isCorrect ? choiceBlock.MaxScore : 0;
 				return new List<QuizInfoForDb>
 				{
-					new QuizInfoForDb
+					new()
 					{
 						BlockId = choiceBlock.Id,
 						ItemId = answerItemId,
@@ -250,7 +250,7 @@ namespace ManualUtils
 			var blockScore = isRightAnswer ? fillInBlock.MaxScore : 0;
 			return new List<QuizInfoForDb>
 			{
-				new QuizInfoForDb
+				new()
 				{
 					BlockId = fillInBlock.Id,
 					ItemId = null,

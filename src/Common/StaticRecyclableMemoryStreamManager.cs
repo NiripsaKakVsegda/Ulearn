@@ -4,6 +4,6 @@ namespace Ulearn.Common
 {
 	public static class StaticRecyclableMemoryStreamManager
 	{
-		public static readonly RecyclableMemoryStreamManager Manager = new RecyclableMemoryStreamManager();
+		public static readonly RecyclableMemoryStreamManager Manager = new();
 	}
 }

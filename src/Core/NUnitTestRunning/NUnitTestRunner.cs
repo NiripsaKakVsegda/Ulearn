@@ -67,7 +67,7 @@ namespace Ulearn.Core.NUnitTestRunning
 		{
 			public IReadOnlyCollection<ITestResult> Results => results;
 
-			private readonly List<ITestResult> results = new List<ITestResult>();
+			private readonly List<ITestResult> results = new();
 
 			public void TestStarted(ITest test)
 			{

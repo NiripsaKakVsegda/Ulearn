@@ -9,7 +9,7 @@ namespace Ulearn.Core.Configuration
 {
 	public static class ApplicationConfiguration
 	{
-		private static readonly Lazy<IConfigurationRoot> configuration = new Lazy<IConfigurationRoot>(GetConfiguration);
+		private static readonly Lazy<IConfigurationRoot> configuration = new(GetConfiguration);
 
 		public static T Read<T>() where T : UlearnConfigurationBase
 		{

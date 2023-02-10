@@ -30,21 +30,21 @@ namespace Correct
 		{
 			e = 5
 		};
-		List<List<List<int>>> l = new List<List<List<int>>>
+		List<List<List<int>>> l = new()
 		{
 			new List<List<int>>
 			{
-				new List<int>
+				new()
 				{
 					1
 				}
 			}
 		};
-		Dictionary<int, int> d1 = new Dictionary<int, int>
+		Dictionary<int, int> d1 = new()
 		{
 			{ 1, 2 }
 		};
-		Dictionary<int, List<int>> dl1 = new Dictionary<int, List<int>>
+		Dictionary<int, List<int>> dl1 = new()
 		{
 			{
 				1, new List<int>

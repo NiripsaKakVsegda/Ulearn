@@ -22,13 +22,13 @@ namespace uLearn.CSharp.IndentsValidation.TestData.Incorrect
 			var c = 0;
 		}
 
-		Dictionary<int, int> dl = new Dictionary<int, int>
+		Dictionary<int, int> dl = new()
 		{
 			{ 1, 2
 			}
 		};
 
-		Dictionary<int, int> dl1 = new Dictionary<int, int>
+		Dictionary<int, int> dl1 = new()
 		{
 			{ 1,
 				2

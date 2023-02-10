@@ -71,7 +71,7 @@ namespace AntiPlagiarism.Web.CodeAnalyzing
 		}
 
 		// Pygmentize заменяет в токенах конец строки на \n. Заменим сами на \n, а потом восстановим в токенах
-		private static readonly Regex lineEndingsRegex = new Regex("\r\n|\n", RegexOptions.Compiled);
+		private static readonly Regex lineEndingsRegex = new("\r\n|\n", RegexOptions.Compiled);
 		private (string code, List<string> originalLineEndings) PrepareLineEndingsForPygmentize(string code)
 		{
 			var originalLineEndings = lineEndingsRegex.Matches(code).Select(m => m.Value).ToList();

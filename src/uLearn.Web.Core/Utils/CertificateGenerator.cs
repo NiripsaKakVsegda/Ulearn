@@ -25,9 +25,9 @@ public class CertificateGenerator
 	private static ILog log => LogProvider.Get().ForContext(typeof(CertificatesRepo));
 
 	public const string TemplateIndexFile = "index.html";
-	private readonly Regex templateParameterRegex = new Regex(@"%([-a-z0-9_.]+)(\|(raw|in_quotes|in_html))?%", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+	private readonly Regex templateParameterRegex = new(@"%([-a-z0-9_.]+)(\|(raw|in_quotes|in_html))?%", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-	private readonly HashSet<string> builtInParameters = new HashSet<string>
+	private readonly HashSet<string> builtInParameters = new()
 	{
 		"user.last_name", "user.first_name", "user.name",
 		"instructor.last_name", "instructor.first_name", "instructor.name",

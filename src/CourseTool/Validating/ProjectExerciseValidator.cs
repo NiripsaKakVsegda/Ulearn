@@ -21,7 +21,7 @@ namespace uLearn.CourseTool.Validating
 		private readonly CsProjectExerciseBlock.FilesProvider fp;
 		private readonly ExerciseSlide slide;
 		private readonly CsSandboxRunnerSettings settings;
-		private readonly ExerciseStudentZipBuilder exerciseStudentZipBuilder = new ExerciseStudentZipBuilder();
+		private readonly ExerciseStudentZipBuilder exerciseStudentZipBuilder = new();
 
 		public ProjectExerciseValidator(BaseValidator baseValidator, CsSandboxRunnerSettings settings, ExerciseSlide slide, CsProjectExerciseBlock exercise)
 			: base(baseValidator)

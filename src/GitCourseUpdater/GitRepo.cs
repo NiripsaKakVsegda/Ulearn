@@ -42,7 +42,7 @@ namespace GitCourseUpdater
 		private static ILog log => LogProvider.Get().ForContext(typeof(GitRepo));
 		private string privateKeyPath;
 		private string publicKeyPath;
-		private static object @lock = new object(); // Потокобезопасность не гарантируется библиотекой libgit2
+		private static object @lock = new(); // Потокобезопасность не гарантируется библиотекой libgit2
 
 		// url example git@github.com:user/myrepo.git
 		// В GitRepo используется Monitor. Он должен быть освобожден в том же потоке, что и взят.
@@ -144,7 +144,7 @@ namespace GitCourseUpdater
 			return path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Trim(Path.AltDirectorySeparatorChar);
 		}
 
-		private static readonly Regex sha1Regex = new Regex("[a-f0-9]{40}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		private static readonly Regex sha1Regex = new("[a-f0-9]{40}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		public void Checkout(string commitHashOrBranchName)
 		{

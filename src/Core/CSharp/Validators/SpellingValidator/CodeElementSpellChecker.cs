@@ -9,10 +9,10 @@ namespace uLearn.CSharp.Validators.SpellingValidator
 {
 	public class CodeElementSpellChecker
 	{
-		private static readonly Hunspell hunspellEnUs = new Hunspell(Resources.en_US_aff, Resources.en_US_dic);
-		private static readonly Hunspell hunspellEnGb = new Hunspell(Resources.en_GB_aff, Resources.en_GB_dic);
-		private static readonly Hunspell hunspellLa = new Hunspell(Resources.la_aff, Resources.la_dic);
-		private static readonly HashSet<string> wordsToExcept = new HashSet<string>(Resources.spelling_exceptions.SplitToLines());
+		private static readonly Hunspell hunspellEnUs = new(Resources.en_US_aff, Resources.en_US_dic);
+		private static readonly Hunspell hunspellEnGb = new(Resources.en_GB_aff, Resources.en_GB_dic);
+		private static readonly Hunspell hunspellLa = new(Resources.la_aff, Resources.la_dic);
+		private static readonly HashSet<string> wordsToExcept = new(Resources.spelling_exceptions.SplitToLines());
 
 		public bool CheckIdentifierNameForSpellingErrors(string identifierName, string typeAsString = null)
 		{

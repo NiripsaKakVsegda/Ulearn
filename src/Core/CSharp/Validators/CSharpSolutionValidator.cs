@@ -14,7 +14,7 @@ namespace Ulearn.Core.CSharp.Validators
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(CSharpSolutionValidator));
 
-		private readonly List<ICSharpSolutionValidator> validators = new List<ICSharpSolutionValidator>
+		private readonly List<ICSharpSolutionValidator> validators = new()
 		{
 			new NotEmptyCodeValidator(),
 			new BlockLengthStyleValidator(),

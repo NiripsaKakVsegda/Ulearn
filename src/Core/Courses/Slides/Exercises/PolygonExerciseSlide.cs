@@ -65,11 +65,9 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 			yield return new MarkdownBlock($"[Скачать условия задачи в формате PDF]({pdfLink})");
 		}
 
-		private static readonly Regex problemBodyRegex
-			= new Regex("(<DIV class=[\"']problem-statement['\"]>.*)</BODY>", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static readonly Regex problemBodyRegex = new("(<DIV class=[\"']problem-statement['\"]>.*)</BODY>", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-		private static readonly Regex imageRegex
-			= new Regex("<IMG[^>]+src=\"(?<src>[^\"]+)\"", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static readonly Regex imageRegex = new("<IMG[^>]+src=\"(?<src>[^\"]+)\"", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 		private SlideBlock RenderFromHtml(string html, string courseId, DirectoryInfo courseDirectory, string unitPathRelativeToCourse)
 		{

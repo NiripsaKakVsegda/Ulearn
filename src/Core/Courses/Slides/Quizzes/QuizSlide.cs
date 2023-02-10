@@ -12,10 +12,10 @@ namespace Ulearn.Core.Courses.Slides.Quizzes
 	[XmlRoot("slide.quiz", IsNullable = false, Namespace = "https://ulearn.me/schema/v2")]
 	public class QuizSlide : Slide
 	{
-		private static readonly Regex questionIdRegex = new Regex("^[0-9a-z_]+$", RegexOptions.IgnoreCase);
+		private static readonly Regex questionIdRegex = new("^[0-9a-z_]+$", RegexOptions.IgnoreCase);
 
 		[XmlElement("scoring")]
-		public QuizScoringSettings Scoring { get; set; } = new QuizScoringSettings
+		public QuizScoringSettings Scoring { get; set; } = new()
 		{
 			ManualChecking = false,
 			MaxTriesCount = 2,

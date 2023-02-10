@@ -11,7 +11,7 @@ namespace Ulearn.VideoAnnotations.Web.Annotations
 	public class AnnotationsParser : IAnnotationsParser
 	{
 		private const string fragmentPattern = @"^\*\s+(\d?\d\:\d\d)\s+([\-\—\–]\s+)?(.+)";
-		private readonly Regex fragmentRegex = new Regex(fragmentPattern);
+		private readonly Regex fragmentRegex = new(fragmentPattern);
 
 		private readonly string[] annotationOffsetFormats = { @"mm\:ss", @"m\:ss" };
 

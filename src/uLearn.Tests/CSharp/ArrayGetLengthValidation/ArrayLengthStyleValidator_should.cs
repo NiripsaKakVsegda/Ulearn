@@ -12,7 +12,7 @@ namespace uLearn.CSharp.ArrayGetLengthValidation
 	[TestFixture]
 	public class ArrayLengthStyleValidator_should
 	{
-		private static DirectoryInfo TestDataDir => new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static DirectoryInfo TestDataDir => new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "ArrayGetLengthValidation", "TestData"));
 
 		private static DirectoryInfo IncorrectTestDataDir => TestDataDir.GetDirectories("Incorrect").Single();
@@ -21,8 +21,7 @@ namespace uLearn.CSharp.ArrayGetLengthValidation
 		private static IEnumerable<FileInfo> CorrectFiles => CorrectTestDataDir.EnumerateFiles();
 		private static IEnumerable<FileInfo> IncorrectFiles => IncorrectTestDataDir.EnumerateFiles();
 
-		private static DirectoryInfo BasicProgrammingDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
+		private static DirectoryInfo BasicProgrammingDirectory => new(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
 
 		private static IEnumerable<FileInfo> BasicProgrammingFiles()
 		{
@@ -35,8 +34,7 @@ namespace uLearn.CSharp.ArrayGetLengthValidation
 							!f.Name.Equals("AssemblyInfo.cs"));
 		}
 
-		private static DirectoryInfo ULearnSubmissionsDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
+		private static DirectoryInfo ULearnSubmissionsDirectory => new(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
 
 		private static IEnumerable<FileInfo> SubmissionsFiles()
 		{
@@ -47,7 +45,7 @@ namespace uLearn.CSharp.ArrayGetLengthValidation
 				.Where(f => f.Name.Contains("Accepted"));
 		}
 
-		private readonly ArrayLengthStyleValidator validator = new ArrayLengthStyleValidator();
+		private readonly ArrayLengthStyleValidator validator = new();
 
 		[TestCaseSource(nameof(IncorrectFiles))]
 		public void FindErrors(FileInfo file)

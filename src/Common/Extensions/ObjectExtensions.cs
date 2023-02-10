@@ -12,9 +12,9 @@ namespace Ulearn.Common.Extensions
 {
 	public static class ObjectExtensions
 	{
-		private static readonly XmlWriterSettings defaultSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true };
-		private static readonly XmlWriterSettings withoutSpacesSettings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = false, NewLineHandling = NewLineHandling.None };
-		private static readonly XmlSerializerNamespaces ns = new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") });
+		private static readonly XmlWriterSettings defaultSettings = new() { OmitXmlDeclaration = true, Indent = true };
+		private static readonly XmlWriterSettings withoutSpacesSettings = new() { OmitXmlDeclaration = true, Indent = false, NewLineHandling = NewLineHandling.None };
+		private static readonly XmlSerializerNamespaces ns = new(new[] { new XmlQualifiedName("", "") });
 
 		public static bool IsOneOf<T>(this T o, params T[] validValues)
 		{

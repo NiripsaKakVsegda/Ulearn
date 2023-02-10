@@ -13,7 +13,7 @@ namespace Ulearn.Core.CSharp.Validators
 			if (!hasCode)
 				return new List<SolutionStyleError>
 				{
-					new SolutionStyleError(StyleErrorType.NotEmpty01, userSolution.GetRoot())
+					new(StyleErrorType.NotEmpty01, userSolution.GetRoot())
 				};
 
 			return new List<SolutionStyleError>();

@@ -9,7 +9,7 @@ namespace Ulearn.Core.CSharp.Validators.SpellingValidator
 {
 	public class SpellingValidator : BaseStyleValidator
 	{
-		private readonly CodeElementSpellChecker spellChecker = new CodeElementSpellChecker();
+		private readonly CodeElementSpellChecker spellChecker = new();
 
 		public override List<SolutionStyleError> FindErrors(SyntaxTree userSolution, SemanticModel semanticModel)
 		{

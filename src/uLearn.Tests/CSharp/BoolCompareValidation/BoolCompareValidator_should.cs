@@ -21,7 +21,7 @@ namespace uLearn.CSharp.BoolCompareValidation
 			validator = new BoolCompareValidator();
 		}
 
-		private static readonly DirectoryInfo testDataDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static readonly DirectoryInfo testDataDir = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "BoolCompareValidation", "TestData"));
 
 		private static DirectoryInfo IncorrectTestDataDir => testDataDir.GetDirectories("Incorrect").Single();

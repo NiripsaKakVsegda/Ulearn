@@ -9,8 +9,8 @@ namespace Ulearn.Common
 		private readonly int capacity;
 		private readonly TimeSpan maxLifeTime;
 
-		private readonly Dictionary<TKey, LinkedListNode<LruCacheItem<TKey, TValue>>> cache = new Dictionary<TKey, LinkedListNode<LruCacheItem<TKey, TValue>>>();
-		private readonly LinkedList<LruCacheItem<TKey, TValue>> lastUsedItems = new LinkedList<LruCacheItem<TKey, TValue>>();
+		private readonly Dictionary<TKey, LinkedListNode<LruCacheItem<TKey, TValue>>> cache = new();
+		private readonly LinkedList<LruCacheItem<TKey, TValue>> lastUsedItems = new();
 
 		public LruCache(int capacity, TimeSpan maxLifeTime)
 		{

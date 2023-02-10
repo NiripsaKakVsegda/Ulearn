@@ -24,7 +24,7 @@ namespace XQueueWatcher
 	{
 		private static readonly TimeSpan pauseBetweenRequests = TimeSpan.FromSeconds(1);
 		private static readonly Dictionary<int, XQueueClient> clientsCache = new();
-		private static ServiceKeepAliver keepAliver = new ServiceKeepAliver(configuration.GraphiteServiceName);
+		private static ServiceKeepAliver keepAliver = new(configuration.GraphiteServiceName);
 		private static ILog log => LogProvider.Get().ForContext(typeof(XQueueWatcherApplication));
 
 		public override async Task InitializeAsync(IVostokHostingEnvironment environment)

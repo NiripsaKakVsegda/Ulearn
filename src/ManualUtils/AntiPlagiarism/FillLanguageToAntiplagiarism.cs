@@ -11,7 +11,7 @@ namespace ManualUtils.AntiPlagiarism
 
 	public class FillLanguageToAntiplagiarism
 	{
-		private static Dictionary<Guid, Language?> taskIdToSubmission = new Dictionary<Guid, Language?>();
+		private static Dictionary<Guid, Language?> taskIdToSubmission = new();
 
 		private static Language? GetLanguageByTaskId(Guid taskId, AntiPlagiarismDb adb)
 		{

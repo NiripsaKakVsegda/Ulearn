@@ -152,7 +152,7 @@ namespace Database.Repos
 			return await FilterUsers(query, null, usersIdsByNamePrefix, limit);
 		}
 
-		private static Regex nonWordChars = new Regex(@"[^\w\s\-\.@_]*", RegexOptions.Compiled);
+		private static Regex nonWordChars = new(@"[^\w\s\-\.@_]*", RegexOptions.Compiled);
 
 		private async Task<List<string>> GetUsersByNamePrefix(string name, int limit = 100)
 		{

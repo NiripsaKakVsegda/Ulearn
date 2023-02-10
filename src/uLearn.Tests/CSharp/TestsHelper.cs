@@ -20,10 +20,10 @@ namespace uLearn.CSharp
 		public static readonly string TestDirectory = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TestsHelper)).Location);
 		
 		public static readonly string ProjSlideFolderPath = Path.Combine(TestDirectory, "CSharp", "testProject");
-		public static readonly DirectoryInfo ProjSlideFolder = new DirectoryInfo(ProjSlideFolderPath);
+		public static readonly DirectoryInfo ProjSlideFolder = new(ProjSlideFolderPath);
 
 		public static readonly string ProjExerciseFolderPath = Path.Combine(ProjSlideFolderPath, "ProjDir");
-		public static readonly DirectoryInfo ProjExerciseFolder = new DirectoryInfo(ProjExerciseFolderPath);
+		public static readonly DirectoryInfo ProjExerciseFolder = new(ProjExerciseFolderPath);
 
 		public static readonly string CsProjFilename = "test.csproj";
 		public static readonly string CsProjFilePath = Path.Combine("ProjDir", CsProjFilename);

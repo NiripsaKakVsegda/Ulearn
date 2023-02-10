@@ -14,7 +14,7 @@ namespace Correct
 			set { prop = value; }
 		}
 
-		Dictionary<int, int> d2 = new Dictionary<int, int> { { 1, 2 }, { 2, 3 } };
+		Dictionary<int, int> d2 = new() { { 1, 2 }, { 2, 3 } };
 
 		public string Prop1 { get; set; }
 

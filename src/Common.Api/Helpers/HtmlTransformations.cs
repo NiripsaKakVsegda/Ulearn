@@ -50,7 +50,7 @@ namespace Ulearn.Common.Api.Helpers
 										   )
 										   ";
 
-		public static readonly Regex urlRegex = new Regex(urlRegexS, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+		public static readonly Regex urlRegex = new(urlRegexS, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
 		public static string EncodeMultiLineText(string text, bool keepFirstSpaces = false)
 		{

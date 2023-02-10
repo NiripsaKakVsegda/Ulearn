@@ -16,7 +16,7 @@ namespace Ulearn.Core.Model
 
 	public class RegionRemover : IRegionRemover
 	{
-		private readonly List<IRegionRemover> regionRemovers = new List<IRegionRemover>();
+		private readonly List<IRegionRemover> regionRemovers = new();
 		private readonly string pragma;
 
 		public RegionRemover(Language? language)

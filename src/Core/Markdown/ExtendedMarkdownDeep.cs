@@ -14,7 +14,7 @@ namespace Ulearn.Core.Markdown
 			this.context = context;
 		}
 
-		private readonly Regex fileToDownloadLinkRegex = new Regex(@".*\.(zip|odp|pptx|docx|xlsx|pdf|mmap|xmind)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		private readonly Regex fileToDownloadLinkRegex = new(@".*\.(zip|odp|pptx|docx|xlsx|pdf|mmap|xmind)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		public override void OnPrepareLink(HtmlTag tag)
 		{
@@ -67,7 +67,7 @@ namespace Ulearn.Core.Markdown
 					|| url.IndexOf(context.BaseUrlWeb, StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
-		private readonly Regex fileLinkRegex = new Regex(@".*\.\w{1,5}(?:$|#|\?|&)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		private readonly Regex fileLinkRegex = new(@".*\.\w{1,5}(?:$|#|\?|&)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		private bool IsFile(string url)
 		{

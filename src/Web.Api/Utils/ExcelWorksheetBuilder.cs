@@ -10,7 +10,7 @@ namespace Ulearn.Web.Api.Utils
 		private readonly ExcelWorksheet worksheet;
 		private int currentRow;
 		private int currentColumn;
-		private readonly List<Action<ExcelStyle>> styleRules = new List<Action<ExcelStyle>>();
+		private readonly List<Action<ExcelStyle>> styleRules = new();
 		private bool isLastStyleRuleForOneCellOnly = false;
 
 		public int ColumnsCount;

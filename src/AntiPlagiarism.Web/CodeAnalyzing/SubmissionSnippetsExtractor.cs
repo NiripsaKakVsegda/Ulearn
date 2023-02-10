@@ -15,7 +15,7 @@ namespace AntiPlagiarism.Web.CodeAnalyzing
 		private static ILog log => LogProvider.Get().ForContext(typeof(SubmissionSnippetsExtractor));
 		private readonly AntiPlagiarismConfiguration configuration;
 
-		private readonly List<ITokenInSnippetConverter> tokenConverters = new List<ITokenInSnippetConverter>
+		private readonly List<ITokenInSnippetConverter> tokenConverters = new()
 		{
 			new TokensKindsConverter(),
 			new TokensValuesConverter(),

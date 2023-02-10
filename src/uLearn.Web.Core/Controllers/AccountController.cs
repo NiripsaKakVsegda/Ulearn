@@ -45,7 +45,7 @@ public class AccountController : BaseUserController
 	private readonly string telegramSecret;
 	private static readonly WebConfiguration configuration;
 
-	private static readonly List<string> hijackCookies = new List<string>();
+	private static readonly List<string> hijackCookies = new();
 	private static ILog log => LogProvider.Get().ForContext(typeof(AccountController));
 
 	static AccountController()
