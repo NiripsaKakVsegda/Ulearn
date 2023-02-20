@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { ComponentType, FunctionComponent, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
 	MatchParams,
@@ -7,6 +7,9 @@ import {
 	WithParams,
 	WithRouter,
 } from "../models/router";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "src/redux/reducers";
+import { changeCurrentCourseAction } from "src/actions/course";
 
 export function withOldRouter<T extends WithRouter>(Component: React.ComponentType<T>)
 	: FunctionComponent<Omit<T, keyof WithRouter>> {
@@ -61,5 +64,22 @@ export function withParams<T extends WithParams>(Component: React.ComponentType<
 				params={ params }
 			/>
 		);
+	};
+}
+
+export function withCourseRouting<T extends Partial<WithParams>>(Child: ComponentType<T>)
+	: FunctionComponent<Omit<T, keyof WithParams>> {
+	return (props) => {
+		const dispatch = useDispatch();
+		const params = useParams<keyof MatchParams>();
+		const currentCourseId = useSelector<RootState>(state => state.courses.currentCourseId);
+
+		useEffect(() => {
+			if(params.courseId && params.courseId !== currentCourseId) {
+				dispatch(changeCurrentCourseAction(params.courseId));
+			}
+		}, [currentCourseId]);
+
+		return (<Child { ...props as T } params={ params }/>);
 	};
 }

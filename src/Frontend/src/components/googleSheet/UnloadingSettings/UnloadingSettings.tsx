@@ -24,12 +24,12 @@ import {
 	renderRefreshPeriodSwitcher,
 	texts as baseTexts
 } from "../utils";
+import { withCourseRouting, withOldRouter } from "src/utils/router";
 
 import { RootState } from "src/redux/reducers";
 
 import styles from './unloadingSettings.less';
 import texts from './UnloadingSettings.texts';
-import { withOldRouter } from "../../../utils/router";
 
 export type Props = { courseTitle: string; } & GoogleSheetApiInObject & WithRouter;
 
@@ -308,4 +308,4 @@ const mapStateToProps = (state: RootState, { params }: WithParams) => {
 	};
 };
 
-export default withOldRouter(connect(mapStateToProps)(UnloadingSettings));
+export default withOldRouter(withCourseRouting(connect(mapStateToProps)(UnloadingSettings)));

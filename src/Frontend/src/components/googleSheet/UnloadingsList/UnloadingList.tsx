@@ -18,7 +18,7 @@ import { GroupInfo } from "src/models/groups";
 import { WithParams } from "src/models/router";
 
 import { Api, texts as toastTexts } from '../utils';
-import { withParams } from "src/utils/router";
+import { withCourseRouting, } from "src/utils/router";
 
 import { RootState } from "src/redux/reducers";
 
@@ -225,4 +225,4 @@ const mapStateToProps = (state: RootState, { params }: WithParams) => ({
 	courseTitle: state.courses?.courseById[params.courseId]?.title?.toLowerCase() ?? '',
 });
 
-export default withParams(connect(mapStateToProps)(UnloadingList));
+export default withCourseRouting(connect(mapStateToProps)(UnloadingList));
