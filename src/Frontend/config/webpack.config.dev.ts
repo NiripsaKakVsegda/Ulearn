@@ -62,7 +62,6 @@ const config: Configuration = {
 	mode: 'development',
 	devtool: 'eval-cheap-module-source-map',
 	entry: {
-		//oldBrowser: paths.oldBrowserJs,
 		main: [paths.legacy, paths.appIndexTsx],
 	},
 	output: {
@@ -183,15 +182,6 @@ const config: Configuration = {
 			inject: true,
 			template: paths.appHtml,
 			favicon: paths.appPublic + '/favicon.ico',
-			chunksSortMode: (chunk1, chunk2) => {
-				if(chunk1 === 'oldBrowser') {
-					return -1;
-				}
-				if(chunk2 === 'oldBrowser') {
-					return 1;
-				}
-				return 0;
-			},
 		}),
 		new webpack.ProvidePlugin({
 			process: 'process/browser',

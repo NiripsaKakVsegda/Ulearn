@@ -15,7 +15,6 @@ export default {
 	appSrc: resolveApp('src'),
 	yarnLockFile: resolveApp('yarn.lock'),
 	appNodeModules: resolveApp('node_modules'),
-	oldBrowserJs: resolveApp('src/oldBrowser.js'),
 
 	static: {
 		css: contentPath + '/css',
