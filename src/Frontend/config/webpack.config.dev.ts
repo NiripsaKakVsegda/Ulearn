@@ -38,12 +38,29 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			target: webUrl,
 		},
 		{
-			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**", "/content/**", "/Sandbox/**"],
+			context: '/Admin/AddCertificate',
 			secure: false,
 			changeOrigin: true,
 			target: webUrl,
-			bypass: (req, res, proxyConfig)=>{
-				if (req.headers.accept?.indexOf('html') !== -1) {
+		},
+		{
+			context: "/exercise/StudentSubmissionsTable",
+			secure: false,
+			changeOrigin: true,
+			target: webUrl,
+			bypass: (req, res, proxyConfig) => {
+				if(req.headers.accept?.indexOf('html') !== -1) {
+					return '/index.html';
+				}
+			}
+		},
+		{
+			context: ['/Account/**', '/Admin/**', '/Quiz/**', "/Content/**", "/content/**", "/Sandbox/**", ],
+			secure: false,
+			changeOrigin: true,
+			target: webUrl,
+			bypass: (req, res, proxyConfig) => {
+				if(req.headers.accept?.indexOf('html') !== -1) {
 					return '/index.html';
 				}
 			}
