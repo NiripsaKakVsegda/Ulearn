@@ -71,7 +71,7 @@ export const mapStateToProps = (
 	const lastUsedReviews = getDataIfLoaded(
 		state.favouriteReviews.lastUsedReviewsByCourseIdBySlideId[courseId]?.[slideId]);
 
-	const antiPlagiarismStatus = studentSubmissions &&
+	const antiPlagiarismStatus = studentSubmissions && studentSubmissions.length > 0 &&
 		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
 	const antiPlagiarismStatusRedux = antiPlagiarismStatus as ReduxData;
 
@@ -100,7 +100,7 @@ export const mapStateToProps = (
 		lastCheckedSubmissionId: lastReviewedSubmission?.id,
 		lastManualCheckingSubmissionId: submissionToReview?.id,
 
-		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
+		antiPlagiarismStatus: antiPlagiarismStatus ? getDataIfLoaded(antiPlagiarismStatus) : undefined,
 		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
 		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
 
