@@ -7,10 +7,11 @@ import Slide from "./Slide";
 import { DispatchFromRedux, PropsFromCourse, PropsFromRedux } from "./Slide.types";
 import { ReduxData } from "src/redux";
 import { Block } from "src/models/slide";
+import { isInstructorFromAccount } from "../../../../utils/courseRoles";
 
 const mapStateToProps = (state: RootState, { slideInfo, }: PropsFromCourse
 ): PropsFromRedux => {
-	const { slides, instructor, } = state;
+	const { slides, instructor, account, } = state;
 	const { slidesByCourses, } = slides;
 
 	const coursesSlides = slidesByCourses[slideInfo.courseId];
@@ -25,13 +26,14 @@ const mapStateToProps = (state: RootState, { slideInfo, }: PropsFromCourse
 
 	const slideLoading = slideReduxData?.isLoading || false;
 	const slideError = slideReduxData?.error || null;
+	const userIsInstructor = isInstructorFromAccount(account, slideInfo.courseId);
 
 	return {
 		slideLoading,
 		slideBlocks,
 		slideError,
 		isSlideBlocksLoaded: !slideLoading && !slideError && !!slideReduxData,
-		isStudentMode: instructor.isStudentMode && !slideInfo.isReview && !slideInfo.isLti,
+		isStudentMode: !slideInfo.isReview && !slideInfo.isLti && userIsInstructor && instructor.isStudentMode,
 	};
 };
 

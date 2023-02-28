@@ -12,6 +12,13 @@ function isInstructor(userRoles: UserRoles): boolean {
 		userRoles.courseRole === CourseRoleType.instructor;
 }
 
+export function isInstructorFromAccount(accountState: AccountState, courseId: string): boolean {
+	return isInstructor({
+		isSystemAdministrator: accountState.isSystemAdministrator,
+		courseRole: accountState.roleByCourse[courseId]
+	});
+}
+
 export function buildUserInfo(user: AccountState, courseId: string,): UserInfo {
 	const { isSystemAdministrator, accessesByCourse, roleByCourse, systemAccesses, isAuthenticated, } = user;
 	const courseAccesses = accessesByCourse[courseId] ? accessesByCourse[courseId] : [];

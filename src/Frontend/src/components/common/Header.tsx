@@ -119,6 +119,7 @@ class Header extends Component<Props, State> {
 	render() {
 		const { initializing, account, deviceType, courses, } = this.props;
 		const { isSystemAdministrator, courseRole, } = this.state;
+		const userIsInstructor = isInstructor({ isSystemAdministrator, courseRole });
 
 		return (
 			<div className={ styles.header + " header" } id="header">
@@ -127,11 +128,12 @@ class Header extends Component<Props, State> {
 					{ courses.currentCourseId && this.renderNavMenuIcon() }
 					<Hijack name={ account.visibleName }/>
 					{ !initializing && this.renderUserRoleMenu() }
-					{ isInstructor({ isSystemAdministrator, courseRole })
-						&& <StudentMode
+					{
+						userIsInstructor && <StudentMode
 							deviceType={ deviceType }
 							containerClass={ cn(styles.headerElement, styles.button) }
-						/> }
+						/>
+					}
 				</div>
 				<HeaderComponentErrorBoundary className={ styles.headerElement }>
 					<Menu
