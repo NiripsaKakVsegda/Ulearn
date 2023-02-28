@@ -9,7 +9,7 @@ namespace Ulearn.Core.Courses.Manager
 {
 	public class CourseStorage : ICourseStorage, ICourseStorageUpdater
 	{
-		private readonly ConcurrentDictionary<string, Course> courses = new ConcurrentDictionary<string, Course>(StringComparer.InvariantCultureIgnoreCase);
+		private readonly ConcurrentDictionary<string, Course> courses = new(StringComparer.InvariantCultureIgnoreCase);
 
 		private static ILog log => LogProvider.Get().ForContext(typeof(CourseStorage));
 

@@ -26,7 +26,7 @@ namespace Ulearn.Core.Courses
 		public bool IsManualCheckingEnabled { get; set; }
 
 		[XmlElement("scoring")]
-		public ScoringSettings Scoring { get; set; } = new ScoringSettings();
+		public ScoringSettings Scoring { get; set; } = new();
 
 		[XmlArray("units")]
 		[XmlArrayItem("add")]
@@ -42,14 +42,14 @@ namespace Ulearn.Core.Courses
 		[XmlElement("description")]
 		public string Description { get; set; }
 
-		public static CourseSettings DefaultSettings => new CourseSettings(
+		public static CourseSettings DefaultSettings => new(
 			null,
 			null,
 			new PreludeFile[0]
 		);
 
 		[XmlIgnore]
-		private static readonly Regex scoringGroupIdRegex = new Regex("^[a-z0-9_]+$", RegexOptions.IgnoreCase);
+		private static readonly Regex scoringGroupIdRegex = new("^[a-z0-9_]+$", RegexOptions.IgnoreCase);
 
 		public CourseSettings()
 		{

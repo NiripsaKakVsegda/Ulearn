@@ -113,7 +113,7 @@ namespace Ulearn.Common
 
 	public static class LanguageHelpers
 	{
-		private static readonly Dictionary<string, Language> extensions = new Dictionary<string, Language>
+		private static readonly Dictionary<string, Language> extensions = new()
 		{
 			{ ".cs", Language.CSharp },
 			{ ".py", Language.Python3 },

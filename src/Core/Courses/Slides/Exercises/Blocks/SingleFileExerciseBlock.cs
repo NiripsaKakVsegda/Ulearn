@@ -85,7 +85,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		// Временно создано для конвертации .cs-слайдов в .xml-слайды. Когда .cs-слайдов не останется, можно удалить
 		[XmlIgnore]
-		public List<string> ExcludedFromSolution { get; set; } = new List<string>();
+		public List<string> ExcludedFromSolution { get; set; } = new();
 
 		public override string GetSourceCode(string code)
 		{

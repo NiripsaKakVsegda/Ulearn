@@ -6,7 +6,7 @@ namespace Ulearn.Core.Courses
 	public class CourseStaticFilesHelper
 	{
 		public static readonly Dictionary<string, string> AllowedExtensions
-			= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+			= new(StringComparer.OrdinalIgnoreCase)
 			{
 				{ ".png", "image/png" },
 				{ ".jpg", "image/jpeg" },

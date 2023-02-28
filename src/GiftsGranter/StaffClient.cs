@@ -84,13 +84,13 @@ namespace GiftsGranter
 
 		private JObject GetJsonResponse(HttpResponseMessage response, string url)
 		{
-			string result = response.Content.ReadAsStringAsync().Result;
-			if (response.StatusCode != HttpStatusCode.OK)
-			{
-				Log.Error("Hint: If invalid_grant ask KONTUR\\pe to generate new refresh_token. It works 180 days.");
-				throw new Exception($"Url: {url} StatusCode: {response.StatusCode}\nResult:\n{result}");
-			}
-			return JObject.Parse(result);
+			var result = response.Content.ReadAsStringAsync().Result;
+			
+			if (response.StatusCode == HttpStatusCode.OK)
+				return JObject.Parse(result);
+			
+			Log.Error("Hint: If invalid_grant ask KONTUR\\pe to generate new refresh_token. It works 180 days.");
+			throw new Exception($"Url: {url} StatusCode: {response.StatusCode}\nResult:\n{result}");
 		}
 
 		public void UseRefreshToken(string refreshToken)
@@ -109,7 +109,7 @@ namespace GiftsGranter
 
 		private void AddClientAuthorizationHeader(HttpClient client)
 		{
-			string base64ClientAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes(clientAuth));
+			var base64ClientAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes(clientAuth));
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64ClientAuth);
 		}
 	}

@@ -16,6 +16,7 @@ async function runExercisesCheck(scoringGroup: string | null = null) {
 	}, location.pathname);
 
 	if(!match) {
+		console.error(`You are not inside course! Path should be like /course/:courseId/:slide`);
 		return;
 	}
 
@@ -24,6 +25,7 @@ async function runExercisesCheck(scoringGroup: string | null = null) {
 	console.log(`Starting to run check for ${ course }`);
 
 	if(!course) {
+		console.error(`You are not inside course! Path should be like /course/:courseId/:slide`);
 		return;
 	}
 

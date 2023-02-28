@@ -2,7 +2,7 @@
 {
 	public class NullableCompare
 	{
-		private TestClass testClass = new TestClass();
+		private TestClass testClass = new();
 
 		public bool CompareWithNullable(bool? a)
 		{

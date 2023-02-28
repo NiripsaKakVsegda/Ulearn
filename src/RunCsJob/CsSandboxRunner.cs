@@ -19,7 +19,7 @@ namespace RunCsJob
 {
 	public class CsSandboxRunnerSettings : SandboxRunnerSettings
 	{
-		public static MsBuildSettings MsBuildSettings = new MsBuildSettings();
+		public static MsBuildSettings MsBuildSettings = new();
 		public TimeSpan CompilationTimeLimit => TimeSpan.FromSeconds(10);
 		public TimeSpan IdleTimeLimit => TimeSpan.FromSeconds(TestingTimeLimit.TotalSeconds * 2);
 
@@ -50,7 +50,7 @@ namespace RunCsJob
 	public class CsSandboxRunner
 	{
 		private static ILog log => LogProvider.Get().ForContext(typeof(CsSandboxRunner));
-		private readonly MetricSender metricSender = new MetricSender("runcsjob");
+		private readonly MetricSender metricSender = new("runcsjob");
 
 		private readonly CsRunnerSubmission submission;
 		private readonly CsSandboxRunnerSettings settings;

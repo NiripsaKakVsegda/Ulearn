@@ -21,7 +21,7 @@ public class QuizModel
 	public Dictionary<string, int> UserScores { get; set; }
 
 	/* (quizId -> (itemId -> frequency%)) */
-	public DefaultDictionary<string, DefaultDictionary<string, int>> QuestionAnswersFrequency { get; set; } = new DefaultDictionary<string, DefaultDictionary<string, int>>();
+	public DefaultDictionary<string, DefaultDictionary<string, int>> QuestionAnswersFrequency { get; set; } = new();
 
 	public int MaxAttemptsCount { get; set; }
 	public bool IsLti { get; set; }

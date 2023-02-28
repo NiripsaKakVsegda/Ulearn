@@ -22,7 +22,7 @@ namespace uLearn.CSharp
 		private static readonly string courseDirectory = TestsHelper.TestDirectory;
 		private static readonly string unitDirectoryPathRelativeToCourse = "ReportErrorTests_Temp_SlideFolder";
 		private static readonly string unitDirectoryAbsolutePath = Path.Combine(courseDirectory, unitDirectoryPathRelativeToCourse);
-		private static readonly DirectoryInfo unitDirectory = new DirectoryInfo(unitDirectoryAbsolutePath);
+		private static readonly DirectoryInfo unitDirectory = new(unitDirectoryAbsolutePath);
 
 		private static CsProjectExerciseBlock exerciseBlock;
 		private static CsProjectExerciseBlock.FilesProvider fp;

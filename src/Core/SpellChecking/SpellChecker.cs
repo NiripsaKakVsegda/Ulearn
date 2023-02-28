@@ -47,12 +47,12 @@ namespace Ulearn.Core.SpellChecking
 
 	public class SpellChecker : IDisposable
 	{
-		private readonly Regex wordRegEx = new Regex(@"\b(?<word>\w+)(?<dotEnding>\.\s*)?", RegexOptions.Compiled);
-		private readonly Regex camelCaseRegEx = new Regex(@"[А-Яа-я][a-я]*(([А-Я][а-я]*)+)", RegexOptions.Compiled);
+		private readonly Regex wordRegEx = new(@"\b(?<word>\w+)(?<dotEnding>\.\s*)?", RegexOptions.Compiled);
+		private readonly Regex camelCaseRegEx = new(@"[А-Яа-я][a-я]*(([А-Я][а-я]*)+)", RegexOptions.Compiled);
 
 		private readonly string[] prefixes;
 
-		private readonly HashSet<char> vowels = new HashSet<char>(new[] { 'а', 'о', 'у', 'ы', 'и', 'е', 'ю', 'я', 'ё', 'э' });
+		private readonly HashSet<char> vowels = new(new[] { 'а', 'о', 'у', 'ы', 'и', 'е', 'ю', 'я', 'ё', 'э' });
 
 		private readonly Hunspell hunspell;
 

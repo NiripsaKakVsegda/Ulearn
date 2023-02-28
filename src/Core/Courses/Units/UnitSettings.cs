@@ -22,7 +22,7 @@ namespace Ulearn.Core.Courses.Units
 		public string Title { get; set; }
 
 		[XmlElement("scoring")]
-		public ScoringSettings Scoring { get; set; } = new ScoringSettings();
+		public ScoringSettings Scoring { get; set; } = new();
 
 		[XmlElement("defaultIncludeCodeFile")]
 		public string DefaultIncludeCodeFile { get; set; }

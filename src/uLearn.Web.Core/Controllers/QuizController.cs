@@ -424,7 +424,7 @@ public class QuizController : Controller
 		var blockScore = isTrue ? isTrueBlock.MaxScore : 0;
 		return new List<QuizInfoForDb>
 		{
-			new QuizInfoForDb
+			new()
 			{
 				BlockId = isTrueBlock.Id,
 				ItemId = null,
@@ -447,7 +447,7 @@ public class QuizController : Controller
 			blockScore = isCorrect ? choiceBlock.MaxScore : 0;
 			return new List<QuizInfoForDb>
 			{
-				new QuizInfoForDb
+				new()
 				{
 					BlockId = choiceBlock.Id,
 					ItemId = answerItemId,
@@ -547,7 +547,7 @@ public class QuizController : Controller
 		var blockScore = isRightAnswer ? fillInBlock.MaxScore : 0;
 		return new List<QuizInfoForDb>
 		{
-			new QuizInfoForDb
+			new()
 			{
 				BlockId = fillInBlock.Id,
 				ItemId = null,

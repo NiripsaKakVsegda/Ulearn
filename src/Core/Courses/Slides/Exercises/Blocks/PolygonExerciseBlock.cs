@@ -8,7 +8,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 	[XmlType("exercise.polygon")]
 	public class PolygonExerciseBlock : UniversalExerciseBlock
 	{
-		public static Dictionary<Language, LanguageLaunchInfo> LanguagesInfo = new Dictionary<Language, LanguageLaunchInfo>
+		public static Dictionary<Language, LanguageLaunchInfo> LanguagesInfo = new()
 		{
 			[Common.Language.Java] = new LanguageLaunchInfo
 			{

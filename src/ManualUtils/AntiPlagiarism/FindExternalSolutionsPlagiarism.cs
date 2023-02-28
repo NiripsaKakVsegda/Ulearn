@@ -47,7 +47,7 @@ namespace ManualUtils.AntiPlagiarism
 
 	public static class FindExternalSolutionsPlagiarism
 	{
-		private static readonly DirectoryInfo directory = new DirectoryInfo("D://timusForPlugiarism/");
+		private static readonly DirectoryInfo directory = new("D://timusForPlugiarism/");
 		private static readonly string[] practices = { "1", "2", "3", "4" };
 
 		public static async Task UploadSolutions()

@@ -6,7 +6,7 @@ namespace uLearn.CSharp.SpellingValidation.CodeElementSpellChecking
 	[TestFixture]
 	public class CodeElementSpellChecker_should
 	{
-		private readonly CodeElementSpellChecker spellChecker = new CodeElementSpellChecker();
+		private readonly CodeElementSpellChecker spellChecker = new();
 
 		[TestCase("wildWildWest", ExpectedResult = false)]
 		[TestCase("Filename", ExpectedResult = false)]

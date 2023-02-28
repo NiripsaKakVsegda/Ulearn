@@ -15,7 +15,7 @@ public class ErrorsController : Controller
 	private string CspHeader => configuration.OldWebConfig["ulearn.web.cspHeader"];
 
 	private WebConfiguration configuration;
-	private static DirectoryInfo AppDirectory => new DirectoryInfo(Ulearn.Core.Utils.GetAppPath());
+	private static DirectoryInfo AppDirectory => new(Ulearn.Core.Utils.GetAppPath());
 
 	private readonly List<string> excludedPrefixes;
 	private readonly byte[] content;

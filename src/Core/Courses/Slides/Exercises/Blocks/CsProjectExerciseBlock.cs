@@ -82,7 +82,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		public string CorrectFullSolutionFileName => $"{UserCodeFileNameWithoutExt}.Solution.cs";
 
-		private Regex WrongAnswersAndSolutionNameRegex => new Regex(new Regex("^") + UserCodeFileNameWithoutExt + new Regex("\\.(.+)\\.cs"), RegexOptions.IgnoreCase);
+		private Regex WrongAnswersAndSolutionNameRegex => new(new Regex("^") + UserCodeFileNameWithoutExt + new Regex("\\.(.+)\\.cs"), RegexOptions.IgnoreCase);
 
 		[XmlIgnore]
 		public string UnitDirectoryPathRelativeToCourse { get; set; }
@@ -158,7 +158,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			}
 		}
 
-		public FilesProvider GetFilesProvider(string courseDirectory) => new FilesProvider(this, courseDirectory);
+		public FilesProvider GetFilesProvider(string courseDirectory) => new(this, courseDirectory);
 
 		public class FilesProvider
 		{
@@ -185,7 +185,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 			public string CorrectFullSolutionPath => CorrectFullSolutionFile.GetRelativePath(ExerciseDirectory);
 
-			public DirectoryInfo ExerciseDirectory => new DirectoryInfo(Path.Combine(CourseDirectory, exerciseBlock.UnitDirectoryPathRelativeToCourse, exerciseBlock.ExerciseDirName));
+			public DirectoryInfo ExerciseDirectory => new(Path.Combine(CourseDirectory, exerciseBlock.UnitDirectoryPathRelativeToCourse, exerciseBlock.ExerciseDirName));
 		}
 
 		private class ExerciseCheckerZipBuilder : IExerciseCheckerZipBuilder

@@ -15,7 +15,7 @@ namespace AntiPlagiarism.Tests.CodeAnalyzing.CSharp
 		private CSharpCodeUnitsExtractor extractor;
 
 		/* TODO (andgein): make this code more straighted and clear? */
-		private static DirectoryInfo TestDataDir => new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CodeAnalyzing", "CSharp", "TestData"));
+		private static DirectoryInfo TestDataDir => new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CodeAnalyzing", "CSharp", "TestData"));
 
 		[SetUp]
 		public void SetUp()

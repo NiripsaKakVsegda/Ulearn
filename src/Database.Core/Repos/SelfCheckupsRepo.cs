@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
@@ -25,19 +26,22 @@ public class SelfCheckupsRepo : ISelfCheckupsRepo
 
 	public async Task AddOrUpdateSelfCheckup(string userId, string courseId, Guid slideId, string checkupId, bool isChecked)
 	{
+		await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+		
 		var checkup = await db.SelfCheckups
 			.FirstOrDefaultAsync(s => s.UserId == userId && s.CourseId == courseId && s.SlideId == slideId && s.CheckupId == checkupId);
 
 		if (checkup == null)
 		{
-			db.SelfCheckups.Add(new SelfCheckup
+			var newCheckup = new SelfCheckup
 			{
 				UserId = userId,
 				CourseId = courseId,
 				SlideId = slideId,
 				CheckupId = checkupId,
-				IsChecked = isChecked
-			});
+				IsChecked = isChecked,
+			};
+			db.SelfCheckups.Add(newCheckup);
 		}
 		else
 		{
@@ -45,5 +49,6 @@ public class SelfCheckupsRepo : ISelfCheckupsRepo
 		}
 
 		await db.SaveChangesAsync();
+		await transaction.CommitAsync();
 	}
 }

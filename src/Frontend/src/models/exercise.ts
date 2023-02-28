@@ -67,7 +67,7 @@ export enum AutomaticExerciseCheckingResult {
 }
 
 export interface ReviewInfo {
-	id: number;
+	id: number; // -1 значит ревью ещё не создано, ожидается ответ от api, предполагается позитивный рендер
 	author: ShortUserInfo | null; // null значит бот
 	startLine: number;
 	startPosition: number;

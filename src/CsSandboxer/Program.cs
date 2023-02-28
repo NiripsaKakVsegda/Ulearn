@@ -14,7 +14,7 @@ namespace CsSandboxer
 {
 	static class Program
 	{
-		private static readonly JsonSerializerSettings settings = new JsonSerializerSettings
+		private static readonly JsonSerializerSettings settings = new()
 		{
 			TypeNameHandling = TypeNameHandling.All
 		};

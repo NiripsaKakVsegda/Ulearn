@@ -189,7 +189,7 @@ public class AntiPlagiarismController : JsonDataContractController
 		return $", подозрительность — {weightPercents}%";
 	}
 
-	private static readonly ConcurrentDictionary<Tuple<Guid, Guid>, Tuple<DateTime, GetAuthorPlagiarismsResponse>> plagiarismsCache = new ConcurrentDictionary<Tuple<Guid, Guid>, Tuple<DateTime, GetAuthorPlagiarismsResponse>>();
+	private static readonly ConcurrentDictionary<Tuple<Guid, Guid>, Tuple<DateTime, GetAuthorPlagiarismsResponse>> plagiarismsCache = new();
 	private static readonly TimeSpan cacheLifeTime = TimeSpan.FromMinutes(10);
 
 	private static async Task<GetAuthorPlagiarismsResponse> GetAuthorPlagiarismsAsync(UserExerciseSubmission submission)

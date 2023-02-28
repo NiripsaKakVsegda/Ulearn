@@ -22,12 +22,12 @@ namespace Ulearn.Core
 			Div
 		}
 
-		private static readonly Regex texDivRegex = new Regex(@"(^|\W)\$\$([^\$]+?)\$\$($|\W)", RegexOptions.Multiline);
-		private static readonly Regex texSpanRegex = new Regex(@"(^|\W)\$([^\$]+?)\$($|\W)", RegexOptions.Multiline);
-		private static readonly Regex emptyParaRegex = new Regex(@"<p>\s*</p>");
+		private static readonly Regex texDivRegex = new(@"(^|\W)\$\$([^\$]+?)\$\$($|\W)", RegexOptions.Multiline);
+		private static readonly Regex texSpanRegex = new(@"(^|\W)\$([^\$]+?)\$($|\W)", RegexOptions.Multiline);
+		private static readonly Regex emptyParaRegex = new(@"<p>\s*</p>");
 		private readonly Regex backRegex;
 		private readonly string id;
-		private readonly Dictionary<string, Tuple<string, InsertionType>> texInserts = new Dictionary<string, Tuple<string, InsertionType>>();
+		private readonly Dictionary<string, Tuple<string, InsertionType>> texInserts = new();
 		private int counter;
 
 		private string ReplaceTexInserts(string md)

@@ -14,8 +14,8 @@ namespace Ulearn.Core.Helpers
 {
 	public class ExerciseStudentZipBuilder
 	{
-		private static readonly Regex anySolutionNameRegex = new Regex("(.+)\\.Solution\\.cs", RegexOptions.IgnoreCase);
-		private static readonly Regex anyWrongAnswerNameRegex = new Regex("(.+)\\.(WrongAnswer|WA)\\.(.+)\\.cs", RegexOptions.IgnoreCase);
+		private static readonly Regex anySolutionNameRegex = new("(.+)\\.Solution\\.cs", RegexOptions.IgnoreCase);
+		private static readonly Regex anyWrongAnswerNameRegex = new("(.+)\\.(WrongAnswer|WA)\\.(.+)\\.cs", RegexOptions.IgnoreCase);
 
 		public static bool IsAnyWrongAnswerOrAnySolution(string name) => anyWrongAnswerNameRegex.IsMatch(name) || anySolutionNameRegex.IsMatch(name);
 		public static bool IsAnySolution(string name) => anySolutionNameRegex.IsMatch(name);

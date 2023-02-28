@@ -18,7 +18,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		[XmlElement("match")]
 		public MatchingMatch[] Matches;
 
-		private readonly Random random = new Random();
+		private readonly Random random = new();
 
 		public List<MatchingMatch> GetMatches(bool shuffle = false)
 		{

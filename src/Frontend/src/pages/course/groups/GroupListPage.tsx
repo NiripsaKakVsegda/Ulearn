@@ -1,11 +1,8 @@
 import React, { Component, } from "react";
 import { connect } from "react-redux";
-import { Dispatch } from "redux";
-import { withOldRouter } from "src/utils/router";
+import { withCourseRouting, withOldRouter, } from "src/utils/router";
 
 import api from "src/api";
-
-import { changeCurrentCourseAction } from "src/actions/course";
 
 import Page from "../../index";
 import GroupList from "src/components/groups/GroupMainPage/GroupList/GroupList";
@@ -21,8 +18,6 @@ import { WithRouter } from "src/models/router";
 interface Props extends WithRouter {
 	userId?: string | null;
 	courses: CourseState;
-
-	enterToCourse: (courseId: string) => void;
 }
 
 type GroupType = "groups" | 'archiveGroups';
@@ -63,7 +58,6 @@ class GroupListPage extends Component<Props, State> {
 
 	componentDidMount() {
 		this.loadActiveGroups(this.courseId);
-		this.props.enterToCourse(this.courseId);
 	}
 
 	loadActiveGroups = (courseId: string) => {
@@ -270,14 +264,8 @@ class GroupListPage extends Component<Props, State> {
 			userId: state.account.id,
 		};
 	}
-
-	static mapDispatchToProps(dispatch: Dispatch) {
-		return {
-			enterToCourse: (courseId: string) => dispatch(changeCurrentCourseAction((courseId))),
-		};
-	}
 }
 
-const connected = connect(GroupListPage.mapStateToProps, GroupListPage.mapDispatchToProps)(GroupListPage);
+const connected = connect(GroupListPage.mapStateToProps)(GroupListPage);
 
-export default withOldRouter(connected);
+export default withOldRouter(withCourseRouting(connected));

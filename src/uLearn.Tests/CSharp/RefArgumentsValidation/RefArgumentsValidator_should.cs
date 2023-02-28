@@ -14,7 +14,7 @@ namespace uLearn.CSharp.RefArgumentsValidation
 	[TestFixture]
 	internal class RefArgumentsValidator_should
 	{
-		private static readonly DirectoryInfo testDataDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static readonly DirectoryInfo testDataDir = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "RefArgumentsValidation", "TestData"));
 		
 		[OneTimeSetUp]

@@ -148,6 +148,13 @@ public class BaseCourseAuthorizationHandler<T> : AuthorizationHandler<T> where T
 		if (routeData.Values["courseId"] is string courseIdFromRoute)
 			return courseIdFromRoute;
 
+		if (mvcContext.HttpContext.Request.HasFormContentType)
+		{
+			var courseIdFromForm = mvcContext.HttpContext.Request.Form["courseId"].FirstOrDefault();
+			if (!courseIdFromForm.IsNullOrEmpty())
+				return courseIdFromForm;
+		}
+
 		var courseIdFromQuery = mvcContext.HttpContext.Request.Query["courseId"].FirstOrDefault();
 		if (!courseIdFromQuery.IsNullOrEmpty())
 			return courseIdFromQuery;

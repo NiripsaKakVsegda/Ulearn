@@ -108,7 +108,7 @@ namespace Database.Core.Tests.Repos
 
 	public static class TestUsers
 	{
-		public static ApplicationUser Admin = new ApplicationUser
+		public static ApplicationUser Admin = new()
 		{
 			UserName = "admin",
 			FirstName = "Super",

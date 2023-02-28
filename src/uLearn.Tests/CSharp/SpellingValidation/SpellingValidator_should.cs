@@ -15,7 +15,7 @@ namespace uLearn.CSharp.SpellingValidation
 	[TestFixture]
 	public class SpellingValidator_should
 	{
-		private static DirectoryInfo TestDataDir => new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static DirectoryInfo TestDataDir => new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "SpellingValidation", "TestData"));
 		
 		[OneTimeSetUp]
@@ -30,8 +30,7 @@ namespace uLearn.CSharp.SpellingValidation
 		private static IEnumerable<FileInfo> CorrectFiles => CorrectTestDataDir.EnumerateFiles();
 		private static IEnumerable<FileInfo> IncorrectFiles => IncorrectTestDataDir.EnumerateFiles();
 
-		private static DirectoryInfo BasicProgrammingDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
+		private static DirectoryInfo BasicProgrammingDirectory => new(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
 
 		private static IEnumerable<FileInfo> BasicProgrammingFiles()
 		{
@@ -44,8 +43,7 @@ namespace uLearn.CSharp.SpellingValidation
 							!f.Name.Equals("AssemblyInfo.cs"));
 		}
 
-		private static DirectoryInfo ULearnSubmissionsDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
+		private static DirectoryInfo ULearnSubmissionsDirectory => new(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
 
 		private static IEnumerable<FileInfo> SubmissionsFiles()
 		{
@@ -56,7 +54,7 @@ namespace uLearn.CSharp.SpellingValidation
 				.Where(f => f.Name.Contains("Accepted"));
 		}
 
-		private readonly SpellingValidator validator = new SpellingValidator();
+		private readonly SpellingValidator validator = new();
 
 		[Test]
 		[TestCaseSource(nameof(IncorrectFiles))]

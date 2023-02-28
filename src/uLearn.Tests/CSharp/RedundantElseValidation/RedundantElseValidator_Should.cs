@@ -15,9 +15,9 @@ namespace uLearn.CSharp.RedundantElseValidation
 	[TestFixture]
 	public class RedundantElseValidator_Should
 	{
-		private readonly RedundantElseValidator validator = new RedundantElseValidator();
+		private readonly RedundantElseValidator validator = new();
 
-		private static readonly DirectoryInfo TestDataDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static readonly DirectoryInfo TestDataDir = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "RedundantElseValidation", "TestData"));
 		
 		[OneTimeSetUp]
@@ -32,8 +32,7 @@ namespace uLearn.CSharp.RedundantElseValidation
 		private static string[] correctFilenames => CorrectTestDataDir.GetFiles().Select(f => f.Name).ToArray();
 		private static string[] incorrectFilenames => IncorrectTestDataDir.GetFiles().Select(f => f.Name).ToArray();
 
-		private static DirectoryInfo BasicProgrammingDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
+		private static DirectoryInfo BasicProgrammingDirectory => new(ExplicitTestsExamplesPaths.BasicProgrammingDirectoryPath);
 
 		private static IEnumerable<FileInfo> BasicProgrammingFiles()
 		{
@@ -46,8 +45,7 @@ namespace uLearn.CSharp.RedundantElseValidation
 							!f.Name.Equals("AssemblyInfo.cs"));
 		}
 
-		private static DirectoryInfo ULearnSubmissionsDirectory =>
-			new DirectoryInfo(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
+		private static DirectoryInfo ULearnSubmissionsDirectory => new(ExplicitTestsExamplesPaths.ULearnSubmissionsDirectoryPath);
 
 		private static IEnumerable<FileInfo> SubmissionsFiles()
 		{

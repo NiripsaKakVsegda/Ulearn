@@ -16,6 +16,7 @@ import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { setNextSubmissionButtonDisabled } from "src/actions/submissions";
 import { DeadLineInfo } from "src/models/deadLines";
 import { withNavigate } from "src/utils/router";
+import { ShortUserInfo } from "../../../../../models/users";
 
 interface Props {
 	slideContext: SlideContext;
@@ -71,7 +72,7 @@ export const mapStateToProps = (
 	const lastUsedReviews = getDataIfLoaded(
 		state.favouriteReviews.lastUsedReviewsByCourseIdBySlideId[courseId]?.[slideId]);
 
-	const antiPlagiarismStatus = studentSubmissions &&
+	const antiPlagiarismStatus = studentSubmissions && studentSubmissions.length > 0 &&
 		state.instructor.antiPlagiarismStatusBySubmissionId[studentSubmissions[0].id];
 	const antiPlagiarismStatusRedux = antiPlagiarismStatus as ReduxData;
 
@@ -100,7 +101,7 @@ export const mapStateToProps = (
 		lastCheckedSubmissionId: lastReviewedSubmission?.id,
 		lastManualCheckingSubmissionId: submissionToReview?.id,
 
-		antiPlagiarismStatus: getDataIfLoaded(antiPlagiarismStatus),
+		antiPlagiarismStatus: antiPlagiarismStatus ? getDataIfLoaded(antiPlagiarismStatus) : undefined,
 		antiPlagiarismStatusError: !!antiPlagiarismStatusRedux?.error,
 		antiPlagiarismStatusLoading: !!antiPlagiarismStatusRedux?.isLoading,
 
@@ -115,12 +116,13 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 		addReview: (
 			submissionId: number,
+			author: ShortUserInfo,
 			text: string,
 			startLine: number, startPosition: number,
 			finishLine: number, finishPosition: number
 		) =>
 			api.submissions.redux
-				.addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
+				.addReview(submissionId, author, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
 		deleteReview: (submissionId, reviewId, isBotReview) =>
 			api.submissions.redux.deleteReview(submissionId, reviewId, isBotReview)(dispatch),
 

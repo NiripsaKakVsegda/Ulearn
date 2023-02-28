@@ -50,7 +50,7 @@
 		public bool smallNumbersAreWords = true;
 		public bool hideNumberOne = true;
 
-		public static readonly RussianPluralizationOptions Score = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Score = new()
 		{
 			One = "балл",
 			Two = "балла",
@@ -59,7 +59,7 @@
 			hideNumberOne = false,
 		};
 
-		public static readonly RussianPluralizationOptions ScoreDative = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions ScoreDative = new()
 		{
 			One = "балла",
 			Two = "баллов",
@@ -68,7 +68,7 @@
 			hideNumberOne = false,
 		};
 
-		public static readonly RussianPluralizationOptions MinuteDative = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions MinuteDative = new()
 		{
 			One = "минуту",
 			Two = "минуты",
@@ -76,21 +76,21 @@
 			Gender = Gender.Female,
 		};
 
-		public static readonly RussianPluralizationOptions Hour = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Hour = new()
 		{
 			One = "час",
 			Two = "часа",
 			Five = "часов"
 		};
 
-		public static readonly RussianPluralizationOptions Day = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Day = new()
 		{
 			One = "день",
 			Two = "дня",
 			Five = "дней"
 		};
 
-		public static readonly RussianPluralizationOptions Man = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Man = new()
 		{
 			One = "человек",
 			Two = "человека",
@@ -99,7 +99,7 @@
 			smallNumbersAreWords = false,
 		};
 
-		public static readonly RussianPluralizationOptions Tries = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Tries = new()
 		{
 			One = "попытка",
 			Two = "попытки",
@@ -109,7 +109,7 @@
 			smallNumbersAreWords = false,
 		};
 
-		public static readonly RussianPluralizationOptions Students = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Students = new()
 		{
 			One = "студент",
 			Two = "студента",
@@ -119,7 +119,7 @@
 			smallNumbersAreWords = false
 		};
 
-		public static readonly RussianPluralizationOptions StudentsDative = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions StudentsDative = new()
 		{
 			One = "студента",
 			Two = "студентов",
@@ -129,7 +129,7 @@
 			smallNumbersAreWords = false
 		};
 
-		public static readonly RussianPluralizationOptions Checkings = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Checkings = new()
 		{
 			One = "работа",
 			Two = "работы",
@@ -139,7 +139,7 @@
 			smallNumbersAreWords = false,
 		};
 
-		public static readonly RussianPluralizationOptions Tasks = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Tasks = new()
 		{
 			One = "задача",
 			Two = "задачи",
@@ -149,7 +149,7 @@
 			smallNumbersAreWords = false,
 		};
 		
-		public static readonly RussianPluralizationOptions Seconds = new RussianPluralizationOptions
+		public static readonly RussianPluralizationOptions Seconds = new()
 		{
 			One = "секунда",
 			Two = "секунды",

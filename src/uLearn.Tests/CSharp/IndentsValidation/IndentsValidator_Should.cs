@@ -23,7 +23,7 @@ namespace uLearn.CSharp.IndentsValidation
 	[TestFixture]
 	public class IndentsValidator_Should
 	{
-		private static readonly DirectoryInfo TestDataDir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
+		private static readonly DirectoryInfo TestDataDir = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..",
 			"..", "CSharp", "IndentsValidation", "TestData"));
 		
 		[OneTimeSetUp]

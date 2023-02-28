@@ -18,7 +18,7 @@ namespace Ulearn.Core.Courses.Slides.Quizzes.Blocks
 		public ChoiceItem[] Items;
 
 		[XmlElement("allowedMistakes")]
-		public MistakesCount AllowedMistakesCount { get; set; } = new MistakesCount(0, 0);
+		public MistakesCount AllowedMistakesCount { get; set; } = new(0, 0);
 
 		public ChoiceItem[] ShuffledItems()
 		{

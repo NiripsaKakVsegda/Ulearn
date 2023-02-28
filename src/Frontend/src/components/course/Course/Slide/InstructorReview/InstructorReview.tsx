@@ -74,7 +74,7 @@ class InstructorReview extends React.Component<Props, State> {
 		const favouriteByUserSet = new Set(favReviewsByUser?.map(r => r.text));
 		const toggleInCache = loadFromCache<boolean>(reviewPreviousReviewToggle, this.reviewCacheId);
 
-		if(studentSubmissions) {
+		if(studentSubmissions && studentSubmissions.length > 0) {
 			const index = Math.max(
 				studentSubmissions.findIndex(s => s.id === slideContext.slideInfo.query.submissionId), 0);
 			const submissionInfo = this.getSubmissionInfo(studentSubmissions, index);
@@ -455,9 +455,19 @@ class InstructorReview extends React.Component<Props, State> {
 		if(!isInstructor(user)) {
 			throw new UrlError();
 		}
+
+		if(studentSubmissions && studentSubmissions.length === 0) {
+			return (
+				<BlocksWrapper>
+					Решение не найдено
+				</BlocksWrapper>
+			);
+		}
+
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
 			return <CourseLoader/>;
 		}
+
 		const submissionsOrderedByTimeAsc = studentSubmissions
 			.map(s => s)
 			.filter(
@@ -719,9 +729,14 @@ class InstructorReview extends React.Component<Props, State> {
 	): Promise<ReviewInfo | void> => {
 		const {
 			addReview,
+			user,
 		} = this.props;
 
-		return addReview(submissionId, comment, startLine, startPosition, finishLine, finishPosition)
+		if(!user) {
+			return Promise.reject("Current user is undefined");
+		}
+
+		return addReview(submissionId, user, comment, startLine, startPosition, finishLine, finishPosition)
 			.catch(this.catchNewestSubmission);
 	};
 

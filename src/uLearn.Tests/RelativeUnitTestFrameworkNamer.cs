@@ -12,7 +12,7 @@ namespace uLearn
 	// Этот класс исправляет пути до папки с исходным кодом, чтобы ApprovalTests брали из них approval-файлы.
 	public class RelativeUnitTestFrameworkNamer : UnitTestFrameworkNamer
 	{
-		private static readonly DirectoryInfo assemblyLocation = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetAssembly(typeof(RelativeUnitTestFrameworkNamer)).Location));
+		private static readonly DirectoryInfo assemblyLocation = new(Path.GetDirectoryName(Assembly.GetAssembly(typeof(RelativeUnitTestFrameworkNamer)).Location));
 		private static readonly DirectoryInfo projectSourceCodeLocation;
 
 		static RelativeUnitTestFrameworkNamer()

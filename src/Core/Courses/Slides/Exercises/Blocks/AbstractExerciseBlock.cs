@@ -78,7 +78,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		public ValidatorDescription Validator { get; set; }
 
 		[XmlElement("texts")]
-		public ExerciseTexts Texts { get; set; } = new ExerciseTexts();
+		public ExerciseTexts Texts { get; set; } = new();
 
 		[XmlElement("checkForPlagiarism")]
 		public bool CheckForPlagiarism { get; set; } = true;

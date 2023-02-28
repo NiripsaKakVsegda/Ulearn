@@ -177,11 +177,7 @@ export interface ReviewsDeleteCommentFailAction extends FailAction {
 export interface ReviewsAddStartAction {
 	type: typeof REVIEWS_ADD_START;
 	submissionId: number;
-	comment: string;
-	startLine: number;
-	startPosition: number;
-	finishLine: number;
-	finishPosition: number;
+	review: ReviewInfo;
 }
 
 export interface ReviewsAddSuccessAction {

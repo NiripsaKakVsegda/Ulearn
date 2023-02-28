@@ -10,8 +10,8 @@ namespace Ulearn.Common.Api.Swagger
 {
 	public class PolymorphismSchemaFilter<T> : ISchemaFilter
 	{
-		private readonly Lazy<HashSet<Type>> derivedTypes = new Lazy<HashSet<Type>>(DerivedTypesInit);
-		private readonly Lazy<Dictionary<Type, string>> type2Name = new Lazy<Dictionary<Type, string>>(Type2NameInit);
+		private readonly Lazy<HashSet<Type>> derivedTypes = new(DerivedTypesInit);
+		private readonly Lazy<Dictionary<Type, string>> type2Name = new(Type2NameInit);
 		private const string discriminatorName = "$type";
 
 		public void Apply(OpenApiSchema schema, SchemaFilterContext context)

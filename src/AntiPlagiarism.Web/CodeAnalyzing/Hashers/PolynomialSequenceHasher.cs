@@ -9,7 +9,7 @@ namespace AntiPlagiarism.Web.CodeAnalyzing.Hashers
 		private readonly int polynomBase;
 
 		private int currentHash;
-		private readonly Queue<int> objectsHashes = new Queue<int>();
+		private readonly Queue<int> objectsHashes = new();
 		private int[] basePowers;
 
 		public PolynomialSequenceHasher(int polynomBase, IObjectHasher hasher = null, int defaultCapacity = 10000)

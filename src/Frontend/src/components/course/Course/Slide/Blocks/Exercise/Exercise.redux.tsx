@@ -10,7 +10,7 @@ import api from "src/api";
 import { skipExercise } from "src/actions/userProgress";
 
 import { Language } from "src/consts/languages";
-import { buildUserInfo } from "src/utils/courseRoles";
+import { buildUserInfo, isInstructorFromAccount } from "src/utils/courseRoles";
 import { getSubmissionsWithReviews } from "../../../CourseUtils";
 
 const mapStateToProps = (state: RootState,
@@ -36,7 +36,7 @@ const mapStateToProps = (state: RootState,
 
 	//newer is first
 	submissions?.sort((s1, s2) => (new Date(s2.timestamp).getTime() - new Date(s1.timestamp).getTime()));
-
+	const userIsInstructor = isInstructorFromAccount(account,courseId);
 	return {
 		isAuthenticated: account.isAuthenticated,
 		submissions,
@@ -46,7 +46,7 @@ const mapStateToProps = (state: RootState,
 		user: buildUserInfo(account, courseId),
 		slideProgress,
 		deviceType: device.deviceType,
-		forceInitialCode: instructor.isStudentMode,
+		forceInitialCode: userIsInstructor && instructor.isStudentMode,
 	};
 };
 

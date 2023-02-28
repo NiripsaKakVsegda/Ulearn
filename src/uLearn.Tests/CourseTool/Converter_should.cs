@@ -29,7 +29,7 @@ namespace uLearn.CourseTool
 		private const string youtubeIdFromCourse = "ihyw2FdX4xs";
 		private static readonly string slideIdWithVideoFromCourse = "6b4382d1-ff21-4297-b276-fc873fc3579e";
 		private static readonly Guid slideIdFromCourse = Guid.Parse(slideIdWithVideoFromCourse);
-		private readonly DirectoryInfo testCourseDirectory = new DirectoryInfo($@"CourseTool/TestData/{courseId}");
+		private readonly DirectoryInfo testCourseDirectory = new($@"CourseTool/TestData/{courseId}");
 		private const string ulearnBaseUrlWeb = "https://localhost:44300";
 		private const string ulearnBaseUrlApi = "https://localhost:8000";
 		private const string ltiId = "edx";
@@ -128,7 +128,7 @@ namespace uLearn.CourseTool
 			edxCourse.Save(olxPath);
 
 			const string youtubeId = "QWFuk3ymXxc";
-			var videoComponents = new List<VideoComponent> { new VideoComponent(ulearnVideoGuid, "", youtubeId) };
+			var videoComponents = new List<VideoComponent> { new(ulearnVideoGuid, "", youtubeId) };
 
 			new OlxPatcher(olxPath).PatchComponents(edxCourse, videoComponents);
 
@@ -148,17 +148,17 @@ namespace uLearn.CourseTool
 
 			var videoComponents = new List<VideoComponent>
 			{
-				new VideoComponent(videoGuid, "", "QWFuk3ymXxc"),
-				new VideoComponent(videoGuid, "", "w8_GlqSkG-U"),
+				new(videoGuid, "", "QWFuk3ymXxc"),
+				new(videoGuid, "", "w8_GlqSkG-U"),
 			};
 
 			patcher.PatchComponents(edxCourse, videoComponents);
 
 			videoComponents = new List<VideoComponent>
 			{
-				new VideoComponent(videoGuid, "", "QWFuk3ymXxc"),
-				new VideoComponent(videoGuid2, "", "w8_GlqSkG-U"),
-				new VideoComponent(Utils.NewNormalizedGuid(), "", "qTnKi67AAlg"),
+				new(videoGuid, "", "QWFuk3ymXxc"),
+				new(videoGuid2, "", "w8_GlqSkG-U"),
+				new(Utils.NewNormalizedGuid(), "", "qTnKi67AAlg"),
 			};
 
 			patcher.PatchComponents(edxCourse, videoComponents);

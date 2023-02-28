@@ -5,11 +5,11 @@ namespace uLearn.CSharp.IndentsValidation.TestData.Incorrect
 {
 	public class IfBracesNotOnSameLineFirstLevelTokensInsideBracesShouldBeConsistent
 	{ // внутри фигурных скобок все токены верхнего уровня вложенности должны иметь консистентный отступ
-		List<List<List<int>>> l2 = new List<List<List<int>>>
+		List<List<List<int>>> l2 = new()
 		{
 			new List<List<int>>
 			{
-				new List<int>
+				new()
 				{
 					1,
 				2,
@@ -32,7 +32,7 @@ namespace uLearn.CSharp.IndentsValidation.TestData.Incorrect
 					3
 		};
 
-		Dictionary<int, int> d2 = new Dictionary<int, int>
+		Dictionary<int, int> d2 = new()
 		{
 			{ 1, 2 },
 			{
@@ -41,17 +41,17 @@ namespace uLearn.CSharp.IndentsValidation.TestData.Incorrect
 			}
 		};
 
-		Dictionary<int, int> d1 = new Dictionary<int, int>
+		Dictionary<int, int> d1 = new()
 		{
 			{ 1, 2 },
 				{ 2, 3 },
 		};
 
-		List<List<List<int>>> l = new List<List<List<int>>>
+		List<List<List<int>>> l = new()
 		{
 			new List<List<int>>
 			{
-				new List<int>
+				new()
 				{
 					1,
 						2,
@@ -60,7 +60,7 @@ namespace uLearn.CSharp.IndentsValidation.TestData.Incorrect
 			}
 		};
 
-		public List<string> Coll6 => new List<string>
+		public List<string> Coll6 => new()
 		{
 			"a",
 		"b"

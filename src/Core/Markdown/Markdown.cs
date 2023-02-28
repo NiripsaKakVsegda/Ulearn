@@ -57,7 +57,7 @@ namespace Ulearn.Core.Markdown
 			return new HtmlString(texReplacer.PlaceTexInsertsBack(html));
 		}
 
-		public static readonly Regex rxExtractLanguage = new Regex("^({{(.+)}}[\r\n])", RegexOptions.Compiled);
+		public static readonly Regex rxExtractLanguage = new("^({{(.+)}}[\r\n])", RegexOptions.Compiled);
 
 		public static string FormatCodePrettyPrint(MarkdownDeep.Markdown m, string code)
 		{

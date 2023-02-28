@@ -10,7 +10,7 @@ namespace AntiPlagiarism.Web.CodeAnalyzing
 	{
 		public ISequenceHasher SequenceHasher;
 
-		public static SnippetsExtractorOptions Default => new SnippetsExtractorOptions
+		public static SnippetsExtractorOptions Default => new()
 		{
 			SequenceHasher = new PolynomialSequenceHasher(137, new StableStringHasher()),
 		};

@@ -12,7 +12,7 @@ namespace Ulearn.Core.Logging
 {
 	public class TelegramLog : ILog
 	{
-		private static readonly ErrorsBot errorsBot = new ErrorsBot();
+		private static readonly ErrorsBot errorsBot = new();
 		public OutputTemplate OutputTemplate { get; set; } = OutputTemplate.Default;
 
 		public void Log(LogEvent logEvent)

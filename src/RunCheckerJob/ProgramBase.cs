@@ -18,8 +18,8 @@ namespace RunCheckerJob
 		private readonly TimeSpan sleep;
 		private readonly string agentName;
 
-		private readonly ManualResetEvent shutdownEvent = new ManualResetEvent(false);
-		private readonly List<Thread> threads = new List<Thread>();
+		private readonly ManualResetEvent shutdownEvent = new(false);
+		private readonly List<Thread> threads = new();
 
 		private static ILog log => LogProvider.Get().ForContext(typeof(ProgramBase));
 		protected abstract ISandboxRunnerClient SandboxRunnerClient { get; }

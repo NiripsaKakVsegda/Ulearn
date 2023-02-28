@@ -26,12 +26,12 @@ namespace Ulearn.Core.Courses.Manager
 
 		public static readonly char[] InvalidForCourseIdCharacters = new[] { '&', CourseLoader.CourseIdDelimiter }.Concat(Path.GetInvalidFileNameChars()).Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
 
-		protected static readonly ErrorsBot ErrorsBot = new ErrorsBot();
+		protected static readonly ErrorsBot ErrorsBot = new();
 
-		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new ConcurrentDictionary<CourseVersionToken, bool>();
+		protected static readonly ConcurrentDictionary<CourseVersionToken, bool> BrokenVersions = new();
 
-		private static readonly CourseLoader loader = new CourseLoader(new UnitLoader(new XmlSlideLoader()));
-		private static readonly CourseStorage courseStorage = new CourseStorage();
+		private static readonly CourseLoader loader = new(new UnitLoader(new XmlSlideLoader()));
+		private static readonly CourseStorage courseStorage = new();
 
 		public const string ExampleCourseId = "Help";
 		public const string CourseLoadingErrorCourseId = "course-loading-error";
@@ -92,7 +92,7 @@ namespace Ulearn.Core.Courses.Manager
 			return tempDirectory;
 		}
 
-		private static readonly Random randomGenerator = new Random();
+		private static readonly Random randomGenerator = new();
 		private TempDirectory CreateCourseTempDirectory(string courseId, CourseVersionToken versionToken)
 		{
 			// @ — разделитель courseId и остального. используется CourseLoader

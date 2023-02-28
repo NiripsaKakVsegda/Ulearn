@@ -8,8 +8,8 @@ namespace Database.Repos
 {
 	public static class UnhandledSubmissionsWaiter
 	{
-		public static volatile ConcurrentDictionary<int, DateTime> UnhandledSubmissions = new ConcurrentDictionary<int, DateTime>();
-		public static volatile ConcurrentDictionary<int, DateTime> HandledSubmissions = new ConcurrentDictionary<int, DateTime>();
+		public static volatile ConcurrentDictionary<int, DateTime> UnhandledSubmissions = new();
+		public static volatile ConcurrentDictionary<int, DateTime> HandledSubmissions = new();
 		private static readonly TimeSpan handleTimeout = TimeSpan.FromMinutes(3);
 
 		private static ILog log => LogProvider.Get().ForContext(typeof(UnhandledSubmissionsWaiter));

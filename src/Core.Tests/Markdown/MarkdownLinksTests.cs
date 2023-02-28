@@ -6,7 +6,7 @@ namespace Ulearn.Core.Tests.Markdown
 	[TestFixture]
 	public class MarkdownLinksTests
 	{
-		private static readonly MarkdownRenderContext defaultMdContext = new MarkdownRenderContext("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
+		private static readonly MarkdownRenderContext defaultMdContext = new("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
 		private const string apiFilePrefix = "https://api.ulearn.me/courses/BasicProgramming/files";
 
 		[Test]

@@ -970,22 +970,22 @@ namespace ManualUtils
 
 					var others = new List<SlideAndBorders>
 					{
-						new SlideAndBorders("BasicProgramming", "617d8f67-491f-4172-8ed4-e7c230c2120f", 25, 5),
-						new SlideAndBorders("BasicProgramming", "3de364ff-38e9-411e-ac97-b4e4d24cdf26", 50, 10),
-						new SlideAndBorders("BasicProgramming", "616826fa-d344-4292-9ab4-ec5c8ea83e1e", 50, 10),
-						new SlideAndBorders("BasicProgramming", "d91838bd-0b73-4da5-81ec-39ff935ced35", 50, 10),
-						new SlideAndBorders("BasicProgramming", "8e0ccef8-59a4-4bf1-8610-8351c487a339", 50, 10),
-						new SlideAndBorders("BasicProgramming2", "10e4d5e2-6f7e-48c8-8d09-db133cdf0271", 50, 10),
-						new SlideAndBorders("BasicProgramming2", "61d2af1e-c7d8-468f-82e0-e69170998423", 50, 10),
-						new SlideAndBorders("BasicProgramming2", "30c04e83-f962-412e-8866-0ab981e5a71c", 100, 20),
-						new SlideAndBorders("BasicProgramming2", "43d5bcce-7071-4111-87fa-b5887053a6da", 50, 10),
-						new SlideAndBorders("BasicProgramming2", "85d068c7-ab40-4c9f-912a-c1405f5da5a4", 50, 10),
-						new SlideAndBorders("izhtestingcasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 4, 0),
-						new SlideAndBorders("JavaTech", "36f0bbb6-bff5-4049-8dc0-7b7c774a5a6f", 10, 0),
-						new SlideAndBorders("JavaTech", "22775cad-22e5-4034-83ba-8f9f9f2e3195", 5, 0),
-						new SlideAndBorders("JavaTech", "ba0de434-d87d-4c3c-9610-005a1e6aa404", 10, 0),
-						new SlideAndBorders("TestingCasting", "1cc77436-e31f-4e25-a52b-6805f04117e5", 3, 0),
-						new SlideAndBorders("TestingCasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 8, 0),
+						new("BasicProgramming", "617d8f67-491f-4172-8ed4-e7c230c2120f", 25, 5),
+						new("BasicProgramming", "3de364ff-38e9-411e-ac97-b4e4d24cdf26", 50, 10),
+						new("BasicProgramming", "616826fa-d344-4292-9ab4-ec5c8ea83e1e", 50, 10),
+						new("BasicProgramming", "d91838bd-0b73-4da5-81ec-39ff935ced35", 50, 10),
+						new("BasicProgramming", "8e0ccef8-59a4-4bf1-8610-8351c487a339", 50, 10),
+						new("BasicProgramming2", "10e4d5e2-6f7e-48c8-8d09-db133cdf0271", 50, 10),
+						new("BasicProgramming2", "61d2af1e-c7d8-468f-82e0-e69170998423", 50, 10),
+						new("BasicProgramming2", "30c04e83-f962-412e-8866-0ab981e5a71c", 100, 20),
+						new("BasicProgramming2", "43d5bcce-7071-4111-87fa-b5887053a6da", 50, 10),
+						new("BasicProgramming2", "85d068c7-ab40-4c9f-912a-c1405f5da5a4", 50, 10),
+						new("izhtestingcasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 4, 0),
+						new("JavaTech", "36f0bbb6-bff5-4049-8dc0-7b7c774a5a6f", 10, 0),
+						new("JavaTech", "22775cad-22e5-4034-83ba-8f9f9f2e3195", 5, 0),
+						new("JavaTech", "ba0de434-d87d-4c3c-9610-005a1e6aa404", 10, 0),
+						new("TestingCasting", "1cc77436-e31f-4e25-a52b-6805f04117e5", 3, 0),
+						new("TestingCasting", "5906398c-9b9a-4119-ad2a-c54e8b50cec2", 8, 0),
 					};
 
 					var scoreWithCodeReview = 0;

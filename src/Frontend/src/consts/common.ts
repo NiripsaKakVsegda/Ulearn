@@ -1,12 +1,12 @@
-import React, { ReactFragment, ReactPortal } from "react";
+import { ReactNode, ReactElement, ReactFragment, ReactPortal } from "react";
 
 export const botId = 'bot';
 export const botName = 'Юрий Юлернович';
 
 export interface HasReactChild {
-	children?: React.ReactNode;
+	children?: ReactNode;
 }
 
 export interface HasReactChildStrict {
-	children: React.ReactElement | ReactFragment | ReactPortal;
+	children: ReactElement | ReactFragment | ReactPortal;
 }

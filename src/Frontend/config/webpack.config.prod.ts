@@ -20,7 +20,6 @@ const config: Configuration = {
 	mode: 'production',
 	bail: true,
 	entry: {
-		oldBrowser: paths.oldBrowserJs,
 		main: [paths.legacy, paths.appIndexTsx],
 	},
 	output: {
@@ -158,17 +157,6 @@ const config: Configuration = {
 				minifyJS: true,
 				minifyCSS: true,
 				minifyURLs: true,
-			},
-			chunksSortMode: (chunk1, chunk2) => {
-				/* oldBrowser.js should be the first bundle. For more complex cases see solution
-				   at https://github.com/jantimon/html-webpack-plugin/issues/481#issuecomment-287370259*/
-				if(chunk1 === 'oldBrowser') {
-					return -1;
-				}
-				if(chunk2 === 'oldBrowser') {
-					return 1;
-				}
-				return 0;
 			},
 		}),
 		new webpack.ProvidePlugin({

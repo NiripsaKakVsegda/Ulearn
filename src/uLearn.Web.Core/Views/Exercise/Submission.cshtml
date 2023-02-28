@@ -21,7 +21,6 @@
 
 <div class="exercise__submission"
 	data-version-update-url="@Url.Action("Submission", new { Model.CourseId, slideId = Model.Slide.Id, submissionId = "VERSION_ID", manualCheckingId = manualCheckingId, isLti = Model.IsLti, showOutput = Model.InstructorView ? "true" : "SHOW_OUTPUT", instructorView = Model.InstructorView, onlyAccepted = Model.ShowOnlyAccepted })" @GetGuestOnclick(Model.IsGuest)>
-	>
 	@{
 		var currentSubmissionId = Model.SubmissionSelectedByUser != null ? (int?)Model.SubmissionSelectedByUser.Id : null;
 

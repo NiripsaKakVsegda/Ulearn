@@ -24,7 +24,7 @@ namespace Ulearn.Core.CSharp.Validators
 
 			return new List<SolutionStyleError>
 			{
-				new SolutionStyleError(StyleErrorType.LineLength01, position)
+				new(StyleErrorType.LineLength01, position)
 			};
 		}
 	}

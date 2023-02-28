@@ -87,25 +87,25 @@ public static void I_Am_Not_Indented(string[] args)
 	1, 2, 3
 		};
 
-		public List<string> Coll1 => new List<string>
+		public List<string> Coll1 => new()
 		{
 		"a"
 		};
 
-		public List<string> Coll2 => new List<string>
+		public List<string> Coll2 => new()
 		{
 	"a"
 		};
-		public List<string> Coll5 => new List<string>
+		public List<string> Coll5 => new()
 		{
 		"a",
 		"b"
 		};
-		List<List<List<int>>> l = new List<List<List<int>>>
+		List<List<List<int>>> l = new()
 		{
 		new List<List<int>>
 		{
-		new List<int>
+		new()
 		{
 			1,
 			2,
@@ -114,13 +114,13 @@ public static void I_Am_Not_Indented(string[] args)
 		}
 		};
 
-		Dictionary<int, int> d1 = new Dictionary<int, int>
+		Dictionary<int, int> d1 = new()
 		{
 		{ 1, 2 },
 		{ 2, 3 },
 		};
 
-		Dictionary<int, int> d2 = new Dictionary<int, int>
+		Dictionary<int, int> d2 = new()
 		{
 		{ 1, 2 },
 		{
@@ -129,7 +129,7 @@ public static void I_Am_Not_Indented(string[] args)
 		}
 		};
 
-		Dictionary<int, List<int>> dl = new Dictionary<int, List<int>>
+		Dictionary<int, List<int>> dl = new()
 		{
 			{
 			1, new List<int>

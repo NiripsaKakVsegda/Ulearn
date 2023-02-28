@@ -10,7 +10,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises
 	public class ExerciseSlide : Slide
 	{
 		[XmlElement("scoring")]
-		public ExerciseScoringSettings Scoring { get; set; } = new ExerciseScoringSettings
+		public ExerciseScoringSettings Scoring { get; set; } = new()
 		{
 			PassedTestsScore = 5,
 		};

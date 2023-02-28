@@ -6,7 +6,7 @@ namespace Ulearn.Core.Tests.Markdown
 	[TestFixture]
 	public class MarkdownTests
 	{
-		private static readonly MarkdownRenderContext DefaultMdContext = new MarkdownRenderContext("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
+		private static readonly MarkdownRenderContext DefaultMdContext = new("https://api.ulearn.me", "https://ulearn.me", "BasicProgramming", "Unit1");
 
 		[Test]
 		public void EmphasizeUnderscore()

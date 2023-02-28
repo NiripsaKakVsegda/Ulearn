@@ -14,9 +14,9 @@ namespace uLearn.CourseTool
 	internal static class ULearnInteractor
 	{
 		private const string rvTokenSignal = "__RequestVerificationToken";
-		private static readonly Regex getInputs = new Regex("<input .*?>");
+		private static readonly Regex getInputs = new("<input .*?>");
 		private const string testRvToken = "name=\"" + rvTokenSignal + "\"";
-		private static readonly Regex getValue = new Regex("value=\"(.*?)\"");
+		private static readonly Regex getValue = new("value=\"(.*?)\"");
 
 		private static CookieAwareWebClient Login(string ulearnBaseUrlWeb, string login, string password)
 		{

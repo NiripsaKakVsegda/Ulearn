@@ -15,7 +15,7 @@ namespace AntiPlagiarism.Tests.CodeAnalyzing
 	{
 		private TokensExtractor tokensExtractor;
 
-		private static DirectoryInfo TestDataDir => new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CodeAnalyzing", "TestData"));
+		private static DirectoryInfo TestDataDir => new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CodeAnalyzing", "TestData"));
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()

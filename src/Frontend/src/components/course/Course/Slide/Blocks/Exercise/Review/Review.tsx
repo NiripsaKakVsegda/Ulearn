@@ -6,7 +6,7 @@ import {
 	Button,
 	DropdownMenu,
 	Gapped,
-	Hint,
+	Hint, Loader,
 	MenuItem,
 	MenuSeparator,
 	ScrollContainer,
@@ -251,6 +251,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		);
 
 		const authorToRender = review.author ?? this.botUser;
+		const isLoading = id === -1;
 
 		return (
 			<li key={ i }
@@ -272,13 +273,13 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 					&& isInstructor(user)
 					&& <Gapped gap={ 8 } className={ cn({ [styles.botReviewWithComments]: comments.length > 0 }) }>
 						{ comments.length === 0 &&
-						<Hint pos={ 'bottom center' }
-							  text={ texts.botReview.hintText }>
-							<Button use={ 'primary' } onClick={ this.assignBotComment }
-									disabled={ comments.length > 0 }>
-								{ texts.botReview.assign }
-							</Button>
-						</Hint> }
+							<Hint pos={ 'bottom center' }
+								  text={ texts.botReview.hintText }>
+								<Button use={ 'primary' } onClick={ this.assignBotComment }
+										disabled={ comments.length > 0 }>
+									{ texts.botReview.assign }
+								</Button>
+							</Hint> }
 						<Button onClick={ this.deleteBotReview }>
 							{ texts.botReview.delete }
 						</Button>
@@ -295,18 +296,19 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 					</ol>
 				}
 				{ editingReviewId !== id
-				&& comments.every(c => c.id !== editingReviewId)
-				&& selectedReviewId === id
-				&& !outdated
-				&& (authorToRender.id !== this.botUser.id || comments.length > 0)
-				&& this.renderAddReviewComment(replies[id], id) }
+					&& !isLoading
+					&& comments.every(c => c.id !== editingReviewId)
+					&& selectedReviewId === id
+					&& !outdated
+					&& (authorToRender.id !== this.botUser.id || comments.length > 0)
+					&& this.renderAddReviewComment(replies[id], id) }
 				{ selectedReviewId === id
-				&& outdated
-				&& <Button
-					use={ 'primary' }
-					onClick={ this.copySelectedReviewTextToClipboard }>
-					{ texts.copyButton }
-				</Button>
+					&& outdated
+					&& <Button
+						use={ 'primary' }
+						onClick={ this.copySelectedReviewTextToClipboard }>
+						{ texts.copyButton }
+					</Button>
 				}
 			</li>
 		);
@@ -354,13 +356,14 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		const time = addingTime || publishTime;
 		const content = text || comment;
 		const outdated = reviewOutdated ?? (instructor?.outdated || false);
+		const isLoading = id === -1;
 
 		return (
 			<React.Fragment>
 				{ Review.renderHeaderContent(authorToRender, time,
-					this.renderCommentControls(review, reviewId, outdated)) }
+					!isLoading && this.renderCommentControls(review, reviewId, outdated)) }
 				{ editingReviewId !== id
-					? Review.renderCommentContent(renderedText ?? renderedComment)
+					? Review.renderCommentContent(renderedText ?? renderedComment, isLoading)
 					: <Gapped gap={ 12 } vertical className={ styles.commentEditTextArea }>
 						<Textarea
 							autoFocus
@@ -378,9 +381,9 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 							<Button
 								use={ 'primary' }
 								disabled={ !editingCommentValue
-								|| editingCommentValue.length == 0
-								|| editingCommentValue.length > reviewPolicyChecker.maxReviewLength
-								|| content === reviewPolicyChecker.removeWhiteSpaces(editingCommentValue) }
+									|| editingCommentValue.length == 0
+									|| editingCommentValue.length > reviewPolicyChecker.maxReviewLength
+									|| content === reviewPolicyChecker.removeWhiteSpaces(editingCommentValue) }
 								onClick={ this.saveReviewOrComment }>
 								{ texts.editing.save }
 							</Button>
@@ -415,7 +418,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 							{ controls }
 						</span>
 				{ time &&
-				<p className={ styles.commentAddingTime }>{ texts.getAddingTime(time) }</p>
+					<p className={ styles.commentAddingTime }>{ texts.getAddingTime(time) }</p>
 				}
 			</div>
 		</div>;
@@ -493,12 +496,16 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		</DropdownMenu>;
 	};
 
-	static renderCommentContent(content: string): React.ReactNode {
+	static renderCommentContent(content: string, isLoading = false,): React.ReactNode {
 		return <ScrollContainer maxHeight={ 600 } className={ styles.scrollContainer }>
-			<p
-				className={ styles.commentText }
-				dangerouslySetInnerHTML={ { __html: content } }
-			/>
+			{
+				<Loader type={ "mini" } active={ isLoading }>
+					<p
+						className={ styles.commentText }
+						dangerouslySetInnerHTML={ { __html: content } }
+					/>
+				</Loader>
+			}
 		</ScrollContainer>;
 	}
 

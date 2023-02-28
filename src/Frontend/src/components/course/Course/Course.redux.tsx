@@ -15,6 +15,7 @@ import getSlideInfo from "src/components/course/Course/CourseUtils";
 import api from "src/api";
 import { CourseRoleType } from "src/consts/accessType";
 import { WithRouter } from "src/models/router";
+import { isInstructorFromAccount } from "../../../utils/courseRoles";
 
 const mapStateToProps = (state: RootState, { location, params }: WithRouter) => {
 	const courseId = params.courseId.toLowerCase();
@@ -38,6 +39,7 @@ const mapStateToProps = (state: RootState, { location, params }: WithRouter) => 
 	for (const courseId of Object.keys(state.courses.fullCoursesInfo)) {
 		loadedCourseIds[courseId] = true;
 	}
+	const userIsInstructor = isInstructorFromAccount(state.account, courseId);
 
 	return {
 		courseId,
@@ -55,7 +57,7 @@ const mapStateToProps = (state: RootState, { location, params }: WithRouter) => 
 		navigationOpened: state.navigation.opened,
 		isSlideReady: state.slides.isSlideReady,
 		isHijacked: state.account.isHijacked,
-		isStudentMode: state.instructor.isStudentMode,
+		isStudentMode: userIsInstructor && state.instructor.isStudentMode,
 		deadLines,
 	};
 };

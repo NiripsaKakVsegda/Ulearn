@@ -14,7 +14,7 @@ namespace Ulearn.VideoAnnotations.Web.Configuration
 
 		public TimeSpan Timeout { get; set; }
 
-		public CacheConfiguration Cache { get; set; } = new CacheConfiguration();
+		public CacheConfiguration Cache { get; set; } = new();
 	}
 
 	public class CacheConfiguration

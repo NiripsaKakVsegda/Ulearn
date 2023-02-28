@@ -32,7 +32,7 @@ namespace Web.Api.Tests.Controllers
 		private static ILog log => LogProvider.Get().ForContext(typeof(BaseControllerTests));
 		protected IServiceProvider serviceProvider;
 
-		private readonly WebApiConfiguration fakeWebApiConfiguration = new WebApiConfiguration
+		private readonly WebApiConfiguration fakeWebApiConfiguration = new()
 		{
 			Web = new UlearnWebConfiguration
 			{
@@ -160,7 +160,7 @@ namespace Web.Api.Tests.Controllers
 
 	public static class TestUsers
 	{
-		public static ApplicationUser Admin = new ApplicationUser
+		public static ApplicationUser Admin = new()
 		{
 			UserName = "admin",
 			FirstName = "Super",
@@ -170,7 +170,7 @@ namespace Web.Api.Tests.Controllers
 			Registered = DateTime.Now,
 		};
 
-		public static ApplicationUser User = new ApplicationUser
+		public static ApplicationUser User = new()
 		{
 			UserName = "user",
 			FirstName = "Simple",
