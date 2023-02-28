@@ -16,6 +16,7 @@ import { getSubmissionsWithReviews } from "../../CourseUtils";
 import { setNextSubmissionButtonDisabled } from "src/actions/submissions";
 import { DeadLineInfo } from "src/models/deadLines";
 import { withNavigate } from "src/utils/router";
+import { ShortUserInfo } from "../../../../../models/users";
 
 interface Props {
 	slideContext: SlideContext;
@@ -115,12 +116,13 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 
 		addReview: (
 			submissionId: number,
+			author: ShortUserInfo,
 			text: string,
 			startLine: number, startPosition: number,
 			finishLine: number, finishPosition: number
 		) =>
 			api.submissions.redux
-				.addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
+				.addReview(submissionId, author, text, startLine, startPosition, finishLine, finishPosition)(dispatch),
 		deleteReview: (submissionId, reviewId, isBotReview) =>
 			api.submissions.redux.deleteReview(submissionId, reviewId, isBotReview)(dispatch),
 

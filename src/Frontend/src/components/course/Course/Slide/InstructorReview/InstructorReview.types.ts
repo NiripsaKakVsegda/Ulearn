@@ -56,6 +56,7 @@ export interface ApiFromRedux {
 
 	addReview: (
 		submissionId: number,
+		author: ShortUserInfo,
 		comment: string,
 		startLine: number,
 		startPosition: number,

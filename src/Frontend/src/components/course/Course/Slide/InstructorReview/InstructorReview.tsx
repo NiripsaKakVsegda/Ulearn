@@ -456,12 +456,12 @@ class InstructorReview extends React.Component<Props, State> {
 			throw new UrlError();
 		}
 
-		if(studentSubmissions && studentSubmissions.length === 0){
+		if(studentSubmissions && studentSubmissions.length === 0) {
 			return (
 				<BlocksWrapper>
 					Решение не найдено
 				</BlocksWrapper>
-			)
+			);
 		}
 
 		if(!student || !studentSubmissions || !studentGroups || !favouriteReviews || !currentSubmission) {
@@ -729,9 +729,14 @@ class InstructorReview extends React.Component<Props, State> {
 	): Promise<ReviewInfo | void> => {
 		const {
 			addReview,
+			user,
 		} = this.props;
 
-		return addReview(submissionId, comment, startLine, startPosition, finishLine, finishPosition)
+		if(!user) {
+			return Promise.reject("Current user is undefined");
+		}
+
+		return addReview(submissionId, user, comment, startLine, startPosition, finishLine, finishPosition)
 			.catch(this.catchNewestSubmission);
 	};
 

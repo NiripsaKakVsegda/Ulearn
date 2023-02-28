@@ -314,12 +314,7 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 		}
 
 		case REVIEWS_ADD_START: {
-			const { submissionId, } = action as ReviewsAddStartAction;
-			//TODO isLoading?
-			return state;
-		}
-		case REVIEWS_ADD_SUCCESS: {
-			const { submissionId, review, } = action as ReviewsAddSuccessAction;
+			const { submissionId, review } = action as ReviewsAddStartAction;
 			const reviews = state.reviewsBySubmissionId[submissionId];
 
 			if(!reviews) {
@@ -337,10 +332,49 @@ export default function submissions(state = initialSubmissionsState, action: Sub
 				}
 			};
 		}
+		case REVIEWS_ADD_SUCCESS: {
+			const { submissionId, review, } = action as ReviewsAddSuccessAction;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+
+			if(!reviews) {
+				return state;
+			}
+
+			const newReviews = [
+				...reviews.manualCheckingReviews.slice(0, reviews.manualCheckingReviews.length - 1),
+				review
+			];
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews: newReviews,
+					}
+				}
+			};
+		}
 		case REVIEWS_ADD_FAIL: {
 			const { submissionId, error, } = action as ReviewsAddFailAction;
-			//TODO error?
-			return state;
+			const reviews = state.reviewsBySubmissionId[submissionId];
+			//todo error?
+
+			if(!reviews) {
+				return state;
+			}
+
+			return {
+				...state,
+				reviewsBySubmissionId: {
+					...state.reviewsBySubmissionId,
+					[submissionId]: {
+						...reviews,
+						manualCheckingReviews:
+							reviews.manualCheckingReviews.slice(0, reviews.manualCheckingReviews.length - 1),
+					}
+				}
+			};
 		}
 
 		case REVIEWS_DELETE_START: {

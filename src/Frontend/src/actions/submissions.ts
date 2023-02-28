@@ -66,6 +66,7 @@ import {
 } from "./submissions.types";
 import { SubmissionsResponse } from "../models/instructor";
 import { ReviewCommentResponse, ReviewInfo, RunSolutionResponse } from "../models/exercise";
+import { ShortUserInfo } from "../models/users";
 
 export const addSubmissionAction = (
 	courseId: string,
@@ -132,19 +133,11 @@ export const submissionsEnableManualCheckingFailAction = (
 
 export const reviewsAddStartAction = (
 	submissionId: number,
-	comment: string,
-	startLine: number,
-	startPosition: number,
-	finishLine: number,
-	finishPosition: number,
+	review : ReviewInfo,
 ): ReviewsAddStartAction => ({
 	type: REVIEWS_ADD_START,
 	submissionId,
-	comment,
-	startLine,
-	startPosition,
-	finishLine,
-	finishPosition,
+	review
 });
 export const reviewsAddSuccessAction = (
 	submissionId: number,

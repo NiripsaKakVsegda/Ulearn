@@ -43,6 +43,8 @@ import {
 import { reviews, submissions } from "../consts/routes";
 import { SubmissionsResponse } from "../models/instructor";
 import { studentProhibitFurtherManualCheckingLoadAction } from "../actions/instructor";
+import renderSimpleMarkdown from "../utils/simpleMarkdownRender";
+import { ShortUserInfo } from "../models/users";
 
 
 export function submitCode(courseId: string, slideId: string, code: string,
@@ -175,13 +177,26 @@ const submitCodeRedux = (
 
 const addReviewRedux = (
 	submissionId: number,
-	text: string,
+	author: ShortUserInfo,
+	comment: string,
 	startLine: number, startPosition: number,
 	finishLine: number, finishPosition: number
 ) => {
 	return (dispatch: Dispatch): Promise<ReviewInfo | void> => {
-		dispatch(reviewsAddStartAction(submissionId, text, startLine, startPosition, finishLine, finishPosition));
-		return addReview(submissionId, text, startLine, startPosition, finishLine, finishPosition)
+		const review: ReviewInfo = {
+			id: -1,
+			comment,
+			startLine,
+			startPosition,
+			finishLine,
+			finishPosition,
+			author,
+			comments: [],
+			addingTime: new Date().toDateString(),
+			renderedComment: renderSimpleMarkdown(comment),
+		};
+		dispatch(reviewsAddStartAction(submissionId, review));
+		return addReview(submissionId, comment, startLine, startPosition, finishLine, finishPosition)
 			.then(review => {
 				dispatch(reviewsAddSuccessAction(submissionId, review,));
 				return review;
