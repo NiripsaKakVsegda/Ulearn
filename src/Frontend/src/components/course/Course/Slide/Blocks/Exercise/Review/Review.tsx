@@ -363,7 +363,7 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 				{ Review.renderHeaderContent(authorToRender, time,
 					!isLoading && this.renderCommentControls(review, reviewId, outdated)) }
 				{ editingReviewId !== id
-					? Review.renderCommentContent(renderedText ?? renderedComment, isLoading)
+					? Review.renderCommentContent(renderedText ?? renderedComment)
 					: <Gapped gap={ 12 } vertical className={ styles.commentEditTextArea }>
 						<Textarea
 							autoFocus
@@ -496,16 +496,12 @@ class Review extends React.Component<ReviewProps, ReviewState> {
 		</DropdownMenu>;
 	};
 
-	static renderCommentContent(content: string, isLoading = false,): React.ReactNode {
+	static renderCommentContent(content: string): React.ReactNode {
 		return <ScrollContainer maxHeight={ 600 } className={ styles.scrollContainer }>
-			{
-				<Loader type={ "mini" } active={ isLoading }>
-					<p
-						className={ styles.commentText }
-						dangerouslySetInnerHTML={ { __html: content } }
-					/>
-				</Loader>
-			}
+				<p
+					className={ styles.commentText }
+					dangerouslySetInnerHTML={ { __html: content } }
+				/>
 		</ScrollContainer>;
 	}
 
