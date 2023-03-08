@@ -48,7 +48,6 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		
 		public override string DockerImageName => "algorithms-sandbox";
 		public override bool NoStudentZip => true;
-		public override string Region => "Task";
 		public override bool CheckInitialSolution => false;
 		public double TimeLimitPerTest { get; set; }
 		public override string[] PathsToExcludeForChecker => new[] { "statements", "statements-sections" };
