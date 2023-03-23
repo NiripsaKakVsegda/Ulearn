@@ -135,7 +135,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			return code;
 		}
 
-		public override SolutionBuildResult BuildSolution(string userWrittenCodeFile)
+		public override SolutionBuildResult BuildSolution(string userWrittenCodeFile, Language? language = null)
 		{
 			var validator = ValidatorsRepository.Get(Validator);
 			return validator.ValidateSolution(userWrittenCodeFile, userWrittenCodeFile);

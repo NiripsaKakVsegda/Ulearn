@@ -97,7 +97,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		public abstract string GetSourceCode(string code);
 
-		public abstract SolutionBuildResult BuildSolution(string userWrittenCode);
+		public abstract SolutionBuildResult BuildSolution(string userWrittenCode, Language? language = null);
 
 		public abstract RunnerSubmission CreateSubmission(string submissionId, string code, string courseDirectory);
 		public abstract bool HasAutomaticChecking();

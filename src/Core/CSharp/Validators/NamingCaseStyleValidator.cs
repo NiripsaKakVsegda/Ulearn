@@ -28,11 +28,9 @@ namespace Ulearn.Core.CSharp.Validators
 		private bool MustStartWithUpper(SyntaxNode node)
 		{
 			return
-				node is BaseTypeDeclarationSyntax
-				|| node is TypeParameterSyntax
-				|| node is EnumMemberDeclarationSyntax
-				|| node is MethodDeclarationSyntax && ((MethodDeclarationSyntax)node).Modifiers.Any(t => t.Kind() == SyntaxKind.PublicKeyword)
-				|| node is VariableDeclaratorSyntax && MustStartWithUpper((VariableDeclaratorSyntax)node);
+				node is BaseTypeDeclarationSyntax or TypeParameterSyntax or EnumMemberDeclarationSyntax 
+				|| node is MethodDeclarationSyntax methodDeclaration && methodDeclaration.Modifiers.Any(t => t.Kind() == SyntaxKind.PublicKeyword) 
+				|| node is VariableDeclaratorSyntax variableDeclarator && MustStartWithUpper(variableDeclarator);
 		}
 
 		private bool MustStartWithUpper(VariableDeclaratorSyntax variableDeclarator)
