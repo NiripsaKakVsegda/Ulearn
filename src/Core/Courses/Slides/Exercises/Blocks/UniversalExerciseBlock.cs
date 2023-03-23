@@ -109,10 +109,10 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		[XmlIgnore]
 		public Lazy<string> InitialRegionContent;
-		
+
 		[XmlIgnore]
 		public CommonSingleRegionExtractor Extractor;
-		
+
 		[XmlIgnore]
 		public Slide Slide { get; private set; }
 
@@ -182,9 +182,12 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 				? null
 				: new CommonSingleRegionExtractor(file.ContentAsUtf8()).GetRegion(new Label { Name = Region });
 		}
-		
-		public override SolutionBuildResult BuildSolution(string userWrittenCode)
+
+		public override SolutionBuildResult BuildSolution(string userWrittenCode, Language? language = null)
 		{
+			if (language != null)
+				Validator.ValidatorName = string.Join(" ", language.GetName(), Validator.ValidatorName ?? "");
+
 			var validator = ValidatorsRepository.Get(Validator);
 			var fullCode = userWrittenCode;
 			if (validator != null && Extractor != null)
