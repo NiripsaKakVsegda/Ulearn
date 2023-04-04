@@ -1,0 +1,29 @@
+@import "/src/variables";
+
+@media (min-width: @minTabletWidth) {
+  .conflictHint {
+    left: -23px;
+  }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .conflictHint {
+    left: -30px;
+  }
+}
+
+.conflictHint {
+  position: absolute;
+  left: -18px;
+  color: @errorColor;
+  padding-top: 5px;
+}
+
+.deleteButtonText {
+  color: @redText;
+}
+
+.iconInButtonAsSelectIcon {
+  left: 7px;
+  position: relative;
+}

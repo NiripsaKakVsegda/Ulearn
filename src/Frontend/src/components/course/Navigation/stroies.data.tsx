@@ -173,13 +173,13 @@ const slidesExamples = [
 		status: SlideProgressStatus.canBeImproved,
 		questionsCount: 5,
 		quizMaxTriesCount: 2,
-		score: 0,
+		scoreHeader: 0,
 		maxScore: 5,
 		metro: { ...metro, connectToNext: true, }
 	},
 	{
 		type: SlideType.Exercise,
-		score: 50,
+		scoreHeader: 50,
 		maxScore: 100,
 		visited: true,
 		status: SlideProgressStatus.canBeImproved,

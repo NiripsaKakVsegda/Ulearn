@@ -2,8 +2,8 @@ import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 
 import AnyPage from "src/pages/AnyPage";
-import GroupListPage from "src/pages/course/groups/GroupListPage";
-import GroupPage from "src/pages/course/groups/GroupPage";
+import GroupListPage from "./pages/course/groups/GroupsListPage/GroupListPage";
+import GroupSettingsPage from "./pages/course/groups/GroupsSettingsPage/GroupSettingsPage";
 import Course from 'src/components/course/Course/Course.redux';
 
 import { getQueryStringParameter } from "src/utils";
@@ -37,11 +37,11 @@ function Router({ account }: Props): React.ReactElement {
 				/>,
 				<Route key={ 'groupPage' }
 					   path={ "/:courseId/groups/:groupId/" }
-					   element={ <GroupPage/> }
+					   element={ <GroupSettingsPage/> }
 				/>,
 				<Route key={ 'groupPageSettings' }
 					   path={ "/:courseId/groups/:groupId/:groupPage" }
-					   element={ <GroupPage/> }
+					   element={ <GroupSettingsPage/> }
 				/>,
 				<Route key={ 'googleSheetList' }
 					   path={ "/:courseId/google-sheet-tasks/" }

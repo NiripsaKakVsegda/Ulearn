@@ -141,7 +141,7 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 	return {
 		courseId,
 		slideId,
-		score: slideProgress?.score ?? 0,
+		scoreHeader: slideProgress?.score ?? 0,
 		isSkipped: slideProgress?.isSkipped ?? false,
 		waitingForManualChecking: slideProgress?.waitingForManualChecking ?? false,
 		prohibitFurtherManualChecking: slideProgress?.prohibitFurtherManualChecking ?? false,

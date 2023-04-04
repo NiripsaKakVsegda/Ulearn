@@ -1,0 +1,34 @@
+@import "/src/variables.less";
+
+.action-buttons {
+  margin: 0 0 5px 30px;
+}
+
+.action {
+  border: none;
+  background: transparent;
+  color: @disabledColor;
+  text-align: center;
+}
+
+.button-copy {
+  color: @linkColor;
+}
+
+.button-delete {
+  color: @negativeColor;
+}
+
+.buttonResetLimits {
+  color: @linkColor;
+}
+
+.action-text {
+  @media (max-width: @maxPhoneWidth) {
+    display: none;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

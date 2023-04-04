@@ -4,8 +4,8 @@ export interface AdditionalContentPublicationResponse {
 	id: string;
 	courseId: string;
 	groupId: number;
-	slideId: string | null;
 	unitId: string;
+	slideId: string | null;
 	date: string;
 	author: ShortUserInfo;
 }

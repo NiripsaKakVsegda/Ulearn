@@ -66,8 +66,13 @@ export interface GroupInfo {
 	apiUrl: string;
 }
 
+export interface CreateGroupResponse {
+	id: number;
+	apiUrl: string;
+}
+
 export interface CopyGroupResponse {
-	id: string;
+	id: number;
 	apiUrl: string;
 }
 

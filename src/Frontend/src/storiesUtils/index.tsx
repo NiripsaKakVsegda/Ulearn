@@ -1,7 +1,7 @@
 import React from "react";
 import { CourseAccessType, CourseRoleType, SystemAccessType } from "src/consts/accessType";
 import { UserInfo } from "src/utils/courseRoles";
-import setupStore from "src/setupStore";
+import { store } from "src/setupStore";
 import { ShortUserInfo } from "src/models/users";
 import { GroupInfo } from "src/models/groups";
 import { ShortGroupInfo } from "src/models/comments";
@@ -20,10 +20,9 @@ import { ViewportWrapper } from "../components/course/Navigation/stroies.data";
 import { Language } from "../consts/languages";
 import {
 	CheckupsBuilder,
-	defaultCheckups
 } from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
 import { clone } from "../utils/jsonExtensions";
-import getPluralForm from "../utils/getPluralForm";
+import { refreshToken } from "../redux/toolkit/slices/authSlice";
 
 export const mock = (): unknown => ({});
 
@@ -39,7 +38,8 @@ interface State<T> {
 }
 
 
-export const reduxStore = setupStore();
+export const reduxStore = store;
+reduxStore.dispatch(refreshToken());
 
 export function renderMd(text: string): string {
 	const regexBold = /\*\*(\S(.*?\S)?)\*\*/gm;

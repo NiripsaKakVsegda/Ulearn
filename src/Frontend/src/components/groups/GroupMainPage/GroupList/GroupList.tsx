@@ -1,96 +1,93 @@
-import React from "react";
-import { Loader } from "ui";
-import GroupInfo from "../GroupInfo/GroupInfo";
+import React, { FC } from "react";
+import GroupsListItem from "../GroupsListItem/GroupsListItem";
 
-import { GroupInfo as GroupInfoType } from "src/models/groups";
+import { GroupInfo } from "src/models/groups";
 
 import styles from "./groupList.less";
-import { getQueryStringParameter } from "../../../../utils";
+import { useSearchParams } from "react-router-dom";
 
 interface Props {
-	courseId: string;
-	groups: GroupInfoType[];
-	loading: boolean;
-
 	userId?: string | null;
+	courseId: string;
+	groups: GroupInfo[];
+	noGroupsMessage: string;
 
-	children?: React.ReactNode;
-
-	deleteGroup: (group: GroupInfoType, groupType: 'archiveGroups' | 'groups') => void;
-	toggleArchived: (group: GroupInfoType, isNotArchived: boolean) => void;
+	onDeleteGroup: (group: GroupInfo) => void;
+	onToggleArchivedGroup: (group: GroupInfo) => void;
 }
 
-function GroupList({
+const GroupList: FC<Props> = ({
+	userId,
 	courseId,
 	groups,
-	loading,
-	deleteGroup,
-	toggleArchived,
-	children,
-	userId,
-}: Props): React.ReactElement {
-	const page = getQueryStringParameter('groupsSettings');
+	noGroupsMessage,
+	onDeleteGroup,
+	onToggleArchivedGroup,
+}) => {
+	const page = useSearchParams()[0].get('groupsSettings');
+
 	return (
 		<section className={ styles.wrapper }>
-			{ loading &&
-			<div className={ styles.loaderWrapper }>
-				<Loader type="big" active={ true }/>
-			</div>
-			}
-			{ !loading &&
 			<div className={ styles.content }>
-				{ groups && (JSON.parse(JSON.stringify(groups)) as GroupInfoType[])
-					.sort((a, b) => {
-						if(userId) {
-							const teachersInA = new Set([a.owner.id, ...a.accesses.map(item => item.user.id)]);
-							const isUserInA = teachersInA.has(userId);
-							const teachersInB = new Set([b.owner.id, ...b.accesses.map(item => item.user.id)]);
-							const isUserInB = teachersInB.has(userId);
-
-							if(teachersInA.size === 1 && isUserInA && teachersInB.size === 1 && isUserInB) {
-								return 0;
-							}
-
-							if(teachersInA.size === 1 && isUserInA) {
-								return -1;
-							}
-
-							if(teachersInB.size === 1 && isUserInB) {
-								return 1;
-							}
-
-							if(isUserInA && isUserInB) {
-								return 0;
-							}
-							if(isUserInA) {
-								return -1;
-							}
-							if(isUserInB) {
-								return 1;
-							}
-						}
-
-						return a.name.localeCompare(b.name);
-					})
+				{ [...groups]
+					.sort(groupSorter)
 					.map(group =>
-						<GroupInfo
+						<GroupsListItem
 							key={ group.id }
 							courseId={ courseId }
 							group={ group }
-							deleteGroup={ deleteGroup }
-							toggleArchived={ toggleArchived }
 							page={ page }
+							deleteGroup={ onDeleteGroup }
+							toggleArchived={ onToggleArchivedGroup }
 						/>)
 				}
 			</div>
-			}
-			{ !loading && groups && groups.length === 0 &&
-			<div className={ styles.noGroups }>
-				{ children }
-			</div>
+			{ groups.length === 0 &&
+				<div className={ styles.noGroups }>
+					{ noGroupsMessage }
+				</div>
 			}
 		</section>
 	);
-}
+
+	function groupSorter(a: GroupInfo, b: GroupInfo) {
+		const nameCompare = a.name.localeCompare(b.name);
+
+		if(!userId) {
+			return nameCompare;
+		}
+
+		const aTeachers = [a.owner.id, ...a.accesses.map(item => item.user.id)];
+		const bTeachers = [b.owner.id, ...b.accesses.map(item => item.user.id)];
+
+		const isUserInA = aTeachers.includes(userId);
+		const isUserInB = bTeachers.includes(userId);
+
+		if(aTeachers.length === 1 && isUserInA && bTeachers.length === 1 && isUserInB) {
+			return nameCompare;
+		}
+
+		if(aTeachers.length === 1 && isUserInA) {
+			return -1;
+		}
+
+		if(bTeachers.length === 1 && isUserInB) {
+			return 1;
+		}
+
+		if(isUserInA && isUserInB) {
+			return nameCompare;
+		}
+		if(isUserInA) {
+			return -1;
+		}
+		if(isUserInB) {
+			return 1;
+		}
+
+		return nameCompare;
+
+	}
+};
 
 export default GroupList;

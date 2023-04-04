@@ -1,6 +1,5 @@
-import React from "react";
-import GroupSettings from "./GroupSettings.js";
-
+import React from 'react';
+import GroupSettings from "./GroupSettings";
 import "./groupSettings.less";
 
 export default {
@@ -10,9 +9,6 @@ export default {
 export const Default = (): React.ReactNode => (
 	<GroupSettings
 		group={ { test: "test" } }
-		updatedFields={ { name: "maria" } }
-		onChangeSettings={ () => ({}) }
-		scores={ [] }
 	/>
 );
 

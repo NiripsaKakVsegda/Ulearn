@@ -4,6 +4,8 @@ import { AccountInfo, LogoutInfo, RolesInfo } from "src/models/account";
 import { accountInfoUpdateAction, rolesUpdateAction } from "src/actions/account";
 import { account, logoutPath, rolesPath } from "src/consts/routes";
 import { exerciseSolutions, removeFromCache, setBlockCache, } from "src/utils/localStorageManager";
+import { store } from "../setupStore";
+import { clearToken } from "../redux/toolkit/slices/authSlice";
 
 export function getCurrentUser(): Promise<AccountInfo> {
 	return api.get<AccountInfo>(account);
@@ -19,7 +21,7 @@ export function logout(): Promise<void | LogoutInfo> {
 			if(json.logout) {
 				removeFromCache(exerciseSolutions);
 				setBlockCache(true);
-				api.clearApiJwtToken();
+				store.dispatch(clearToken)
 				redirectToMainPage();
 			}
 		});
