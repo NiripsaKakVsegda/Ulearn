@@ -3,27 +3,24 @@ import { CourseAccessType, CourseRoleType, SystemAccessType } from "src/consts/a
 import { UserInfo } from "src/utils/courseRoles";
 import setupStore from "src/setupStore";
 import { ShortUserInfo } from "src/models/users";
-import { GroupInfo } from "src/models/groups";
+import { GroupInfo, GroupType } from "src/models/groups";
 import { ShortGroupInfo } from "src/models/comments";
 import { accountInfoUpdateAction, rolesUpdateAction } from "src/actions/account";
 import {
 	AutomaticExerciseCheckingProcessStatus,
 	AutomaticExerciseCheckingResult,
 	ExerciseAutomaticCheckingResponse,
-	ExerciseManualCheckingResponse
-	, ReviewCommentResponse,
-	ReviewInfo, SubmissionInfo,
+	ExerciseManualCheckingResponse,
+	ReviewCommentResponse,
+	ReviewInfo,
+	SubmissionInfo,
 } from "src/models/exercise";
 import { botId, botName } from "src/consts/common";
 import { Story } from "@storybook/react";
 import { ViewportWrapper } from "../components/course/Navigation/stroies.data";
 import { Language } from "../consts/languages";
-import {
-	CheckupsBuilder,
-	defaultCheckups
-} from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
+import { CheckupsBuilder } from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
 import { clone } from "../utils/jsonExtensions";
-import getPluralForm from "../utils/getPluralForm";
 
 export const mock = (): unknown => ({});
 
@@ -168,6 +165,7 @@ export const getMockedUser = (user?: Partial<UserInfo>): UserInfo => {
 };
 
 export const getMockedGroup = (group?: Partial<GroupInfo>): GroupInfo => {
+	const owner = group?.owner || getMockedUser();
 	return {
 		name: group?.name || 'Group Name-08',
 		id: group?.id || 1,
@@ -183,7 +181,12 @@ export const getMockedGroup = (group?: Partial<GroupInfo>): GroupInfo => {
 		isManualCheckingEnabled: group?.isManualCheckingEnabled || false,
 		isManualCheckingEnabledForOldSolutions: group?.isManualCheckingEnabledForOldSolutions || false,
 		studentsCount: group?.studentsCount || 10,
-		owner: group?.owner || getMockedUser(),
+		owner,
+		ownerId: owner.id,
+		groupType: GroupType.SingleGroup,
+		courseId: group?.courseId || 'basicprogramming',
+		superGroupId: group?.superGroupId || null,
+		isDeleted: group?.isDeleted || false,
 	};
 };
 
@@ -310,6 +313,7 @@ export class GetMock {
 	public static get OfCheckups() {
 		return new CheckupsBuilder();
 	}
+
 	public static get OfSubmission() {
 		return new SubmissionInfoBuilder();
 	}

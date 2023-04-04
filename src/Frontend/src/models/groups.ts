@@ -48,8 +48,29 @@ export interface GroupScoringGroupInfo extends AbstractScoringGroupInfo {
 	areAdditionalScoresEnabledInThisGroup?: boolean;
 }
 
-export interface GroupInfo {
+export interface GroupBase {
 	id: number;
+	groupType: GroupType;
+	courseId: string;
+	name: string;
+	owner: ShortUserInfo;
+	ownerId: string;
+	isDeleted: boolean;
+	isArchived: boolean;
+	inviteHash: string;
+	isInviteLinkEnabled: boolean;
+	createTime?: string | null;
+}
+
+export interface SuperGroup extends Omit<GroupBase, 'groupType'> {
+	groupType: GroupType.SuperGroup;
+	distributionTableLink: string;
+}
+
+export interface GroupInfo extends ChangeableGroupSettings {
+	id: number;
+	courseTitle: string;
+	courseId: string;
 	groupType: GroupType;
 	createTime?: string | null;
 	name: string;
@@ -58,15 +79,31 @@ export interface GroupInfo {
 	inviteHash: string;
 	isInviteLinkEnabled: boolean;
 	areYouStudent: boolean;
-	isManualCheckingEnabled?: boolean;
-	isManualCheckingEnabledForOldSolutions?: boolean;
-	defaultProhibitFurtherReview?: boolean;
-	canStudentsSeeGroupProgress?: boolean;
 	studentsCount: number;
 	accesses: GroupAccessesInfo[];
 	apiUrl: string;
 	superGroupId: number | null;
 	distributionTableLink: string | null;
+}
+
+export interface ChangeableGroupSettings {
+	isManualCheckingEnabled?: boolean;
+	isManualCheckingEnabledForOldSolutions?: boolean;
+	defaultProhibitFurtherReview?: boolean;
+	canStudentsSeeGroupProgress?: boolean;
+}
+
+export interface GroupInfoWithSubGroups extends GroupInfo {
+	subGroups?: GroupInfo[];
+}
+
+export interface SingleGroup extends Omit<GroupBase, 'groupType'> {
+	groupType: GroupType.SingleGroup;
+	superGroupId: number | null;
+	isManualCheckingEnabled?: boolean;
+	isManualCheckingEnabledForOldSolutions?: boolean;
+	canStudentsSeeGroupProgress?: boolean;
+	defaultProhibitFurtherReview?: boolean;
 }
 
 export interface CopyGroupResponse {
@@ -75,7 +112,7 @@ export interface CopyGroupResponse {
 }
 
 export interface CreateGroupResponse {
-	id: string;
+	id: number;
 	apiUrl: string;
 }
 

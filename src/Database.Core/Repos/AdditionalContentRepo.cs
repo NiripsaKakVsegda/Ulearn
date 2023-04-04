@@ -21,17 +21,17 @@ namespace Database.Repos
 		{
 			return await GetAdditionalContentPublications(courseId, new HashSet<int> { groupId });
 		}
-		
+
 		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, string userId)
 		{
 			var groups = db.Groups
-				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.GroupType == GroupType.SingleGroup)
 				.Select(g => g.Id);
 			var userGroupsIds = await db.GroupMembers
 				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
 				.Select(m => m.GroupId)
 				.ToListAsync();
-			
+
 			return await GetAdditionalContentPublications(courseId, userGroupsIds.ToHashSet());
 		}
 
@@ -41,7 +41,7 @@ namespace Database.Repos
 				.Where(ac => ac.CourseId == courseId && groupIds.Contains(ac.GroupId))
 				.ToListAsync();
 		}
-		
+
 		public async Task<AdditionalContentPublication> AddAdditionalContentPublication(string courseId, int groupId, string authorId, Guid unitId, Guid? slideId, DateTime date)
 		{
 			var content = new AdditionalContentPublication
@@ -88,9 +88,9 @@ namespace Database.Repos
 		{
 			if (!slide.IsExtraContent && !slide.Unit.Settings.IsExtraContent)
 				return true;
-			
+
 			var groups = db.Groups
-				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.GroupType == GroupType.SingleGroup)
 				.Select(g => g.Id);
 			var userGroupsIds = await db.GroupMembers
 				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
@@ -104,9 +104,9 @@ namespace Database.Repos
 		{
 			if (!slide.IsExtraContent && !slide.Unit.Settings.IsExtraContent)
 				return true;
-			
+
 			var unitPublications = await db.AdditionalContentPublications
-				.Where(ac => ac.CourseId == courseId  && ac.UnitId == slide.Unit.Id && userGroupIds.Contains(ac.GroupId))
+				.Where(ac => ac.CourseId == courseId && ac.UnitId == slide.Unit.Id && userGroupIds.Contains(ac.GroupId))
 				.ToListAsync();
 			var unitPublication = unitPublications.FirstOrDefault(p => p.SlideId == null);
 			var slidePublication = unitPublications.FirstOrDefault(p => p.SlideId == slide.Id);

@@ -331,6 +331,8 @@ class AddCommentForm extends React.Component<Props, State> {
 	): React.ReactElement => (
 		<div className={ styles.favouriteSection }>
 			{ this.renderCommentsHeader() }
+			{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
+			{/* @ts-ignore*/}
 			<ScrollContainer className={ styles.commentsScrollWrapper }>
 				<div className={ styles.commentsWrapper }>
 					{ this.renderFavouriteComments(favouriteCommentsIds) }

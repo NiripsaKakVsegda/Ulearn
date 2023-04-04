@@ -4,7 +4,7 @@ import { Gapped, Kebab, Loader, MenuItem, Toast } from "ui";
 import ComboboxInstructorsSearch from "./Combobox/ComboboxInstructorsSearch.js";
 import Avatar from "src/components/common/Avatar/Avatar";
 import GroupStudents from "./GroupStudents/GroupStudents.js";
-import InviteBlock from "./InviteBlock/InviteBlock.js";
+import InviteBlock from "./InviteBlock/InviteBlock";
 import { Profile } from './Profile';
 
 import { Mobile, NotMobile } from "src/utils/responsive";

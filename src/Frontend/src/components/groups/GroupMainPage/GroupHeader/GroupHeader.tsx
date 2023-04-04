@@ -52,7 +52,7 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 			<CreateSuperGroupModal
 				courseId={ course.id }
 				onCloseModal={ onCloseModal }
-				onSubmit={ () => {} }
+				onSubmit={ addGroup }
 			/>}
 		</React.Fragment>
 	);
@@ -74,7 +74,7 @@ function GroupHeader({ filter, course, onTabChange, addGroup, }: Props): React.R
 						<NotMobile>
 							<Gapped gap={ 20 }>
 								<Button use="primary" size="medium" onClick={ openCreateSuperGroupModal }>Создать
-									поток</Button>
+									супер-группу</Button>
 								<Button use="primary" size="medium" onClick={ openCreateGroupModal }>Создать
 									группу</Button>
 								<Button use="default" size="medium" onClick={ openCopyGroupModal }>Скопировать

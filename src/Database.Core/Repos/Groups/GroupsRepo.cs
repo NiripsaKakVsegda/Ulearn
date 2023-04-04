@@ -7,6 +7,7 @@ using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Core.Courses;
+using Z.EntityFramework.Plus;
 
 namespace Database.Repos.Groups
 {
@@ -23,6 +24,29 @@ namespace Database.Repos.Groups
 			this.db = db;
 			this.groupsCreatorAndCopier = groupsCreatorAndCopier;
 			this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
+		}
+		
+		public async Task<SingleGroup> CreateSingleGroupAsync(string courseId,
+			string name,
+			string ownerId,
+			int? superGroupId = null,
+			bool isManualCheckingEnabled = false,
+			bool isManualCheckingEnabledForOldSolutions = false,
+			bool canUsersSeeGroupProgress = true,
+			bool defaultProhibitFurtherReview = true,
+			bool isInviteLinkEnabled = true)
+		{
+			return await groupsCreatorAndCopier.CreateSingleGroupAsync(
+				courseId,
+				name,
+				ownerId,
+				superGroupId,
+				isManualCheckingEnabled,
+				isManualCheckingEnabledForOldSolutions,
+				canUsersSeeGroupProgress,
+				defaultProhibitFurtherReview,
+				isInviteLinkEnabled
+			);
 		}
 
 		public async Task<GroupBase> CreateGroupAsync(string courseId,
@@ -46,7 +70,7 @@ namespace Database.Repos.Groups
 					defaultProhibitFurtherReview,
 					isInviteLinkEnabled
 				);
-			
+
 			if (groupType == GroupType.SuperGroup)
 				return await groupsCreatorAndCopier.CreateSuperGroupAsync(
 					courseId,
@@ -64,35 +88,44 @@ namespace Database.Repos.Groups
 			return groupsCreatorAndCopier.CopyGroupAsync(group, courseId, newOwnerId);
 		}
 
+		public async Task<T> ModifyGroupAsync<T>(int groupId, GroupSettings newSettings) where T : GroupBase
+		{
+			var group = await FindGroupByIdAsync<T>(groupId).ConfigureAwait(false);
+			group.Name = newSettings.NewName ?? group.Name;
+
+			switch (group)
+			{
+				case SingleGroup singleGroup:
+				{
+					singleGroup.IsManualCheckingEnabled = newSettings.NewIsManualCheckingEnabled ?? singleGroup.IsManualCheckingEnabled;
+
+					if (!singleGroup.IsManualCheckingEnabledForOldSolutions && newSettings.NewIsManualCheckingEnabledForOldSolutions == true)
+					{
+						var groupMembers = singleGroup.NotDeletedMembers.Select(m => m.UserId).ToList();
+						await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(singleGroup.CourseId, groupMembers).ConfigureAwait(false);
+					}
+
+					singleGroup.IsManualCheckingEnabledForOldSolutions = newSettings.NewIsManualCheckingEnabledForOldSolutions ?? singleGroup.IsManualCheckingEnabledForOldSolutions;
+					singleGroup.DefaultProhibitFutherReview = newSettings.NewDefaultProhibitFurtherReview ?? singleGroup.DefaultProhibitFutherReview;
+					singleGroup.CanUsersSeeGroupProgress = newSettings.NewCanUsersSeeGroupProgress ?? singleGroup.CanUsersSeeGroupProgress;
+					singleGroup.SuperGroupId = newSettings.SuperGroupId ?? singleGroup.SuperGroupId;
+
+					break;
+				}
+				case SuperGroup superGroup:
+					superGroup.DistributionTableLink = newSettings.DistributionTableLink ?? superGroup.DistributionTableLink;
+
+					break;
+			}
+
+			db.Set<T>().Update(group);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+			return group;
+		}
+
 		public async Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings newSettings)
 		{
-			var groupBase = await FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
-			groupBase.Name = newSettings.NewName ?? groupBase.Name;
-
-			if (groupBase is SingleGroup singleGroup)
-			{
-				singleGroup.IsManualCheckingEnabled = newSettings.NewIsManualCheckingEnabled ?? singleGroup.IsManualCheckingEnabled;
-
-				if (!singleGroup.IsManualCheckingEnabledForOldSolutions && newSettings.NewIsManualCheckingEnabledForOldSolutions == true)
-				{
-					var groupMembers = singleGroup.NotDeletedMembers.Select(m => m.UserId).ToList();
-					await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(singleGroup.CourseId, groupMembers).ConfigureAwait(false);
-				}
-
-				singleGroup.IsManualCheckingEnabledForOldSolutions = newSettings.NewIsManualCheckingEnabledForOldSolutions ?? singleGroup.IsManualCheckingEnabledForOldSolutions;
-				singleGroup.DefaultProhibitFutherReview = newSettings.NewDefaultProhibitFurtherReview ?? singleGroup.DefaultProhibitFutherReview;
-				singleGroup.CanUsersSeeGroupProgress = newSettings.NewCanUsersSeeGroupProgress ?? singleGroup.CanUsersSeeGroupProgress;
-				singleGroup.SuperGroupId = newSettings.SuperGroupId ?? singleGroup.SuperGroupId;
-			}
-
-			if (groupBase is SuperGroup superGroup)
-			{
-				superGroup.DistributionTableLink = newSettings.DistributionTableLink;
-			}
-
-			await db.SaveChangesAsync().ConfigureAwait(false);
-
-			return groupBase;
+			return await ModifyGroupAsync<GroupBase>(groupId, newSettings);
 		}
 
 		public async Task ChangeGroupOwnerAsync(int groupId, string newOwnerId)
@@ -136,15 +169,38 @@ namespace Database.Repos.Groups
 		}
 
 		[ItemCanBeNull]
+		public Task<T> FindGroupByIdAsync<T>(int groupId) where T : GroupBase
+		{
+			return db.Set<T>().FirstOrDefaultAsync(g => g.Id == groupId && !g.IsDeleted);
+		}
+
+		[ItemCanBeNull]
 		public Task<GroupBase> FindGroupByIdAsync(int groupId)
 		{
-			return db.Groups.FirstOrDefaultAsync(g => g.Id == groupId && !g.IsDeleted);
+			return FindGroupByIdAsync<GroupBase>(groupId);
+		}
+
+		[ItemCanBeNull]
+		public async Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false)
+		{
+			return await db
+				.Set<SingleGroup>()
+				.Where(g => g.SuperGroupId == superGroupId && !g.IsDeleted && g.IsArchived == includeArchived)
+				.ToListAsync();
 		}
 
 		[ItemCanBeNull]
 		public Task<GroupBase> FindGroupByInviteHashAsync(Guid hash)
 		{
-			return db.Groups.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
+			return db.Groups
+				.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
+		}
+		
+		[ItemCanBeNull]
+		public Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash)
+		{
+			return db.Groups
+				.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted);
 		}
 
 		public IQueryable<GroupBase> GetCourseGroupsQueryable(string courseId, GroupQueryType groupType, bool includeArchived = false)

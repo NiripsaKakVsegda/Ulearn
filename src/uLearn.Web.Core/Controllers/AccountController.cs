@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Database;
 using Database.Models;
 using Database.Repos;
@@ -41,7 +42,6 @@ public class AccountController : BaseUserController
 	private readonly ISlideCheckingsRepo slideCheckingsRepo;
 	private readonly AuthenticationManager authenticationManager;
 	private readonly UlearnDb db;
-	private readonly AutoGroupManager autoGroupManager;
 
 	private readonly string telegramSecret;
 	private static readonly WebConfiguration configuration;
@@ -71,8 +71,7 @@ public class AccountController : BaseUserController
 		IGroupMembersRepo groupMembersRepo,
 		IGroupAccessesRepo groupAccessesRepo,
 		WebConfiguration configuration,
-		AuthenticationManager authenticationManager, 
-		AutoGroupManager autoGroupManager)
+		AuthenticationManager authenticationManager)
 		: base(userManager, usersRepo, configuration)
 	{
 		this.db = db;
@@ -86,7 +85,6 @@ public class AccountController : BaseUserController
 		this.tempCoursesRepo = tempCoursesRepo;
 		this.slideCheckingsRepo = slideCheckingsRepo;
 		this.authenticationManager = authenticationManager;
-		this.autoGroupManager = autoGroupManager;
 		this.groupMembersRepo = groupMembersRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 
@@ -216,7 +214,7 @@ public class AccountController : BaseUserController
 	{
 		var userId = User.GetUserId();
 		var group = await groupsRepo.FindGroupByInviteHashAsync(hash);
-		
+
 		if (group is not { IsInviteLinkEnabled: true })
 			return new NotFoundResult();
 
@@ -243,16 +241,8 @@ public class AccountController : BaseUserController
 		}
 
 		if (group is SuperGroup superGroup)
-		{
-			var groups = await groupsRepo.GetCourseGroupsQueryable(group.CourseId, GroupQueryType.SingleGroup)
-				.Where(x => ((SingleGroup)x).SuperGroupId == superGroup.Id)
-				.ToDictionaryAsync(x => x.Name, x => (SingleGroup)x);
-			var remoteData = await autoGroupManager.GetRemoteDataAsync(superGroup.DistributionTableLink);
-			var user = await usersRepo.FindUserById(userId);
-			foreach (var data in remoteData.Where(x => x.student == $"{user.FirstName} {user.LastName}" || x.student == $"{user.LastName} {user.FirstName}"))
-				await TryJoin(groups[data.group]);
-		}
-		
+			log.Warn($"Attempt to get old view for super-group {group.Id} in course {group.CourseId}");
+
 		return View(group);
 	}
 
@@ -700,31 +690,35 @@ public class AccountController : BaseUserController
 			await authenticationManager.LogoutAsync(HttpContext);
 			return RedirectToAction("Index", "Login");
 		}
-
-		var nameChanged = user.UserName != userModel.Name;
-		if (nameChanged && await userManager.FindByNameAsync(userModel.Name) != null)
+		
+		/* Some users enter text with trailing whitespaces. Remove them (not users, but spaces!) */
+		var newName = userModel.Name.Trim();
+		var newEmail = userModel.Email?.Trim();
+		var newFirstName = userModel.FirstName.Trim();
+		var newLastName= userModel.LastName.Trim();
+		
+		var nameChanged = user.UserName != newName;
+		if (nameChanged && await userManager.FindByNameAsync(newName) != null)
 		{
-			log.Warn($"ChangeDetailsPartial(): name {userModel.Name} is already taken");
+			log.Warn($"ChangeDetailsPartial(): name {newName} is already taken");
 			return RedirectToAction("Manage", new { Message = ManageMessageId.NameAlreadyTaken });
 		}
-
-		/* Some users enter email with trailing whitespaces. Remove them (not users, but spaces!) */
-		userModel.Email = (userModel.Email ?? "").Trim();
-		var emailChanged = string.Compare(user.Email, userModel.Email, StringComparison.OrdinalIgnoreCase) != 0;
+		
+		var emailChanged = string.Compare(user.Email, newEmail, StringComparison.OrdinalIgnoreCase) != 0;
 
 		if (emailChanged)
 		{
-			if (!await CanUserSetThisEmail(user, userModel.Email))
+			if (!await CanUserSetThisEmail(user, newEmail))
 			{
-				log.Warn($"ChangeDetailsPartial(): email {userModel.Email} is already taken");
+				log.Warn($"ChangeDetailsPartial(): email {newEmail} is already taken");
 				return RedirectToAction("Manage", new { Message = ManageMessageId.EmailAlreadyTaken });
 			}
 		}
 
-		user.UserName = userModel.Name;
-		user.FirstName = userModel.FirstName;
-		user.LastName = userModel.LastName;
-		user.Email = userModel.Email;
+		user.UserName = newName;
+		user.FirstName = newFirstName;
+		user.LastName = newLastName;
+		user.Email = newEmail;
 		user.Gender = userModel.Gender;
 		user.LastEdit = DateTime.Now;
 		if (!string.IsNullOrEmpty(userModel.Password))

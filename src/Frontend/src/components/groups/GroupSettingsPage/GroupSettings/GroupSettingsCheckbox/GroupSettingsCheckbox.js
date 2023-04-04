@@ -25,15 +25,15 @@ class GroupSettingsCheckbox extends Component {
 
 		return (
 			<React.Fragment>
-				<label className={styles["settings-checkbox"]}>
-					{this.renderSettings(canStudentsSeeGroupProgress, "Открыть ведомость курса студентам", this.bindProgress)}
+				<label className={ styles["settings-checkbox"] }>
+					{ this.renderSettings(canStudentsSeeGroupProgress, "Открыть ведомость курса студентам", this.bindProgress) }
 				</label>
-				<label className={styles["settings-checkbox"]}>
-					{this.renderSettings(isManualCheckingEnabled,
+				<label className={ styles["settings-checkbox"] }>
+					{ this.renderSettings(isManualCheckingEnabled,
 						"Включить код-ревью и ручную проверку тестов для участников группы",
-						this.bindManualChecking)}
+						this.bindManualChecking) }
 				</label>
-				{isManualCheckingEnabled && this.renderReviewSettings()}
+				{ isManualCheckingEnabled && this.renderReviewSettings() }
 			</React.Fragment>
 		)
 	}
@@ -43,17 +43,17 @@ class GroupSettingsCheckbox extends Component {
 
 		return (
 			<React.Fragment>
-				<label className={styles["settings-checkbox"]}>
-					{this.renderSettings(isManualCheckingEnabledForOldSolutions,
+				<label className={ styles["settings-checkbox"] }>
+					{ this.renderSettings(isManualCheckingEnabledForOldSolutions,
 						"Отправить на код-ревью и ручную проверку тестов старые решения участников",
-						this.bindOldSolution)}
-					<p className={styles["settings-comment"]}>Если эта опция выключена, то при вступлении
+						this.bindOldSolution) }
+					<p className={ styles["settings-comment"] }>Если эта опция выключена, то при вступлении
 						студента в группу его старые решения не будут отправлены на код-ревью</p>
 				</label>
-				<label className={styles["settings-checkbox"]}>
-					{this.renderSettings(defaultProhibitFurtherReview, "По умолчанию запрещать второе прохождение код-ревью",
-						this.bindReview)}
-					<p className={styles["settings-comment"]}>В каждом код-ревью вы сможете выбирать,
+				<label className={ styles["settings-checkbox"] }>
+					{ this.renderSettings(defaultProhibitFurtherReview, "По умолчанию запрещать второе прохождение код-ревью",
+						this.bindReview) }
+					<p className={ styles["settings-comment"] }>В каждом код-ревью вы сможете выбирать,
 						разрешить ли студенту второй раз отправить свой код на проверку.
 						Эта опция задаёт лишь значение по умолчанию</p>
 				</label>
@@ -63,12 +63,17 @@ class GroupSettingsCheckbox extends Component {
 
 	renderSettings(checked, text, callback) {
 		return (
-			<Checkbox checked={checked} onValueChange={callback}>{text}</Checkbox>
+			<Checkbox
+				initialIndeterminate={ checked === undefined }
+				checked={ checked }
+				onValueChange={ callback }>
+				{ text }
+			</Checkbox>
 		)
 	};
 
 	onChange = (field, value) => {
-		const {onChangeSettings} = this.props;
+		const { onChangeSettings } = this.props;
 		onChangeSettings(mapToServerName[field], value);
 	};
 }

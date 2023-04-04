@@ -14,6 +14,17 @@ namespace Database.Repos.Groups
 			bool canUsersSeeGroupProgress = true,
 			bool defaultProhibitFurtherReview = true,
 			bool isInviteLinkEnabled = true);
+
+		Task<SingleGroup> CreateSingleGroupAsync(
+			string courseId,
+			string name,
+			string ownerId,
+			int? superGroupId = null,
+			bool isManualCheckingEnabled = false,
+			bool isManualCheckingEnabledForOldSolutions = false,
+			bool canUsersSeeGroupProgress = true,
+			bool defaultProhibitFurtherReview = true,
+			bool isInviteLinkEnabled = true);
 		
 		Task<SuperGroup> CreateSuperGroupAsync(
 			string courseId,

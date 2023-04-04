@@ -16,7 +16,7 @@ import * as googleSheet from "./googleSheet";
 import * as deadLines from "./deadLines";
 import * as additionalContent from "./additionalContent";
 import * as selfCheckups from "./selfCheckups";
-import * as autoGroups from "./autoGroups";
+import * as superGroups from "./superGroups";
 import * as signalR from "@microsoft/signalr";
 import config from 'src/proxyConfig';
 
@@ -246,7 +246,7 @@ const api = {
 	deadLines,
 	additionalContent,
 	selfCheckups,
-	autoGroups,
+	superGroups: superGroups,
 };
 
 export default api;

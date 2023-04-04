@@ -20,15 +20,27 @@ namespace Database.Repos.Groups
 			bool defaultProhibitFurtherReview = true,
 			bool isInviteLinkEnabled = true);
 
+		Task<SingleGroup> CreateSingleGroupAsync(string courseId,
+			string name,
+			string ownerId,
+			int? superGroupId = null,
+			bool isManualCheckingEnabled = false,
+			bool isManualCheckingEnabledForOldSolutions = false,
+			bool canUsersSeeGroupProgress = true,
+			bool defaultProhibitFurtherReview = true,
+			bool isInviteLinkEnabled = true);
+
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
-
 		Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings settings);
-
+		Task<T> ModifyGroupAsync<T>(int groupId, GroupSettings newSettings) where T : GroupBase;
 		Task ChangeGroupOwnerAsync(int groupId, string newOwnerId);
 		Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived);
 		Task DeleteGroupAsync(int groupId);
+		Task<T> FindGroupByIdAsync<T>(int groupId) where T : GroupBase;
 		Task<GroupBase> FindGroupByIdAsync(int groupId);
+		Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false);
 		Task<GroupBase> FindGroupByInviteHashAsync(Guid hash);
+		Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash);
 		Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false);
 		Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
 		Task EnableInviteLinkAsync(int groupId, bool isEnabled);

@@ -1,89 +1,87 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import { Modal, Input, Button, Tooltip, Link } from 'ui';
 
-import styles from "./createSuperGroupModal.less";
 import api from "src/api";
 import { GroupType } from "src/models/groups";
 
+import texts from "./CreateSuperGroupModal.texts";
+import styles from "./createSuperGroupModal.less";
+
 interface State {
-	name: string,
-	error: string,
-	loading: boolean,
+	name: string;
+	error?: string;
+	loading: boolean;
 }
 
 interface Props {
 	onCloseModal: () => void;
-	onSubmit: (groupId: string) => void;
+	onSubmit: (groupId: number) => void;
 	courseId: string;
 }
 
-export default class CreateSuperGroupModal extends Component<Props, State> {
-	state = {
+export default function CreateSuperGroupModal({ onCloseModal, onSubmit, courseId }: Props) {
+	const [state, setState] = useState<State>({
 		name: "",
-		error: "",
 		loading: false,
-	};
+	});
 
-	render() {
-		const { onCloseModal } = this.props;
+	return (
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		<Modal onClose={ onCloseModal } width={ "100%" } alignTop={ true }>
+			<Modal.Header>{ texts.title }</Modal.Header>
+			{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
+			{/* @ts-ignore */}
+			<Modal.Body>
+				<form onSubmit={ _onSubmit }>
+					{ renderModalBody() }
+					<Button
+						use={ "primary" }
+						size={ "medium" }
+						type={ "submit" }
+						disabled={ !state.name }
+						loading={ state.loading }>
+						{ texts.submit }
+					</Button>
+				</form>
+			</Modal.Body>
+		</Modal>
+	);
+
+	function renderModalBody() {
+		const { name, error } = state;
 
 		return (
-			<Modal onClose={ onCloseModal } width="100%" alignTop={ true }>
-				<Modal.Header>Название потока</Modal.Header>
-				<Modal.Body>
-					<form onSubmit={ this.onSubmit }>
-						{ this.renderModalBody() }
-						<Button
-							use="primary"
-							size="medium"
-							type="submit"
-							disabled={ !this.state.name }
-							loading={ this.state.loading }>
-							Создать
-						</Button>
-					</form>
-				</Modal.Body>
-			</Modal>
-		)
-	}
-
-	renderModalBody() {
-		const { name, error } = this.state;
-
-		return (
-			<div className={ styles["modal-content"] }>
-				<Tooltip render={ this.checkError } trigger='focus' pos="right top">
-					<Input placeholder="КН-201 УрФУ 2017"
-						   maxLength={300}
+			<div className={ styles.modalContent }>
+				<Tooltip render={ checkError } trigger={ "focus" } pos={ "right top" }>
+					<Input placeholder={ texts.groupNamePlaceholder }
+						   maxLength={ 300 }
 						   value={ name || '' }
-						   error={ !error }
-						   onValueChange={ this.onChangeInput }
-						   onFocus={ this.onFocus }
+						   error={ !!error }
+						   onValueChange={ onChangeInput }
+						   onFocus={ onFocus }
 						   autoFocus/>
 				</Tooltip>
-				<p className={ styles["common-info"] }>
-					Вы можете создать как поток групп, так и одиночную группу.<br/>
-					Создание сразу нескольких групп может быть упрощено через автоматическое<br/>
-					создание с помощью гугл-таблицы (<Link>инструкция</Link>).
+				<p className={ styles.commonInfo }>
+					{ texts.info }
 				</p>
 			</div>
-		)
+		);
 	}
 
-	onSubmit = async (e: React.SyntheticEvent) => {
-		const { name } = this.state;
-		const { onCloseModal, onSubmit, courseId } = this.props;
+	async function _onSubmit(e: React.SyntheticEvent) {
+		const { name } = state;
 
 		e.preventDefault();
 
 		if(!name) {
-			this.setState({
-				error: 'Введите название потока',
+			updateState({
+				error: texts.errors.noNameOnSubmit,
 			});
 			return;
 		}
 
-		this.setState({ loading: true, });
+		updateState({ loading: true, });
 		try {
 			const newGroup = await api.groups.createGroup(courseId, name, GroupType.SuperGroup);
 			onCloseModal();
@@ -91,28 +89,35 @@ export default class CreateSuperGroupModal extends Component<Props, State> {
 		} catch (e) {
 			console.error(e);
 		} finally {
-			this.setState({ loading: false, });
+			updateState({ loading: false, });
 		}
-	};
+	}
 
-	checkError = () => {
-		const { error } = this.state;
+	function checkError() {
+		const { error } = state;
 
 		if(!error) {
 			return null;
 		}
 		return error;
-	};
+	}
 
-	onFocus = () => {
-		this.setState({
+	function onFocus() {
+		updateState({
 			error: "",
 		});
-	};
+	}
 
-	onChangeInput = (value: string) => {
-		this.setState({
+	function onChangeInput(value: string) {
+		updateState({
 			name: value,
 		});
-	};
+	}
+
+	function updateState(updateFields: Partial<State>) {
+		setState(oldState => ({
+			...oldState,
+			...updateFields
+		}));
+	}
 }

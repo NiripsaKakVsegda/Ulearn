@@ -14,6 +14,12 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 		public int Id { get; set; }
 		
 		[DataMember]
+		public string CourseTitle { get; set; }
+		
+		[DataMember]
+		public string CourseId { get; set; }
+		
+		[DataMember]
 		public GroupType GroupType { get; set; }
 
 		[DataMember]

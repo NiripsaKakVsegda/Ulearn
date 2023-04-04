@@ -73,7 +73,7 @@ namespace Database.Repos
 		)
 		{
 			var groups = db.Groups
-				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.GroupType == GroupType.SingleGroup)
 				.Select(g => g.Id);
 			var userIdAsString = userId.ToString();
 			var userGroupsIds = await db.GroupMembers

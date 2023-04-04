@@ -3,6 +3,7 @@ import { connect, } from "react-redux";
 import { Dispatch } from "redux";
 import { Navigate } from 'react-router-dom';
 
+import SuperGroupPage from "src/components/groups/GroupSettingsPage/SuperGroup/SuperGroupPage";
 import api from "src/api";
 import CourseLoader from "src/components/course/Course/CourseLoader";
 import { Button, Link, Tabs, Toast } from "ui";
@@ -14,6 +15,7 @@ import { changeCurrentCourseAction } from "src/actions/course";
 import GroupAdditionalContent
 	from "src/components/groups/GroupSettingsPage/GroupAdditionalContent/GroupAdditionalContent";
 import GroupDeadLines from "src/components/groups/GroupSettingsPage/GroupDeadLines/GroupDeadLines";
+import SettingsType from "src/components/groups/GroupSettingsPage/SettingsType";
 import { withOldRouter } from "src/utils/router";
 import { GroupAccessesInfo, GroupInfo, GroupScoringGroupInfo, GroupType } from "src/models/groups";
 import { ShortUserInfo } from "src/models/users";
@@ -22,9 +24,8 @@ import { RootState } from "src/redux/reducers";
 import { DispatchFromRedux, Props, PropsFromRedux, State, } from './GroupPage.types';
 import styles from "./groupPage.less";
 import texts from "./GroupPage.texts";
-import { SuperGroupPage } from "./SuperGroupPage";
 
-const pages = ['settings', 'members', 'additional-content', 'dead-lines'];
+const pages = [...Object.values(SettingsType), 'members'];
 
 function GroupPage(props: Props) {
 	const [state, setState] = useState<State>({
@@ -59,13 +60,14 @@ function GroupPage(props: Props) {
 		navigate,
 	} = props;
 
-	useEffect(componentDidMount, []);
 
 	const courseId = params.courseId.toLowerCase();
 	const { groupPage } = params;
 	const groupId = parseInt(params.groupId || '0');
 
-	if(!group || loadingScores || loadingAllSettings) {
+	useEffect(componentDidMount, [groupId, courseId]);
+
+	if(!group || loadingScores || loadingAllSettings || group.id !== groupId) {
 		return <CourseLoader/>;
 	}
 
@@ -80,11 +82,20 @@ function GroupPage(props: Props) {
 		}
 
 		if(loadedGroup.groupType === GroupType.SuperGroup) {
-			return <SuperGroupPage groupInfo={loadedGroup} goToPrevPage={goToPrevPage} scores={scores}/>;
+			const groupIdString = loadedGroup.id.toString();
+			if(!location.pathname.endsWith(groupIdString)) {
+				const pathToSuperGroupWithoutSettings = location.pathname.substring(0,
+					location.pathname.indexOf(groupIdString) + groupIdString.length);
+				navigate(
+					pathToSuperGroupWithoutSettings,
+					{ replace: true }
+				);
+			}
+			return <SuperGroupPage groupInfo={ loadedGroup } scores={ scores }/>;
 		}
 
 		if(!groupPage) {
-			return <Navigate to={ `/${ courseId }/groups/${ groupId }/settings` }/>;
+			return <Navigate replace to={ `/${ courseId }/groups/${ groupId }/${ SettingsType.settings }` }/>;
 		}
 
 		const rolesByCourse = account.roleByCourse;
@@ -101,7 +112,7 @@ function GroupPage(props: Props) {
 			<Page metaTitle={ `Группа ${ loadedGroup.name }` }>
 				{ renderHeader() }
 				<div className={ styles.content }>
-					{ groupPage === "settings" && renderSettings() }
+					{ groupPage === SettingsType.settings && renderSettings() }
 					{ groupPage === "members" &&
 						<GroupMembers
 							addGroupAccesses={ groupsApi.addGroupAccesses }
@@ -118,7 +129,7 @@ function GroupPage(props: Props) {
 							group={ loadedGroup }
 							onChangeGroupOwner={ onChangeGroupOwner }/>
 					}
-					{ groupPage === "additional-content" &&
+					{ groupPage === SettingsType.additional &&
 						<GroupAdditionalContent
 							courseId={ courseId }
 							groupId={ groupId }
@@ -129,7 +140,7 @@ function GroupPage(props: Props) {
 							user={ account }
 						/>
 					}
-					{ groupPage === "dead-lines" &&
+					{ groupPage === SettingsType.deadlines &&
 						<GroupDeadLines
 							courseId={ courseId }
 							groupId={ groupId }
@@ -148,6 +159,10 @@ function GroupPage(props: Props) {
 	}
 
 	function componentDidMount() {
+		setState(oldState => ({
+			...oldState,
+			group: undefined,
+		}));
 		enterToCourse(courseId);
 
 		loadGroupScores(groupId);
@@ -202,7 +217,7 @@ function GroupPage(props: Props) {
 
 	function renderHeader() {
 		if(!groupPage || !pages.includes(groupPage)) {
-			return <Navigate to={ `/${ courseId }/groups/${ groupId }/settings` }/>;
+			return <Navigate to={ `/${ courseId }/groups/${ groupId }/${ SettingsType.settings }` }/>;
 		}
 
 		return (
@@ -238,11 +253,11 @@ function GroupPage(props: Props) {
 					onChangeName={ onChangeName }
 					onChangeSettings={ onChangeSettings }
 					onChangeScores={ onChangeScores }
-					isManualCheckingEnabled={group?.isManualCheckingEnabled || false}
-					canStudentsSeeGroupProgress={group?.canStudentsSeeGroupProgress || false}
-					isManualCheckingEnabledForOldSolutions={group?.isManualCheckingEnabledForOldSolutions || false}
-					defaultProhibitFurtherReview={group?.defaultProhibitFurtherReview || false}
-					canChangeName={true}
+					isManualCheckingEnabled={ group?.isManualCheckingEnabled || false }
+					canStudentsSeeGroupProgress={ group?.canStudentsSeeGroupProgress || false }
+					isManualCheckingEnabledForOldSolutions={ group?.isManualCheckingEnabledForOldSolutions || false }
+					defaultProhibitFurtherReview={ group?.defaultProhibitFurtherReview || false }
+					canChangeName={ true }
 				/>
 				<Button
 					size="medium"

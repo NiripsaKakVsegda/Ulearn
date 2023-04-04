@@ -52,6 +52,7 @@ using Ulearn.Web.Api.Models.Responses.SlideBlocks;
 using Ulearn.Web.Api.Swagger;
 using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.Courses;
+using Ulearn.Web.Api.Utils.SuperGroup;
 using Ulearn.Web.Api.Workers;
 using Vostok.Applications.AspNetCore.Builders;
 using Vostok.Hosting.Abstractions;
@@ -273,7 +274,6 @@ namespace Ulearn.Web.Api
 			services.AddSingleton<IMasterCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 			services.AddSingleton<ISlaveCourseManager>(x => x.GetRequiredService<MasterCourseManager>());
 			services.AddSingleton<ICourseUpdater>(x => x.GetRequiredService<MasterCourseManager>());
-			services.AddSingleton<AutoGroupManager>();
 
 			services.AddScoped<IAuthorizationHandler, CourseRoleAuthorizationHandler>();
 			services.AddScoped<IAuthorizationHandler, CourseAccessAuthorizationHandler>();
@@ -294,6 +294,8 @@ namespace Ulearn.Web.Api
 			services.AddScoped<TempCourseRemover>();
 			services.AddScoped<ControllerUtils>();
 			services.AddScoped<StatisticModelUtils>();
+			services.AddSingleton<SuperGroupGoogleSheetCache>();
+			services.AddSingleton<SuperGroupManager>();
 			services.AddSingleton<IAntiPlagiarismClient>(sp =>
 			{
 				var antiplagiarismClientConfiguration = ((IOptions<WebApiConfiguration>)sp.GetService(typeof(IOptions<WebApiConfiguration>))).Value.AntiplagiarismClient;

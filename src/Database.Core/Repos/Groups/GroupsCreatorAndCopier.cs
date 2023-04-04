@@ -55,13 +55,47 @@ namespace Database.Repos.Groups
 			return group;
 		}
 		
+		public async Task<SingleGroup> CreateSingleGroupAsync(
+			string courseId,
+			string name,
+			string ownerId,
+			int? superGroupId = null,
+			bool isManualCheckingEnabled = false,
+			bool isManualCheckingEnabledForOldSolutions = false,
+			bool canUsersSeeGroupProgress = true,
+			bool defaultProhibitFurtherReview = true,
+			bool isInviteLinkEnabled = true)
+		{
+			log.Info($"Создаю новую группу в курсе {courseId}: «{name}»");
+			var group = new SingleGroup
+			{
+				CourseId = courseId,
+				Name = name,
+				OwnerId = ownerId,
+				CreateTime = DateTime.Now,
+				SuperGroupId = superGroupId,
+
+				IsManualCheckingEnabled = isManualCheckingEnabled,
+				IsManualCheckingEnabledForOldSolutions = isManualCheckingEnabledForOldSolutions,
+				CanUsersSeeGroupProgress = canUsersSeeGroupProgress,
+				DefaultProhibitFutherReview = defaultProhibitFurtherReview,
+
+				InviteHash = Guid.NewGuid(),
+				IsInviteLinkEnabled = isInviteLinkEnabled,
+			};
+			db.Groups.Add(group);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+
+			return group;
+		}
+
 		public async Task<SuperGroup> CreateSuperGroupAsync(
 			string courseId,
 			string name,
 			string ownerId,
 			bool isInviteLinkEnabled = true)
 		{
-			log.Info($"Создаю новый поток в курсе {courseId}: «{name}»");
+			log.Info($"Создаю новую авто группу «{name}» в курсе «{courseId}»");
 			var group = new SuperGroup
 			{
 				CourseId = courseId,
@@ -71,8 +105,9 @@ namespace Database.Repos.Groups
 
 				InviteHash = Guid.NewGuid(),
 				IsInviteLinkEnabled = isInviteLinkEnabled,
+				
 			};
-			db.SuperGroups.Add(group);
+			await db.SuperGroups.AddAsync(group);
 			await db.SaveChangesAsync().ConfigureAwait(false);
 
 			return group;

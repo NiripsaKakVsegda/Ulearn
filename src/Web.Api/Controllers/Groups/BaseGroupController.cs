@@ -21,6 +21,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			int? membersCount = null,
 			IEnumerable<GroupAccess> accesses = null,
 			bool addGroupApiUrl = false,
+			bool? isLinkEnabled = null,
 			bool? isUserMemberOfGroup = null)
 		{
 			if (group == null)
@@ -46,16 +47,23 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			{
 				distributionTableLink = superGroup.DistributionTableLink;
 			}
-			
+
+			var course = courseStorage.GetCourse(group.CourseId);
+
+			if (course == null)
+				throw new ArgumentException(nameof(group.CourseId));
+
 			return new GroupInfo
 			{
 				Id = group.Id,
+				CourseTitle = course.Title,
+				CourseId = course.Id,
 				GroupType = group.GroupType,
 				CreateTime = group.CreateTime,
 				Name = group.Name,
 				Owner = BuildShortUserInfo(group.Owner),
 				InviteHash = group.InviteHash,
-				IsInviteLinkEnabled = group.IsInviteLinkEnabled,
+				IsInviteLinkEnabled = isLinkEnabled ?? group.IsInviteLinkEnabled,
 				IsArchived = group.IsArchived,
 				AreYouStudent = isUserMemberOfGroup,
 

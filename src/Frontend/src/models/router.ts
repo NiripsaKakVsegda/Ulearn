@@ -7,6 +7,7 @@ export interface MatchParams {
 	groupPage?: string; // if not undefined => groupId is not undefined
 	taskId: string;
 	groupsSettings?: string; //start page if navigated from /course/groups/
+	hash?: string; //join group hash
 }
 
 export type WithRouter = WithLocation & WithNavigate & WithParams;

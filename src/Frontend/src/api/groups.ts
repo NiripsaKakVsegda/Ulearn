@@ -10,7 +10,7 @@ import {
 import { buildQuery } from "src/utils";
 import { Dispatch } from "redux";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
-import { ApplyMergeRequest } from "../models/autoGroup";
+import { CreateGroupsRequestParameters } from "../models/superGroup";
 
 // Groups
 export function getCourseGroups(courseId: string, userId?: string,): Promise<{ groups: GroupInfo[] }> {
@@ -58,7 +58,7 @@ export function copyGroup(groupId: number, destinationCourseId: string,
 	return api.post(url);
 }
 
-export function saveGroupSettings(groupId: number, groupSettings: Record<string, unknown>): Promise<GroupInfo> {
+export function saveGroupSettings(groupId: number, groupSettings: Partial<GroupInfo>): Promise<GroupInfo> {
 	return api.patch(`${ groups }/${ groupId }`,
 		api.createRequestParams(groupSettings));
 }
@@ -115,7 +115,12 @@ export function resetLimitsForStudents(groupId: number, studentIds: string[]): P
 		api.createRequestParams({ studentIds }));
 }
 
-// AutoGroup
-export function updateSupergroup(groupId: number, request: ApplyMergeRequest): Promise<number[]> {
-	return api.post(`${ groups }/${ groupId }/update-supergroup`, api.createRequestParams({ ...request }))
+export function joinGroupByInviteHash(inviteHash: string): Promise<Response> {
+	const url = `${ groups }/${ inviteHash }/join`;
+	return api.post(url);
+}
+
+export function getGroupByInviteHash(inviteHash: string): Promise<GroupInfo> {
+	const url = `${ groups }/${ inviteHash }`;
+	return api.get(url);
 }

@@ -7,6 +7,7 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -82,7 +83,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<ActionResult<GroupInfo>> Group(int groupId)
+		public async Task<ActionResult<GroupInfo>> Group([FromRoute] int groupId)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 			var members = await groupMembersRepo.GetGroupMembersAsync(groupId).ConfigureAwait(false);
@@ -95,7 +96,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		[HttpPatch]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<ActionResult<GroupInfo>> UpdateGroup(int groupId, [FromBody] UpdateGroupParameters parameters)
+		public async Task<ActionResult<GroupInfo>> UpdateGroup([FromRoute] int groupId, [FromBody] UpdateGroupParameters parameters)
 		{
 			var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
 			if (!hasEditAccess)
@@ -106,17 +107,24 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 
 			var newName = parameters.Name ?? group.Name;
-			await groupsRepo.ModifyGroupAsync(
-				groupId, new GroupSettings
-				{
-					NewName = newName,
-					NewIsManualCheckingEnabled = parameters.IsManualCheckingEnabled,
-					NewIsManualCheckingEnabledForOldSolutions = parameters.IsManualCheckingEnabledForOldSolutions,
-					NewDefaultProhibitFurtherReview = parameters.DefaultProhibitFurtherReview,
-					NewCanUsersSeeGroupProgress = parameters.CanStudentsSeeGroupProgress
-				}
-				
-			).ConfigureAwait(false);
+			var settings = new GroupSettings
+			{
+				NewName = newName,
+				NewIsManualCheckingEnabled = parameters.IsManualCheckingEnabled,
+				NewIsManualCheckingEnabledForOldSolutions = parameters.IsManualCheckingEnabledForOldSolutions,
+				NewDefaultProhibitFurtherReview = parameters.DefaultProhibitFurtherReview,
+				NewCanUsersSeeGroupProgress = parameters.CanStudentsSeeGroupProgress
+			};
+
+			switch (group)
+			{
+				case SingleGroup:
+					await groupsRepo.ModifyGroupAsync(groupId, settings).ConfigureAwait(false);
+					break;
+				case SuperGroup:
+					await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, settings).ConfigureAwait(false);
+					break;
+			}
 
 			if (parameters.IsArchived.HasValue)
 			{
@@ -134,39 +142,12 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			return BuildGroupInfo(await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false));
 		}
 
-		[HttpPost]
-		[Route("update-supergroup")]
-		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<ActionResult<int[]>> UpdateSupergroup(int groupId, [FromBody] ApplyMergeRequest request)
-		{
-			// todo khapov: перенести (или вообще убрать и просто дергать апи)
-			var superGroup = await groupsRepo.FindGroupByIdAsync(groupId) as SuperGroup;
-			var newGroups = new List<int>(request.Merge.NewGroups.Length);
-			foreach (var groupName in request.Merge.NewGroups)
-			{
-				var newGroup = await groupsRepo.CreateGroupAsync(superGroup.CourseId,
-					groupName,
-					superGroup.OwnerId,
-					GroupType.SingleGroup,
-					request.IsManualCheckingEnabled,
-					request.IsManualCheckingEnabledForOldSolutions,
-					request.CanStudentsSeeGroupProgress,
-					request.DefaultProhibitFurtherReview);
-				newGroups.Add(newGroup.Id);
-				await groupsRepo.ModifyGroupAsync(newGroup.Id, new GroupSettings { SuperGroupId = superGroup.Id });
-			}
-
-			await groupsRepo.ModifyGroupAsync(groupId, new GroupSettings { DistributionTableLink = request.DistributionLink });
-			
-			return Ok(newGroups.ToArray());
-		}
-
 		/// <summary>
 		/// Удалить группу
 		/// </summary>
 		[HttpDelete]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<IActionResult> DeleteGroup(int groupId)
+		public async Task<IActionResult> DeleteGroup([FromRoute] int groupId)
 		{
 			var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
 			if (!hasEditAccess)
@@ -184,7 +165,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[HttpPut("owner")]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
 		[SwaggerResponse((int)HttpStatusCode.NotFound, Description = "Can't find user or user is not an instructor")]
-		public async Task<IActionResult> ChangeOwner(int groupId, [FromBody] ChangeOwnerParameters parameters)
+		public async Task<IActionResult> ChangeOwner([FromRoute] int groupId, [FromBody] ChangeOwnerParameters parameters)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 
@@ -218,10 +199,10 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[SwaggerResponse((int)HttpStatusCode.Created, Description = "Group has been copied", Type = typeof(CopyGroupResponse))]
 		[SwaggerResponse((int)HttpStatusCode.NotFound, Description = "Course not found")]
 		[SwaggerResponse((int)HttpStatusCode.Forbidden, Description = "You have no access to destination course. You should be instructor or course admin.")]
-		public async Task<ActionResult<CopyGroupResponse>> Copy(int groupId, [FromQuery] CopyGroupParameters parameters)
+		public async Task<ActionResult<CopyGroupResponse>> Copy([FromRoute] int groupId, [FromQuery] CopyGroupParameters parameters)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) as SingleGroup;
-			if (! courseStorage.HasCourse(parameters.DestinationCourseId))
+			if (!courseStorage.HasCourse(parameters.DestinationCourseId))
 				return NotFound(new ErrorResponse($"Course {parameters.DestinationCourseId} not found"));
 			if (!await CanCreateGroupInCourseAsync(UserId, parameters.DestinationCourseId).ConfigureAwait(false))
 				return Forbid();
@@ -251,7 +232,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// Список scoring-group курса (примеры: Упражнения, Активность на практике) с информаций о том, включены ли они для этой группы
 		/// </summary>
 		[HttpGet("scores")]
-		public async Task<ActionResult<GroupScoringGroupsResponse>> ScoringGroups(int groupId)
+		public async Task<ActionResult<GroupScoringGroupsResponse>> ScoringGroups([FromRoute] int groupId)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 			var course = courseStorage.FindCourse(@group.CourseId);
@@ -275,7 +256,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// Сохраняет информацию о том, какие scoring-group включены для группы
 		/// </summary>
 		[HttpPost("scores")]
-		public async Task<IActionResult> SetScoringGroups(int groupId, SetScoringGroupsParameters parameters)
+		public async Task<IActionResult> SetScoringGroups([FromRoute] int groupId, [FromBody] SetScoringGroupsParameters parameters)
 		{
 			var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
 			if (!hasEditAccess)
@@ -484,7 +465,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			}
 
 			var group = await groupsRepo.FindGroupByIdAsync(groupId);
-			var members = await groupMembersRepo.GetGroupsMembersIdsAsync(new []{ groupId });
+			var members = await groupMembersRepo.GetGroupsMembersIdsAsync(new[] { groupId });
 
 			var studentsToProcessSet = parameters.StudentIds.ToHashSet();
 			studentsToProcessSet.IntersectWith(members);
@@ -552,7 +533,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 
 			var canRevokeAccess = await groupAccessesRepo.CanRevokeAccessAsync(groupId, userId, UserId).ConfigureAwait(false) ||
-			await IsSystemAdministratorAsync().ConfigureAwait(false);
+								await IsSystemAdministratorAsync().ConfigureAwait(false);
 			if (!canRevokeAccess)
 				return Forbid();
 

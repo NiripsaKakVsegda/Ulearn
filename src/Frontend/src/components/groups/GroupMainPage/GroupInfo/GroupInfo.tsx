@@ -7,7 +7,7 @@ import { Gapped, Kebab, MenuItem } from "ui";
 import getPluralForm from "src/utils/getPluralForm";
 import { Mobile, NotMobile } from "src/utils/responsive";
 
-import { GroupInfo as GroupInfoType } from "src/models/groups";
+import { GroupInfo as GroupInfoType, GroupType } from "src/models/groups";
 
 import styles from "./groupInfo.less";
 
@@ -20,7 +20,13 @@ interface Props {
 	toggleArchived: (group: GroupInfoType, isNotArchived: boolean) => void;
 }
 
-function GroupInfo({ group, courseId, deleteGroup, toggleArchived, page, }: Props): React.ReactElement | null {
+function GroupInfo({
+	group,
+	courseId,
+	deleteGroup,
+	toggleArchived,
+	page,
+}: Props): React.ReactElement | null {
 	if(!group) {
 		return null;
 	}
@@ -41,15 +47,19 @@ function GroupInfo({ group, courseId, deleteGroup, toggleArchived, page, }: Prop
 							  className={ styles.groupLink }>
 							<h3 className={ styles["group-name"] }>{ group.name }</h3>
 						</Link>
-						<div>
-							{ studentsCount } { pluralFormOfStudents }
-						</div>
+						{ group.groupType === GroupType.SingleGroup &&
+							<div>
+								{ studentsCount } { pluralFormOfStudents }
+							</div>
+						}
 						{ renderTeachers() }
 					</header>
-					<div className={ styles["group-settings"] }>
-						{ renderSetting(isProgressEnabled, 'Ведомость включена', 'Ведомость выключена') }
-						{ renderSetting(isCodeReviewEnabled, 'Код-ревью включено', 'Код-ревью выключено') }
-					</div>
+					{ group.groupType === GroupType.SingleGroup &&
+						<div className={ styles["group-settings"] }>
+							{ renderSetting(isProgressEnabled, 'Ведомость включена', 'Ведомость выключена') }
+							{ renderSetting(isCodeReviewEnabled, 'Код-ревью включено', 'Код-ревью выключено') }
+						</div>
+					}
 				</div>
 			</div>
 			{ renderActions() }
@@ -78,7 +88,7 @@ function GroupInfo({ group, courseId, deleteGroup, toggleArchived, page, }: Prop
 		);
 	}
 
-	function renderSetting(enabled: boolean, textIfEnabled: string, textIfDisabled: string,) {
+	function renderSetting(enabled: boolean | undefined, textIfEnabled: string, textIfDisabled: string,) {
 		return (
 			<div className={ enabled ? styles["settings-on"] : styles["settings-off"] }>
 				<Gapped gap={ 5 }>
