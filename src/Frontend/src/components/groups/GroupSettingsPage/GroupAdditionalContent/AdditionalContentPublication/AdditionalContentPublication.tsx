@@ -59,7 +59,7 @@ const AdditionalContentPublication: FC<Props> = ({
 		(publishedDateTime.date !== dateTime.date || publishedDateTime.time !== dateTime.time);
 
 	const renderSaveInfoBlock = (): ReactNode => {
-		if((dateValidationInfo || timeValidationInfo) && pendingChanges) {
+		if(pendingChanges && (dateValidationInfo || timeValidationInfo)) {
 			return <Button
 				onClick={ onCancelChanges }
 				use={ 'link' }
@@ -117,8 +117,7 @@ const AdditionalContentPublication: FC<Props> = ({
 			<td>
 				{ renderSaveInfoBlock() }
 			</td>
-			{
-				published &&
+			{ published &&
 				<td>
 					<Button
 						onClick={ onDeletePublication }
@@ -151,11 +150,6 @@ const AdditionalContentPublication: FC<Props> = ({
 		if(dateTime.date) {
 			if(!isDateValid(dateTime.date)) {
 				return { message: texts.incorrectDateFormatError };
-			} else if(
-				parseDateToMoment(dateTime.date)?.isBefore(parseDateToMoment(minDate)) ||
-				parseDateToMoment(dateTime.date)?.isAfter(parseDateToMoment(maxDate))
-			) {
-				return { message: texts.incorrectDateError };
 			}
 		} else if(dateTime.time) {
 			return { message: texts.noDateError };

@@ -14,7 +14,6 @@ export default {
 	hide: 'скрыть',
 
 	incorrectDateFormatError: 'Некорректный формат даты',
-	incorrectDateError: 'Неверная дата',
 	noDateError: 'Укажите дату',
 
 	incorrectTimeFormatError: 'Некорректный формат времени',
