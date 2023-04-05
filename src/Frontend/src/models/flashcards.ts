@@ -43,4 +43,4 @@ interface QuestionWithAnswer {
 	answer: string;
 }
 
-export { Flashcard, UnitFlashcardsInfo, TheorySlideInfo, QuestionWithAnswer, };
+export { type Flashcard, type UnitFlashcardsInfo, type TheorySlideInfo, type QuestionWithAnswer, };

@@ -1095,7 +1095,7 @@ class InstructorReview extends React.Component<Props, State> {
 		return (
 			<div className={ styles.submissionsSelect }>
 				<ThemeContext.Provider value={ FLAT_THEME_8PX_OLD }>
-					<Select
+					<Select<number>
 						width={ '100%' }
 						items={ items }
 						value={ currentSubmission.id }

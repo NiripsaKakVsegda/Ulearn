@@ -1,6 +1,7 @@
 import React from 'react';
 import GroupSettings from "./GroupSettings";
 import "./groupSettings.less";
+import { getMockedGroup } from "../../../../storiesUtils";
 
 export default {
 	title: "Settings/GroupSettings",
@@ -8,7 +9,7 @@ export default {
 
 export const Default = (): React.ReactNode => (
 	<GroupSettings
-		group={ { test: "test" } }
+		group={ getMockedGroup() }
 	/>
 );
 

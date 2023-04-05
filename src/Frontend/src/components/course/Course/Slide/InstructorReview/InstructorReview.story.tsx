@@ -558,7 +558,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		},
 		addReview: (
 			submissionId: number,
-			text: string,
+			author: ShortUserInfo,
+			comment: string,
 			startLine: number, startPosition: number,
 			finishLine: number, finishPosition: number
 		) => {
@@ -569,12 +570,12 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				startPosition,
 				finishLine,
 				finishPosition,
-				comment: text,
-				renderedComment: renderMd(text),
+				comment: comment,
+				renderedComment: renderMd(comment),
 				addingTime: new Date().toDateString(),
 				comments: [],
 			};
-			dispatch(reviewsAddStartAction(submissionId, text, startLine, startPosition, finishLine, finishPosition));
+			dispatch(reviewsAddStartAction(submissionId, review));
 			return returnPromiseAfterDelay(loadingTimes.addReview, review)
 				.then(review => {
 					dispatch(reviewsAddSuccessAction(submissionId, review,));

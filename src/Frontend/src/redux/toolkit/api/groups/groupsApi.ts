@@ -23,7 +23,7 @@ export const groupsApi = createApi({
 				params: {
 					...params
 				}
-			}),
+			})
 		}),
 
 		createGroup: build.mutation<CreateGroupResponse, { courseId: string, name: string }>({

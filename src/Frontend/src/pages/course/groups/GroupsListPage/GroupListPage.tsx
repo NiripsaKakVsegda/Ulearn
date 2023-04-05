@@ -57,13 +57,13 @@ const GroupListPage: FC<Props> = ({ userId, courses, navigate, params, updateGro
 	const groups = tab === GroupsListTab.Active ? activeGroups : archivedGroups;
 	const isLoading = tab === GroupsListTab.Active ? isActiveGroupsLoading : isArchivedGroupsLoading;
 
-	if(isActiveGroupsError || isArchivedGroupsError) {
-		return <Error404/>;
-	}
-
 	const course = courses.courseById[courseId];
 	if(!course) {
 		return <CourseLoader/>;
+	}
+
+	if(isActiveGroupsError || isArchivedGroupsError) {
+		return <Error404/>;
 	}
 
 	return (

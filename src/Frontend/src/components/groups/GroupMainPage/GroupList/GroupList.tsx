@@ -39,7 +39,8 @@ const GroupList: FC<Props> = ({
 							page={ page }
 							deleteGroup={ onDeleteGroup }
 							toggleArchived={ onToggleArchivedGroup }
-						/>)
+						/>
+					)
 				}
 			</div>
 			{ groups.length === 0 &&

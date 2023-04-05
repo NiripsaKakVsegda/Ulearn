@@ -90,7 +90,7 @@ function GroupSettingsPage(props: Props) {
 					/>
 				</>;
 			default:
-				return <Navigate to={ `/${ courseId }/groups/${ groupId }/${ GroupSettingsTab.Settings }` }/>;
+				return <Navigate replace to={ `/${ courseId }/groups/${ groupId }/${ GroupSettingsTab.Settings }` }/>;
 		}
 	}
 

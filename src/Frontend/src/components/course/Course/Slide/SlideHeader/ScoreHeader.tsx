@@ -26,7 +26,7 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 		{ isModalShowed: false, isContentInModalReady: false, });
 
 	const {
-		score,
+		scoreHeader,
 		maxScore,
 		isSkipped,
 		waitingForManualChecking,
@@ -37,11 +37,11 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 		showStudentSubmissions,
 		anyAttemptsUsed,
 	} = props;
-	if(score === null || maxScore === null) {
+	if(scoreHeader === null || maxScore === null) {
 		return null;
 	}
 
-	const isMaxScore = score === maxScore;
+	const isMaxScore = scoreHeader === maxScore;
 	let message: string | null = null;
 	if(!isMaxScore) {
 		if(isSkipped) {
@@ -62,7 +62,7 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 	return (
 		<div className={ styles.header }>
 			<span className={ classNames(styles.headerText, styles.scoreTextWeight, styles.scoreTextColor) }>
-				{ texts.getSlideScore(score, maxScore, anyTryUsed) }
+				{ texts.getSlideScore(scoreHeader, maxScore, anyTryUsed) }
 			</span>
 			{ message && <span className={ styles.headerStatusText }>{ message }</span> }
 			{ showStudentSubmissions &&
@@ -157,4 +157,4 @@ type PropsFromRedux = ConnectedProps<typeof connector>;
 
 type ScoreHeaderPropsFromRedux = Omit<PropsFromRedux, "dispatch">;
 const ScoreHeader = connector(ScoreHeaderInternal);
-export { ScoreHeader, ScoreHeaderProps, ScoreHeaderPropsFromRedux };
+export { ScoreHeader, type ScoreHeaderProps, type ScoreHeaderPropsFromRedux };

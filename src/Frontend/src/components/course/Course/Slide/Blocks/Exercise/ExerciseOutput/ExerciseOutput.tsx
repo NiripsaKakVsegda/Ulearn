@@ -219,4 +219,4 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 	}
 }
 
-export { ExerciseOutput, OutputTypeProps, HasOutput };
+export { ExerciseOutput, type OutputTypeProps, HasOutput };

@@ -76,7 +76,7 @@ const GroupSettings: FC<Props> = ({ group }) => {
 
 		if(Object.values(updatedFields).length) {
 			promises.push(
-				saveGroupSettings({ groupId: -1, groupSettings: updatedFields }).unwrap()
+				saveGroupSettings({ groupId: group.id, groupSettings: updatedFields }).unwrap()
 			);
 		}
 		if(isScoringInfosChanged()) {
