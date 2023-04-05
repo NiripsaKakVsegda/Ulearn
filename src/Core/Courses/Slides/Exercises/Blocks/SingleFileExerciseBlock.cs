@@ -92,7 +92,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			return BuildSolution(code).SourceCode;
 		}
 
-		public override SolutionBuildResult BuildSolution(string userWrittenCode)
+		public override SolutionBuildResult BuildSolution(string userWrittenCode, Language? language = null)
 		{
 			return new SolutionBuilder(IndexToInsertSolution, ExerciseCode, Validator).BuildSolution(userWrittenCode);
 		}

@@ -39,7 +39,7 @@ namespace Ulearn.Core.CSharp.Validators
 		{
 			var pairBracketsCount = 0;
 			var brackets = syntaxKinds
-				.Where(x => x == SyntaxKind.OpenParenToken || x == SyntaxKind.CloseParenToken)
+				.Where(x => x is SyntaxKind.OpenParenToken or SyntaxKind.CloseParenToken)
 				.ToArray();
 
 			for (var i = 1; i < brackets.Length - 1; i++)
