@@ -176,7 +176,10 @@ namespace Database.Repos
 				.Select(c => c.Score)
 				.DefaultIfEmpty()
 				.MaxAsync();
-			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId).Select(c => c.Score).MaxAsync();
+			var automaticScore = await GetSlideCheckingsByUser<AutomaticQuizChecking>(courseId, slideId, userId)
+				.Select(c => c.Score)
+				.DefaultIfEmpty()
+				.MaxAsync();
 			return ConvertAutomaticScoreWithDeadLinePercentToScore(automaticScore, maxAutomaticScorePercent) + manualScore;
 		}
 

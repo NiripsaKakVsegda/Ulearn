@@ -338,17 +338,16 @@ public class QuizController : Controller
 	}
 
 	[HttpPost]
-	[Authorize(Policy = UlearnAuthorizationConstants.InstructorsPolicyName)]
 	public async Task<IActionResult> ScoreQuiz(int id, string nextUrl, string errorUrl = "")
 	{
-		metricSender.SendCount("quiz.manual_score");
-
 		if (string.IsNullOrEmpty(errorUrl))
 			errorUrl = nextUrl;
 
 		var checking = await slideCheckingsRepo.FindManualCheckingById<ManualQuizChecking>(id);
 		if (!await groupAccessesRepo.CanInstructorViewStudent(User.GetUserId(), checking.UserId, checking.CourseId))
 			return Forbid();
+		
+		metricSender.SendCount("quiz.manual_score");
 
 		using (var transaction = db.Database.BeginTransaction())
 		{
