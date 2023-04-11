@@ -10,6 +10,7 @@ namespace Database.Repos
 	{
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, string userId);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, int groupId);
+		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(HashSet<int> groupIds);
 		Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(string courseId, HashSet<int> groupIds);
 		Task<AdditionalContentPublication> AddAdditionalContentPublication(string courseId, int groupId, string authorId, Guid unitId, Guid? slideId, DateTime date);
 		Task UpdateAdditionalContentPublication(AdditionalContentPublication additionalContentPublication);

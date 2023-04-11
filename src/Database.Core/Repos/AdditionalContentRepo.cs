@@ -42,6 +42,13 @@ namespace Database.Repos
 				.ToListAsync();
 		}
 
+		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublications(HashSet<int> groupIds)
+		{
+			return await db.AdditionalContentPublications
+				.Where(ac => groupIds.Contains(ac.GroupId))
+				.ToListAsync();
+		}
+
 		public async Task<AdditionalContentPublication> AddAdditionalContentPublication(string courseId, int groupId, string authorId, Guid unitId, Guid? slideId, DateTime date)
 		{
 			var content = new AdditionalContentPublication

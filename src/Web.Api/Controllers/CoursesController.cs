@@ -7,6 +7,7 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using Database.Utils;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Api.Models.Responses;
@@ -89,7 +90,21 @@ namespace Ulearn.Web.Api.Controllers
 			{
 				var visibleCourses = await unitsRepo.GetVisibleCourses();
 				var coursesInWhichUserHasAnyRole = await courseRolesRepo.GetCoursesWhereUserIsInRole(UserId, CourseRoleType.Tester).ConfigureAwait(false);
-				courses = courses.Where(c => visibleCourses.Contains(c.Id) || coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
+				var userGroups = await groupMembersRepo.GetUserGroupsAsync(User.GetUserId());
+				var userGroupsIds = userGroups.Select(g => g.Id).ToHashSet();
+				HashSet<string> publications = null;
+				if (userGroups.Count > 0)
+				{
+					publications = (await additionalContentPublicationsRepo.GetAdditionalContentPublications(userGroupsIds))
+						.DistinctBy(p => p.CourseId)
+						.Select(p => p.CourseId)
+						.ToHashSet();
+				}
+
+				courses = courses
+					.Where(c => visibleCourses.Contains(c.Id)
+								|| coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase)
+								|| publications != null && publications.Contains(c.Id));
 			}
 
 			// Администратор видит все курсы. Покажем сверху те, в которых он преподаватель.
@@ -181,22 +196,7 @@ namespace Ulearn.Web.Api.Controllers
 				units = visibleUnits.Select(unit => BuildUnitInfo(course.Id, unit, false, null, false, getSlideMaxScoreFunc, getGitEditLinkFunc)).ToList();
 			}
 
-			var publishedUnits = new Dictionary<Guid, AdditionalContentPublication>();
-			var publishedSlides = new Dictionary<Guid, AdditionalContentPublication>();
-
-			if (userId != null)
-			{
-				var userGroups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
-				var publications = await additionalContentPublicationsRepo.GetAdditionalContentPublications(course.Id, userGroups.Select(g => g.Id).ToHashSet());
-
-				foreach (var publication in publications)
-				{
-					if (publication.SlideId != null)
-						publishedSlides.Add(publication.SlideId.Value, publication);
-					else
-						publishedUnits.Add(publication.UnitId, publication);
-				}
-			}
+			var (publishedUnits, publishedSlides) = await AdditionalContentPublicationUtils.GetPublications(groupMembersRepo, additionalContentPublicationsRepo, course.Id, userId);
 
 			units = units
 				.Select(u =>

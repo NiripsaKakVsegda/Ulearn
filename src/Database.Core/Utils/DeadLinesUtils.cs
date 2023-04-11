@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Database.Models;
 
-namespace Database.Repos.DeadLines
+namespace Database.Utils
 {
 	public static class DeadLinesUtils
 	{
