@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
-using Database.Repos.DeadLines;
+using Database.Utils;
 using Microsoft.EntityFrameworkCore;
 using Vostok.Logging.Abstractions;
 using Ulearn.Core.Courses.Slides;

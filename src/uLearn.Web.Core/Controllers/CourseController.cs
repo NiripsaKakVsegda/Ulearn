@@ -1,8 +1,10 @@
 using Database;
 using Database.Extensions;
+using Database.Migrations;
 using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
+using Database.Utils;
 using ElmahCore;
 using LtiLibrary.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -46,6 +48,7 @@ public class CourseController : BaseController
 	private readonly IGroupsRepo groupsRepo;
 	private readonly IGroupAccessesRepo groupAccessesRepo;
 	private readonly IUserQuizzesRepo userQuizzesRepo;
+	private readonly IAdditionalContentPublicationsRepo additionalContentPublicationsRepo;
 	private readonly ICoursesRepo coursesRepo;
 	private readonly ITempCoursesRepo tempCoursesRepo;
 	private readonly ICourseRolesRepo courseRoleTypesRepo;
@@ -66,7 +69,9 @@ public class CourseController : BaseController
 		ITempCoursesRepo tempCoursesRepo,
 		IGroupMembersRepo groupMembersRepo,
 		LtiAuthentication ltiAuthentication,
-		ICourseRolesRepo courseRoleTypesRepo, IGroupAccessesRepo groupAccessesRepo)
+		ICourseRolesRepo courseRoleTypesRepo,
+		IAdditionalContentPublicationsRepo additionalContentPublicationsRepo,
+		IGroupAccessesRepo groupAccessesRepo)
 	{
 		this.db = db;
 		this.solutionsRepo = solutionsRepo;
@@ -83,6 +88,7 @@ public class CourseController : BaseController
 		this.groupAccessesRepo = groupAccessesRepo;
 		this.groupMembersRepo = groupMembersRepo;
 		this.ltiAuthentication = ltiAuthentication;
+		this.additionalContentPublicationsRepo = additionalContentPublicationsRepo;
 
 		var configuration = ApplicationConfiguration.Read<UlearnConfiguration>();
 		baseUrlWeb = configuration.BaseUrl;
@@ -112,9 +118,8 @@ public class CourseController : BaseController
 		var visibleUnits = course.GetUnits(visibleUnitIds);
 		var isGuest = !User.Identity.IsAuthenticated;
 		var isInstructor = !isGuest && User.HasAccessFor(course.Id, CourseRoleType.Instructor);
-
 		var slide = slideGuid == Guid.Empty
-			? await GetInitialSlideForStartup(courseId, visibleUnits, isInstructor)
+			? await GetInitialSlideForStartup(courseId, visibleUnits, isInstructor, User.GetUserId())
 			: course.FindSlideById(slideGuid, isInstructor, visibleUnitIds);
 
 		if (slide == null)
@@ -126,31 +131,6 @@ public class CourseController : BaseController
 
 		if (slide == null)
 			return NotFound();
-
-		if ((slide.IsExtraContent || slide.Unit.Settings.IsExtraContent) && (!isInstructor || isGuest || !User.HasAccessFor(course.Id, CourseRoleType.Tester)))
-		{
-			if (isGuest)
-				return NotFound();
-			var userGroups = (await groupMembersRepo.GetUserGroupsAsync(course.Id, User.GetUserId()))
-				.Select(g => g.Id)
-				.ToList();
-
-			if (userGroups.Count == 0)
-				return NotFound();
-
-			var unitPublications = db.AdditionalContentPublications
-				.Where(ac => ac.CourseId == courseId && ac.UnitId == slide.Unit.Id && userGroups.Contains(ac.GroupId))
-				.ToList();
-
-			if (!unitPublications.Any())
-				return NotFound();
-
-			if (slide.Unit.Settings.IsExtraContent && !unitPublications.Any(p => p.SlideId == null && DateTime.Now >= p.Date))
-				return NotFound();
-
-			if (slide.IsExtraContent && !unitPublications.Any(p => p.SlideId == slide.Id && DateTime.Now >= p.Date))
-				return NotFound();
-		}
 
 		AbstractManualSlideChecking queueItem = null;
 		var isManualCheckingReadonly = false;
@@ -193,7 +173,7 @@ public class CourseController : BaseController
 		var visibleUnitIds = await unitsRepo.GetVisibleUnitIds(course, User.GetUserId());
 		var visibleUnits = course.GetUnits(visibleUnitIds);
 		var isInstructor = User.HasAccessFor(course.Id, CourseRoleType.Instructor);
-		var slide = await GetInitialSlideForStartup(courseId, visibleUnits, isInstructor);
+		var slide = await GetInitialSlideForStartup(courseId, visibleUnits, isInstructor, User.GetUserId());
 		if (slide == null)
 			return NotFound();
 		return RedirectToRoute("Course.SlideById", new { courseId, slideId = slide.Url });
@@ -217,7 +197,7 @@ public class CourseController : BaseController
 			var ulearnLtiRequest = new Ulearn.Core.Model.LtiRequest
 			{
 				ConsumerKey = ltiRequest.ConsumerKey,
-				LisOutcomeServiceUrl = ltiRequest.LisOutcomeServiceUrl, 
+				LisOutcomeServiceUrl = ltiRequest.LisOutcomeServiceUrl,
 				LisResultSourcedId = ltiRequest.LisResultSourcedId,
 			};
 
@@ -230,7 +210,7 @@ public class CourseController : BaseController
 				Scheme = Request.GetRealScheme(),
 				Port = Request.GetRealPort()
 			};
-			
+
 			return Redirect(uriBuilder.Uri.AbsoluteUri);
 		}
 
@@ -270,14 +250,25 @@ public class CourseController : BaseController
 		return View();
 	}
 
-	private async Task<Slide> GetInitialSlideForStartup(string courseId, List<Unit> orderedVisibleUnits, bool isInstructor)
+	private async Task<Slide> GetInitialSlideForStartup(
+		string courseId,
+		List<Unit> orderedVisibleUnits,
+		bool isInstructor,
+		string userId = null
+	)
 	{
-		var userId = User.GetUserId();
+		var (unitsPublications, slidesPublications)
+			= await AdditionalContentPublicationUtils.GetPublications(groupMembersRepo, additionalContentPublicationsRepo, courseId, userId);
+
 		var lastVisit = await visitsRepo.FindLastVisit(courseId, userId);
 		var orderedVisibleSlides = orderedVisibleUnits
-			.Where(u => isInstructor || !u.Settings.IsExtraContent)
+			.Where(u => isInstructor
+						|| !u.Settings.IsExtraContent
+						|| unitsPublications.TryGetValue(u.Id, out var unitPublication) && unitPublication.Date <= DateTime.Now)
 			.SelectMany(u => u.GetSlides(isInstructor))
-			.Where(s => isInstructor || !s.IsExtraContent)
+			.Where(s => isInstructor
+						|| !s.IsExtraContent
+						|| slidesPublications.TryGetValue(s.Id, out var slidePublication) && slidePublication.Date <= DateTime.Now)
 			.ToList();
 		if (lastVisit != null)
 		{

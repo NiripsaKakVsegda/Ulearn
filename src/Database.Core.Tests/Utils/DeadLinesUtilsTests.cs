@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Database.Models;
-using Database.Repos.DeadLines;
+using Database.Utils;
 using NUnit.Framework;
 
 namespace Database.Core.Tests.Utils
