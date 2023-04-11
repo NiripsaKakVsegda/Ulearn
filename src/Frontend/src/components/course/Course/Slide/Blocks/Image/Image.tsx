@@ -87,6 +87,7 @@ class Image extends React.Component<Props, State> {
 			<div className={ wrapperClass } onClick={ this.onClick } ref={ this.wrapper }>
 				<ImageGallery
 					ref={ this.gallery }
+					slideDuration={ 0 }
 					onImageLoad={ this.onImageLoad }
 					onImageError={ this.onImageError }
 					onBeforeSlide={ this.onBeforeSlide }
