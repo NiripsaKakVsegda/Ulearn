@@ -192,9 +192,24 @@ namespace Ulearn.Web.Api.Controllers
 				foreach (var publication in publications)
 				{
 					if (publication.SlideId != null)
-						publishedSlides.Add(publication.SlideId.Value, publication);
+					{
+						var slideId = publication.SlideId.Value;
+						if (publishedSlides.ContainsKey(slideId))
+							publishedSlides[slideId] = publishedSlides[slideId].Date <= publication.Date
+								? publishedSlides[slideId]
+								: publication;
+						else
+							publishedSlides.Add(slideId, publication);
+					}
 					else
-						publishedUnits.Add(publication.UnitId, publication);
+					{
+						if (publishedUnits.ContainsKey(publication.UnitId))
+							publishedUnits[publication.UnitId] = publishedUnits[publication.UnitId].Date <= publication.Date
+								? publishedUnits[publication.UnitId]
+								: publication;
+						else
+							publishedUnits.Add(publication.UnitId, publication);
+					}
 				}
 			}
 
