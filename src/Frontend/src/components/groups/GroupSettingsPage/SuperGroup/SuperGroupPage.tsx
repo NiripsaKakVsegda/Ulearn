@@ -63,7 +63,6 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	const [extractionResult, setExtractionResult] = useState<SuperGroupSheetExtractionResult>();
 	const [isLoading, setLoading] = useState(false);
 	const [settingsTab, setSettingsSettingsTab] = useState<SettingsType>();
-
 	const groups = extractionResult
 		? extractionResult.groups
 		: null;
@@ -135,10 +134,18 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 
 	function renderExtractionResult(extractionResult: SuperGroupSheetExtractionResult) {
 		if(!groups || Object.keys(groups).length === 0) {
+			if(extractionResult.validatingResults.length === 0) {
+				return (
+					<p>
+						{ texts.noGroupsText }
+					</p>
+				);
+			}
+
 			return (
-				<p>
-					{ texts.noGroupsText }
-				</p>
+				<div>
+					{ renderValidatingResults(extractionResult.validatingResults) }
+				</div>
 			);
 		}
 
@@ -236,6 +243,10 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			case ValidationType.invalidSheetStructure:
 				return {
 					title: texts.validating.formatIsUnsupported,
+					content: <p>
+						Проверьте правильность заполнения строк по номерам: { validationResult.rawsIndexes.map(
+						r => r + 1).join(', ') }.
+					</p>
 				};
 			case ValidationType.groupsHasSameStudents:
 				return {

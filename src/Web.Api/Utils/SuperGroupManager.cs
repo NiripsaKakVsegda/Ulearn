@@ -31,6 +31,15 @@ public class SuperGroupManager
 		var spreadSheet = await client.GetSheetByUrl(spreadsheetUrl);
 		var range = spreadSheet.ReadRange("A:B");
 
+		var unFilledRows = range
+			.Select((p, index) => p.Count != 2
+				? new { columns = p, rawIndex = index }
+				: null)
+			.Where(p => p != null)
+			.ToList();
+		if (unFilledRows.Count > 0)
+			throw new GoogleSheetFormatException { RawsIndexes = unFilledRows.Select(r => r.rawIndex).ToList() };
+
 		return range
 			.Select(pair => (StringUtils.RemoveSpacesDuplicates(pair[1]), StringUtils.RemoveSpacesDuplicates(pair[0])))
 			.ToArray();

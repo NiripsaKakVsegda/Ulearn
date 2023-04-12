@@ -67,6 +67,7 @@ export type ValidatingResult = InvalidSheetStructure | GroupsHasSameStudents | S
 
 export type InvalidSheetStructure = {
 	type: ValidationType.invalidSheetStructure;
+	rawsIndexes: number[];
 };
 
 export type GroupsHasSameStudents = {

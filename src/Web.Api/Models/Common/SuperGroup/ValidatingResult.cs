@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 
 namespace Ulearn.Web.Api.Models.Common.SuperGroup;
 
-
 [DataContract]
 public abstract class ValidatingResult
 {
@@ -16,6 +15,10 @@ public class InvalidSheetStructure : ValidatingResult
 {
 	[DataMember]
 	public override ValidationType Type => ValidationType.InvalidSheetStructure;
+
+	/// Indexes of raws where are parsing errors occured
+	[DataMember]
+	public List<int> RawsIndexes { get; set; }
 }
 
 [DataContract]

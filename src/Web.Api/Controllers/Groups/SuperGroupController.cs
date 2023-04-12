@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Ulearn.Web.Api.Models.Common.SuperGroup;
 using Ulearn.Web.Api.Models.Parameters.Groups.SuperGroup;
 using Ulearn.Web.Api.Models.Responses.Groups;
 using Ulearn.Web.Api.Utils;
+using Ulearn.Web.Api.Utils.SuperGroup;
 
 namespace Ulearn.Web.Api.Controllers.Groups;
 
@@ -71,13 +73,30 @@ public class SuperGroupController : BaseGroupController
 	public async Task<ActionResult<SuperGroupSheetExtractionResult>> ExtractFromGoogleSheet([FromQuery] string spreadsheetUrl, [FromQuery] int groupId)
 	{
 		var superGroup = await groupsRepo.FindGroupByIdAsync<SuperGroup>(groupId);
-		var (createdGroups, spreadSheetGroups)
-			= await superGroupHelper.GetSheetGroupsAndCreatedGroups(spreadsheetUrl, groupId, false);
 
-		if (superGroup.DistributionTableLink != spreadsheetUrl)
-			await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, new GroupSettings { DistributionTableLink = spreadsheetUrl });
+		try
+		{
+			var (createdGroups, spreadSheetGroups)
+				= await superGroupHelper.GetSheetGroupsAndCreatedGroups(spreadsheetUrl, groupId, false);
 
-		return await BuildSpreadSheetExtractionData(createdGroups, spreadSheetGroups);
+			if (superGroup.DistributionTableLink != spreadsheetUrl)
+				await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, new GroupSettings { DistributionTableLink = spreadsheetUrl });
+
+			return await BuildSpreadSheetExtractionData(createdGroups, spreadSheetGroups);
+		}
+		catch (Exception e)
+		{
+			if (e is GoogleSheetFormatException formatException)
+			{
+				return new SuperGroupSheetExtractionResult
+				{
+					Groups = new(),
+					ValidatingResults = new List<ValidatingResult> { new InvalidSheetStructure { RawsIndexes = formatException.RawsIndexes } },
+				};
+			}
+
+			return BadRequest();
+		}
 	}
 
 	[HttpPost]
@@ -115,7 +134,7 @@ public class SuperGroupController : BaseGroupController
 		{
 			if (!createdGroupsByName.TryGetValue(groupName, out var groupToDelete) || groupToDelete.NotDeletedMembers.Count != 0)
 				continue;
-			
+
 			await groupsRepo.DeleteGroupAsync(groupToDelete.Id);
 			updateInfoByGroupName.Add(groupName, new SupperGroupUpdateItem { GroupName = groupName });
 		}
@@ -128,7 +147,7 @@ public class SuperGroupController : BaseGroupController
 	[ProducesResponseType((int)HttpStatusCode.OK)]
 	[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 	[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-	public async Task<ActionResult<SuperGroupMoveUserResponse>> ResortStudents([FromQuery] int groupId, [FromBody] Dictionary<string, MoveStudentInfo> moves) 
+	public async Task<ActionResult<SuperGroupMoveUserResponse>> ResortStudents([FromQuery] int groupId, [FromBody] Dictionary<string, MoveStudentInfo> moves)
 	{
 		var superGroup = await groupsRepo.FindGroupByIdAsync<SuperGroup>(groupId);
 		if (superGroup.DistributionTableLink == null)

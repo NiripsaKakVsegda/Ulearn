@@ -119,9 +119,6 @@ function GroupList({
 						toggleArchived={ toggleArchived }
 						page={ page }
 					/>
-					<p className={ styles.superGroupGroupsText }>
-						Группы принадлежащие { group.name }:
-					</p>
 					{ group.subGroups && <ul className={ styles.subGroupsWrapper }>
 						{
 							group.subGroups.map(g => {
