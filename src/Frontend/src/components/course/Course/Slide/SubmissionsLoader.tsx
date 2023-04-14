@@ -1,4 +1,4 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
 import api from "src/api";
 import { connect } from "react-redux";
@@ -24,7 +24,7 @@ interface DispatchFromRedux {
 	loadSubmissions: (userId: string, courseId: string, slideId: string) => unknown;
 }
 
-const SubmissionsLoader: React.FC<SubmissionsLoaderProps> = ({
+const SubmissionsLoader: React.FC<PropsWithChildren<SubmissionsLoaderProps>> = ({
 	loadSubmissions,
 	isSubmissionsLoading,
 	submissions,

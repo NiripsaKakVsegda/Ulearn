@@ -92,7 +92,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 			courseId,
 		} = this.props;
 
-		api.getAllCourseGroups(courseId)
+		api?.getAllCourseGroups(courseId)
 			.then(g => {
 				const groups = g.groups;
 
@@ -337,7 +337,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 		this.setState({ loading: true, });
 		try {
-			await api.createTask({
+			await api?.createTask({
 				courseId,
 
 				listId,

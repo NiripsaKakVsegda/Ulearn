@@ -19,9 +19,12 @@ import * as selfCheckups from "./selfCheckups";
 import * as superGroups from "./superGroups";
 import * as signalR from "@microsoft/signalr";
 import config from 'src/proxyConfig';
+import { store } from "../setupStore";
+import { RootState } from "../redux/reducers";
+import { refreshToken } from "../redux/toolkit/slices/authSlice";
 
 const API_JWT_TOKEN_UPDATED = "API_JWT_TOKEN_UPDATED";
-let apiJwtToken = "";
+let apiJwtToken = '';
 let refreshApiJwtTokenPromise: Promise<string | ErrorWithResponse> | undefined = undefined;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let serverErrorHandler = (error?: string): void => {
@@ -37,29 +40,34 @@ class ErrorWithResponse extends Error {
 }
 
 function refreshApiJwtToken(): Promise<string | ErrorWithResponse> {
-	return fetch(config.api.endpoint + "account/token", { credentials: "include", method: "POST" })
-		.then(response => {
-			if(response.status !== 200) {
-				const error = new ErrorWithResponse((response.statusText || response.status) as string);
-				error.response = response;
-				return Promise.reject(error);
-			}
-
-			return response.json() as Promise<{ token: string }>;
-		})
-		.then(json => {
-			const token = json.token;
+	return store.dispatch(refreshToken()).unwrap()
+		.then(token => {
 			if(!token) {
-				return Promise.reject(
-					new Error('Can\'t get token from API: /account/token returned bad json: ' + JSON.stringify(json)));
+				return Promise.reject('Error!');
 			}
-			apiJwtToken = token;
+			apiJwtToken = (store.getState() as RootState).auth.token || '';
 			return Promise.resolve(API_JWT_TOKEN_UPDATED);
 		});
-}
-
-function clearApiJwtToken(): void {
-	apiJwtToken = "";
+	// if (apiJwtToken == '')
+	// return fetch(config.api.endpoint + "account/token", { credentials: "include", method: "POST" })
+	// 	.then(response => {
+	// 		if(response.status !== 200) {
+	// 			const error = new ErrorWithResponse((response.statusText || response.status) as string);
+	// 			error.response = response;
+	// 			return Promise.reject(error);
+	// 		}
+	//
+	// 		return response.json() as Promise<{ token: string }>;
+	// 	})
+	// 	.then(json => {
+	// 		const token = json.token;
+	// 		if(!token) {
+	// 			return Promise.reject(
+	// 				new Error('Can\'t get token from API: /account/token returned bad json: ' + JSON.stringify(json)));
+	// 		}
+	// 		apiJwtToken = token;
+	// 		return Promise.resolve(API_JWT_TOKEN_UPDATED);
+	// 	});
 }
 
 function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Promise<T> {
@@ -214,9 +222,7 @@ function fetchFromWeb(url: string, init?: RequestInit) {
 
 const api = {
 	fetchFromWeb,
-
 	refreshApiJwtToken,
-	clearApiJwtToken,
 	setServerErrorHandler,
 
 	request,

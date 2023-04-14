@@ -638,7 +638,7 @@ class Exercise extends React.Component<Props, State> {
 		return (
 			<div className={ styles.select }>
 				<ThemeContext.Provider value={ FLAT_THEME_8PX_OLD }>
-					<Select
+					<Select<number>
 						width={ '100%' }
 						items={ items }
 						value={ currentSubmission?.id || this.newTry.id }
@@ -671,7 +671,7 @@ class Exercise extends React.Component<Props, State> {
 		return (
 			<div className={ styles.select }>
 				<ThemeContext.Provider value={ FLAT_THEME_8PX_OLD }>
-					<Select
+					<Select<string>
 						disabled={ !isEditable }
 						width={ '100%' }
 						items={ items }

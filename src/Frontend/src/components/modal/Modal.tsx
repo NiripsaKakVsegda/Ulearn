@@ -6,6 +6,7 @@ import styles from "./modal.less";
 interface Props {
 	header: string,
 	onClose: () => void,
+	children: React.ReactNode
 }
 
 class Modal extends React.Component<Props> {

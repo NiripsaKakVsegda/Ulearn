@@ -91,4 +91,4 @@ class CongratsModal extends React.Component<CongratsModalProps> {
 	};
 }
 
-export { CongratsModal, CongratsModalProps, };
+export { CongratsModal, type CongratsModalProps, };

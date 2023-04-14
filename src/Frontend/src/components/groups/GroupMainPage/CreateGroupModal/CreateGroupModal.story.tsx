@@ -1,5 +1,5 @@
 import React from "react";
-import CreateGroupModal from "./CreateGroupModal.js";
+import CreateGroupModal from "./CreateGroupModal";
 
 import { ViewportWrapper } from "../../../course/Navigation/stroies.data";
 import { mockFunc } from "../../../../utils/storyMock";
@@ -10,7 +10,11 @@ export default {
 
 export const Default = (): React.ReactNode => (
 	<ViewportWrapper>
-		<CreateGroupModal onCloseModal={ mockFunc } courseId={ "123" }/>
+		<CreateGroupModal
+			courseId={ '' }
+			onClose={ mockFunc }
+			onGroupCreated={ mockFunc }
+		/>
 	</ViewportWrapper>
 );
 

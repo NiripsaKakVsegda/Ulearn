@@ -7,17 +7,6 @@ export function isDeadLineOverlappedByAnother(deadLine: DeadLineInfo, deadLines:
 
 	return currentDeadLine.current?.id !== deadLine.id;
 }
-
-export function getDeadLineForStudent(
-	deadLines: DeadLineInfo[],
-	studentIds: string[] | null,
-): DeadLineSchedule {
-	deadLines = deadLines.filter(
-		d => d.userIds === null || d.userIds.every(userId => studentIds?.includes(userId)));
-
-	return getDeadLine(deadLines);
-}
-
 export function getDeadLineForSlide(
 	deadLines: DeadLineInfo[],
 	slideScoringGroupId: string | null,

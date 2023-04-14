@@ -68,8 +68,7 @@ export function deleteGroup(groupId: number): Promise<Response> {
 }
 
 export function changeGroupOwner(groupId: number, ownerId: string): Promise<Response> {
-	return api.put(`${ groups }/${ groupId }/owner`,
-		api.createRequestParams({ ownerId }));
+	return api.put(`${ groups }/${ groupId }/owner`, api.createRequestParams({ ownerId }));
 }
 
 // Scores

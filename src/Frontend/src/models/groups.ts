@@ -106,8 +106,13 @@ export interface SingleGroup extends Omit<GroupBase, 'groupType'> {
 	defaultProhibitFurtherReview?: boolean;
 }
 
+export interface CreateGroupResponse {
+	id: number;
+	apiUrl: string;
+}
+
 export interface CopyGroupResponse {
-	id: string;
+	id: number;
 	apiUrl: string;
 }
 

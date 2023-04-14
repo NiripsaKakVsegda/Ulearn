@@ -1,9 +1,5 @@
 @import "/src/variables";
 
-.text {
-  font-size: 16px;
-  font-family: @defaultFonts;
-}
 
 .table {
   margin-top: 20px;
@@ -21,48 +17,12 @@
   font-weight: 600;
 }
 
-.iconInButtonAsSelectIcon {
-  left: 7px;
-  position: relative;
-}
-
-.conflictHint {
-  position: absolute;
-  left: -18px;
-  color: @errorColor;
-  padding-top: 5px;
+.tableText {
+  font-size: 16px;
+  font-family: @defaultFonts;
 }
 
 .score {
   .tableHeader;
   grid-area: 1 / 5 / 1 / 7;
-}
-
-.moduleTitle {
-  font-size: 20px;
-  vertical-align: middle;
-}
-
-.additionalText {
-  color: @additionalColor;
-}
-
-.deleteButtonText {
-  color: @redText;
-}
-
-.updateButton {
-  color: @successColor;
-}
-
-@media (min-width: @minTabletWidth) {
-  .conflictHint {
-    left: -23px;
-  }
-}
-
-@media (min-width: @minLaptopWidth) {
-  .conflictHint {
-    left: -30px;
-  }
 }

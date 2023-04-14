@@ -11,7 +11,6 @@ import {
 	COURSES_COURSE_ENTERED,
 	COURSES_UPDATED,
 } from "src/actions/course.types";
-import { RequestError } from "../api";
 
 export const courseUpdatedAction = (courseById: { [courseId: string]: CourseInfo },): CourseAction => ({
 	type: COURSES_UPDATED,
