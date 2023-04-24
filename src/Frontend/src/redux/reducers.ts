@@ -1,5 +1,4 @@
-import { AnyAction, combineReducers, Reducer, } from "redux";
-import { ACCOUNT__USER_INFO_UPDATED } from "src/actions/account.types";
+import { combineReducers, } from "redux";
 import courseReducer from "./course";
 import userProgressReducer from "./userProgress";
 import navigationReducer from "./navigation";
@@ -13,8 +12,14 @@ import groupsReducer from "./groups";
 import submissionsReducer from "./submissions";
 import favouriteReviewsReducer from "./favouriteReviews";
 import deadLinesReducer from "./deadLines";
+import { groupsApi, superGroupsApi } from "./toolkit/api/groups/groupsApi";
+import { usersApi } from "./toolkit/api/usersApi";
+import { authSlice } from "./toolkit/slices/authSlice";
+import { coursesApi } from "./toolkit/api/coursesApi";
+import { additionalContentApi } from "./toolkit/api/additionalContentApi";
+import { deadLinesApi } from "./toolkit/api/deadLinesApi";
 
-const rootReducer = combineReducers({
+export const rootReducer = combineReducers({
 	account: accountReducer,
 	courses: courseReducer,
 	userProgress: userProgressReducer,
@@ -28,20 +33,13 @@ const rootReducer = combineReducers({
 	submissions: submissionsReducer,
 	favouriteReviews: favouriteReviewsReducer,
 	deadLines: deadLinesReducer,
+	auth: authSlice.reducer,
+	[groupsApi.reducerPath]: groupsApi.reducer,
+	[superGroupsApi.reducerPath]: superGroupsApi.reducer,
+	[usersApi.reducerPath]: usersApi.reducer,
+	[coursesApi.reducerPath]: coursesApi.reducer,
+	[additionalContentApi.reducerPath]: additionalContentApi.reducer,
+	[deadLinesApi.reducerPath]: deadLinesApi.reducer,
 });
 
-type RootState = ReturnType<typeof rootReducer>
-
-function resetReducer(state: RootState, action: AnyAction): RootState {
-	const newState = { ...state };
-	if(action.type === ACCOUNT__USER_INFO_UPDATED) {
-		if(action.isAuthenticated && !newState.account.isAuthenticated) {
-			newState.slides.slidesByCourses = {}; //deleting all loaded slides
-		}
-	}
-
-	return rootReducer(newState, action);
-}
-
-export default resetReducer as Reducer;
-export type { RootState };
+export type RootState = ReturnType<typeof rootReducer>

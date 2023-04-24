@@ -125,7 +125,7 @@ namespace Ulearn.Web.Api.Controllers.Comments
 			}
 
 			likesCount = await commentLikesRepo.GetLikesCountsAsync(new[] { commentId }).ConfigureAwait(false);
-			var author2Groups = !isInstructor ? null : new Dictionary<string, List<Group>>
+			var author2Groups = !isInstructor ? null : new Dictionary<string, List<SingleGroup>>
 			{
 				{
 					comment.Author.Id,

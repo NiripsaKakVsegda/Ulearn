@@ -24,6 +24,6 @@ namespace Database.Repos
 		Task DeleteTask(GoogleSheetExportTask exportTask);
 
 		Task SaveTaskUploadResult(GoogleSheetExportTask exportTask, DateTime lastUpdateTime, string error = null);
-		Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<Group> groups, string userId);
+		Task<List<GoogleSheetExportTask>> GetVisibleGoogleSheetTask(string courseId, List<SingleGroup> groups, string userId);
 	}
 }

@@ -1,15 +1,16 @@
 import api from "src/api/index";
 import { groups, resetStudentsLimits } from "src/consts/routes";
 import {
-	CopyGroupResponse,
+	CopyGroupResponse, CreateGroupResponse,
 	GroupAccessesResponse,
 	GroupInfo,
 	GroupScoringGroupsResponse, GroupsInfoResponse, GroupsListParameters,
-	GroupStudentsResponse
+	GroupStudentsResponse, GroupType
 } from "src/models/groups";
 import { buildQuery } from "src/utils";
 import { Dispatch } from "redux";
 import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
+import { CreateGroupsRequestParameters } from "../models/superGroup";
 
 // Groups
 export function getCourseGroups(courseId: string, userId?: string,): Promise<{ groups: GroupInfo[] }> {
@@ -45,9 +46,9 @@ export function getGroup(groupId: number): Promise<GroupInfo> {
 	return api.get(`${ groups }/${ groupId }`);
 }
 
-export function createGroup(courseId: string, name: string): Promise<Response> {
+export function createGroup(courseId: string, name: string, groupType: GroupType): Promise<CreateGroupResponse> {
 	const url = groups + buildQuery({ courseId });
-	return api.post(url, api.createRequestParams({ name }));
+	return api.post(url, api.createRequestParams({ name, groupType }));
 }
 
 export function copyGroup(groupId: number, destinationCourseId: string,
@@ -57,7 +58,7 @@ export function copyGroup(groupId: number, destinationCourseId: string,
 	return api.post(url);
 }
 
-export function saveGroupSettings(groupId: number, groupSettings: Record<string, unknown>): Promise<GroupInfo> {
+export function saveGroupSettings(groupId: number, groupSettings: Partial<GroupInfo>): Promise<GroupInfo> {
 	return api.patch(`${ groups }/${ groupId }`,
 		api.createRequestParams(groupSettings));
 }
@@ -67,8 +68,7 @@ export function deleteGroup(groupId: number): Promise<Response> {
 }
 
 export function changeGroupOwner(groupId: number, ownerId: string): Promise<Response> {
-	return api.put(`${ groups }/${ groupId }/owner`,
-		api.createRequestParams({ ownerId }));
+	return api.put(`${ groups }/${ groupId }/owner`, api.createRequestParams({ ownerId }));
 }
 
 // Scores
@@ -112,4 +112,14 @@ export function copyStudents(groupId: number, studentIds: string[]): Promise<Res
 export function resetLimitsForStudents(groupId: number, studentIds: string[]): Promise<Response> {
 	return api.post(`${ groups }/${ groupId }/${ resetStudentsLimits }`,
 		api.createRequestParams({ studentIds }));
+}
+
+export function joinGroupByInviteHash(inviteHash: string): Promise<Response> {
+	const url = `${ groups }/${ inviteHash }/join`;
+	return api.post(url);
+}
+
+export function getGroupByInviteHash(inviteHash: string): Promise<GroupInfo> {
+	const url = `${ groups }/${ inviteHash }`;
+	return api.get(url);
 }

@@ -186,7 +186,7 @@ public class CourseStatisticsGroupInfo
 	{
 	}
 
-	public CourseStatisticsGroupInfo(Group g)
+	public CourseStatisticsGroupInfo(SingleGroup g)
 	{
 		Id = g.Id;
 		Title = g.Name;

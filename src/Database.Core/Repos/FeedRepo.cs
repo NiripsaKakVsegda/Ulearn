@@ -133,7 +133,7 @@ namespace Database.Repos
 			var deliveriesWithPublishedPackageNotification
 				= await GetNotifications<PublishedPackageNotification, CourseVersion, TProperty>(notifications, n => n.CourseVersion, includePath);
 			var deliveriesWithCreatedGroupNotification
-				= await GetNotifications<CreatedGroupNotification, Group, TProperty>(notifications, n => n.Group, includePath);
+				= await GetNotifications<CreatedGroupNotification, SingleGroup, TProperty>(notifications, n => n.Group, includePath);
 
 			var notificationsWithSpecialInclude = abstractCommentNotifications.Cast<Notification>()
 				.Concat(deliveriesWithCourseExportedToStepikNotification)

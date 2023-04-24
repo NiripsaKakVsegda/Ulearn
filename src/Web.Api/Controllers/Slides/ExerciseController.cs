@@ -145,7 +145,7 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 			var course = courseStorage.GetCourse(courseId);
 			var exerciseBlock = exerciseSlide.Exercise;
-			var buildResult = exerciseBlock.BuildSolution(userCode);
+			var buildResult = exerciseBlock.BuildSolution(userCode, language);
 
 			if (buildResult.HasErrors)
 				metricSender.SendCount($"exercise.{exerciseMetricId}.CompilationError");

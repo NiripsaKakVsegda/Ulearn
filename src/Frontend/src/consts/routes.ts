@@ -41,9 +41,15 @@ export const pythonVisualizer = 'python-visualizer';
 export const studentZipDownloadUrl = '/exercise/studentzip';
 export const additionalContent = 'additional-content-publications';
 export const deadLines = 'dead-lines';
+export const superGroup = 'super-group';
+export const superGroups = 'super-groups';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
-	return `/${ coursePath }/${ courseId }/${ slideId }`;
+	return constructPathToCourse(courseId) + `/${ slideId }`;
+}
+
+export function constructPathToCourse(courseId: string): string {
+	return `/${ coursePath }/${ courseId }`;
 }
 
 export function getPreviousSlideUrl(courseId: string, slideInfo: SlideInfo): string | null {

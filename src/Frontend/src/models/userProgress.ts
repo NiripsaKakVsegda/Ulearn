@@ -17,4 +17,4 @@ interface SlideUserProgress {
 	timestamp: string;
 }
 
-export { UsersProgressResponse, UserProgress, SlideUserProgress };
+export { type UsersProgressResponse, type UserProgress, type SlideUserProgress };

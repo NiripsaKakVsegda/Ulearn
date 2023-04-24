@@ -15,4 +15,4 @@ interface ReviewInfoRedux extends Omit<ReviewInfo, 'comments'> {
 type ExerciseAutomaticCheckingResponseRedux = Omit<ExerciseAutomaticCheckingResponse, 'reviews'>;
 type SubmissionInfoRedux = Omit<SubmissionInfo, 'automaticChecking.reviews' | 'manualChecking.reviews'>;
 
-export { SubmissionInfoRedux, ReviewInfoRedux, RootState, };
+export { type SubmissionInfoRedux, type ReviewInfoRedux, type RootState, };

@@ -2,15 +2,22 @@ import React from "react";
 import GroupList from "./GroupList";
 
 import "./groupList.less";
-import {getMockedUser} from "../../../../storiesUtils";
+import { getMockedUser } from "../../../../storiesUtils";
 
 export default {
 	title: "Group/GroupList",
 };
 
 const mock = () => ({});
-export const Default = (): React.ReactNode => <GroupList toggleArchived={ mock } deleteGroup={ mock } loading={ false }
-														 userId={ '1' } courseId={ '1' } groups={ getGroups() }/>;
+export const Default = (): React.ReactNode =>
+	<GroupList
+		groups={ getGroups() }
+		courseId={ '1' }
+		userId={ '1' }
+		noGroupsMessage={ 'No GROUPS' }
+		onDeleteGroup={ mock }
+		onToggleArchivedGroup={ mock }
+	/>;
 
 Default.storyName = "default";
 

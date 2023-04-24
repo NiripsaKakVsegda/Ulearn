@@ -18,7 +18,7 @@ namespace Ulearn.Web.Api.Models.Internal
 		public List<Unit> Units { get; set; }
 		public List<string> SelectedGroupsIds { get; set; }
 		public string SelectedGroupsIdsJoined => string.Join(",", SelectedGroupsIds);
-		public List<Group> Groups { get; set; }
+		public List<SingleGroup> Groups { get; set; }
 		public Dictionary<int, List<GroupAccess>> GroupsAccesses { get; set; }
 
 		public DateTime PeriodStart { get; set; }

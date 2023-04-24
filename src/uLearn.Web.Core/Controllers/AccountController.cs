@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Database;
 using Database.Models;
 using Database.Repos;
@@ -199,7 +200,7 @@ public class AccountController : BaseUserController
 		return user;
 	}
 
-	private async Task NotifyAboutUserJoinedToGroup(Group group, string userId)
+	private async Task NotifyAboutUserJoinedToGroup(SingleGroup group, string userId)
 	{
 		var notification = new JoinedToYourGroupNotification
 		{
@@ -214,22 +215,35 @@ public class AccountController : BaseUserController
 		var userId = User.GetUserId();
 		var group = await groupsRepo.FindGroupByInviteHashAsync(hash);
 
-		if (group != null && group.Members.Any(u => u.UserId == userId))
-			return Redirect(Url.RouteUrl("Course.Slide", new { courseId = group.CourseId }));
-
 		if (group is not { IsInviteLinkEnabled: true })
 			return new NotFoundResult();
 
 		if (Request.Method != "POST")
 			return View(group);
 
-		var alreadyInGroup = await groupMembersRepo.AddUserToGroupAsync(group.Id, userId) == null;
-		if (!alreadyInGroup)
-			await NotifyAboutUserJoinedToGroup(group, userId);
+		async Task<bool> TryJoin(SingleGroup group)
+		{
+			var success = await groupMembersRepo.AddUserToGroupAsync(group.Id, userId) != null;
+			if (success)
+			{
+				await NotifyAboutUserJoinedToGroup(group, userId);
+				await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, userId).ConfigureAwait(false);
+			}
 
-		await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, userId).ConfigureAwait(false);
+			return success;
+		}
 
-		return View("JoinedToGroup", group);
+		if (group is SingleGroup singleGroup)
+		{
+			if (await TryJoin(singleGroup))
+				return View("JoinedToGroup", singleGroup);
+			return Redirect(Url.RouteUrl("Course.Slide", new { courseId = singleGroup.CourseId }));
+		}
+
+		if (group is SuperGroup superGroup)
+			log.Warn($"Attempt to get old view for super-group {group.Id} in course {group.CourseId}");
+
+		return View(group);
 	}
 
 	[Authorize(Policy = UlearnAuthorizationConstants.SysAdminsPolicyName)]
@@ -361,7 +375,7 @@ public class AccountController : BaseUserController
 		var courseArchivedGroups = new Dictionary<string, string>();
 		foreach (var course in userCourses)
 		{
-			var groups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId, true);
+			var groups = await groupMembersRepo.GetUserGroupsAsync(course.Id, userId);
 			courseActualGroups[course.Id] = string.Join(',', groups.Where(g => !g.IsArchived).Select(g => g.Name));
 			courseArchivedGroups[course.Id] = string.Join(',', groups.Where(g => g.IsArchived).Select(g => g.Name));
 		}
@@ -676,31 +690,35 @@ public class AccountController : BaseUserController
 			await authenticationManager.LogoutAsync(HttpContext);
 			return RedirectToAction("Index", "Login");
 		}
-
-		var nameChanged = user.UserName != userModel.Name;
-		if (nameChanged && await userManager.FindByNameAsync(userModel.Name) != null)
+		
+		/* Some users enter text with trailing whitespaces. Remove them (not users, but spaces!) */
+		var newName = userModel.Name.Trim();
+		var newEmail = userModel.Email?.Trim();
+		var newFirstName = userModel.FirstName.Trim();
+		var newLastName= userModel.LastName.Trim();
+		
+		var nameChanged = user.UserName != newName;
+		if (nameChanged && await userManager.FindByNameAsync(newName) != null)
 		{
-			log.Warn($"ChangeDetailsPartial(): name {userModel.Name} is already taken");
+			log.Warn($"ChangeDetailsPartial(): name {newName} is already taken");
 			return RedirectToAction("Manage", new { Message = ManageMessageId.NameAlreadyTaken });
 		}
-
-		/* Some users enter email with trailing whitespaces. Remove them (not users, but spaces!) */
-		userModel.Email = (userModel.Email ?? "").Trim();
-		var emailChanged = string.Compare(user.Email, userModel.Email, StringComparison.OrdinalIgnoreCase) != 0;
+		
+		var emailChanged = string.Compare(user.Email, newEmail, StringComparison.OrdinalIgnoreCase) != 0;
 
 		if (emailChanged)
 		{
-			if (!await CanUserSetThisEmail(user, userModel.Email))
+			if (!await CanUserSetThisEmail(user, newEmail))
 			{
-				log.Warn($"ChangeDetailsPartial(): email {userModel.Email} is already taken");
+				log.Warn($"ChangeDetailsPartial(): email {newEmail} is already taken");
 				return RedirectToAction("Manage", new { Message = ManageMessageId.EmailAlreadyTaken });
 			}
 		}
 
-		user.UserName = userModel.Name;
-		user.FirstName = userModel.FirstName;
-		user.LastName = userModel.LastName;
-		user.Email = userModel.Email;
+		user.UserName = newName;
+		user.FirstName = newFirstName;
+		user.LastName = newLastName;
+		user.Email = newEmail;
 		user.Gender = userModel.Gender;
 		user.LastEdit = DateTime.Now;
 		if (!string.IsNullOrEmpty(userModel.Password))

@@ -23,7 +23,7 @@ namespace Database.Repos.Groups
 			this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
 		}
 
-		public async Task<Group> CreateGroupAsync(
+		public async Task<SingleGroup> CreateGroupAsync(
 			string courseId,
 			string name,
 			string ownerId,
@@ -34,7 +34,7 @@ namespace Database.Repos.Groups
 			bool isInviteLinkEnabled = true)
 		{
 			log.Info($"Создаю новую группу в курсе {courseId}: «{name}»");
-			var group = new Group
+			var group = new SingleGroup
 			{
 				CourseId = courseId,
 				Name = name,
@@ -54,9 +54,67 @@ namespace Database.Repos.Groups
 
 			return group;
 		}
+		
+		public async Task<SingleGroup> CreateSingleGroupAsync(
+			string courseId,
+			string name,
+			string ownerId,
+			int? superGroupId = null,
+			bool isManualCheckingEnabled = false,
+			bool isManualCheckingEnabledForOldSolutions = false,
+			bool canUsersSeeGroupProgress = true,
+			bool defaultProhibitFurtherReview = true,
+			bool isInviteLinkEnabled = true)
+		{
+			log.Info($"Создаю новую группу в курсе {courseId}: «{name}»");
+			var group = new SingleGroup
+			{
+				CourseId = courseId,
+				Name = name,
+				OwnerId = ownerId,
+				CreateTime = DateTime.Now,
+				SuperGroupId = superGroupId,
+
+				IsManualCheckingEnabled = isManualCheckingEnabled,
+				IsManualCheckingEnabledForOldSolutions = isManualCheckingEnabledForOldSolutions,
+				CanUsersSeeGroupProgress = canUsersSeeGroupProgress,
+				DefaultProhibitFutherReview = defaultProhibitFurtherReview,
+
+				InviteHash = Guid.NewGuid(),
+				IsInviteLinkEnabled = isInviteLinkEnabled,
+			};
+			db.Groups.Add(group);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+
+			return group;
+		}
+
+		public async Task<SuperGroup> CreateSuperGroupAsync(
+			string courseId,
+			string name,
+			string ownerId,
+			bool isInviteLinkEnabled = true)
+		{
+			log.Info($"Создаю новую авто группу «{name}» в курсе «{courseId}»");
+			var group = new SuperGroup
+			{
+				CourseId = courseId,
+				Name = name,
+				OwnerId = ownerId,
+				CreateTime = DateTime.Now,
+
+				InviteHash = Guid.NewGuid(),
+				IsInviteLinkEnabled = isInviteLinkEnabled,
+				
+			};
+			await db.SuperGroups.AddAsync(group);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+
+			return group;
+		}
 
 		/* Copy group from one course to another. Replace owner only if newOwnerId is not empty */
-		public async Task<Group> CopyGroupAsync(Group group, string courseId, string newOwnerId = null)
+		public async Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = null)
 		{
 			log.Info($"Копирую группу «{group.Name}» (id={group.Id}) в курс {courseId}");
 
@@ -73,7 +131,7 @@ namespace Database.Repos.Groups
 			return newGroup;
 		}
 
-		private Task<Group> CopyGroupWithoutMembersAsync(Group group, string courseId, string newOwnerId)
+		private Task<SingleGroup> CopyGroupWithoutMembersAsync(SingleGroup group, string courseId, string newOwnerId)
 		{
 			var newName = group.Name;
 			if (courseId == group.CourseId)
@@ -91,7 +149,7 @@ namespace Database.Repos.Groups
 			);
 		}
 
-		private async Task CopyGroupMembersAsync(Group group, Group newGroup)
+		private async Task CopyGroupMembersAsync(SingleGroup group, SingleGroup newGroup)
 		{
 			log.Info($"Копирую участников из группы «{group.Name}» (id={group.Id}) в группу «{newGroup.Name}» (id={newGroup.Id})");
 			var members = group.NotDeletedMembers.Select(m => new GroupMember
@@ -111,7 +169,7 @@ namespace Database.Repos.Groups
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		private async Task CopyGroupAccessesAsync(Group group, Group newGroup)
+		private async Task CopyGroupAccessesAsync(SingleGroup group, SingleGroup newGroup)
 		{
 			log.Info($"Копирую доступы к группе «{group.Name}» (id={group.Id}) в группу «{newGroup.Name}» (id={newGroup.Id})");
 			var accesses = await db.GroupAccesses.Where(a => a.GroupId == group.Id && a.IsEnabled).ToListAsync().ConfigureAwait(false);
@@ -136,7 +194,7 @@ namespace Database.Repos.Groups
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		private async Task CopyEnabledAdditionalScoringGroupsAsync(Group group, Group newGroup)
+		private async Task CopyEnabledAdditionalScoringGroupsAsync(SingleGroup group, SingleGroup newGroup)
 		{
 			log.Info($"Копирую включенные scoring-group-ы из группы «{group.Name}» (id={group.Id}) в группу «{newGroup.Name}» (id={newGroup.Id})");
 

@@ -1094,7 +1094,7 @@ namespace Database.Models
 		[Required]
 		public int GroupId { get; set; }
 
-		public virtual Group Group { get; set; }
+		public virtual SingleGroup Group { get; set; }
 
 		[Required]
 		[StringLength(64)]
@@ -1230,7 +1230,7 @@ namespace Database.Models
 		[Required]
 		public int GroupId { get; set; }
 
-		public virtual Group Group { get; set; }
+		public virtual SingleGroup Group { get; set; }
 
 		[NotMapped]
 		public int UsersCount => UserIds.Split(',').Length;
@@ -1353,7 +1353,7 @@ namespace Database.Models
 		[Required]
 		public int GroupId { get; set; }
 
-		public virtual Group Group { get; set; }
+		public virtual SingleGroup Group { get; set; }
 
 		public override string GetHtmlMessageForDelivery(NotificationTransport transport, NotificationDelivery delivery, Course course, string baseUrl)
 		{
@@ -1425,7 +1425,7 @@ namespace Database.Models
 		[Required]
 		public int GroupId { get; set; }
 
-		public virtual Group Group { get; set; }
+		public virtual SingleGroup Group { get; set; }
 
 		public CreatedGroupNotification(int groupId)
 		{

@@ -68,7 +68,9 @@ namespace Database.Repos.Groups
 		{
 			log.Info($"Пытаюсь добавить пользователя {userId} в группу {groupId}");
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
-
+			if (group.GroupType != GroupType.SingleGroup)
+				throw new ArgumentException($"Group {groupId} isn't single group");
+			
 			var groupMember = new GroupMember
 			{
 				GroupId = groupId,
@@ -93,7 +95,7 @@ namespace Database.Repos.Groups
 				log.Info($"Пользователь {userId} добавлен в группу {groupId}");
 			}
 
-			if (group.IsManualCheckingEnabledForOldSolutions)
+			if ((group as SingleGroup).IsManualCheckingEnabledForOldSolutions)
 				await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(group.CourseId, userId).ConfigureAwait(false);
 
 			return groupMember;
@@ -143,14 +145,14 @@ namespace Database.Repos.Groups
 
 		public Task<List<string>> GetUsersIdsForAllCourseGroupsAsync(string courseId, bool includeArchived = false)
 		{
-			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, includeArchived).Select(g => g.Id);
+			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Select(g => g.Id);
 			return db.GroupMembers.Where(m => groupsIds.Contains(m.GroupId)).Select(m => m.UserId).ToListAsync();
 		}
 
 		/* Return Dictionary<userId, List<groupId>> */
 		public async Task<Dictionary<string, List<int>>> GetUsersGroupsIdsAsync(string courseId, List<string> usersIds, bool includeArchived = false)
 		{
-			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, includeArchived).Select(g => g.Id);
+			var groupsIds = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Select(g => g.Id);
 			return (await db.GroupMembers
 					.Where(m => groupsIds.Contains(m.GroupId) && usersIds.Contains(m.UserId))
 					.Select(m => new { m.UserId, m.GroupId })
@@ -165,13 +167,15 @@ namespace Database.Repos.Groups
 				.GetOrDefault(userId, new List<int>());
 		}
 
-		public async Task<List<Group>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false)
+		public async Task<List<SingleGroup>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false)
 		{
 			var userGroupsIds = await GetUserGroupsIdsAsync(courseId, userId).ConfigureAwait(false);
-			return await groupsRepo
-				.GetCourseGroupsQueryable(courseId, includeArchived)
+			return (await groupsRepo
+				.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived)
 				.Where(g => userGroupsIds.Contains(g.Id))
-				.ToListAsync();
+				.ToListAsync())
+				.AsGroups()
+				.ToList();
 		}
 
 		public async Task<string> GetUserGroupsNamesAsString(string courseId, string userId, bool includeArchived = false)
@@ -180,16 +184,16 @@ namespace Database.Repos.Groups
 			return string.Join(", ", usersGroups.Select(g => g.Name));
 		}
 
-		public async Task<List<Group>> GetUserGroupsAsync(string userId)
+		public async Task<List<SingleGroup>> GetUserGroupsAsync(string userId)
 		{
 			return await db.GroupMembers.Where(m => m.UserId == userId && !m.Group.IsDeleted).Select(m => m.Group).ToListAsync();
 		}
 
-		public async Task<Dictionary<string, List<Group>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false)
+		public async Task<Dictionary<string, List<SingleGroup>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false)
 		{
 			var userGroupsIds = await GetUsersGroupsIdsAsync(courseId, usersIds, includeArchived).ConfigureAwait(false);
 			var ids = userGroupsIds.Values.SelectMany(g => g).Distinct().ToList();
-			var groups = groupsRepo.GetCourseGroupsQueryable(courseId, includeArchived).Where(g => ids.Contains(g.Id)).ToDictionary(g => g.Id, g => g);
+			var groups = groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, includeArchived).Where(g => ids.Contains(g.Id)).ToDictionary(g => g.Id, g => (SingleGroup)g);
 			return userGroupsIds.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(id => groups[id]).ToList());
 		}
 	}

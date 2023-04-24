@@ -72,4 +72,4 @@ const getVariables = (visualizerStep: VisualizerStep): Record<string, any> => {
 };
 
 
-export { getVariables, VisualizerStep };
+export { getVariables, type VisualizerStep };

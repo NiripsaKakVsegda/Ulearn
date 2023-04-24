@@ -286,7 +286,7 @@
 </thead>
 <tbody>
 @{
-	IEnumerable<ApplicationUser> GetInstructors(Group group, List<GroupAccess> accesses)
+	IEnumerable<ApplicationUser> GetInstructors(SingleGroup group, List<GroupAccess> accesses)
 		=> Enumerable.Repeat(group.Owner, 1).Concat(accesses.EmptyIfNull().Select(a => a.User));
 
 	var groupsNames = Model.Groups.ToDictionary(g => g.Id,

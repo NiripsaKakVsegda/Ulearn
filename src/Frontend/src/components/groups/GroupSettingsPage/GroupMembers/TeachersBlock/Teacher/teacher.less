@@ -1,0 +1,28 @@
+@import "/src/variables.less";
+
+.teacher-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin: 10px 0;
+  align-items: flex-start;
+}
+
+.teacher-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 15px;
+}
+
+.teacher-status {
+  color: @additionalColor;
+
+  @media (max-width: @maxPhoneWidth) {
+    display: none;
+  }
+}
+
+.teacher-action {
+  margin-left: auto;
+}

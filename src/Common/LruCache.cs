@@ -44,6 +44,19 @@ namespace Ulearn.Common
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public bool Replace(TKey key, TValue value)
+		{
+			if (!cache.TryGetValue(key, out var node))
+				return false;
+			
+			lastUsedItems.Remove(node);
+			cache.Remove(key);
+				
+			Add(key, value);
+			return true;
+		}
+
 		private bool IsItemTooOld(LruCacheItem<TKey, TValue> cacheItem)
 		{
 			var now = DateTime.Now;

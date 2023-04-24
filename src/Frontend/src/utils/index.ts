@@ -38,7 +38,7 @@ export function buildQuery(
 					const array = (params[key] as []).map(encodeURIComponent);
 					return (convert ? convert(esc(key)) : esc(key)) + '=' + array.join('&' + key + '=');
 				}
-				return (convert ? convert(esc(key)) : esc(key)) + '=' + esc(params[key] as string).toLowerCase();
+				return (convert ? convert(esc(key)) : esc(key)) + '=' + esc(params[key] as string);
 			}
 		)
 		.join('&');

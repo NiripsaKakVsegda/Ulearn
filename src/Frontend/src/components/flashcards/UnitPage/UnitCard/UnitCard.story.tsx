@@ -71,7 +71,7 @@ export const LongTitleWithUndefindeTotalFlashcardsCount = (): React.ReactNode =>
 
 LongTitleWithUndefindeTotalFlashcardsCount.storyName = "Long title with undefinde totalFlashcardsCount";
 
-export const UndefinedAll = (): React.ReactNode => <UnitCard/>;
+export const UndefinedAll = (): React.ReactNode => <UnitCard unitTitle={'unitTitle'}/>;
 
 UndefinedAll.storyName = "Undefined all";
 

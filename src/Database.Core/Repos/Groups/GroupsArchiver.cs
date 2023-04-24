@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repos.Groups
@@ -24,7 +25,7 @@ namespace Database.Repos.Groups
 		{
 			var yearAgo = DateTime.Today.AddYears(-1);
 			var groupsQueryable = db.Groups
-				.Where(g => !g.IsArchived && !g.IsDeleted && (g.CreateTime == null || g.CreateTime < yearAgo));
+				.Where(g => !g.IsArchived && !g.IsDeleted && (g.CreateTime == null || g.CreateTime < yearAgo) && g.GroupType == GroupType.SingleGroup);
 			if (courseId != null)
 				groupsQueryable = groupsQueryable.Where(g => g.CourseId == courseId);
 			var groupsIds = await groupsQueryable.Select(g => g.Id).ToListAsync();

@@ -43,7 +43,7 @@ namespace Ulearn.Web.Api.Controllers
 			if (!isTester)
 				return Forbid($"You have no access to course {courseId}");
 			
-			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
+			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
 			if (group == null)
 				return NotFound($"Group with id {groupId} not found");
 			
@@ -88,7 +88,7 @@ namespace Ulearn.Web.Api.Controllers
 					return NotFound($"Slide with id {slideId} not found");
 			}
 
-			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
+			var group = (await groupsRepo.GetCourseGroupsQueryable(courseId, GroupQueryType.SingleGroup, true).Where(g => g.Id == groupId).ToListAsync()).FirstOrDefault();
 
 			if (group == null)
 				return NotFound($"Group with id {groupId} not found");

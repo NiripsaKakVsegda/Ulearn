@@ -41,7 +41,7 @@ const reduxProps: ScoreHeaderPropsFromRedux = {
 	slideId,
 	courseId,
 	showStudentSubmissions: false,
-	score: 10,
+	scoreHeader: 10,
 	isSkipped: false,
 	waitingForManualChecking: false,
 	prohibitFurtherManualChecking: false,
@@ -53,31 +53,31 @@ const reduxProps: ScoreHeaderPropsFromRedux = {
 export const AllHeaders = ListTemplate.bind({});
 AllHeaders.args = {
 	items: [
-		{ props: { ...reduxProps, score: 50 }, header: "Полный балл" },
-		{ props: { ...reduxProps, score: 0 }, header: "0 баллов" },
+		{ props: { ...reduxProps, scoreHeader: 50 }, header: "Полный балл" },
+		{ props: { ...reduxProps, scoreHeader: 0 }, header: "0 баллов" },
 		{ props: { ...reduxProps, isSkipped: true }, header: "Пропущено" },
 		{ props: { ...reduxProps, waitingForManualChecking: true }, header: "Ожидает ревью" },
-		{ props: { ...reduxProps, waitingForManualChecking: true, score: 50 }, header: "Ожидает ревью и полный балл" },
+		{ props: { ...reduxProps, waitingForManualChecking: true, scoreHeader: 50 }, header: "Ожидает ревью и полный балл" },
 		{ props: { ...reduxProps, prohibitFurtherManualChecking: true }, header: "Ревью запрещено" },
 		{
-			props: { ...reduxProps, prohibitFurtherManualChecking: true, score: 50 },
+			props: { ...reduxProps, prohibitFurtherManualChecking: true, scoreHeader: 50 },
 			header: "Ревью запрещено и полный балл"
 		},
 		{ props: { ...reduxProps, hasReviewedSubmissions: true }, header: "Прошел ревью, неполный балл" },
-		{ props: { ...reduxProps, hasReviewedSubmissions: true, score: 50 }, header: "Прошел ревью, полный балл" },
+		{ props: { ...reduxProps, hasReviewedSubmissions: true, scoreHeader: 50 }, header: "Прошел ревью, полный балл" },
 		//Instructor cases
 		{
 			props: { ...reduxProps, isSkipped: true, showStudentSubmissions: true },
 			header: "Пропущено (преподаватель)"
 		},
-		{ props: { ...reduxProps, score: 50, showStudentSubmissions: true }, header: "Полный балл (преподаватель)" },
-		{ props: { ...reduxProps, score: 0, showStudentSubmissions: true }, header: "0 баллов (преподаватель)" },
+		{ props: { ...reduxProps, scoreHeader: 50, showStudentSubmissions: true }, header: "Полный балл (преподаватель)" },
+		{ props: { ...reduxProps, scoreHeader: 0, showStudentSubmissions: true }, header: "0 баллов (преподаватель)" },
 	]
 };
 
 function GetStore(reduxProps: ScoreHeaderPropsFromRedux) {
 	const {
-		score, isSkipped, waitingForManualChecking, prohibitFurtherManualChecking, maxScore, hasReviewedSubmissions,
+		scoreHeader, isSkipped, waitingForManualChecking, prohibitFurtherManualChecking, maxScore, hasReviewedSubmissions,
 		showStudentSubmissions
 	} = reduxProps;
 	const state: DeepPartial<RootState> = {
@@ -85,7 +85,7 @@ function GetStore(reduxProps: ScoreHeaderPropsFromRedux) {
 			progress: {
 				[courseId]: {
 					[slideId]: {
-						score: score,
+						score: scoreHeader,
 						isSkipped: isSkipped,
 						waitingForManualChecking: waitingForManualChecking,
 						prohibitFurtherManualChecking: prohibitFurtherManualChecking,

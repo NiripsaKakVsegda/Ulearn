@@ -209,7 +209,7 @@ namespace Database
 			SetDeleteBehavior<GroupAccess, ApplicationUser>(modelBuilder, c => c.User, c => c.UserId, DeleteBehavior.Cascade);
 			SetDeleteBehavior<GroupAccess, ApplicationUser>(modelBuilder, c => c.GrantedBy, c => c.GrantedById, DeleteBehavior.Cascade);
 
-			SetDeleteBehavior<LabelOnGroup, Group>(modelBuilder, c => c.Group, c => c.GroupId);
+			SetDeleteBehavior<LabelOnGroup, SingleGroup>(modelBuilder, c => c.Group, c => c.GroupId);
 			SetDeleteBehavior<GroupLabel, ApplicationUser>(modelBuilder, c => c.Owner, c => c.OwnerId);
 			SetDeleteBehavior<LabelOnGroup, GroupLabel>(modelBuilder, c => c.Label, c => c.LabelId);
 
@@ -236,6 +236,11 @@ namespace Database
 								.ToList());
 				}
 			});
+
+			modelBuilder.Entity<GroupBase>()
+				.HasDiscriminator(x => x.GroupType)
+				.HasValue<SingleGroup>(GroupType.SingleGroup)
+				.HasValue<SuperGroup>(GroupType.SuperGroup);
 
 			CreateIndexes(modelBuilder);
 		}
@@ -288,9 +293,9 @@ namespace Database
 			AddIndex<FeedViewTimestamp>(modelBuilder, c => c.Timestamp);
 			AddIndex<FeedViewTimestamp>(modelBuilder, c => new { c.UserId, c.TransportId });
 
-			AddIndex<Group>(modelBuilder, c => c.CourseId);
-			AddIndex<Group>(modelBuilder, c => c.OwnerId);
-			AddIndex<Group>(modelBuilder, c => c.InviteHash);
+			AddIndex<GroupBase>(modelBuilder, c => c.CourseId);
+			AddIndex<GroupBase>(modelBuilder, c => c.OwnerId);
+			AddIndex<GroupBase>(modelBuilder, c => c.InviteHash);
 
 			AddIndex<GroupAccess>(modelBuilder, c => c.GroupId);
 			AddIndex<GroupAccess>(modelBuilder, c => new { c.GroupId, c.IsEnabled });
@@ -490,7 +495,10 @@ namespace Database
 		public DbSet<ExerciseCodeReview> ExerciseCodeReviews { get; set; }
 		public DbSet<ExerciseCodeReviewComment> ExerciseCodeReviewComments { get; set; }
 
-		public DbSet<Group> Groups { get; set; }
+		public DbSet<GroupBase> Groups { get; set; }
+		public DbSet<SingleGroup> SingleGroups { get; set; }
+		public DbSet<SuperGroup> SuperGroups { get; set; }
+		
 		public DbSet<GroupMember> GroupMembers { get; set; }
 		public DbSet<GroupLabel> GroupLabels { get; set; }
 		public DbSet<LabelOnGroup> LabelsOnGroups { get; set; }

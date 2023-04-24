@@ -17,11 +17,11 @@ namespace Database.Repos.Groups
 		Task<List<string>> GetUsersIdsForAllCourseGroupsAsync(string courseId, bool includeArchived = false);
 		Task<Dictionary<string, List<int>>> GetUsersGroupsIdsAsync(string courseId, List<string> usersIds, bool includeArchived = false);
 		Task<List<int>> GetUserGroupsIdsAsync(string courseId, string userId, bool includeArchived = false);
-		Task<List<Group>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false);
+		Task<List<SingleGroup>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false);
 		Task<List<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(ICollection<int> groupIds);
 		Task<bool> IsUserMemberOfGroup(int groupId, string userId);
-		Task<Dictionary<string, List<Group>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false);
-		Task<List<Group>> GetUserGroupsAsync(string userId);
+		Task<Dictionary<string, List<SingleGroup>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false);
+		Task<List<SingleGroup>> GetUserGroupsAsync(string userId);
 		Task<string> GetUserGroupsNamesAsString(string courseId, string userId, bool includeArchived = false);
 	}
 }

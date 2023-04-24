@@ -1219,67 +1219,6 @@ namespace Database.Migrations
                     b.ToTable("GraderClients");
                 });
 
-            modelBuilder.Entity("Database.Models.Group", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("CanUsersSeeGroupProgress")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("CourseId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime?>("CreateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("DefaultProhibitFutherReview")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("InviteHash")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsInviteLinkEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsManualCheckingEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsManualCheckingEnabledForOldSolutions")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("InviteHash");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Groups");
-                });
-
             modelBuilder.Entity("Database.Models.GroupAccess", b =>
                 {
                     b.Property<int>("Id")
@@ -1323,6 +1262,60 @@ namespace Database.Migrations
                     b.HasIndex("GroupId", "UserId", "IsEnabled");
 
                     b.ToTable("GroupAccesses");
+                });
+
+            modelBuilder.Entity("Database.Models.GroupBase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("CreateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("GroupType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("InviteHash")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsInviteLinkEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("InviteHash");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Groups");
+
+                    b.HasDiscriminator<int>("GroupType");
                 });
 
             modelBuilder.Entity("Database.Models.GroupLabel", b =>
@@ -3023,6 +3016,38 @@ namespace Database.Migrations
                     b.HasDiscriminator().HasValue("RevokedAccessToGroupNotification");
                 });
 
+            modelBuilder.Entity("Database.Models.SingleGroup", b =>
+                {
+                    b.HasBaseType("Database.Models.GroupBase");
+
+                    b.Property<bool>("CanUsersSeeGroupProgress")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("DefaultProhibitFutherReview")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsManualCheckingEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsManualCheckingEnabledForOldSolutions")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("SuperGroupId")
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("Database.Models.SuperGroup", b =>
+                {
+                    b.HasBaseType("Database.Models.GroupBase");
+
+                    b.Property<string>("DistributionTableLink")
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
             modelBuilder.Entity("Database.Models.SystemMessageNotification", b =>
                 {
                     b.HasBaseType("Database.Models.Notification");
@@ -3305,7 +3330,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.EnabledAdditionalScoringGroup", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3415,7 +3440,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.GoogleSheetExportTaskGroup", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3443,17 +3468,6 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Models.Group", b =>
-                {
-                    b.HasOne("Database.Models.ApplicationUser", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("Database.Models.GroupAccess", b =>
                 {
                     b.HasOne("Database.Models.ApplicationUser", "GrantedBy")
@@ -3461,7 +3475,7 @@ namespace Database.Migrations
                         .HasForeignKey("GrantedById")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3479,6 +3493,17 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Database.Models.GroupBase", b =>
+                {
+                    b.HasOne("Database.Models.ApplicationUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("Database.Models.GroupLabel", b =>
                 {
                     b.HasOne("Database.Models.ApplicationUser", "Owner")
@@ -3492,7 +3517,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.GroupMember", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany("Members")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -3511,7 +3536,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.LabelOnGroup", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -3951,7 +3976,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.CreatedGroupNotification", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3973,7 +3998,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.GroupIsArchivedNotification", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3984,7 +4009,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.GroupMembersHaveBeenAddedNotification", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3995,7 +4020,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.GroupMembersHaveBeenRemovedNotification", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4006,7 +4031,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.JoinedToYourGroupNotification", b =>
                 {
-                    b.HasOne("Database.Models.Group", "Group")
+                    b.HasOne("Database.Models.SingleGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4165,11 +4190,6 @@ namespace Database.Migrations
                     b.Navigation("Groups");
                 });
 
-            modelBuilder.Entity("Database.Models.Group", b =>
-                {
-                    b.Navigation("Members");
-                });
-
             modelBuilder.Entity("Database.Models.ManualExerciseChecking", b =>
                 {
                     b.Navigation("Reviews");
@@ -4194,6 +4214,11 @@ namespace Database.Migrations
                     b.Navigation("ManualChecking");
 
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("Database.Models.SingleGroup", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

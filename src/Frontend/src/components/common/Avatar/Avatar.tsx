@@ -12,7 +12,6 @@ import styles from "./avatar.less";
 interface Props {
 	size: 'big' | 'small';
 	user: ShortUserInfo;
-
 	className?: string;
 }
 
@@ -31,21 +30,17 @@ function Avatar(props: Props): React.ReactElement {
 	}
 
 	if(imageUrl && !imageError) {
-		return renderImage(imageUrl, classes);
-	}
-
-	return renderCircle(classes);
-
-	function renderImage(url: string, className: string) {
 		return (
 			<img
 				alt="Аватарка"
-				className={ className }
-				src={ url }
+				className={ classes }
+				src={ imageUrl }
 				onError={ onImageError }
 			/>
 		);
 	}
+
+	return renderCircle(classes);
 
 	function onImageError() {
 		setState({ imageError: true });
@@ -60,7 +55,9 @@ function Avatar(props: Props): React.ReactElement {
 		};
 
 		return (
-			<div style={ divStyle } className={ `${ className } ${ styles["color-avatar"] }` }>{ userFirstLetter }</div>
+			<div style={ divStyle } className={ `${ className } ${ styles["color-avatar"] }` }>
+				{ userFirstLetter }
+			</div>
 		);
 	}
 }

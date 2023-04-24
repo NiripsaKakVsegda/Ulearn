@@ -25,7 +25,7 @@ namespace Database.Repos
 		public async Task<List<AdditionalContentPublication>> GetAdditionalContentPublicationsForUser(string courseId, string userId)
 		{
 			var groups = db.Groups
-				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.GroupType == GroupType.SingleGroup)
 				.Select(g => g.Id);
 			var userGroupsIds = await db.GroupMembers
 				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)
@@ -97,7 +97,7 @@ namespace Database.Repos
 				return true;
 
 			var groups = db.Groups
-				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived)
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.GroupType == GroupType.SingleGroup)
 				.Select(g => g.Id);
 			var userGroupsIds = await db.GroupMembers
 				.Where(m => groups.Contains(m.GroupId) && m.UserId == userId)

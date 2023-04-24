@@ -9,7 +9,7 @@ public class GroupsFilterViewModel
 
 	public List<string> SelectedGroupsIds { get; set; }
 
-	public List<Group> Groups { get; set; }
+	public List<SingleGroup> Groups { get; set; }
 
 	public string InputControlName { get; set; } = "group";
 
@@ -17,7 +17,7 @@ public class GroupsFilterViewModel
 	public Dictionary<int, List<string>> UsersIdsWithGroupsAccess { get; set; }
 }
 
-public class GroupsComparer : IComparer<(Group Group, List<string> Instructors)>
+public class GroupsComparer : IComparer<(SingleGroup Group, List<string> Instructors)>
 {
 	private readonly string userId;
 
@@ -26,9 +26,9 @@ public class GroupsComparer : IComparer<(Group Group, List<string> Instructors)>
 		this.userId = userId;
 	}
 
-	public int Compare((Group Group, List<string> Instructors) a, (Group Group, List<string> Instructors) b)
+	public int Compare((SingleGroup Group, List<string> Instructors) a, (SingleGroup Group, List<string> Instructors) b)
 	{
-		List<string> GetInstructors((Group Group, List<string> Instructors) t)
+		List<string> GetInstructors((SingleGroup Group, List<string> Instructors) t)
 			=> Enumerable.Repeat(t.Group.OwnerId, 1).Concat(t.Instructors.EmptyIfNull()).ToList();
 
 		var instructorsInA = GetInstructors(a);

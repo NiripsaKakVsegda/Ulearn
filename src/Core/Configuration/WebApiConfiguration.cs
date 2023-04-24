@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Ulearn.Core.Configuration;
 
@@ -14,10 +15,20 @@ namespace Web.Api.Configuration
 		public FrontendConfiguration Frontend { get; set; }
 
 		public string NotificationBar { get; set; } // сообщение в плашке на фронте. Показывается сверху, обычно о технических работах
-		
+
 		public bool OverlapNotificationBar { get; set; } // плашка на весь экран, не мешает админам
 
-		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки
+		public bool ForceNotificationBar { get; set; } // запретить скрытие плашки]
+
+		public SuperGroupCacheConfiguration SuperGroupCache { get; set; } // настройки кэша для супер-групп
+		
+	}
+	
+	public class SuperGroupCacheConfiguration
+	{
+		public int Capacity { get; set; } = 50;
+
+		public TimeSpan MaxLifeTime { get; set; } = TimeSpan.FromHours(1);
 	}
 
 	public class WebConfiguration : WebApiConfiguration

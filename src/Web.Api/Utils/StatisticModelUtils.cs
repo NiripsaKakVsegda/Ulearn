@@ -272,15 +272,15 @@ namespace Ulearn.Web.Api.Utils
 				.ToDictionary(kv => kv.Key, kv => kv.Value)
 				.ToSortedDictionary();
 
-			List<Group> groups;
+			List<SingleGroup> groups;
 			Dictionary<int, List<GroupAccess>> groupsAccesses = null;
 			if (isInstructor)
 			{
-				groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, userId, true, true, false);
+				groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, userId, true, true, false, GroupQueryType.SingleGroup)).AsGroups().ToList();
 				groupsAccesses = await groupAccessesRepo.GetGroupAccessesAsync(groups.Select(g => g.Id));
 			}
 			else
-				groups = await groupMembersRepo.GetUserGroupsAsync(courseId, userId);
+				groups = (await groupMembersRepo.GetUserGroupsAsync(courseId, userId)).AsGroups().ToList();
 
 			var model = new CourseStatisticPageModel
 			{

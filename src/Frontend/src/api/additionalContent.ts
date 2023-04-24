@@ -6,9 +6,8 @@ import {
 } from "src/models/additionalContent";
 import { additionalContent } from "src/consts/routes";
 
-export function getAdditionalContent(courseId: string,
-	groupId: number
-): Promise<AdditionalContentPublicationsResponse> {
+export function getAdditionalContent(courseId: string, groupId: number)
+	: Promise<AdditionalContentPublicationsResponse> {
 	return api.get(additionalContent + buildQuery({ courseId, groupId }));
 }
 
@@ -20,7 +19,11 @@ export function updatePublication(publicationId: string, date: string): Promise<
 	return api.patch(`${ additionalContent }/${ publicationId }` + buildQuery({ date, }));
 }
 
-export function addPublication(courseId: string, groupId: number, unitId: string, slideId: string | undefined,
+export function addPublication(
+	courseId: string,
+	groupId: number,
+	unitId: string,
+	slideId: string | undefined,
 	date: string
 ): Promise<AdditionalContentPublicationResponse> {
 	return api.post(additionalContent + buildQuery({

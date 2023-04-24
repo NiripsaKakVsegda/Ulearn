@@ -256,7 +256,7 @@ namespace Ulearn.Web.Api.Controllers
 				return false;
 			if (await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.CourseAdmin))
 				return true;
-			var accessibleGroupsIds = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, true, true, true))
+			var accessibleGroupsIds = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(courseId, UserId, true, true, true, GroupQueryType.All))
 				.Select(g => g.Id).ToHashSet();
 			return groupsIds.TrueForAll(id => accessibleGroupsIds.Contains(id));
 		}

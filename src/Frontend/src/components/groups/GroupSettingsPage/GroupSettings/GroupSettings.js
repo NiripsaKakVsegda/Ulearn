@@ -8,17 +8,31 @@ import styles from './groupSettings.less';
 
 class GroupSettings extends Component {
 	render() {
-		const {group, scores, onChangeSettings, loading, onChangeScores} = this.props;
+		const {
+			scores,
+			onChangeSettings,
+			loading,
+			onChangeScores,
+			isManualCheckingEnabled,
+			canStudentsSeeGroupProgress,
+			isManualCheckingEnabledForOldSolutions,
+			defaultProhibitFurtherReview,
+			canChangeName
+		} = this.props;
 
 		return (
 			<Loader type="big" active={loading}>
 				<div className={styles.wrapper}>
-					{this.renderChangeGroupName()}
+					{canChangeName && this.renderChangeGroupName()}
 					<div className={`${styles["checkbox-block"]} ${styles.settings}`}>
 						<h4 className={styles["settings-header"]}>Код-ревью и проверка тестов</h4>
 						<GroupSettingsCheckbox
-							group={group}
-							onChangeSettings={onChangeSettings} />
+							onChangeSettings={onChangeSettings}
+							isManualCheckingEnabled={isManualCheckingEnabled}
+							canStudentsSeeGroupProgress={canStudentsSeeGroupProgress}
+							isManualCheckingEnabledForOldSolutions={isManualCheckingEnabledForOldSolutions}
+							defaultProhibitFurtherReview={defaultProhibitFurtherReview}
+						/>
 					</div>
 					{scores.length > 0 &&
 					<div className={styles.settings}>
@@ -75,11 +89,14 @@ GroupSettings.propTypes = {
 	name: PropTypes.string,
 	error: PropTypes.bool,
 	loading: PropTypes.bool,
-	group: PropTypes.object,
 	scores: PropTypes.array,
 	onChangeSettings: PropTypes.func,
 	onChangeName: PropTypes.func,
 	onChangeScores: PropTypes.func,
+	isManualCheckingEnabled: PropTypes.bool,
+	canStudentsSeeGroupProgress: PropTypes.bool,
+	isManualCheckingEnabledForOldSolutions: PropTypes.bool,
+	defaultProhibitFurtherReview: PropTypes.bool,
 };
 
 export default GroupSettings;

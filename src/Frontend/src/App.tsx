@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { Dispatch } from "redux";
 import { BrowserRouter } from 'react-router-dom';
 
 import api from "src/api";
-import setupStore from "src/setupStore";
+import { AppDispatch, store } from "src/setupStore";
 import { Provider, connect, } from "react-redux";
 
 import { ThemeContext, Toast } from "ui";
@@ -27,7 +26,6 @@ import isInDevelopment from "./isInDevelopment";
 import injectUtils from 'src/utils/runExerciseCheck';
 
 injectUtils();
-const store = setupStore();
 
 // Update notifications count each minute
 setInterval(() => {
@@ -75,7 +73,7 @@ class InternalUlearnApp extends Component<Props, State> {
 
 		const throttleTimeout = 66;
 
-		//resize event can be called rapidly, to prevent performance issue, we throttling event handler
+		//resize event can be called rapidly, to prevent performance issue, we're throttling event handler
 		if(!resizeTimeout) {
 			this.setState({
 				resizeTimeout: setTimeout(this.handleResize, throttleTimeout)
@@ -93,7 +91,7 @@ class InternalUlearnApp extends Component<Props, State> {
 	};
 
 	componentDidMount() {
-		const { getCurrentUser, getCourses, } = this.props;
+		const { getCurrentUser, getCourses } = this.props;
 		getCurrentUser();
 		getCourses();
 		this.setState({
@@ -122,7 +120,6 @@ class InternalUlearnApp extends Component<Props, State> {
 		const pathname = window.location.pathname.toLowerCase();
 		const params = new URLSearchParams(window.location.search);
 		const isLtiParam = params.get('isLti');
-		const isLtiParamLower = params.get('islti');
 		const isLti = pathname.endsWith('/ltislide') || (isLtiParam?.toString().toLowerCase() === 'true'); //TODO remove this flag,that hiding header and nav menu
 		const isHeaderVisible = !isLti;
 
@@ -139,7 +136,7 @@ class InternalUlearnApp extends Component<Props, State> {
 						<NotificationBar isSystemAdministrator={ account?.isSystemAdministrator || false }/>
 						<NotFoundErrorBoundary>
 							{ !initializing && // Avoiding bug: don't show page while initializing.
-								// Otherwise we make two GET requests sequentially.
+								// Otherwise, we make two GET requests sequentially.
 								// Unfortunately some our GET handlers are not idempotent (i.e. /Admin/CheckNextExerciseForSlide)
 								<Router account={ account }/>
 							}
@@ -176,7 +173,7 @@ const mapStateToProps = (state: RootState) => {
 	};
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => {
+const mapDispatchToProps = (dispatch : AppDispatch) => {
 	return {
 		getCurrentUser: () => api.account.redux.getCurrentUser()(dispatch),
 		getCourses: () => api.courses.getCourses()(dispatch),

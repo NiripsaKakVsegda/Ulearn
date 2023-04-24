@@ -284,4 +284,4 @@ class Visualizer extends React.Component<VisualizerProps, State> {
 	};
 }
 
-export { Visualizer, VisualizerProps };
+export { Visualizer, type VisualizerProps };

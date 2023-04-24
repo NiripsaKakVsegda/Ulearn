@@ -180,4 +180,4 @@ class ExerciseFormHeader extends React.Component<ExerciseFormHeaderProps> {
 	}
 }
 
-export { ExerciseFormHeader, ExerciseFormHeaderProps };
+export { ExerciseFormHeader, type ExerciseFormHeaderProps };

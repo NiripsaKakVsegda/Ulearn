@@ -120,7 +120,7 @@ export const getUnitStatistics = (
 					break;
 				}
 				case SlideType.Flashcards:
-					additionalInfoBySlide[id].status = flashcardsStatistics.unratedCount === 0
+					additionalInfoBySlide[id].status = flashcardsStatistics?.unratedCount === 0
 						? SlideProgressStatus.done
 						: SlideProgressStatus.canBeImproved;
 					break;

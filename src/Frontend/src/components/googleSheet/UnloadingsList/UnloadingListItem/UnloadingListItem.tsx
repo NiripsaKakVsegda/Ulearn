@@ -102,7 +102,7 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 			return;
 		}
 		const id = parseInt(stringId);
-		api.deleteTask(id);
+		api?.deleteTask(id);
 	}
 }
 

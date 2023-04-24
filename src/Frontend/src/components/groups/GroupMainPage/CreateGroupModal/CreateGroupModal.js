@@ -4,6 +4,7 @@ import api from "src/api";
 import { Modal, Input, Button, Tooltip } from 'ui';
 
 import styles from "./createGroupModal.less";
+import { GroupType } from "../../../../models/groups";
 
 class CreateGroupModal extends Component {
 
@@ -77,7 +78,7 @@ class CreateGroupModal extends Component {
 
 		this.setState({ loading: true, });
 		try {
-			const newGroup = await api.groups.createGroup(courseId, name);
+			const newGroup = await api.groups.createGroup(courseId, name, GroupType.SingleGroup);
 			onCloseModal();
 			onSubmit(newGroup.id);
 		} catch (e) {
