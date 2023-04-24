@@ -92,7 +92,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				membersCountByGroup[g.Id],
 				groupAccessesByGroup[g.Id],
 				addGroupApiUrl: true,
-				superGroupName: g.SuperGroupId.HasValue ? superGroups[g.SuperGroupId.Value].Name : null
+				superGroupName: g.SuperGroupId.HasValue && superGroups.ContainsKey(g.SuperGroupId.Value) ? superGroups[g.SuperGroupId.Value].Name : null
 			)).ToList();
 
 			return new GroupsListResponse
