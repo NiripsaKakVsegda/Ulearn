@@ -33,12 +33,15 @@ namespace Database.Repos.Groups
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
 		Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings settings);
 		Task<T> ModifyGroupAsync<T>(int groupId, GroupSettings newSettings) where T : GroupBase;
+		Task ModifySubGroupsAsync(int superGroupId, GroupSettings newSettings);
 		Task ChangeGroupOwnerAsync(int groupId, string newOwnerId);
 		Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived);
 		Task DeleteGroupAsync(int groupId);
 		Task<T> FindGroupByIdAsync<T>(int groupId) where T : GroupBase;
 		Task<GroupBase> FindGroupByIdAsync(int groupId);
+		Task<List<T>> FindGroupsByIdsAsync<T>(List<int> groupIds) where T : GroupBase;
 		Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false);
+		Task<List<SingleGroup>> FindGroupsBySuperGroupIdsAsync(List<int> superGroupIds, bool includeArchived = false);
 		Task<GroupBase> FindGroupByInviteHashAsync(Guid hash);
 		Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash);
 		Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false);
@@ -47,8 +50,10 @@ namespace Database.Repos.Groups
 		Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId);
 		Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId);
 		Task EnableAdditionalScoringGroupsForGroupAsync(int groupId, IEnumerable<string> scoringGroupsIds);
+		Task EnableAdditionalScoringGroupsForGroupAsync(HashSet<int> groupIds, List<string> scoringGroupsIds);
 		Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId, bool includeArchived = false);
 		Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupAsync(int groupId);
+		Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupsAsync(HashSet<int> groupsIds);
 		IQueryable<GroupBase> GetCourseGroupsQueryable(string courseId, GroupQueryType groupType, bool includeArchived = false);
 		Task<HashSet<string>> GetUsersIdsWithEnabledManualChecking(Course course, List<string> userIds);
 		Task<List<string>> GetUsersIdsForAllGroups(string courseId);

@@ -22,6 +22,8 @@ import { GroupSettingsTab } from "../../../../consts/groupsPages";
 import { AppDispatch } from "../../../../setupStore";
 import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
 import texts from './GroupsSettingsPage.texts';
+import { GroupType } from "../../../../models/groups";
+import SuperGroupPage from "../../../../components/groups/GroupSettingsPage/SuperGroup/SuperGroupPage";
 
 function GroupSettingsPage(props: Props) {
 	const {
@@ -49,6 +51,10 @@ function GroupSettingsPage(props: Props) {
 		return <CourseLoader/>;
 	}
 	const loadedGroup = group;
+
+	if(loadedGroup.groupType === GroupType.SuperGroup) {
+		return <SuperGroupPage groupInfo={ loadedGroup }/>;
+	}
 
 	return (
 		<Page metaTitle={ texts.buildPageTitle(group.name) }>

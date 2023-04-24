@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import api from "src/api";
 
 import { Add, Ok, Remove, Warning } from "icons";
-import GroupSettings from "../GroupSettings/GroupSettings";
-import InviteBlock from "../GroupMembers/InviteBlock/InviteBlock";
 import Page from "src/pages";
 import { Button, Input, Link, Loader, Modal, Toast, } from "ui";
 
 import { clone } from "src/utils/jsonExtensions";
 import { withNavigate } from "src/utils/router";
 
-import { GroupInfo, GroupScoringGroupInfo } from "src/models/groups";
+import { GroupInfo } from "src/models/groups";
 import {
 	SuperGroupItemActions,
 	SuperGroupSheetExtractionResult,
@@ -22,15 +20,16 @@ import {
 import { WithNavigate } from "src/models/router";
 
 import texts from "./SuperGroup.texts";
-import defaultTexts from "src/pages/course/groups/GroupPage.texts";
-import defaultStyles from "src/pages/course/groups/groupPage.less";
+import defaultTexts from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/GroupSettingsHeader.texts";
+import defaultStyles from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/groupSettingsHeader.less";
 import styles from "./SuperGroup.less";
 import SettingsType from "../SettingsType";
 import UpdateSubGroupsSettings from "./UpdateSubGroupsSettings";
+import InviteBlock from "../GroupMembers/StudentsBlock/InviteBlock/InviteBlock";
+import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
 
 interface SuperGroupProps extends WithNavigate {
 	groupInfo: GroupInfo;
-	scores: GroupScoringGroupInfo[];
 
 	updateSuperGroup?: typeof api.superGroups.updateSuperGroup;
 	extractGoogleSheet?: typeof api.superGroups.extractFromTable;
@@ -63,6 +62,8 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	const [extractionResult, setExtractionResult] = useState<SuperGroupSheetExtractionResult>();
 	const [isLoading, setLoading] = useState(false);
 	const [settingsTab, setSettingsSettingsTab] = useState<SettingsType>();
+	const [saveSettings] = groupSettingsApi.useSaveGroupSettingsMutation();
+
 	const groups = extractionResult
 		? extractionResult.groups
 		: null;
@@ -83,12 +84,22 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		<Page metaTitle={ texts.buildMetaTitle(name) }>
 			{ renderHeader() }
 			{ renderGoogleSheetLink() }
-			<InviteBlock group={ groupInfo }/>
+			<InviteBlock onToggleInviteLink={ onToggleInviteLink } group={ groupInfo }/>
 			<Loader active={ isLoading }>
 				{ extractionResult && renderExtractionResult(extractionResult) }
 			</Loader>
 		</Page>
 	);
+
+	function onToggleInviteLink(isEnabled: boolean) {
+		if(!groupInfo) {
+			return;
+		}
+		saveSettings({
+			groupId: groupInfo.id,
+			groupSettings: { 'isInviteLinkEnabled': isEnabled }
+		});
+	}
 
 	function renderHeader() {
 		return (
@@ -365,14 +376,9 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		}
 		switch (type) {
 			case SettingsType.settings: {
-				const groupsIds = Object
-					.values(groups)
-					.map(g => g.groupId)
-					.filter(id => id) as number[];
-
 				return (
 					<UpdateSubGroupsSettings
-						groupsIds={ groupsIds }
+						superGroupId={ groupInfo.id }
 						onClose={ closeSettingsModal }
 					/>
 				);

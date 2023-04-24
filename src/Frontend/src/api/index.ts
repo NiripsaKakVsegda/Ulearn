@@ -252,7 +252,7 @@ const api = {
 	deadLines,
 	additionalContent,
 	selfCheckups,
-	superGroups: superGroups,
+	superGroups,
 };
 
 export default api;

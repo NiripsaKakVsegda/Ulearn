@@ -10,6 +10,7 @@ import styles from "./groupsListHeader.less";
 import texts from './GroupsListHeader.texts';
 import { GroupsListTab } from "../../../../consts/groupsPages";
 import { CourseInfo } from "../../../../models/course";
+import CreateSuperGroupModal from "../CreateSuperGroupModal/CreateSuperGroupModal";
 
 interface Props {
 	tab: GroupsListTab;
@@ -22,6 +23,7 @@ interface Props {
 const GroupsListHeader: FC<Props> = ({ tab, onTabChange, course, navigateNewGroup }) => {
 	const [createGroupModalOpened, setCreateGroupModalOpened] = useState(false);
 	const [copyGroupModalOpened, setCopyGroupModalOpened] = useState(false);
+	const [createSuperGroupModalOpened, setCreateSuperGroupModalOpened] = useState(false);
 
 	const renderButtons = (): JSX.Element =>
 		<>
@@ -29,6 +31,9 @@ const GroupsListHeader: FC<Props> = ({ tab, onTabChange, course, navigateNewGrou
 				<Gapped gap={ 10 }>
 					<Button use="primary" size="small" onClick={ toggleCreateGroupModal }>
 						{ texts.createGroupButtonText }
+					</Button>
+					<Button use="primary" size="small" onClick={ toggleCreateSuperGroupModal }>
+						{ texts.createSuperGroupButtonText }
 					</Button>
 					<Button use="default" size="small" onClick={ toggleCopyGroupModal }>
 						{ texts.copyGroupButtonMobileText }
@@ -39,6 +44,9 @@ const GroupsListHeader: FC<Props> = ({ tab, onTabChange, course, navigateNewGrou
 				<Gapped gap={ 20 }>
 					<Button use="primary" size="medium" onClick={ toggleCreateGroupModal }>
 						{ texts.createGroupButtonText }
+					</Button>
+					<Button use="primary" size="medium" onClick={ toggleCreateSuperGroupModal }>
+						{ texts.createSuperGroupButtonText }
 					</Button>
 					<Button use="default" size="medium" onClick={ toggleCopyGroupModal }>
 						{ texts.copyGroupButtonText }
@@ -80,6 +88,12 @@ const GroupsListHeader: FC<Props> = ({ tab, onTabChange, course, navigateNewGrou
 					onGroupCopied={ navigateNewGroup }
 				/>
 			}
+			{ createSuperGroupModalOpened &&
+				<CreateSuperGroupModal
+					courseId={ course.id }
+					onCloseModal={ toggleCreateSuperGroupModal }
+					onSubmit={ navigateNewGroup }
+				/> }
 		</React.Fragment>
 	);
 
@@ -89,6 +103,10 @@ const GroupsListHeader: FC<Props> = ({ tab, onTabChange, course, navigateNewGrou
 
 	function toggleCopyGroupModal() {
 		setCopyGroupModalOpened(!copyGroupModalOpened);
+	}
+
+	function toggleCreateSuperGroupModal() {
+		setCreateSuperGroupModalOpened(!createSuperGroupModalOpened);
 	}
 };
 

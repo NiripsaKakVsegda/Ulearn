@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
@@ -51,8 +52,17 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 		private async Task<GroupsListResponse> GetGroupsListResponseAsync(GroupsListParameters parameters)
 		{
-			var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(parameters.CourseId, UserId, false, true, parameters.Archived, GroupQueryType.All);
-
+			var groups = (await groupAccessesRepo.GetAvailableForUserGroupsAsync(parameters.CourseId, UserId, false, true, parameters.Archived, GroupQueryType.SingleGroup))
+				.Cast<SingleGroup>()
+				.ToList();
+			var superGroupsIds = groups
+				.Select(g => g.SuperGroupId)
+				.Distinct()
+				.Where(id => id != null)
+				.Cast<int>()
+				.ToList();
+			var superGroups = (await groupsRepo.FindGroupsByIdsAsync<SuperGroup>(superGroupsIds))
+				.ToDictionary(g => g.Id);
 			if (parameters.UserId != null)
 			{
 				var groupsWithUserAsMemberIds = (await groupMembersRepo.GetUserGroupsIdsAsync(parameters.CourseId, parameters.UserId, parameters.Archived)).ToHashSet();
@@ -81,7 +91,8 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				g,
 				membersCountByGroup[g.Id],
 				groupAccessesByGroup[g.Id],
-				addGroupApiUrl: true
+				addGroupApiUrl: true,
+				superGroupName: g.SuperGroupId.HasValue ? superGroups[g.SuperGroupId.Value].Name : null
 			)).ToList();
 
 			return new GroupsListResponse

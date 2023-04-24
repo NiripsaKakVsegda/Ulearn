@@ -1,11 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { Delete, User } from "icons";
-import { Gapped, Kebab, Loader, MenuItem, Toast } from "ui";
-import ComboboxInstructorsSearch from "./Combobox/ComboboxInstructorsSearch.js";
-import Avatar from "src/components/common/Avatar/Avatar";
-import GroupStudents from "./GroupStudents/GroupStudents.js";
-import InviteBlock from "./InviteBlock/InviteBlock";
-import { Profile } from './Profile';
+import React, { FC } from "react";
 
 import { GroupInfo } from "src/models/groups";
 

@@ -73,10 +73,10 @@ public class SuperGroupManager
 	{
 		var cached = cache.TryGet(spreadsheetUrl, out var cachedSpreadSheetGroups);
 		if (useCache && cached)
-			return (await groupsRepo.FindGroupsBySuperGroupIdAsync(superGroupId), cachedSpreadSheetGroups);
+			return (await groupsRepo.FindGroupsBySuperGroupIdAsync(superGroupId, true), cachedSpreadSheetGroups);
 
 		var spreadSheetGroupsTask = GetSpreadSheetGroups(spreadsheetUrl);
-		var createdGroupsTask = groupsRepo.FindGroupsBySuperGroupIdAsync(superGroupId);
+		var createdGroupsTask = groupsRepo.FindGroupsBySuperGroupIdAsync(superGroupId, true);
 
 		await Task.WhenAll(spreadSheetGroupsTask, createdGroupsTask);
 

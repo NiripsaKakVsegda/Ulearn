@@ -38,6 +38,11 @@ export interface GroupsInfoResponse {
 	groups: GroupInfo[];
 }
 
+export interface SuperGroupsListResponse {
+	superGroups: GroupInfo[];
+	subGroupsBySuperGroupId: { [superGroupId: number]: GroupInfo[] };
+}
+
 export interface GroupScoringGroupsResponse {
 	scores: GroupScoringGroupInfo[];
 }
@@ -83,6 +88,7 @@ export interface GroupInfo extends ChangeableGroupSettings {
 	accesses: GroupAccessesInfo[];
 	apiUrl: string;
 	superGroupId: number | null;
+	superGroupName: string | null;
 	distributionTableLink: string | null;
 }
 

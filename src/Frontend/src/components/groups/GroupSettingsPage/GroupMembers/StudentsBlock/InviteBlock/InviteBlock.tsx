@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { GroupInfo } from "../../../../../../models/groups";
+import { GroupInfo, GroupType } from "../../../../../../models/groups";
 import { Button, Input, Toast, Toggle } from "ui";
 import styles from './inviteBlock.less';
 import texts from './InviteBlock.texts';
@@ -12,45 +12,44 @@ interface Props {
 
 const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 	const isInviteLinkEnabled = group.isInviteLinkEnabled;
-
-	const inviteLink = `${ window.location.origin }/Account/JoinGroup?hash=${ group.inviteHash }`;
+	const isSuperGroup = group.groupType === GroupType.SuperGroup;
 
 	const renderInviteLink = (): JSX.Element =>
-		<div className={ styles["invite-link"] }>
+		<div className={ styles.inviteLink }>
 			<Button
 				use="link"
 				icon={ <Link/> }
 				onClick={ onCopyLink }
-				className={ styles["invite-link-text"] }
+				className={ styles.inviteLinkText }
 			>
 				{ texts.copyLink }
 			</Button>
 
-			<div className={ styles["invite-link-input"] }>
+			<div className={ styles.inviteLinkInput }>
 				<Input
-					type="text"
+					type={ "text" }
 					readOnly
 					selectAllOnFocus
-					value={ inviteLink }
+					value={ texts.buildLink(group.inviteHash) }
 					width="65%"
-
 				/>
 			</div>
 		</div>;
 
 	return (
-		<div className={ styles["toggle-invite"] }>
+		<div className={ styles.toggleInvite }>
 			<label>
 				<Toggle
 					checked={ isInviteLinkEnabled }
-					onValueChange={onToggleInviteLink}
+					onValueChange={ onToggleInviteLink }
 				>
 				</Toggle>
-				<span className={ styles["toggle-invite-text"] }>
-					{ texts.buildLinkHint(isInviteLinkEnabled) }
+				<span className={ styles.toggleInviteText }>
+					{ texts.buildLinkHint(isInviteLinkEnabled, isSuperGroup) }
 				</span>
 			</label>
 			{ isInviteLinkEnabled && renderInviteLink() }
+			{ isInviteLinkEnabled && group.groupType === GroupType.SuperGroup && <p>{ texts.superGroupHintText }</p> }
 		</div>
 	);
 

@@ -12,7 +12,7 @@ import groupsReducer from "./groups";
 import submissionsReducer from "./submissions";
 import favouriteReviewsReducer from "./favouriteReviews";
 import deadLinesReducer from "./deadLines";
-import { groupsApi } from "./toolkit/api/groups/groupsApi";
+import { groupsApi, superGroupsApi } from "./toolkit/api/groups/groupsApi";
 import { usersApi } from "./toolkit/api/usersApi";
 import { authSlice } from "./toolkit/slices/authSlice";
 import { coursesApi } from "./toolkit/api/coursesApi";
@@ -35,6 +35,7 @@ export const rootReducer = combineReducers({
 	deadLines: deadLinesReducer,
 	auth: authSlice.reducer,
 	[groupsApi.reducerPath]: groupsApi.reducer,
+	[superGroupsApi.reducerPath]: superGroupsApi.reducer,
 	[usersApi.reducerPath]: usersApi.reducer,
 	[coursesApi.reducerPath]: coursesApi.reducer,
 	[additionalContentApi.reducerPath]: additionalContentApi.reducer,

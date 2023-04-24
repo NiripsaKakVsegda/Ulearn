@@ -192,10 +192,9 @@
 		</xs:attribute>
 	</xs:complexType>
 
-
 	<xs:complexType name="FlashcardSlide">
 		<xs:sequence>
-			<xs:element name="flashcard" type="Flashcard" minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="flashcard" type="Flashcard" minOccurs="1" maxOccurs="unbounded">
 			</xs:element>
 		</xs:sequence>
 		<xs:attributeGroup ref="FlashcardSlideAttributes"/>

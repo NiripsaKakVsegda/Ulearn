@@ -1,12 +1,14 @@
 import React, { FC } from 'react';
-import { GroupInfo } from "../../../../../models/groups";
+import { ChangeableGroupSettings, GroupInfo } from "../../../../../models/groups";
 import styles from './groupReviewSettings.less';
 import { Checkbox } from "ui";
 import texts from './GroupReviewSettings.texts';
 
 interface Props {
-	group: GroupInfo;
-	onChangeSettings: (field: keyof GroupInfo, value: GroupInfo[keyof GroupInfo]) => void;
+	settings: ChangeableGroupSettings;
+	onChangeSettings: (field: keyof ChangeableGroupSettings,
+		value: ChangeableGroupSettings[keyof ChangeableGroupSettings]
+	) => void;
 }
 
 const enum GroupInfoFields {
@@ -16,14 +18,14 @@ const enum GroupInfoFields {
 	defaultProhibitFurtherReview = 'defaultProhibitFurtherReview',
 }
 
-const GroupReviewSettings: FC<Props> = ({ group, onChangeSettings }) => {
+const GroupReviewSettings: FC<Props> = ({ settings, onChangeSettings }) => {
 	return (
 		<div className={ styles["checkbox-block"] }>
 			<h4 className={ styles["settings-header"] }>{ texts.reviewSettings }</h4>
 			<div>
 				{ renderCheckbox(GroupInfoFields.canStudentsSeeGroupProgress, texts.canStudentsSeeGroupProgress) }
 				{ renderCheckbox(GroupInfoFields.isManualCheckingEnabled, texts.isManualCheckingEnabled) }
-				{ group.isManualCheckingEnabled && <React.Fragment>
+				{ settings.isManualCheckingEnabled && <React.Fragment>
 					{ renderCheckbox(
 						GroupInfoFields.isManualCheckingEnabledForOldSolutions,
 						texts.isManualCheckingEnabledForOldSolutions,
@@ -40,10 +42,11 @@ const GroupReviewSettings: FC<Props> = ({ group, onChangeSettings }) => {
 
 	);
 
-	function renderCheckbox(field: keyof GroupInfo, text: string, hint?: string) {
+	function renderCheckbox(field: keyof ChangeableGroupSettings, text: string, hint?: string) {
 		return <label className={ styles["settings-checkbox"] }>
 			<Checkbox
-				checked={ group[field] as boolean }
+				initialIndeterminate={ settings[field] === undefined }
+				checked={ settings[field] }
 				onValueChange={ onValueChange }
 			>
 				{ text }

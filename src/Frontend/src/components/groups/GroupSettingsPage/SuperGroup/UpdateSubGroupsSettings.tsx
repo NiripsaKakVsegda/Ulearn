@@ -4,30 +4,33 @@ import { Button, Modal, Toast } from "ui";
 import api from "src/api";
 
 import { ChangeableGroupSettings, GroupScoringGroupInfo } from "src/models/groups";
-import GroupSettings from "../GroupSettings/GroupSettings";
 
 import texts from "./SuperGroup.texts";
+import ReviewSettings from "../GroupSettings/GroupReviewSettings/GroupReviewSettings";
+import GroupScoresSettingsList from "../GroupSettings/GroupScoresSettings/GroupScoresSettingsList";
 
 interface Props {
-	groupsIds: number[];
+	superGroupId: number;
 	onClose: () => void;
-	getGroup?: typeof api.groups.getGroup;
-	getScores?: typeof api.groups.getGroupScores;
-	saveGroupSettings?: typeof api.groups.saveGroupSettings;
-	saveScoresSettings?: typeof api.groups.saveScoresSettings;
+	getGroupSettings?: typeof api.superGroups.getGroupSettings;
+	getScores?: typeof api.superGroups.getGroupScores;
+	updateGroupSettings?: typeof api.superGroups.updateGroupSettings;
+	saveScoresSettings?: typeof api.superGroups.saveScoresSettings;
 }
 
 function UpdateSubGroupsSettings({
-	groupsIds,
+	superGroupId,
 	onClose,
-	getGroup = api.groups.getGroup,
-	getScores = api.groups.getGroupScores,
-	saveGroupSettings = api.groups.saveGroupSettings,
-	saveScoresSettings = api.groups.saveScoresSettings,
+	getGroupSettings = api.superGroups.getGroupSettings,
+	getScores = api.superGroups.getGroupScores,
+	updateGroupSettings = api.superGroups.updateGroupSettings,
+	saveScoresSettings = api.superGroups.saveScoresSettings,
 }: Props) {
 	const [isLoading, setIsLoading] = useState(false);
-	const [superGroupScores, setSuperGroupScores] = useState<GroupScoringGroupInfo[]>();
-	const [changedGroupScoresIds, setChangedGroupScoresIds] = useState<string[]>();
+
+	const [scoringInfo, setScoringInfo] = useState<GroupScoringGroupInfo[]>();
+	const [updatedScoringInfo, setUpdatedScoringInfo] = useState<GroupScoringGroupInfo[]>();
+
 	const [superGroupSettings, setSuperGroupSettings] = useState<ChangeableGroupSettings>();
 
 	if(!isLoading && !superGroupSettings) {
@@ -37,154 +40,92 @@ function UpdateSubGroupsSettings({
 	return (
 		<>
 			<Modal.Body>
-				<GroupSettings
-					loading={ isLoading }
-					scores={ superGroupScores || [] }
+				<ReviewSettings
+					settings={ superGroupSettings || {} }
 					onChangeSettings={ onChangeSettings }
-					onChangeScores={ onChangeScores }
-					{ ...superGroupSettings || {} }
-					canChangeName={ false }
+				/>
+				<GroupScoresSettingsList
+					initialIndeterminateOnNull
+					scoringInfo={ updatedScoringInfo || [] }
+					onChangeScoringInfo={ onChangeScores }
 				/>
 			</Modal.Body>
 			<Modal.Footer>
 				<Button
 					use={ 'primary' }
-					onClick={ updateGroupSettings }>
+					onClick={ _updateGroupSettings }>
 					{ texts.updateGroupsSettingsButtonText }
 				</Button>
 			</Modal.Footer>
 		</>);
 
-	function onChangeSettings(field: keyof ChangeableGroupSettings, value: boolean) {
+	function onChangeSettings(field: keyof ChangeableGroupSettings,
+		value: ChangeableGroupSettings[keyof ChangeableGroupSettings]
+	) {
 		setSuperGroupSettings(prevState => ({ ...prevState, [field]: value }));
 	}
 
-	function onChangeScores(
-		key: string,
-		field: keyof GroupScoringGroupInfo,
-		value: GroupScoringGroupInfo[keyof GroupScoringGroupInfo]
-	) {
-		if(!superGroupScores) {
+	function onChangeScores(updated: GroupScoringGroupInfo) {
+		if(!updatedScoringInfo) {
 			return;
 		}
 
-		const updatedScores = superGroupScores
-			.map(item => item.id === key ? { ...item, [field]: value } : item);
+		const updatedScores = updatedScoringInfo
+			.map(item => item.id === updated.id ? updated : item);
 
-		const checkedScoresSettingsIds = updatedScores
-			.filter(item => item[field] === true)
-			.map(item => item.id);
-
-		setSuperGroupScores(updatedScores);
-		setChangedGroupScoresIds(checkedScoresSettingsIds);
+		setUpdatedScoringInfo(updatedScores);
 	}
 
 	async function loadGroupsInfos() {
 		setIsLoading(true);
 
-		const groupsRequests = [];
-		for (const groupId of groupsIds) {
-			groupsRequests.push(getGroup(groupId));
-		}
-
-		const scoresRequests = [];
-		for (const groupId of groupsIds) {
-			scoresRequests.push(getScores(groupId));
-		}
-
-		const groupsPromise = Promise
-			.all(groupsRequests);
-		const scoresPromise = Promise
-			.all(scoresRequests);
+		const scoresPromise = getScores(superGroupId);
+		const groupsPromise = getGroupSettings(superGroupId);
 
 		await Promise.all([groupsPromise, scoresPromise]);
 
-		const groupsResponses = await groupsPromise;
+		const settingsResponse = await groupsPromise;
 		const scoresResponses = await scoresPromise;
 
-		let settings: ChangeableGroupSettings = {};
-		let scores: GroupScoringGroupInfo[] = [];
-
-		const merge = <T, >(
-			fieldName: keyof T,
-			maintainer: T,
-			changes: T
-		) => {
-			if(maintainer[fieldName] === changes[fieldName]) {
-				return { ...maintainer };
-			}
-
-			return { ...maintainer, [fieldName]: undefined };
-		};
-
-		for (let i = 0; i < groupsResponses.length; i++) {
-			const group = groupsResponses[i];
-			const _scores = scoresResponses[i].scores;
-
-			const _settings = group as ChangeableGroupSettings;
-
-			if(i === 0) {
-				settings = {
-					isManualCheckingEnabledForOldSolutions: _settings.isManualCheckingEnabledForOldSolutions || false,
-					isManualCheckingEnabled: _settings.isManualCheckingEnabled || false,
-					defaultProhibitFurtherReview: _settings.defaultProhibitFurtherReview || false,
-					canStudentsSeeGroupProgress: _settings.canStudentsSeeGroupProgress || false,
-				};
-				scores = _scores;
-
-				continue;
-			}
-
-			//merging settings of 2 groups
-			for (const key of Object.keys(settings)) {
-				settings = merge(key as keyof ChangeableGroupSettings, settings, _settings);
-			}
-
-			//merging scores of 2 groups
-			for (let k = 0; k < scores.length; k++) {
-				const score = scores[k];
-				const _score = _scores[k];
-
-				if(score.areAdditionalScoresEnabledInThisGroup !== _score.areAdditionalScoresEnabledInThisGroup) {
-					score.areAdditionalScoresEnabledInThisGroup = undefined;
-				}
-				// for (const key of Object.keys(score)) {
-				// 	//const was = { ...newScores[k] };
-				// 	const _key = key as keyof GroupScoringGroupInfo;
-				// 	if(score[_key] !== _score[_key]) {
-				// 		scores[k][_key] = undefined as never;
-				// 	}
-				// 	const mergeResult = merge(key as keyof GroupScoringGroupInfo, score, _score);
-				// }
-			}
-		}
-
-		setSuperGroupSettings(settings);
-		setSuperGroupScores(scores);
+		setSuperGroupSettings(settingsResponse);
+		setScoringInfo(scoresResponses.scores);
+		setUpdatedScoringInfo(scoresResponses.scores);
 		setIsLoading(false);
 	}
 
-	async function updateGroupSettings() {
-		await Promise.all(groupsIds
-			.map(id => {
-				const settingsPromise = superGroupSettings
-					? saveGroupSettings(id, superGroupSettings)
-					: Promise.resolve();
+	async function _updateGroupSettings() {
+		const checkedScoringInfoIds = isScoringInfosChanged() && updatedScoringInfo
+			?.filter(scoreInfo =>
+				scoreInfo.areAdditionalScoresEnabledInThisGroup &&
+				!scoreInfo.areAdditionalScoresEnabledForAllGroups &&
+				scoreInfo.canInstructorSetAdditionalScoreInSomeUnit)
+			.map(item => item.id);
+		const scoresPromise = checkedScoringInfoIds
+			? saveScoresSettings(superGroupId, checkedScoringInfoIds)
+			: Promise.resolve();
 
-				const scoresPromise = changedGroupScoresIds
-					? saveScoresSettings(id, changedGroupScoresIds)
-					: Promise.resolve();
+		const settingsPromise = superGroupSettings
+			? updateGroupSettings(superGroupId, superGroupSettings)
+			: Promise.resolve();
 
-				return Promise.all([
-					settingsPromise,
-					scoresPromise
-				]);
-			}))
-			.then(r => {
+		await Promise.all([settingsPromise, scoresPromise])
+			.then(() => {
 				Toast.push(texts.afterSuccessSettingUpdateToastText);
 			});
 
 		onClose();
+	}
+
+	function isScoringInfosChanged(): boolean {
+		if(!scoringInfo || !updatedScoringInfo) {
+			return false;
+		}
+		for (let i = 0; i < scoringInfo.length; i++) {
+			if(scoringInfo[i].areAdditionalScoresEnabledInThisGroup !== updatedScoringInfo[i].areAdditionalScoresEnabledInThisGroup) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 

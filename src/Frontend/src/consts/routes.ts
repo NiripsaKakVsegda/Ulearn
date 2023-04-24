@@ -42,6 +42,7 @@ export const studentZipDownloadUrl = '/exercise/studentzip';
 export const additionalContent = 'additional-content-publications';
 export const deadLines = 'dead-lines';
 export const superGroup = 'super-group';
+export const superGroups = 'super-groups';
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return constructPathToCourse(courseId) + `/${ slideId }`;

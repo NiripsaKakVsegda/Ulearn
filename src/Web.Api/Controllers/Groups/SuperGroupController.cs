@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
+using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Common.SuperGroup;
+using Ulearn.Web.Api.Models.Parameters.Groups;
 using Ulearn.Web.Api.Models.Parameters.Groups.SuperGroup;
 using Ulearn.Web.Api.Models.Responses.Groups;
 using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.SuperGroup;
+using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups;
 
@@ -26,6 +29,7 @@ public class SuperGroupController : BaseGroupController
 	private readonly IGroupsRepo groupsRepo;
 	private readonly IGroupAccessesRepo groupAccessesRepo;
 	private readonly IGroupMembersRepo groupMembersRepo;
+	private readonly IUnitsRepo unitsRepo;
 
 
 	public SuperGroupController(
@@ -35,6 +39,7 @@ public class SuperGroupController : BaseGroupController
 		IGroupsRepo groupsRepo,
 		IGroupAccessesRepo groupAccessesRepo,
 		IGroupMembersRepo groupMembersRepo,
+		IUnitsRepo unitsRepo,
 		SuperGroupManager superGroupHelper)
 		: base(courseStorage, db, usersRepo)
 	{
@@ -42,6 +47,7 @@ public class SuperGroupController : BaseGroupController
 		this.groupsRepo = groupsRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 		this.groupMembersRepo = groupMembersRepo;
+		this.unitsRepo = unitsRepo;
 	}
 
 	public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -58,7 +64,7 @@ public class SuperGroupController : BaseGroupController
 		var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
 		if (!hasEditAccess)
 		{
-			context.Result = new ForbidResult("You have no access to this auto-group");
+			context.Result = new ForbidResult("You have no access to this super-group");
 			return;
 		}
 
@@ -80,7 +86,7 @@ public class SuperGroupController : BaseGroupController
 				= await superGroupHelper.GetSheetGroupsAndCreatedGroups(spreadsheetUrl, groupId, false);
 
 			if (superGroup.DistributionTableLink != spreadsheetUrl)
-				await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, new GroupSettings { DistributionTableLink = spreadsheetUrl });
+				await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, new Database.Models.GroupSettings { DistributionTableLink = spreadsheetUrl });
 
 			return await BuildSpreadSheetExtractionData(createdGroups, spreadSheetGroups);
 		}
@@ -97,6 +103,104 @@ public class SuperGroupController : BaseGroupController
 
 			return BadRequest();
 		}
+	}
+
+	[HttpGet]
+	[Route("{groupId}/scores")]
+	[ProducesResponseType((int)HttpStatusCode.OK)]
+	[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+	[ProducesResponseType((int)HttpStatusCode.NotFound)]
+	public async Task<ActionResult<GroupScoringGroupsResponse>> GetScores([FromRoute] int groupId)
+	{
+		var superGroup = await groupsRepo.FindGroupByIdAsync<SuperGroup>(groupId);
+		var createdGroups = await groupsRepo.FindGroupsBySuperGroupIdAsync(groupId);
+		var createdGroupsIds = createdGroups.Select(g => g.Id).ToHashSet();
+		var course = courseStorage.FindCourse(superGroup.CourseId);
+		if (course == null)
+			return NotFound($"Course '{superGroup.CourseId}' not found");
+
+		var scoringGroups = course.Settings.Scoring.Groups.Values.ToList();
+		var visibleUnitIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
+		var scoringGroupsCanBeSetInSomeUnit = GetScoringGroupsCanBeSetInSomeUnit(course.GetUnits(visibleUnitIds));
+		var enabledScoringGroups = await groupsRepo.GetEnabledAdditionalScoringGroupsForGroupsAsync(createdGroupsIds)
+			.ConfigureAwait(false);
+
+		return new GroupScoringGroupsResponse
+		{
+			Scores = scoringGroups
+				.Select(scoringGroup => BuildGroupScoringGroupInfo(scoringGroup, scoringGroupsCanBeSetInSomeUnit, enabledScoringGroups, createdGroups.Count))
+				.ToList(),
+		};
+	}
+
+	[HttpPost]
+	[Route("{groupId}/scores")]
+	[ProducesResponseType((int)HttpStatusCode.OK)]
+	[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+	[ProducesResponseType((int)HttpStatusCode.NotFound)]
+	public async Task<ActionResult<GroupScoringGroupsResponse>> SetScores([FromRoute] int groupId, [FromBody] SetScoringGroupsParameters parameters)
+	{
+		var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
+		if (!hasEditAccess)
+			return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You have no edit access to this group"));
+
+		var superGroup = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+		var createdGroups = await groupsRepo.FindGroupsBySuperGroupIdAsync(groupId);
+		var createdGroupsIds = createdGroups.Select(g => g.Id).ToHashSet();
+		var course = courseStorage.FindCourse(superGroup.CourseId);
+		if (course == null)
+			return NotFound(new ErrorResponse("Group or course not found"));
+
+		var courseScoringGroupIds = course.Settings.Scoring.Groups.Values.Select(g => g.Id).ToList();
+		var visibleUnitIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
+		var scoringGroupsCanBeSetInSomeUnit = GetScoringGroupsCanBeSetInSomeUnit(course.GetUnits(visibleUnitIds)).Select(g => g.Id).ToList();
+		foreach (var scoringGroupId in parameters.Scores)
+		{
+			if (!courseScoringGroupIds.Contains(scoringGroupId))
+				return NotFound(new ErrorResponse($"Score {scoringGroupId} not found in course {course.Id}"));
+
+			var scoringGroup = course.Settings.Scoring.Groups[scoringGroupId];
+			if (scoringGroup.EnabledForEveryone)
+				return BadRequest(new ErrorResponse($"You can not enable or disable additional scoring for {scoringGroupId}, because it is enabled for all groups by course creator."));
+
+			if (!scoringGroupsCanBeSetInSomeUnit.Contains(scoringGroupId))
+				return BadRequest(new ErrorResponse($"You can not enable or disable additional scoring for {scoringGroupId}, because there is no additional scores for this score in any unit. Contact with course creator."));
+		}
+
+		await groupsRepo.EnableAdditionalScoringGroupsForGroupAsync(createdGroupsIds, parameters.Scores).ConfigureAwait(false);
+
+		return Ok(new SuccessResponseWithMessage($"Scores for sub-groups of {superGroup.Name} are updated"));
+	}
+
+	[HttpGet("{groupId}/settings")]
+	[ProducesResponseType((int)HttpStatusCode.OK)]
+	public async Task<ActionResult<ChangeableGroupSettings>> Settings([FromRoute] int groupId)
+	{
+		var createdGroups = await groupsRepo.FindGroupsBySuperGroupIdAsync(groupId);
+		return BuildSuperGroupSettings(createdGroups);
+	}
+
+	[HttpPost("{groupId}/settings")]
+	[ProducesResponseType((int)HttpStatusCode.OK)]
+	[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+	[ProducesResponseType((int)HttpStatusCode.NotFound)]
+	public async Task<ActionResult<GroupSettings>> UpdateGroup([FromRoute] int groupId, [FromBody] ChangeableGroupSettings parameters)
+	{
+		var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
+		if (!hasEditAccess)
+			return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You have no edit access to this group"));
+
+		var settings = new Database.Models.GroupSettings
+		{
+			NewIsManualCheckingEnabled = parameters.IsManualCheckingEnabled,
+			NewIsManualCheckingEnabledForOldSolutions = parameters.IsManualCheckingEnabledForOldSolutions,
+			NewDefaultProhibitFurtherReview = parameters.DefaultProhibitFurtherReview,
+			NewCanUsersSeeGroupProgress = parameters.CanStudentsSeeGroupProgress
+		};
+
+		await groupsRepo.ModifySubGroupsAsync(groupId, settings).ConfigureAwait(false);
+
+		return Ok(new SuccessResponseWithMessage($"Settings for sub-groups of super-group with id {groupId} are updated"));
 	}
 
 	[HttpPost]
@@ -353,5 +457,21 @@ public class SuperGroupController : BaseGroupController
 		}
 
 		return studentNamesByGroupsName;
+	}
+
+	private ChangeableGroupSettings BuildSuperGroupSettings(List<SingleGroup> groupsSettings)
+	{
+		var isManualCheckingNull = groupsSettings.Any(gs=> gs.IsManualCheckingEnabled != groupsSettings[0].IsManualCheckingEnabled);
+		var isManualCheckingNullForOldSolutions = groupsSettings.Any(gs=> gs.IsManualCheckingEnabledForOldSolutions != groupsSettings[0].IsManualCheckingEnabledForOldSolutions);
+		var nullProhibitFurtherReview = groupsSettings.Any(gs=> gs.DefaultProhibitFutherReview != groupsSettings[0].DefaultProhibitFutherReview);
+		var canStudentsSeeGroupProgressIsNull = groupsSettings.Any(gs=> gs.CanUsersSeeGroupProgress != groupsSettings[0].CanUsersSeeGroupProgress);
+
+		return new ChangeableGroupSettings
+		{
+			IsManualCheckingEnabled = isManualCheckingNull ? null : groupsSettings[0].IsManualCheckingEnabled,
+			IsManualCheckingEnabledForOldSolutions =  isManualCheckingNullForOldSolutions ? null : groupsSettings[0].IsManualCheckingEnabledForOldSolutions,
+			DefaultProhibitFurtherReview =  nullProhibitFurtherReview ? null : groupsSettings[0].DefaultProhibitFutherReview,
+			CanStudentsSeeGroupProgress =  canStudentsSeeGroupProgressIsNull ? null : groupsSettings[0].CanUsersSeeGroupProgress,
+		};
 	}
 }

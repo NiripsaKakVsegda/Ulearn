@@ -1,29 +1,31 @@
 import React, { FC } from "react";
 import { Link } from 'react-router-dom';
 
-import { ArchiveUnpack, Delete, Ok } from "icons";
+import { ArchivePack, ArchiveUnpack, Delete, Ok } from "icons";
 import { Gapped, Kebab, MenuItem } from "ui";
 
 import { Mobile, NotMobile } from "src/utils/responsive";
 
-import { GroupInfo as GroupInfoType } from "src/models/groups";
+import { GroupInfo as GroupInfoType, GroupType } from "src/models/groups";
 
 import styles from "./groupsListItem.less";
 import texts from './GroupsListItem.texts';
+import cn from "classnames";
 
 
 interface Props {
 	courseId: string;
 	group: GroupInfoType;
 	page?: string | null;
+	isSubGroup?: boolean;
 
 	deleteGroup: (group: GroupInfoType) => void;
 	toggleArchived: (group: GroupInfoType) => void;
 }
 
-const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchived, page, }) => {
+const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchived, page, isSubGroup, }) => {
 	const studentsCount = group.studentsCount;
-
+	const isSuperGroup = group.groupType === GroupType.SuperGroup;
 	const isCodeReviewEnabled = group.isManualCheckingEnabled;
 	const isProgressEnabled = group.canStudentsSeeGroupProgress;
 
@@ -41,7 +43,7 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 
 		return (
 			<div>
-				{ texts.buildTeachersList(teachers) }
+				{ texts.buildTeachersList(teachers, isSuperGroup) }
 				{ teachersExcess > 0 &&
 					<Link
 						className={ styles["link-to-group-members"] }
@@ -54,7 +56,9 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 		);
 	};
 
-	const renderSetting = (enabled: boolean, textProvider: (enabled: boolean) => string): JSX.Element =>
+	const renderSetting = (enabled: boolean | undefined,
+		textProvider: (enabled: boolean | undefined) => string
+	): JSX.Element =>
 		<div className={ enabled ? styles["settings-on"] : styles["settings-off"] }>
 			<Gapped gap={ 5 }>
 				{ enabled ? <Ok/> : <Delete/> }
@@ -95,7 +99,7 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 	};
 
 	return (
-		<div className={ styles.wrapper }>
+		<div className={ cn(styles.wrapper, { [styles.smallIndent]: isSubGroup }) }>
 			<div className={ styles["content-wrapper"] }>
 				<Link
 					className={ styles["link-to-group-page"] }
@@ -107,17 +111,22 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 							className={ styles.groupLink }
 							to={ groupLink + (page || 'settings') }
 						>
-							<h3 className={ styles["group-name"] }>{ group.name }</h3>
+							<h3 className={ styles["group-name"] }>
+								{ group.name }
+								{ isSubGroup && group.isArchived && <> <ArchivePack size={ 16 }/> </> }
+								{ !isSubGroup && group.superGroupName && <> («{ group.superGroupName }»)</> }
+							</h3>
 						</Link>
-						<div>
+						{ !isSuperGroup && <div>
 							{ texts.buildStudentsCountMessage(studentsCount) }
 						</div>
+						}
 						{ renderTeachers() }
 					</header>
-					<div className={ styles["group-settings"] }>
+					{ !isSuperGroup && <div className={ styles["group-settings"] }>
 						{ renderSetting(isProgressEnabled, texts.getProgressStateText) }
 						{ renderSetting(isCodeReviewEnabled, texts.getReviewStateText) }
-					</div>
+					</div> }
 				</div>
 			</div>
 			{ renderActions() }

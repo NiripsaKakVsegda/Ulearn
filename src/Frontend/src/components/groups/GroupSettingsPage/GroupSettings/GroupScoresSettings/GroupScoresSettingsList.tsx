@@ -7,9 +7,10 @@ import { GroupScoringGroupInfo } from "../../../../../models/groups";
 interface Props {
 	scoringInfo: GroupScoringGroupInfo[];
 	onChangeScoringInfo: (updated: GroupScoringGroupInfo) => void;
+	initialIndeterminateOnNull?: boolean;
 }
 
-const GroupScoresSettingsList : FC<Props> = ({scoringInfo, onChangeScoringInfo}) => {
+const GroupScoresSettingsList: FC<Props> = ({ scoringInfo, onChangeScoringInfo, initialIndeterminateOnNull }) => {
 	return (
 		<div>
 			<h4 className={ styles["settings-header"] }>{ texts.scores }</h4>
@@ -19,6 +20,7 @@ const GroupScoresSettingsList : FC<Props> = ({scoringInfo, onChangeScoringInfo})
 					key={ score.id }
 					scoringInfo={ score }
 					onChangeScoringInfo={ onChangeScoringInfo }
+					initialIndeterminateOnNull={ initialIndeterminateOnNull }
 				/>
 			) }
 		</div>

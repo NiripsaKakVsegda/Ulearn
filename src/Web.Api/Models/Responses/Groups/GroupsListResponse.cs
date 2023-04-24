@@ -8,6 +8,6 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 	public class GroupsListResponse : PaginatedResponse
 	{
 		[DataMember]
-		public List<GroupInfo> Groups { get; set; }
+		public List<GroupSettings> Groups { get; set; }
 	}
 }

@@ -5,11 +5,12 @@ import { Checkbox } from "ui";
 import { GroupScoringGroupInfo } from "../../../../../models/groups";
 
 interface Props {
+	initialIndeterminateOnNull?: boolean;
 	scoringInfo: GroupScoringGroupInfo;
 	onChangeScoringInfo: (updated: GroupScoringGroupInfo) => void;
 }
 
-const GroupScoresSettingsItem: FC<Props> = ({ scoringInfo, onChangeScoringInfo }) => {
+const GroupScoresSettingsItem: FC<Props> = ({ scoringInfo, onChangeScoringInfo, initialIndeterminateOnNull }) => {
 	const isChecked = scoringInfo.areAdditionalScoresEnabledInThisGroup ||
 		scoringInfo.areAdditionalScoresEnabledForAllGroups;
 
@@ -19,10 +20,15 @@ const GroupScoresSettingsItem: FC<Props> = ({ scoringInfo, onChangeScoringInfo }
 	const handleValueChange = (value: boolean) => {
 		onChangeScoringInfo({ ...scoringInfo, areAdditionalScoresEnabledInThisGroup: value });
 	};
+	const initialIndeterminate = !isDisabled && initialIndeterminateOnNull && scoringInfo.areAdditionalScoresEnabledInThisGroup === null;
 
 	return (
 		<label className={ styles["settings-checkbox"] }>
-			<Checkbox checked={ isChecked } disabled={ isDisabled } onValueChange={ handleValueChange }>
+			<Checkbox
+				initialIndeterminate={ initialIndeterminate }
+				checked={ isChecked }
+				disabled={ isDisabled }
+				onValueChange={ handleValueChange }>
 				{ scoringInfo.name }
 			</Checkbox>
 

@@ -57,7 +57,7 @@ function JoinGroup({ joinGroup, getGroupByHash, navigate, params }: Props) {
 				</div>
 			);
 		}
-		console.log(group.areYouStudent,group.isInviteLinkEnabled);
+
 		if(!group.areYouStudent && !group.isInviteLinkEnabled) {
 			return (
 				<div>

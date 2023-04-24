@@ -7,7 +7,7 @@ export default {
 		'Однако если понадобится, вы всегда сможете вернуться к ним.',
 
 	buildDeleteGroupToast: (groupName: string) => `Группа «${ groupName }» удалена`,
-	buildArchiveToggleToast: (groupName: string, isArchived: boolean) => isArchived
-		? `Группа «${ groupName }» заархивирована`
-		: `Группа «${ groupName }» восстановлена`,
+	buildArchiveToggleToast: (groupName: string, isSuperGroup: boolean, isArchived: boolean) => isArchived
+		? `${ isSuperGroup ? "Супер-группа" : "Группа" } «${ groupName }» заархивирована`
+		: `${ isSuperGroup ? "Супер-группа" : "Группа" } «${ groupName }» восстановлена`,
 };

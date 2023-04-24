@@ -1,12 +1,12 @@
 import React from 'react';
 
 export default {
-	copyText: 'Скопировать ссылку',
-	onCopyToastText: 'Ссылка скопирована',
+	copyLink: 'Скопировать ссылку',
+	linkCopiedToast: 'Ссылка скопирована',
 	superGroupHintText: `Используя эту ссылку студенты попадут в группу, указанную в гугл-таблице`,
 
-	buildIsLinkEnabledText: (isInviteLinkEnabled: boolean) => <>Ссылка для вступления в
-		группу { isInviteLinkEnabled ? ' включена' : ' выключена' }</>,
-	//buildLink: (inviteHash: string) => `${ window.location.origin }/Account/JoinGroup?hash=${ inviteHash }`,
+	buildLinkHint: (isEnabled: boolean,
+		isSuperGroup: boolean
+	) => `Ссылка для вступления в ${ isSuperGroup && 'супер-' }группу ` + (isEnabled ? 'включена' : 'выключена'),
 	buildLink: (inviteHash: string) => `${ window.location.origin }/groups/${ inviteHash }`,
 };

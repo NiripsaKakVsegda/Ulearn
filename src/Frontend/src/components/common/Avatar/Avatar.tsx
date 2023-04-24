@@ -33,7 +33,7 @@ function Avatar(props: Props): React.ReactElement {
 		return (
 			<img
 				alt="Аватарка"
-				className={ className }
+				className={ classes }
 				src={ imageUrl }
 				onError={ onImageError }
 			/>

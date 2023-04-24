@@ -15,6 +15,7 @@ using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Responses.Groups;
 using Ulearn.Web.Api.Utils;
+using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups
 {
@@ -48,7 +49,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		/// <param name="inviteHash">Инвайт-хеш группы</param>
 		[HttpGet]
-		public async Task<ActionResult<GroupInfo>> Group(Guid inviteHash)
+		public async Task<ActionResult<GroupSettings>> Group(Guid inviteHash)
 		{
 			var group = await groupsRepo.FindGroupByInviteHashAsync_WithDisabledLink(inviteHash).ConfigureAwait(false);
 

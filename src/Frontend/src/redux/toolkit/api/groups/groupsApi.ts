@@ -1,11 +1,11 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { groups } from "../../../../consts/routes";
+import { groups, superGroups } from "../../../../consts/routes";
 import {
 	CopyGroupResponse,
 	CreateGroupResponse,
 	GroupInfo,
 	GroupsInfoResponse,
-	GroupsListParameters
+	GroupsListParameters, SuperGroupsListResponse
 } from "../../../../models/groups";
 import { fetchBaseQueryWithReauth } from "../../utils/baseQueryWithReauth";
 import { HttpMethods } from "../../../../consts/httpMethods";
@@ -53,5 +53,23 @@ export const groupsApi = createApi({
 				method: HttpMethods.DELETE,
 			})
 		})
+	})
+});
+
+export const superGroupsApi = createApi({
+	reducerPath: 'superGroupsApi',
+	baseQuery: fetchBaseQueryWithReauth({
+		baseUrl: superGroups,
+	}),
+	refetchOnMountOrArgChange: true,
+	endpoints: (build) => ({
+		getGroups: build.query<SuperGroupsListResponse, Partial<GroupsListParameters>>({
+			query: (params) => ({
+				url: '',
+				params: {
+					...params
+				}
+			})
+		}),
 	})
 });

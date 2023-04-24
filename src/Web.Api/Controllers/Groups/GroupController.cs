@@ -21,6 +21,7 @@ using Ulearn.Core.Courses.Units;
 using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Parameters.Groups;
 using Ulearn.Web.Api.Models.Responses.Groups;
+using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups
 {
@@ -83,7 +84,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<ActionResult<GroupInfo>> Group([FromRoute] int groupId)
+		public async Task<ActionResult<GroupSettings>> Group([FromRoute] int groupId)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 			var members = await groupMembersRepo.GetGroupMembersAsync(groupId).ConfigureAwait(false);
@@ -96,7 +97,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		[HttpPatch]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
-		public async Task<ActionResult<GroupInfo>> UpdateGroup([FromRoute] int groupId, [FromBody] UpdateGroupParameters parameters)
+		public async Task<ActionResult<GroupSettings>> UpdateGroup([FromRoute] int groupId, [FromBody] UpdateGroupParameters parameters)
 		{
 			var hasEditAccess = await groupAccessesRepo.HasUserEditAccessToGroupAsync(groupId, UserId).ConfigureAwait(false);
 			if (!hasEditAccess)
@@ -107,7 +108,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
 
 			var newName = parameters.Name ?? group.Name;
-			var settings = new GroupSettings
+			var settings = new Database.Models.GroupSettings
 			{
 				NewName = newName,
 				NewIsManualCheckingEnabled = parameters.IsManualCheckingEnabled,
@@ -291,27 +292,6 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			await groupsRepo.EnableAdditionalScoringGroupsForGroupAsync(groupId, parameters.Scores).ConfigureAwait(false);
 
 			return Ok(new SuccessResponseWithMessage($"Scores for group {groupId} updated"));
-		}
-
-		private static GroupScoringGroupInfo BuildGroupScoringGroupInfo(ScoringGroup scoringGroup, List<ScoringGroup> scoringGroupsCanBeSetInSomeUnit, List<EnabledAdditionalScoringGroup> enabledScoringGroups)
-		{
-			var canBeSetByInstructorInSomeUnit = scoringGroupsCanBeSetInSomeUnit.Select(g => g.Id).Contains(scoringGroup.Id);
-			var isEnabledManually = enabledScoringGroups.Select(g => g.ScoringGroupId).Contains(scoringGroup.Id);
-			return new GroupScoringGroupInfo(scoringGroup)
-			{
-				AreAdditionalScoresEnabledForAllGroups = scoringGroup.EnabledForEveryone,
-				CanInstructorSetAdditionalScoreInSomeUnit = canBeSetByInstructorInSomeUnit,
-				AreAdditionalScoresEnabledInThisGroup = (scoringGroup.EnabledForEveryone || !canBeSetByInstructorInSomeUnit) ? (bool?)null : isEnabledManually
-			};
-		}
-
-		private static List<ScoringGroup> GetScoringGroupsCanBeSetInSomeUnit(IEnumerable<Unit> units)
-		{
-			return units
-				.SelectMany(u => u.Scoring.Groups.Values)
-				.Where(g => g.CanBeSetByInstructor && !g.EnabledForEveryone)
-				.DistinctBy(g => g.Id)
-				.ToList();
 		}
 
 		/// <summary>

@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import GroupsListItem from "../GroupsListItem/GroupsListItem";
 
-import { GroupInfo } from "src/models/groups";
+import { GroupInfo, GroupInfoWithSubGroups, GroupType } from "src/models/groups";
 
 import styles from "./groupList.less";
 import { useSearchParams } from "react-router-dom";
@@ -10,6 +10,7 @@ interface Props {
 	userId?: string | null;
 	courseId: string;
 	groups: GroupInfo[];
+	superGroups: GroupInfoWithSubGroups[];
 	noGroupsMessage: string;
 
 	onDeleteGroup: (group: GroupInfo) => void;
@@ -20,6 +21,7 @@ const GroupList: FC<Props> = ({
 	userId,
 	courseId,
 	groups,
+	superGroups,
 	noGroupsMessage,
 	onDeleteGroup,
 	onToggleArchivedGroup,
@@ -29,21 +31,12 @@ const GroupList: FC<Props> = ({
 	return (
 		<section className={ styles.wrapper }>
 			<div className={ styles.content }>
-				{ [...groups]
+				{ [...groups, ...superGroups]
 					.sort(groupSorter)
-					.map(group =>
-						<GroupsListItem
-							key={ group.id }
-							courseId={ courseId }
-							group={ group }
-							page={ page }
-							deleteGroup={ onDeleteGroup }
-							toggleArchived={ onToggleArchivedGroup }
-						/>
-					)
+					.map((g) => renderGroup(g))
 				}
 			</div>
-			{ groups.length === 0 &&
+			{ groups.length === 0 && superGroups.length === 0 &&
 				<div className={ styles.noGroups }>
 					{ noGroupsMessage }
 				</div>
@@ -51,62 +44,30 @@ const GroupList: FC<Props> = ({
 		</section>
 	);
 
-	function renderGroups(groups: GroupInfoType[]) {
-		const toRender: GroupInfoWithSubGroups[] = [];
-		const subGroups = groups.filter(g => g.superGroupId);
-		const subGroupsBySuperGroupId: { [id: number]: GroupInfoType[] } = {};
-
-		for (const subGroup of subGroups) {
-			const id = subGroup.superGroupId!;
-			if(!subGroupsBySuperGroupId[id]) {
-				subGroupsBySuperGroupId[id] = [];
-			}
-			subGroupsBySuperGroupId[id].push(subGroup);
-		}
-
-
-		for (const group of groups.filter(g => !g.superGroupId)) {
-			if(group.groupType === GroupType.SuperGroup) {
-				(group as GroupInfoWithSubGroups).subGroups = subGroupsBySuperGroupId[group.id];
-			}
-			toRender.push(group);
-		}
-
-		return toRender.map(renderGroup);
-	}
-
-	function renderGroup(group: GroupInfoWithSubGroups) {
-		if(group.groupType === GroupType.SuperGroup) {
-			return (
-				<>
-					<GroupInfo
-						key={ group.id }
-						courseId={ courseId }
-						group={ group }
-						deleteGroup={ deleteGroup }
-						toggleArchived={ toggleArchived }
-						page={ page }
-					/>
-					{ group.subGroups && <ul className={ styles.subGroupsWrapper }>
-						{
-							group.subGroups.map(g => {
-								return (<li>{ renderGroup(g) }</li>);
-							})
-						}
-					</ul>
-					}
-				</>
-			);
-		}
+	function renderGroup(group: GroupInfoWithSubGroups, isSubGroup = false) {
 		return (
-			<GroupInfo
-				key={ group.id }
-				courseId={ courseId }
-				group={ group }
-				deleteGroup={ deleteGroup }
-				toggleArchived={ toggleArchived }
-				page={ page }
-			/>
+			<>
+				<GroupsListItem
+					key={ group.id }
+					courseId={ courseId }
+					group={ group }
+					deleteGroup={ onDeleteGroup }
+					toggleArchived={ onToggleArchivedGroup }
+					page={ page }
+					isSubGroup={ isSubGroup }
+				/>
+				{ group.subGroups &&
+					<div className={ styles.subGroupsContainer }>
+						<ul className={ styles.subGroupsWrapper }>
+							{
+								group.subGroups.map(g => {
+									return (<li className={ styles.subGroupsItem }>{ renderGroup(g, true) }</li>);
+								})
+							}
+						</ul>
+					</div>
+				}
+			</>
 		);
 	}
 

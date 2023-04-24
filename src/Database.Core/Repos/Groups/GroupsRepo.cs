@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using Ulearn.Core.Courses;
 using Z.EntityFramework.Plus;
 
@@ -25,7 +26,7 @@ namespace Database.Repos.Groups
 			this.groupsCreatorAndCopier = groupsCreatorAndCopier;
 			this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
 		}
-		
+
 		public async Task<SingleGroup> CreateSingleGroupAsync(string courseId,
 			string name,
 			string ownerId,
@@ -123,6 +124,29 @@ namespace Database.Repos.Groups
 			return group;
 		}
 
+		public async Task ModifySubGroupsAsync(int superGroupId, GroupSettings newSettings)
+		{
+			var groups = await FindGroupsBySuperGroupIdAsync(superGroupId);
+
+			foreach (var group in groups)
+			{
+				group.IsManualCheckingEnabled = newSettings.NewIsManualCheckingEnabled ?? group.IsManualCheckingEnabled;
+
+				if (!group.IsManualCheckingEnabledForOldSolutions && newSettings.NewIsManualCheckingEnabledForOldSolutions == true)
+				{
+					var groupMembers = group.NotDeletedMembers.Select(m => m.UserId).ToList();
+					await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(group.CourseId, groupMembers).ConfigureAwait(false);
+				}
+
+				group.IsManualCheckingEnabledForOldSolutions = newSettings.NewIsManualCheckingEnabledForOldSolutions ?? group.IsManualCheckingEnabledForOldSolutions;
+				group.DefaultProhibitFutherReview = newSettings.NewDefaultProhibitFurtherReview ?? group.DefaultProhibitFutherReview;
+				group.CanUsersSeeGroupProgress = newSettings.NewCanUsersSeeGroupProgress ?? group.CanUsersSeeGroupProgress;
+			}
+
+			db.SingleGroups.UpdateRange(groups);
+			await db.SaveChangesAsync().ConfigureAwait(false);
+		}
+
 		public async Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings newSettings)
 		{
 			return await ModifyGroupAsync<GroupBase>(groupId, newSettings);
@@ -173,6 +197,12 @@ namespace Database.Repos.Groups
 		{
 			return db.Set<T>().FirstOrDefaultAsync(g => g.Id == groupId && !g.IsDeleted);
 		}
+		
+		[ItemCanBeNull]
+		public Task<List<T>> FindGroupsByIdsAsync<T>(List<int> groupIds) where T : GroupBase
+		{
+			return db.Set<T>().Where(g => groupIds.Contains(g.Id) && !g.IsDeleted).ToListAsync();
+		}
 
 		[ItemCanBeNull]
 		public Task<GroupBase> FindGroupByIdAsync(int groupId)
@@ -183,9 +213,22 @@ namespace Database.Repos.Groups
 		[ItemCanBeNull]
 		public async Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false)
 		{
-			return await db
+			return await FindGroupsBySuperGroupIdsAsync(new List<int> { superGroupId }, includeArchived);
+		}
+
+		[ItemCanBeNull]
+		public async Task<List<SingleGroup>> FindGroupsBySuperGroupIdsAsync(List<int> superGroupIds, bool includeArchived = false)
+		{
+			var query = db
 				.Set<SingleGroup>()
-				.Where(g => g.SuperGroupId == superGroupId && !g.IsDeleted && g.IsArchived == includeArchived)
+				.Where(g => superGroupIds.Contains(g.SuperGroupId.Value) && !g.IsDeleted);
+
+			if (!includeArchived)
+				query = query.Where(g => g.IsArchived == false);
+
+			return await query
+				.Include(g => g.Members)
+				.ThenInclude(m => m.User)
 				.ToListAsync();
 		}
 
@@ -195,7 +238,7 @@ namespace Database.Repos.Groups
 			return db.Groups
 				.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
 		}
-		
+
 		[ItemCanBeNull]
 		public Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash)
 		{
@@ -278,23 +321,28 @@ namespace Database.Repos.Groups
 
 		public async Task EnableAdditionalScoringGroupsForGroupAsync(int groupId, IEnumerable<string> scoringGroupsIds)
 		{
-			using (var transaction = db.Database.BeginTransaction())
-			{
-				db.EnabledAdditionalScoringGroups.RemoveRange(
-					db.EnabledAdditionalScoringGroups.Where(e => e.GroupId == groupId)
-				);
+			await EnableAdditionalScoringGroupsForGroupAsync(new HashSet<int> { groupId }, scoringGroupsIds.ToList());
+		}
 
-				foreach (var scoringGroupId in scoringGroupsIds)
-					db.EnabledAdditionalScoringGroups.Add(new EnabledAdditionalScoringGroup
-					{
-						GroupId = groupId,
-						ScoringGroupId = scoringGroupId
-					});
+		public async Task EnableAdditionalScoringGroupsForGroupAsync(HashSet<int> groupIds, List<string> scoringGroupsIds)
+		{
+			await using var transaction = await db.Database.BeginTransactionAsync();
 
-				await db.SaveChangesAsync().ConfigureAwait(false);
+			db.EnabledAdditionalScoringGroups.RemoveRange(
+				db.EnabledAdditionalScoringGroups.Where(e => groupIds.Contains(e.GroupId))
+			);
 
-				transaction.Commit();
-			}
+			foreach (var groupId in groupIds)
+			foreach (var scoringGroupId in scoringGroupsIds)
+				db.EnabledAdditionalScoringGroups.Add(new EnabledAdditionalScoringGroup
+				{
+					GroupId = groupId,
+					ScoringGroupId = scoringGroupId
+				});
+
+			await db.SaveChangesAsync().ConfigureAwait(false);
+
+			await transaction.CommitAsync();
 		}
 
 		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsAsync(string courseId, bool includeArchived = false)
@@ -305,7 +353,12 @@ namespace Database.Repos.Groups
 
 		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupAsync(int groupId)
 		{
-			return db.EnabledAdditionalScoringGroups.Where(e => e.GroupId == groupId).ToListAsync();
+			return GetEnabledAdditionalScoringGroupsForGroupsAsync(new HashSet<int> { groupId });
+		}
+
+		public Task<List<EnabledAdditionalScoringGroup>> GetEnabledAdditionalScoringGroupsForGroupsAsync(HashSet<int> groupsIds)
+		{
+			return db.EnabledAdditionalScoringGroups.Where(e => groupsIds.Contains(e.GroupId)).ToListAsync();
 		}
 
 		public async Task<List<string>> GetUsersIdsForAllGroups(string courseId)
