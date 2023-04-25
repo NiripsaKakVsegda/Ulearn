@@ -23,9 +23,10 @@ import { AppDispatch } from "../../../../setupStore";
 import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
 import texts from './GroupsListPage.texts';
 import { buildUserInfo, isInstructor } from "../../../../utils/courseRoles";
+import { AccountState } from "../../../../redux/account";
 
 interface Props extends WithRouter {
-	userId?: string | null;
+	account: AccountState;
 	isInstructor?: boolean;
 	courses: CourseState;
 
@@ -45,7 +46,7 @@ const GroupListPage: FC<Props> = ({
 }) => {
 	const [deleteGroup] = groupsApi.useDeleteGroupMutation();
 	const [updateGroupSettings] = groupSettingsApi.useSaveGroupSettingsMutation();
-	const userId = account.userId;
+	const userId = account.id;
 	const courseId = params.courseId.toLowerCase();
 	const _isInstructor = isInstructor(buildUserInfo(account, courseId,));
 
