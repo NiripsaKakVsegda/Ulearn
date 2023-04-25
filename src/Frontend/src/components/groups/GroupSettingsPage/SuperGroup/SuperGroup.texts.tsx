@@ -84,7 +84,7 @@ export default {
 			});
 	},
 
-	instruction: <>Супер-группа позволяет создавать группы использую гугл-таблицу (<Link
+	instruction: <>Супер-группа позволяет создавать группы используя гугл-таблицу (<Link
 		rel={ "noopener noreferrer" }
 		target={ "_blank" }
 		href={ instructionLink }>
