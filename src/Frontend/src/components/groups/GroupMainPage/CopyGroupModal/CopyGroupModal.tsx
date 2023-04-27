@@ -24,9 +24,12 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 			isCoursesLoading: isLoading
 		})
 	});
-	const coursesItems = courses.map(course => [course, course.title]);
+	const coursesItems = courses
+		.filter(course => !course.isTempCourse)
+		.sort((a, b) => a.title.localeCompare(b.title))
+		.map(course => [course, course.title]);
 	const [selectedCourse, setSelectedCourse] = useState<CourseInfo>();
-
+	
 	const [fetchGroups, { groups, isGroupsLoading }] = groupsApi.useLazyGetGroupsQuery({
 		selectFromResult: ({ data, isLoading }) => ({
 			groups: data?.groups || [],
