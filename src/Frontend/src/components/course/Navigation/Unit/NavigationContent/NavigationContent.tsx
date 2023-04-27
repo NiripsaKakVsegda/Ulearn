@@ -13,9 +13,10 @@ interface Props {
 	onClick: () => void;
 	getRefToActive?: React.RefObject<HTMLLIElement>;
 	courseId: string;
+	isStudentMode: boolean;
 }
 
-function NavigationContent({ items, onClick, getRefToActive, courseId, }: Props): React.ReactElement {
+function NavigationContent({ items, onClick, getRefToActive, courseId, isStudentMode }: Props): React.ReactElement {
 	return (
 		<ol className={ styles.root }>
 			{ items.map(renderItem) }
@@ -39,6 +40,7 @@ function NavigationContent({ items, onClick, getRefToActive, courseId, }: Props)
 				onClick={ onClick }
 				getRefToActive={ getRefToActive }
 				courseId={ courseId }
+				isStudentMode={ isStudentMode }
 			/>
 		);
 	}

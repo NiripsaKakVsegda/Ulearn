@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import classnames from 'classnames';
 
@@ -22,6 +22,7 @@ export interface Props extends MenuItem<SlideType> {
 	onClick: () => void;
 	getRefToActive?: React.RefObject<HTMLLIElement>;
 	courseId: string;
+	isStudentMode: boolean;
 }
 
 function NavigationItem({
@@ -40,6 +41,7 @@ function NavigationItem({
 	getRefToActive,
 	courseId,
 	deadLineInfo,
+	isStudentMode
 }: Props): React.ReactElement {
 	const isSlideCanBeVisited = !additionalContentInfo.isAdditionalContent || !additionalContentInfo.hideInfo || additionalContentInfo.isPublished;
 	const slideHasPublication = additionalContentInfo.hideInfo && additionalContentInfo.publicationDate && !additionalContentInfo.isPublished;
@@ -51,8 +53,13 @@ function NavigationItem({
 		[styles.active]: isActive,
 	};
 
+	const hideTitle = isStudentMode && (hide || anyAdditionalInfoExist);
+
 	return (
-		<li className={ styles.root } ref={ isActive ? getRefToActive : undefined }>
+		<li
+			className={ styles.root }
+			ref={ isActive ? getRefToActive : undefined }
+		>
 			<Link to={ isSlideCanBeVisited ? url : '#' } className={ classnames(classes) }
 				  onClick={ isSlideCanBeVisited ? onClick : slideNotPublishedToast }>
 				{ metro && renderMetro() }
@@ -61,14 +68,20 @@ function NavigationItem({
 						{ renderIcon() }
 					</span>
 					<span className={ styles.text }>
-						{ title }
-						{ hide && <span className={ styles.isHiddenIcon }>
-							<Hint text={ texts.hiddenSlide }>
-								<EyeClosed/>
-							</Hint>
-						</span> }
+						<span
+							className={ hideTitle ? styles['hidden-text'] : '' }
+						>
+							{ title }
+						</span>
+						{ hide &&
+							<span className={ styles.isHiddenIcon }>
+								<Hint text={ texts.hiddenSlide }>
+									<EyeClosed/>
+								</Hint>
+							</span>
+						}
 						{ deadLineInfo && deadLineInfo.next && !anyAdditionalInfoExist && score === 0 &&
-						<span className={ styles.isHiddenIcon }>
+							<span className={ styles.isHiddenIcon }>
 							<Hint text={ texts.getDeadLineInfo(deadLineInfo.next, maxScore) }>
 								<Clock/>
 							</Hint>
@@ -91,13 +104,14 @@ function NavigationItem({
 		return (
 			<>
 				{ additionalContentInfo.publicationDate && slideHasPublication &&
-				<span className={ styles.isHiddenIcon }>
-							<Hint text={ texts.getAdditionalContentPublicationDate(additionalContentInfo) }>
-								<Calendar/>
-							</Hint>
-						</span> }
-				{
-					userCanSeeAdditionalContentTooltip && <Tooltip
+					<span className={ styles.isHiddenIcon }>
+						<Hint text={ texts.getAdditionalContentPublicationDate(additionalContentInfo) }>
+							<Calendar/>
+						</Hint>
+					</span>
+				}
+				{ userCanSeeAdditionalContentTooltip &&
+					<Tooltip
 						render={ renderAdditionalContentTooltip }>
 							<span className={ styles.isHiddenIcon }>
 								<EyeClosed/>

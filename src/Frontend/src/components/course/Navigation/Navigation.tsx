@@ -32,6 +32,7 @@ interface PropsFromRedux {
 	groupsAsStudent: GroupAsStudentInfo[];
 	deviceType: DeviceType;
 	toggleNavigation: () => void;
+	isStudentMode: boolean;
 }
 
 export interface CourseNavigationProps {
@@ -384,6 +385,7 @@ class Navigation extends Component<Props, State> {
 			unitItems,
 			nextUnit,
 			courseId,
+			isStudentMode
 		} = this.props;
 
 		if(!unitTitle || !unitItems) {
@@ -397,6 +399,7 @@ class Navigation extends Component<Props, State> {
 					onClick={ this.closeNavigation }
 					getRefToActive={ this.currentActiveItem }
 					courseId={ courseId }
+					isStudentMode={ isStudentMode }
 				/>
 				{ nextUnit && nextUnit.slides.length > 0 &&
 					<NextUnit courseId={ courseId } unit={ nextUnit } onClick={ this.hideNavigationMenu }/> }
