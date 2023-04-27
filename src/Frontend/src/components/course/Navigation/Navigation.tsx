@@ -425,6 +425,7 @@ class Navigation extends Component<Props, State> {
 			slideId,
 			toggleNavigation,
 			flashcardsStatistics,
+			isStudentMode
 		} = this.props;
 
 		return (
@@ -434,7 +435,9 @@ class Navigation extends Component<Props, State> {
 						getRefToActive={ this.currentActiveItem }
 						items={ courseItems }
 						courseId={ courseId }
-					/> }
+						isStudentMode={ isStudentMode }
+					/>
+				}
 				{ containsFlashcards &&
 					<Flashcards
 						statistics={ flashcardsStatistics }
