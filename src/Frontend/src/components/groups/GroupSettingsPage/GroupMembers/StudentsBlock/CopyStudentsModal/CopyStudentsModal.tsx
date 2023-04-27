@@ -20,7 +20,10 @@ interface Props {
 
 const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, getCourseGroups, onCopyStudents }) => {
 	const { courses, isCoursesLoading } = getCourses();
-	const coursesItems = courses.map(course => [course.id, course.title]);
+	const coursesItems = courses
+		.filter(course => !course.isTempCourse)
+		.sort((a, b) => a.title.localeCompare(b.title))
+		.map(course => [course.id, course.title]);
 	const [selectedCourseId, setSelectedCourseId] = useState<string>();
 
 	const { groups, isGroupsLoading, fetchGroups } = getCourseGroups();
