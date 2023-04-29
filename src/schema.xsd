@@ -18,6 +18,7 @@
 			<xs:documentation xml:lang="en">Information about course</xs:documentation>
 			<xs:documentation xml:lang="ru">Информация о курсе</xs:documentation>
 		</xs:annotation>
+		
 		<xs:all>
 			<xs:element name="defaultLanguage" type="NonEmptyString" minOccurs="0"/>
 			<xs:element name="videoAnnotationsGoogleDoc" type="NonEmptyString" minOccurs="0">
@@ -51,6 +52,7 @@
 			<xs:element name="units" type="CourseUnits" minOccurs="0"/>
 			<xs:element name="dictionaryFile" type="NonEmptyString" minOccurs="0"/>
 		</xs:all>
+		
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
 	</xs:complexType>
 
@@ -61,6 +63,7 @@
 				данном языке программирования
 			</xs:documentation>
 		</xs:annotation>
+		
 		<xs:sequence>
 			<xs:element name="prelude" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
@@ -83,6 +86,7 @@
 			<xs:documentation xml:lang="en">List of units in the course</xs:documentation>
 			<xs:documentation xml:lang="ru">Список модулей в курсе</xs:documentation>
 		</xs:annotation>
+		
 		<xs:sequence>
 			<xs:element name="add" type="NonEmptyString" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
@@ -107,6 +111,7 @@
 			<xs:element name="defaultIncludeCodeFile" type="NonEmptyString" minOccurs="0"/>
 			<xs:element name="slides" type="UnitSlides" minOccurs="0"/>
 		</xs:all>
+		
 		<xs:attribute name="id" type="NonEmptyString" use="required"/>
 		<xs:attribute name="url" type="NonEmptyString"/>
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
@@ -123,6 +128,7 @@
 			<xs:documentation xml:lang="en">List of slides in the unit</xs:documentation>
 			<xs:documentation xml:lang="ru">Список слайдов в модуле</xs:documentation>
 		</xs:annotation>
+		
 		<xs:sequence>
 			<xs:element name="add" type="NonEmptyString" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
@@ -173,6 +179,7 @@
 			<xs:element name="scoring" type="ExerciseScoring" minOccurs="0"/>
 			<xs:group ref="SlideInternals"/>
 		</xs:sequence>
+		
 		<xs:attributeGroup ref="SlideAttributes"/>
 	</xs:complexType>
 
@@ -947,6 +954,7 @@
 			<xs:documentation xml:lang="en">Allowed mistakes count</xs:documentation>
 			<xs:documentation xml:lang="ru">Разрешённое количество ошибок</xs:documentation>
 		</xs:annotation>
+		
 		<xs:attribute name="checkedUnnecessary" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Allowed count of unnecessary checked items</xs:documentation>
@@ -1015,6 +1023,7 @@
 		<xs:sequence>
 			<xs:element name="group" type="ScoringGroup" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+		
 		<xs:attribute name="defaultQuiz" type="NonEmptyString"/>
 		<xs:attribute name="defaultExercise" type="NonEmptyString"/>
 		<xs:attribute name="default" type="NonEmptyString"/>
