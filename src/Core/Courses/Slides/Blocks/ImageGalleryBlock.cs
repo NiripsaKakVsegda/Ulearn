@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using Ulearn.Common.Extensions;
+using Ulearn.Core.Extensions;
 using Ulearn.Core.Model.Edx.EdxComponents;
 
 namespace Ulearn.Core.Courses.Slides.Blocks
@@ -29,6 +32,11 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 
 		public override IEnumerable<SlideBlock> BuildUp(SlideBuildingContext context, IImmutableSet<string> filesInProgress)
 		{
+			RelativeToUnitDirectoryImagePaths = RelativeToUnitDirectoryImagePaths
+				.SelectMany(path => context.UnitDirectory.GetFilesByMask(path).OrderBy(f => f.FullName, StringComparer.InvariantCultureIgnoreCase))
+				.Select(file => file.GetRelativePath(context.UnitDirectory))
+				.Distinct()
+				.ToArray();
 			yield return this;
 		}
 
