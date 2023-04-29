@@ -9,7 +9,7 @@
 
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"/>
 
-	<!-- Course -->
+	<!-- #region Course -->
 
 	<xs:element name="course" type="Course"/>
 
@@ -18,7 +18,7 @@
 			<xs:documentation xml:lang="en">Information about course</xs:documentation>
 			<xs:documentation xml:lang="ru">Информация о курсе</xs:documentation>
 		</xs:annotation>
-		
+
 		<xs:all>
 			<xs:element name="defaultLanguage" type="NonEmptyString" minOccurs="0"/>
 			<xs:element name="videoAnnotationsGoogleDoc" type="NonEmptyString" minOccurs="0">
@@ -52,7 +52,7 @@
 			<xs:element name="units" type="CourseUnits" minOccurs="0"/>
 			<xs:element name="dictionaryFile" type="NonEmptyString" minOccurs="0"/>
 		</xs:all>
-		
+
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
 	</xs:complexType>
 
@@ -63,7 +63,7 @@
 				данном языке программирования
 			</xs:documentation>
 		</xs:annotation>
-		
+
 		<xs:sequence>
 			<xs:element name="prelude" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
@@ -86,7 +86,7 @@
 			<xs:documentation xml:lang="en">List of units in the course</xs:documentation>
 			<xs:documentation xml:lang="ru">Список модулей в курсе</xs:documentation>
 		</xs:annotation>
-		
+
 		<xs:sequence>
 			<xs:element name="add" type="NonEmptyString" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
@@ -99,9 +99,9 @@
 		</xs:sequence>
 	</xs:complexType>
 
-	<!-- Course end -->
+	<!-- #endregion Course -->
 
-	<!-- Unit -->
+	<!-- #region Unit -->
 
 	<xs:element name="unit" type="Unit"/>
 
@@ -111,7 +111,7 @@
 			<xs:element name="defaultIncludeCodeFile" type="NonEmptyString" minOccurs="0"/>
 			<xs:element name="slides" type="UnitSlides" minOccurs="0"/>
 		</xs:all>
-		
+
 		<xs:attribute name="id" type="NonEmptyString" use="required"/>
 		<xs:attribute name="url" type="NonEmptyString"/>
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
@@ -128,7 +128,7 @@
 			<xs:documentation xml:lang="en">List of slides in the unit</xs:documentation>
 			<xs:documentation xml:lang="ru">Список слайдов в модуле</xs:documentation>
 		</xs:annotation>
-		
+
 		<xs:sequence>
 			<xs:element name="add" type="NonEmptyString" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
@@ -142,9 +142,9 @@
 		</xs:sequence>
 	</xs:complexType>
 
-	<!-- Unit end -->
+	<!-- #endregion Unit -->
 
-	<!-- Slide -->
+	<!-- #region Slide -->
 
 	<xs:element name="slide" type="Slide"/>
 	<xs:element name="slide.quiz" type="QuizSlide"/>
@@ -153,7 +153,7 @@
 	<xs:element name="slide.flashcards" type="FlashcardSlide"/>
 
 	<xs:complexType name="Slide">
-		<xs:group ref="SlideInternals"/>
+		<xs:group ref="SlideInternals" minOccurs="0" maxOccurs="unbounded"/>
 
 		<xs:attributeGroup ref="SlideAttributes"/>
 	</xs:complexType>
@@ -168,7 +168,7 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:group ref="SlideInternals"/>
+			<xs:group ref="SlideInternals" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 
 		<xs:attributeGroup ref="SlideAttributes"/>
@@ -177,9 +177,9 @@
 	<xs:complexType name="ExerciseSlide">
 		<xs:sequence>
 			<xs:element name="scoring" type="ExerciseScoring" minOccurs="0"/>
-			<xs:group ref="SlideInternals"/>
+			<xs:group ref="SlideInternals" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
-		
+
 		<xs:attributeGroup ref="SlideAttributes"/>
 	</xs:complexType>
 
@@ -220,7 +220,7 @@
 
 	<xs:complexType name="Flashcard">
 		<xs:sequence>
-			<xs:element name="theorySlideId" type="xs:string" maxOccurs="unbounded" minOccurs="0"/>
+			<xs:element name="theorySlideId" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="question" type="FlashcardBlocks"/>
 			<xs:element name="answer" type="FlashcardBlocks"/>
 		</xs:sequence>
@@ -244,67 +244,63 @@
 	</xs:complexType>
 
 	<xs:group name="SlideInternals">
-		<xs:sequence>
-			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="meta" type="SlideMeta">
-					<xs:annotation>
-						<xs:documentation xml:lang="en">Slide's meta: keywords, description, image</xs:documentation>
-						<xs:documentation xml:lang="ru">
-							Мета-информация о слайде, попадёт на итоговую страницу в виде тегов
-							keywords, description, image
-						</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:element name="defaultIncludeCodeFile" type="NonEmptyString">
-					<xs:annotation>
-						<xs:documentation xml:lang="en">Default path for &lt;includeCode&gt;, &lt;exercise.file&gt;,
-							&lt;exercise.csproj&gt;
-						</xs:documentation>
-						<xs:documentation xml:lang="ru">
-							Путь по умолчанию для блоков &lt;includeCode&gt;, &lt;exercise.file&gt;,
-							&lt;exercise.csproj&gt;
-						</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:group ref="Blocks" minOccurs="0" maxOccurs="unbounded"/>
-			</xs:choice>
-		</xs:sequence>
+		<xs:choice>
+			<xs:element name="meta" type="SlideMeta">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Slide's meta: keywords, description, image</xs:documentation>
+					<xs:documentation xml:lang="ru">
+						Мета-информация о слайде, попадёт на итоговую страницу в виде тегов
+						keywords, description, image
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="defaultIncludeCodeFile" type="NonEmptyString">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Default path for &lt;includeCode&gt;, &lt;exercise.file&gt;,
+						&lt;exercise.csproj&gt;
+					</xs:documentation>
+					<xs:documentation xml:lang="ru">
+						Путь по умолчанию для блоков &lt;includeCode&gt;, &lt;exercise.file&gt;,
+						&lt;exercise.csproj&gt;
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:group ref="Blocks" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:choice>
 	</xs:group>
 
 	<xs:complexType name="SlideMeta">
-		<xs:sequence>
-			<xs:choice>
-				<xs:element name="image" type="NonEmptyString">
-					<xs:annotation>
-						<xs:documentation xml:lang="en">
-							Image for slide. Will be used i.e. on social network posting
-						</xs:documentation>
-						<xs:documentation xml:lang="ru">
-							Изображение для слайда. Будет использовано, например, при постинге в
-							соцсети
-						</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:element name="keywords" type="NonEmptyString">
-					<xs:annotation>
-						<xs:documentation xml:lang="en">Keywords for slide. Used by search engines</xs:documentation>
-						<xs:documentation xml:lang="ru">
-							Ключевые слова для слайда. Используются, например, поисковыми
-							роботами
-						</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:element name="description" type="NonEmptyString">
-					<xs:annotation>
-						<xs:documentation xml:lang="en">Description for slide. Used by search engines</xs:documentation>
-						<xs:documentation xml:lang="ru">
-							Описание для слайда. Используются, например, поисковыми роботами,
-							выводится в результатах поиска
-						</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-			</xs:choice>
-		</xs:sequence>
+		<xs:all>
+			<xs:element name="image" type="NonEmptyString" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+						Image for slide. Will be used i.e. on social network posting
+					</xs:documentation>
+					<xs:documentation xml:lang="ru">
+						Изображение для слайда. Будет использовано, например, при постинге в
+						соцсети
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="keywords" type="NonEmptyString" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Keywords for slide. Used by search engines</xs:documentation>
+					<xs:documentation xml:lang="ru">
+						Ключевые слова для слайда. Используются, например, поисковыми
+						роботами
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="NonEmptyString" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Description for slide. Used by search engines</xs:documentation>
+					<xs:documentation xml:lang="ru">
+						Описание для слайда. Используются, например, поисковыми роботами,
+						выводится в результатах поиска
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
 	</xs:complexType>
 
 	<xs:attributeGroup name="SlideAttributes">
@@ -334,53 +330,19 @@
 		</xs:attribute>
 	</xs:attributeGroup>
 
-	<!-- Slide end -->
+	<!-- #endregion Slide -->
 
-	<!-- Blocks -->
+	<!-- #region Blocks -->
 
 	<xs:group name="Blocks">
 		<xs:choice>
 			<xs:group ref="CommonBlocks"/>
-
-			<!-- Quiz blocks -->
-
-			<xs:element name="question.isTrue" type="IsTrueBlock"/>
-
-			<xs:element name="question.choice" type="ChoiceBlock">
-				<xs:unique name="UniqueChoiceItemId">
-					<xs:selector xpath="*"/>
-					<xs:field xpath="@id"/>
-				</xs:unique>
-			</xs:element>
-
-			<xs:element name="question.order" type="OrderingBlock">
-				<xs:unique name="UniqueOrderingItemId">
-					<xs:selector xpath="*"/>
-					<xs:field xpath="@id"/>
-				</xs:unique>
-			</xs:element>
-
-			<xs:element name="question.match" type="MatchingBlock">
-				<xs:unique name="UniqueMatchingItemId">
-					<xs:selector xpath="*"/>
-					<xs:field xpath="@id"/>
-				</xs:unique>
-			</xs:element>
-
-			<xs:element name="question.text" type="FillInBlock"/>
-
-			<!-- Quiz blocks end -->
-
-			<!-- Exercise blocks -->
-
-			<xs:element name="exercise.file" type="SingleFileExercise"/>
-			<xs:element name="exercise.csproj" type="ProjectExercise"/>
-			<xs:element name="exercise.polygon" type="PolygonExercise"/>
-			<xs:element name="exercise.universal" type="UniversalExercise"/>
-
-			<!-- Exercise blocks end -->
+			<xs:group ref="QuizBlocks"/>
+			<xs:group ref="ExerciseBlocks"/>
 		</xs:choice>
 	</xs:group>
+
+	<!-- #region Common blocks -->
 
 	<xs:group name="CommonBlocks">
 		<xs:choice>
@@ -398,8 +360,6 @@
 			<xs:element name="gallery" type="NonEmptyString"/>
 		</xs:choice>
 	</xs:group>
-
-	<!-- Common blocks -->
 
 	<xs:complexType name="GalleryImages">
 		<xs:sequence maxOccurs="unbounded">
@@ -423,14 +383,14 @@
 	</xs:complexType>
 
 	<xs:complexType name="Include">
-		<xs:attribute name="file" type="NonEmptyString"/>
-		<xs:attribute name="hide" type="xs:boolean"/>
+		<xs:attributeGroup ref="IncludeAttributes"/>
 	</xs:complexType>
 
 	<xs:complexType name="Html" mixed="true">
 		<xs:sequence>
 			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+
 		<xs:attribute name="hide" type="xs:boolean"/>
 	</xs:complexType>
 
@@ -438,6 +398,7 @@
 		<xs:sequence>
 			<xs:group ref="CommonBlocks" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+
 		<xs:attribute name="text" type="NonEmptyString" use="required"/>
 		<xs:attribute name="hideQuizButton" type="xs:boolean"/>
 		<xs:attribute name="closable" type="xs:boolean">
@@ -475,9 +436,34 @@
 		<xs:attributeGroup ref="IncludeCodeAttributes"/>
 	</xs:complexType>
 
-	<!-- Common blocks end -->
+	<!-- #endregion Common blocks -->
 
-	<!-- Quiz blocks -->
+	<!-- #region Quiz blocks -->
+
+	<xs:group name="QuizBlocks">
+		<xs:choice>
+			<xs:element name="question.isTrue" type="IsTrueBlock"/>
+			<xs:element name="question.choice" type="ChoiceBlock">
+				<xs:unique name="UniqueChoiceItemId">
+					<xs:selector xpath="*"/>
+					<xs:field xpath="@id"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="question.order" type="OrderingBlock">
+				<xs:unique name="UniqueOrderingItemId">
+					<xs:selector xpath="*"/>
+					<xs:field xpath="@id"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="question.match" type="MatchingBlock">
+				<xs:unique name="UniqueMatchingItemId">
+					<xs:selector xpath="*"/>
+					<xs:field xpath="@id"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="question.text" type="FillInBlock"/>
+		</xs:choice>
+	</xs:group>
 
 	<xs:complexType name="IsTrueBlock">
 		<xs:group ref="QuestionInternals"/>
@@ -490,8 +476,8 @@
 
 	<xs:complexType name="ChoiceBlock">
 		<xs:sequence>
+			<xs:group ref="QuestionInternals"/>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="allowedMistakes" type="AllowedMistakes"/>
 				<xs:element name="item">
 					<xs:complexType>
 						<xs:simpleContent>
@@ -511,7 +497,7 @@
 						</xs:simpleContent>
 					</xs:complexType>
 				</xs:element>
-				<xs:group ref="QuestionInternals"/>
+				<xs:element name="allowedMistakes" type="AllowedMistakes"/>
 			</xs:choice>
 		</xs:sequence>
 
@@ -523,6 +509,7 @@
 
 	<xs:complexType name="OrderingBlock">
 		<xs:sequence>
+			<xs:group ref="QuestionInternals"/>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
 				<xs:element name="explanation" type="xs:string"/>
 				<xs:element name="item">
@@ -534,7 +521,6 @@
 						</xs:simpleContent>
 					</xs:complexType>
 				</xs:element>
-				<xs:group ref="QuestionInternals"/>
 			</xs:choice>
 		</xs:sequence>
 
@@ -544,6 +530,7 @@
 
 	<xs:complexType name="MatchingBlock">
 		<xs:sequence>
+			<xs:group ref="QuestionInternals"/>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
 				<xs:element name="explanation" type="xs:string"/>
 				<xs:element name="match">
@@ -555,7 +542,6 @@
 						<xs:attribute name="id" type="NonEmptyString" use="required"/>
 					</xs:complexType>
 				</xs:element>
-				<xs:group ref="QuestionInternals"/>
 			</xs:choice>
 		</xs:sequence>
 
@@ -566,6 +552,7 @@
 
 	<xs:complexType name="FillInBlock">
 		<xs:sequence>
+			<xs:group ref="QuestionInternals"/>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
 				<xs:element name="sample" type="xs:string">
 					<xs:annotation>
@@ -590,7 +577,6 @@
 						</xs:simpleContent>
 					</xs:complexType>
 				</xs:element>
-				<xs:group ref="QuestionInternals"/>
 			</xs:choice>
 		</xs:sequence>
 
@@ -622,9 +608,18 @@
 		</xs:attribute>
 	</xs:attributeGroup>
 
-	<!-- Quiz blocks end -->
+	<!-- #endregion Quiz blocks -->
 
-	<!-- Exercise blocks -->
+	<!-- #region Exercise blocks -->
+
+	<xs:group name="ExerciseBlocks">
+		<xs:choice>
+			<xs:element name="exercise.file" type="SingleFileExercise"/>
+			<xs:element name="exercise.csproj" type="ProjectExercise"/>
+			<xs:element name="exercise.polygon" type="PolygonExercise"/>
+			<xs:element name="exercise.universal" type="UniversalExercise"/>
+		</xs:choice>
+	</xs:group>
 
 	<xs:complexType name="SingleFileExercise">
 		<xs:sequence>
@@ -823,9 +818,9 @@
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
 				<xs:element name="hint" type="StringWithXmlSpaces"/>
 				<xs:element name="hideSolutions" type="xs:boolean"/>
-				<xs:element name="checkForPlagiarism" type="xs:boolean"/>
-				<xs:element name="showTestDescription" type="xs:boolean"/>
-				<xs:element name="pythonVisualizerEnabled" type="xs:boolean"/>
+				<xs:element name="checkForPlagiarism" type="xs:boolean" minOccurs="0"/>
+				<xs:element name="showTestDescription" type="xs:boolean" minOccurs="0"/>
+				<xs:element name="pythonVisualizerEnabled" type="xs:boolean" minOccurs="0"/>
 			</xs:choice>
 		</xs:sequence>
 
@@ -894,11 +889,11 @@
 		<xs:attribute name="hide" type="xs:boolean"/>
 	</xs:attributeGroup>
 
-	<!-- Exercise blocks end -->
+	<!-- #endregion Exercise blocks -->
 
-	<!-- Blocks end -->
+	<!-- #endregion Blocks -->
 
-	<!-- Types -->
+	<!-- #region Types -->
 
 	<xs:simpleType name="NonEmptyString">
 		<xs:annotation>
@@ -954,7 +949,7 @@
 			<xs:documentation xml:lang="en">Allowed mistakes count</xs:documentation>
 			<xs:documentation xml:lang="ru">Разрешённое количество ошибок</xs:documentation>
 		</xs:annotation>
-		
+
 		<xs:attribute name="checkedUnnecessary" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Allowed count of unnecessary checked items</xs:documentation>
@@ -1023,7 +1018,7 @@
 		<xs:sequence>
 			<xs:element name="group" type="ScoringGroup" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
-		
+
 		<xs:attribute name="defaultQuiz" type="NonEmptyString"/>
 		<xs:attribute name="defaultExercise" type="NonEmptyString"/>
 		<xs:attribute name="default" type="NonEmptyString"/>
@@ -1051,7 +1046,7 @@
 		</xs:simpleContent>
 	</xs:complexType>
 
-	<!-- Legacy -->
+	<!-- #region Legacy -->
 	<!-- 
 		We don't know if it's still used by anyone,
 		so we keep it in in this section awaiting its deletion 
@@ -1086,7 +1081,7 @@
 		</xs:restriction>
 	</xs:simpleType>
 
-	<!-- Legacy end -->
+	<!-- #endregion Legacy -->
 
-	<!-- Types end -->
+	<!-- #endregion Types -->
 </xs:schema>
