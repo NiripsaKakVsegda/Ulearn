@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<!--suppress XmlDefaultAttributeValue -->
 <xs:schema
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns="https://ulearn.me/schema/v2"
@@ -20,8 +19,8 @@
 			<xs:documentation xml:lang="ru">Информация о курсе</xs:documentation>
 		</xs:annotation>
 		<xs:all>
-			<xs:element name="defaultLanguage" type="NonEmptyString" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="videoAnnotationsGoogleDoc" type="NonEmptyString" minOccurs="0" maxOccurs="1">
+			<xs:element name="defaultLanguage" type="NonEmptyString" minOccurs="0"/>
+			<xs:element name="videoAnnotationsGoogleDoc" type="NonEmptyString" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation xml:lang="ru">
 						Идентификатор GoogleDocs документа, в котором находятся транскрибция видео. Нужно для импорта
@@ -46,12 +45,11 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="preludes" type="CoursePreludes" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="enableCodeReviewAndQuizManualCheckForEveryone" type="xs:boolean" minOccurs="0"
-						maxOccurs="1"/>
-			<xs:element name="scoring" type="ScoringGroups" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="units" type="CourseUnits" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="dictionaryFile" type="NonEmptyString" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="preludes" type="CoursePreludes" minOccurs="0"/>
+			<xs:element name="enableCodeReviewAndQuizManualCheckForEveryone" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="scoring" type="ScoringGroups" minOccurs="0"/>
+			<xs:element name="units" type="CourseUnits" minOccurs="0"/>
+			<xs:element name="dictionaryFile" type="NonEmptyString" minOccurs="0"/>
 		</xs:all>
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
 	</xs:complexType>
@@ -105,12 +103,12 @@
 
 	<xs:complexType name="Unit">
 		<xs:all>
-			<xs:element name="scoring" type="ScoringGroups" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="defaultIncludeCodeFile" type="NonEmptyString" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="slides" type="UnitSlides" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="scoring" type="ScoringGroups" minOccurs="0"/>
+			<xs:element name="defaultIncludeCodeFile" type="NonEmptyString" minOccurs="0"/>
+			<xs:element name="slides" type="UnitSlides" minOccurs="0"/>
 		</xs:all>
 		<xs:attribute name="id" type="NonEmptyString" use="required"/>
-		<xs:attribute name="url" type="NonEmptyString" use="optional"/>
+		<xs:attribute name="url" type="NonEmptyString"/>
 		<xs:attribute name="title" type="NonEmptyString" use="required"/>
 		<xs:attribute name="isExtraContent" type="xs:boolean">
 			<xs:annotation>
@@ -156,7 +154,7 @@
 
 	<xs:complexType name="QuizSlide">
 		<xs:sequence>
-			<xs:element name="scoring" type="QuizScoring" minOccurs="0" maxOccurs="1">
+			<xs:element name="scoring" type="QuizScoring" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">Quiz scoring settings</xs:documentation>
 					<xs:documentation xml:lang="ru">Настройки оценивания теста: количество попыток, ручная проверка и
@@ -172,7 +170,7 @@
 
 	<xs:complexType name="ExerciseSlide">
 		<xs:sequence>
-			<xs:element name="scoring" type="ExerciseScoring" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="scoring" type="ExerciseScoring" minOccurs="0"/>
 			<xs:group ref="SlideInternals"/>
 		</xs:sequence>
 		<xs:attributeGroup ref="SlideAttributes"/>
@@ -202,7 +200,7 @@
 
 	<xs:complexType name="FlashcardSlide">
 		<xs:sequence>
-			<xs:element name="flashcard" type="Flashcard" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="flashcard" type="Flashcard" maxOccurs="unbounded"/>
 		</xs:sequence>
 
 		<xs:attribute name="id" type="NonEmptyString" use="required">
@@ -411,14 +409,14 @@
 	<xs:complexType name="Code">
 		<xs:simpleContent>
 			<xs:extension base="StringWithXmlSpaces">
-				<xs:attribute name="language" type="NonEmptyString" use="optional"/>
+				<xs:attribute name="language" type="NonEmptyString"/>
 				<xs:attribute name="hide" type="xs:boolean"/>
 			</xs:extension>
 		</xs:simpleContent>
 	</xs:complexType>
 
 	<xs:complexType name="Include">
-		<xs:attribute name="file" type="NonEmptyString" use="optional"/>
+		<xs:attribute name="file" type="NonEmptyString"/>
 		<xs:attribute name="hide" type="xs:boolean"/>
 	</xs:complexType>
 
@@ -434,19 +432,19 @@
 			<xs:group ref="CommonBlocks" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="text" type="NonEmptyString" use="required"/>
-		<xs:attribute name="hideQuizButton" type="xs:boolean" use="optional"/>
-		<xs:attribute name="closable" type="xs:boolean" use="optional">
+		<xs:attribute name="hideQuizButton" type="xs:boolean"/>
+		<xs:attribute name="closable" type="xs:boolean">
 			<xs:annotation>
 				<xs:documentation>
 					Атрибут устарел. Все спойлеры можно закрыть.
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="hide" type="xs:boolean" use="optional"/>
+		<xs:attribute name="hide" type="xs:boolean"/>
 	</xs:complexType>
 
 	<xs:complexType name="SelfCheckups">
-		<xs:sequence minOccurs="1" maxOccurs="unbounded">
+		<xs:sequence maxOccurs="unbounded">
 			<xs:element name="checkup" type="NonEmptyString"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -478,9 +476,9 @@
 		<xs:group ref="QuestionInternals"/>
 
 		<xs:attributeGroup ref="QuestionAttributes"/>
-		<xs:attribute name="answer" type="xs:boolean" use="optional"/>
-		<xs:attribute name="explanation" type="xs:string" use="optional"/>
-		<xs:attribute name="maxScore" type="xs:int" use="optional"/>
+		<xs:attribute name="answer" type="xs:boolean"/>
+		<xs:attribute name="explanation" type="xs:string"/>
+		<xs:attribute name="maxScore" type="xs:int"/>
 	</xs:complexType>
 
 	<xs:complexType name="ChoiceBlock">
@@ -501,7 +499,7 @@
 										</xs:restriction>
 									</xs:simpleType>
 								</xs:attribute>
-								<xs:attribute name="explanation" type="xs:string" use="optional"/>
+								<xs:attribute name="explanation" type="xs:string"/>
 							</xs:extension>
 						</xs:simpleContent>
 					</xs:complexType>
@@ -511,9 +509,9 @@
 		</xs:sequence>
 
 		<xs:attributeGroup ref="QuestionAttributes"/>
-		<xs:attribute name="multiple" type="xs:boolean" use="optional"/>
-		<xs:attribute name="shuffle" type="xs:boolean" use="optional"/>
-		<xs:attribute name="maxScore" type="xs:int" use="optional"/>
+		<xs:attribute name="multiple" type="xs:boolean"/>
+		<xs:attribute name="shuffle" type="xs:boolean"/>
+		<xs:attribute name="maxScore" type="xs:int"/>
 	</xs:complexType>
 
 	<xs:complexType name="OrderingBlock">
@@ -534,7 +532,7 @@
 		</xs:sequence>
 
 		<xs:attributeGroup ref="QuestionAttributes"/>
-		<xs:attribute name="maxScore" type="xs:int" use="optional"/>
+		<xs:attribute name="maxScore" type="xs:int"/>
 	</xs:complexType>
 
 	<xs:complexType name="MatchingBlock">
@@ -543,9 +541,9 @@
 				<xs:element name="explanation" type="xs:string"/>
 				<xs:element name="match">
 					<xs:complexType>
-						<xs:sequence minOccurs="1" maxOccurs="1">
-							<xs:element name="fixed" minOccurs="1" maxOccurs="1" type="NonEmptyString"/>
-							<xs:element name="movable" minOccurs="1" maxOccurs="1" type="NonEmptyString"/>
+						<xs:sequence>
+							<xs:element name="fixed" type="NonEmptyString"/>
+							<xs:element name="movable" type="NonEmptyString"/>
 						</xs:sequence>
 						<xs:attribute name="id" type="NonEmptyString" use="required"/>
 					</xs:complexType>
@@ -555,8 +553,8 @@
 		</xs:sequence>
 
 		<xs:attributeGroup ref="QuestionAttributes"/>
-		<xs:attribute name="shuffleFixed" type="xs:boolean" use="optional"/>
-		<xs:attribute name="maxScore" type="xs:int" use="optional"/>
+		<xs:attribute name="shuffleFixed" type="xs:boolean"/>
+		<xs:attribute name="maxScore" type="xs:int"/>
 	</xs:complexType>
 
 	<xs:complexType name="FillInBlock">
@@ -580,7 +578,7 @@
 					<xs:complexType>
 						<xs:simpleContent>
 							<xs:extension base="xs:string">
-								<xs:attribute name="ignoreCase" type="xs:boolean" use="optional" default="false"/>
+								<xs:attribute name="ignoreCase" type="xs:boolean" default="false"/>
 							</xs:extension>
 						</xs:simpleContent>
 					</xs:complexType>
@@ -590,14 +588,14 @@
 		</xs:sequence>
 
 		<xs:attributeGroup ref="QuestionAttributes"/>
-		<xs:attribute name="explanation" type="xs:string" use="optional"/>
-		<xs:attribute name="maxScore" type="xs:int" use="optional"/>
-		<xs:attribute name="multiline" type="xs:boolean" use="optional"/>
+		<xs:attribute name="explanation" type="xs:string"/>
+		<xs:attribute name="maxScore" type="xs:int"/>
+		<xs:attribute name="multiline" type="xs:boolean"/>
 	</xs:complexType>
 
 	<xs:group name="QuestionInternals">
 		<xs:choice>
-			<xs:element name="text" type="NonEmptyString" minOccurs="1">
+			<xs:element name="text" type="NonEmptyString">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">Question</xs:documentation>
 					<xs:documentation xml:lang="ru">Текст вопроса</xs:documentation>
@@ -624,7 +622,7 @@
 	<xs:complexType name="SingleFileExercise">
 		<xs:sequence>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="solution" type="Label" minOccurs="1"/>
+				<xs:element name="solution" type="Label"/>
 				<xs:element name="remove" type="Label"/>
 				<xs:element name="prelude" type="NonEmptyString"/>
 				<xs:group ref="ExericesInternals"/>
@@ -770,14 +768,14 @@
 						</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="dockerImageName" type="NonEmptyString" minOccurs="1">
+				<xs:element name="dockerImageName" type="NonEmptyString">
 					<xs:annotation>
 						<xs:documentation>
 							Имя docker-контейнера
 						</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="run" type="NonEmptyString" minOccurs="1">
+				<xs:element name="run" type="NonEmptyString">
 					<xs:annotation>
 						<xs:documentation>
 							Команда, выполняемая в docker-контейнере
@@ -804,7 +802,7 @@
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="noStudentZip" type="xs:boolean" use="optional">
+		<xs:attribute name="noStudentZip" type="xs:boolean">
 			<xs:annotation>
 				<xs:documentation>
 					Не отдавать zip-файл проекта студенту
@@ -816,8 +814,8 @@
 	<xs:complexType name="PolygonExercise">
 		<xs:sequence>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="hint" type="StringWithXmlSpaces" minOccurs="1"/>
-				<xs:element name="hideSolutions" type="xs:boolean" minOccurs="1"/>
+				<xs:element name="hint" type="StringWithXmlSpaces"/>
+				<xs:element name="hideSolutions" type="xs:boolean"/>
 				<xs:element name="checkForPlagiarism" type="xs:boolean"/>
 				<xs:element name="showTestDescription" type="xs:boolean"/>
 				<xs:element name="pythonVisualizerEnabled" type="xs:boolean"/>
@@ -829,21 +827,21 @@
 
 	<xs:group name="ExericesInternals">
 		<xs:choice>
-			<xs:element name="initialCode" type="StringWithXmlSpaces" minOccurs="1"/>
-			<xs:element name="hint" type="StringWithXmlSpaces" minOccurs="1"/>
-			<xs:element name="comment" type="NonEmptyString" minOccurs="1"/>
-			<xs:element name="expected" type="StringWithXmlSpaces" minOccurs="1"/>
+			<xs:element name="initialCode" type="StringWithXmlSpaces"/>
+			<xs:element name="hint" type="StringWithXmlSpaces"/>
+			<xs:element name="comment" type="NonEmptyString"/>
+			<xs:element name="expected" type="StringWithXmlSpaces"/>
 			<xs:element name="passingPoints" type="xs:float"/>
 			<xs:element name="smallPointsIsBetter" type="xs:boolean"/>
-			<xs:element name="hideSolutions" type="xs:boolean" minOccurs="1"/>
+			<xs:element name="hideSolutions" type="xs:boolean"/>
 			<xs:element name="timeLimit" type="xs:int"/>
 			<xs:element name="checkForPlagiarism" type="xs:boolean"/>
-			<xs:element name="hideExpectedOutput" type="xs:boolean" minOccurs="1"/>
-			<xs:element name="validator" minOccurs="1">
+			<xs:element name="hideExpectedOutput" type="xs:boolean"/>
+			<xs:element name="validator">
 				<xs:complexType>
 					<xs:simpleContent>
 						<xs:extension base="xs:string">
-							<xs:attribute name="removeDefaults" type="xs:boolean" use="optional"/>
+							<xs:attribute name="removeDefaults" type="xs:boolean"/>
 						</xs:extension>
 					</xs:simpleContent>
 				</xs:complexType>
@@ -868,7 +866,7 @@
 
 	<xs:attributeGroup name="ExerciseAttributes">
 		<xs:attributeGroup ref="IncludeCodeAttributes"/>
-		<xs:attribute name="type" use="optional">
+		<xs:attribute name="type">
 			<xs:simpleType>
 				<xs:restriction base="xs:string">
 					<xs:enumeration value="check-output"/>
@@ -881,11 +879,11 @@
 
 	<xs:attributeGroup name="IncludeCodeAttributes">
 		<xs:attributeGroup ref="IncludeAttributes"/>
-		<xs:attribute name="language" type="NonEmptyString" use="optional"/>
+		<xs:attribute name="language" type="NonEmptyString"/>
 	</xs:attributeGroup>
 
 	<xs:attributeGroup name="IncludeAttributes">
-		<xs:attribute name="file" type="NonEmptyString" use="optional"/>
+		<xs:attribute name="file" type="NonEmptyString"/>
 		<xs:attribute name="hide" type="xs:boolean"/>
 	</xs:attributeGroup>
 
@@ -949,7 +947,7 @@
 			<xs:documentation xml:lang="en">Allowed mistakes count</xs:documentation>
 			<xs:documentation xml:lang="ru">Разрешённое количество ошибок</xs:documentation>
 		</xs:annotation>
-		<xs:attribute name="checkedUnnecessary" type="xs:int" use="optional">
+		<xs:attribute name="checkedUnnecessary" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Allowed count of unnecessary checked items</xs:documentation>
 				<xs:documentation xml:lang="ru">Разрешённое количество пунктов, которые были отмечены пользователем, но
@@ -957,7 +955,7 @@
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="notCheckedNecessary" type="xs:int" use="optional">
+		<xs:attribute name="notCheckedNecessary" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Allowed count of necessary not-checked items</xs:documentation>
 				<xs:documentation xml:lang="ru">Разрешённое количество пунктов, которые НЕ были отмечены пользователем,
@@ -968,19 +966,19 @@
 	</xs:complexType>
 
 	<xs:complexType name="QuizScoring">
-		<xs:attribute name="tries" type="xs:int" use="optional">
+		<xs:attribute name="tries" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Maximum tries count</xs:documentation>
 				<xs:documentation xml:lang="ru">Максимальное количество попыток</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="manualCheck" type="xs:boolean" use="optional">
+		<xs:attribute name="manualCheck" type="xs:boolean">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Is manual checking enabled</xs:documentation>
 				<xs:documentation xml:lang="ru">Включена ли ручная проверка этого теста</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="group" type="NonEmptyString" use="optional">
+		<xs:attribute name="group" type="NonEmptyString">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Scoring group for this quiz</xs:documentation>
 				<xs:documentation xml:lang="ru">К какой группе баллов относится этот тест</xs:documentation>
@@ -989,7 +987,7 @@
 	</xs:complexType>
 
 	<xs:complexType name="ExerciseScoring">
-		<xs:attribute name="passedTestsScore" type="xs:int" use="optional">
+		<xs:attribute name="passedTestsScore" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Score for correct solution (if all tests passed)</xs:documentation>
 				<xs:documentation xml:lang="ru">Количество баллов, автоматически выдающееся за верное решение (если
@@ -997,7 +995,7 @@
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="codeReviewScore" type="xs:int" use="optional">
+		<xs:attribute name="codeReviewScore" type="xs:int">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Maximum score for code review</xs:documentation>
 				<xs:documentation xml:lang="ru">Максимальное количество баллов, которое преподаватель может добавить к
@@ -1005,7 +1003,7 @@
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="group" type="NonEmptyString" use="optional">
+		<xs:attribute name="group" type="NonEmptyString">
 			<xs:annotation>
 				<xs:documentation xml:lang="en">Scoring group for this quiz</xs:documentation>
 				<xs:documentation xml:lang="ru">К какой группе баллов относится этот тест</xs:documentation>
@@ -1027,10 +1025,10 @@
 			<xs:extension base="NonEmptyString">
 				<xs:attribute name="id" type="NonEmptyString" use="required"/>
 				<xs:attribute name="abbr" type="NonEmptyString" use="required"/>
-				<xs:attribute name="description" type="NonEmptyString" use="optional"/>
-				<xs:attribute name="maxAdditionalScore" type="xs:integer" use="optional"/>
-				<xs:attribute name="enableForEveryone" type="xs:boolean" use="optional"/>
-				<xs:attribute name="weight" type="xs:decimal" use="optional">
+				<xs:attribute name="description" type="NonEmptyString"/>
+				<xs:attribute name="maxAdditionalScore" type="xs:integer"/>
+				<xs:attribute name="enableForEveryone" type="xs:boolean"/>
+				<xs:attribute name="weight" type="xs:decimal">
 					<xs:annotation>
 						<xs:documentation xml:lang="en">The weight with which different ScoringGroups are summed into a
 							number showing the overall progress. The default is 1
