@@ -130,5 +130,53 @@ $$3$$".RenderMarkdown(DefaultMdContext).Trim());
 				@"<div class='tex'>\displaystyle 1</div>",
 				@" $$1$$ ".RenderMarkdown(DefaultMdContext).Trim());
 		}
+
+		[Test]
+		public void RenderInlineCode()
+		{
+			Assert.AreEqual(
+				@"<p><code>code</code></p>",
+				@"``` code ```".RenderMarkdown(DefaultMdContext).Trim());
+		}
+
+		[Test]
+		public void RenderCodeBlockWithoutLang()
+		{
+			Assert.AreEqual(
+				"<pre><code>const i = 10;\nConsole.WriteLine(i);</code></pre>",
+				(
+					"```\n" +
+					"const i = 10;\n" +
+					"Console.WriteLine(i);\n" +
+					"```"
+				).RenderMarkdown(DefaultMdContext).Trim());
+		}
+		
+		[Test]
+		public void RenderCodeWithLang()
+		{
+			Assert.AreEqual(
+				"<textarea class='code code-sample' data-lang='csharp'>const i = 10;\nConsole.WriteLine(i);</textarea>",
+				(
+					"```C#\n" +
+					"const i = 10;\n" +
+					"Console.WriteLine(i);\n" +
+					"```"
+				).RenderMarkdown(DefaultMdContext).Trim());
+		}
+		
+		[Test]
+		public void RenderCodeWithLangOldStyle()
+		{
+			Assert.AreEqual(
+				"<textarea class='code code-sample' data-lang='csharp'>const i = 10;\nConsole.WriteLine(i);</textarea>",
+				(
+					"```\n" +
+					"{{C#}}\n" +
+					"const i = 10;\n" +
+					"Console.WriteLine(i);\n" +
+					"```"
+				).RenderMarkdown(DefaultMdContext).Trim());
+		}
 	}
 }

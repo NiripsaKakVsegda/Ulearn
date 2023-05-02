@@ -19,36 +19,36 @@ namespace Ulearn.Core.Markdown
 		public override void OnPrepareLink(HtmlTag tag)
 		{
 			base.OnPrepareLink(tag);
-			var href = tag.attributes["href"];
+			var href = tag.Attributes["href"];
 			if (href.StartsWith("./"))
-				href = href.Substring(2);
+				href = href[2..];
 
 			var isFileToDownload = fileToDownloadLinkRegex.IsMatch(href);
 			if (isFileToDownload)
-				tag.attributes["download"] = "";
+				tag.Attributes["download"] = "";
 
 			if (!IsAbsoluteUrl(href))
 			{
 				if (!href.StartsWith("/") && IsFile(href))
-					tag.attributes["href"] = GetLinkToFile(href);
+					tag.Attributes["href"] = GetLinkToFile(href);
 				else
-					tag.attributes["href"] = href;
+					tag.Attributes["href"] = href;
 			}
 			else
 			{
 				if (IsUlearnUrl(href))
-					tag.attributes.Remove("target");
+					tag.Attributes.Remove("target");
 			}
 		}
 
-		public override void OnPrepareImage(HtmlTag tag, bool TitledImage)
+		public override void OnPrepareImage(HtmlTag tag, bool titledImage)
 		{
-			base.OnPrepareImage(tag, TitledImage);
-			tag.attributes["class"] = "slide-image";
+			base.OnPrepareImage(tag, titledImage);
+			tag.Attributes["class"] = "slide-image";
 
-			var src = tag.attributes["src"];
+			var src = tag.Attributes["src"];
 			if (!IsAbsoluteUrl(src))
-				tag.attributes["src"] = GetLinkToFile(src);
+				tag.Attributes["src"] = GetLinkToFile(src);
 		}
 
 		protected virtual string GetLinkToFile(string pathFromUnit)
@@ -56,15 +56,15 @@ namespace Ulearn.Core.Markdown
 			return CourseUrlHelper.GetAbsoluteUrlToFile(context.BaseUrlApi, context.CourseId, context.UnitDirectoryRelativeToCourse, pathFromUnit);
 		}
 
-		private bool IsAbsoluteUrl(string url)
+		private static bool IsAbsoluteUrl(string url)
 		{
 			return Uri.TryCreate(url, UriKind.Absolute, out _);
 		}
 
 		private bool IsUlearnUrl(string url)
 		{
-			return url.IndexOf(context.BaseUrlApi, StringComparison.OrdinalIgnoreCase) >= 0
-					|| url.IndexOf(context.BaseUrlWeb, StringComparison.OrdinalIgnoreCase) >= 0;
+			return url.Contains(context.BaseUrlApi, StringComparison.OrdinalIgnoreCase) ||
+					url.Contains(context.BaseUrlWeb, StringComparison.OrdinalIgnoreCase);
 		}
 
 		private readonly Regex fileLinkRegex = new(@".*\.\w{1,5}(?:$|#|\?|&)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
