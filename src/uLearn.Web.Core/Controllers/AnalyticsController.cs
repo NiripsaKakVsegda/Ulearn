@@ -8,6 +8,7 @@ using Database.Repos.SystemAccessesRepo;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Telegram.Bot.Types;
 using Ulearn.Common;
@@ -23,13 +24,16 @@ using Ulearn.Core.Courses.Units;
 using uLearn.Web.Core.Authorization;
 using uLearn.Web.Core.Extensions;
 using uLearn.Web.Core.Models;
+using Vostok.Logging.Abstractions;
 using Web.Api.Configuration;
 
 namespace uLearn.Web.Core.Controllers;
 
 [Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
-public class AnalyticsController : JsonDataContractController
+public class AnalyticsController : Controller
 {
+	private static ILog log => LogProvider.Get().ForContext(typeof(AnalyticsController));
+
 	private readonly UlearnDb db;
 	private readonly ICourseStorage courseStorage;
 
@@ -126,12 +130,21 @@ public class AnalyticsController : JsonDataContractController
 		if (isMore)
 			filterOptions.UserIds = usersIds.Take(usersLimit).ToList();
 
-		var slidesVisits = isMore && groupsIds.Count == 0
+		var slidesVisits = groupsIds.Count == 0 && (isMore || User.HasAccessFor(courseId, CourseRoleType.CourseAdmin))
 			? null
 			: await visitsRepo.GetVisitsInPeriodForEachSlide(filterOptions);
 
 		var visitedSlidesCountByUser = GetVisitedSlidesCountByUser(filterOptions);
-		var visitedSlidesCountByUserAllTime = GetVisitedSlidesCountByUserAllTime(filterOptions);
+		var visitedSlidesCountByUserAllTime = new Dictionary<string, int>();
+		try
+		{
+			visitedSlidesCountByUserAllTime = GetVisitedSlidesCountByUserAllTime(filterOptions);
+		}
+		catch (Exception e)
+		{
+			log.Error(e.Message);
+			slidesVisits = null;
+		}
 
 		/* Get `usersLimit` best by slides count and order them by name */
 		visitedUsers = visitedUsers
@@ -272,7 +285,8 @@ public class AnalyticsController : JsonDataContractController
 
 	private Dictionary<string, int> GetVisitedSlidesCountByUserAllTime(VisitsFilterOptions filterOptions)
 	{
-		return visitsRepo.GetVisitsInPeriod(filterOptions.WithPeriodStart(DateTime.MinValue).WithPeriodFinish(DateTime.MaxValue))
+		return visitsRepo
+			.GetVisitsInPeriod(filterOptions.WithPeriodStart(DateTime.MinValue).WithPeriodFinish(DateTime.MaxValue))
 			.GroupBy(v => v.UserId)
 			.Select(g => new { g.Key, Count = g.Count() })
 			.ToDictionary(g => g.Key, g => g.Count);
