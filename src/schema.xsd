@@ -1051,42 +1051,5 @@
 		</xs:simpleContent>
 	</xs:complexType>
 
-	<!-- #region Legacy -->
-	<!-- 
-		We don't know if it's still used by anyone,
-		so we keep it in in this section awaiting its deletion 
-	-->
-
-	<xs:simpleType name="SlideType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="lesson">
-				<xs:annotation>
-					<xs:documentation xml:lang="en">Simple lesson</xs:documentation>
-					<xs:documentation xml:lang="ru">Просто слайд-урок</xs:documentation>
-				</xs:annotation>
-			</xs:enumeration>
-			<xs:enumeration value="quiz">
-				<xs:annotation>
-					<xs:documentation xml:lang="en">Quiz with question blocks</xs:documentation>
-					<xs:documentation xml:lang="ru">Тест с вопросами разных типов</xs:documentation>
-				</xs:annotation>
-			</xs:enumeration>
-			<xs:enumeration value="exercise">
-				<xs:annotation>
-					<xs:documentation xml:lang="en">Programming exercise</xs:documentation>
-					<xs:documentation xml:lang="ru">Задача на программирование</xs:documentation>
-				</xs:annotation>
-			</xs:enumeration>
-		</xs:restriction>
-	</xs:simpleType>
-
-	<xs:simpleType name="TimeCode">
-		<xs:restriction base="xs:string">
-			<xs:pattern value="[0-9]{1,2}:[0-9]{2}"/>
-		</xs:restriction>
-	</xs:simpleType>
-
-	<!-- #endregion Legacy -->
-
 	<!-- #endregion Types -->
 </xs:schema>
