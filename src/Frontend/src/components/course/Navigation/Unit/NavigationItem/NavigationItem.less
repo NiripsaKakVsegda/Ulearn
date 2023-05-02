@@ -24,6 +24,11 @@
     & .questionIcon {
       color: @linkColor;
     }
+
+    & .hidden-text {
+      color: @white;
+      background: transparent;
+    }
   }
 }
 
@@ -47,6 +52,16 @@
   line-height: 20px;
   font-style: normal;
   font-weight: 400;
+  word-break: break-word;
+}
+
+.hidden-text {
+  position: relative;
+  color: transparent;
+  background: url("/src/images/hidden.svg") repeat;
+  background-size: 14px;
+  transition: .5s color;
+  -webkit-transition: .5s color;
 }
 
 .progressWrapper {

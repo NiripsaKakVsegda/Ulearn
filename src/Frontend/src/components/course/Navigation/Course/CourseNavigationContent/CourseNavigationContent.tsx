@@ -11,14 +11,20 @@ export interface Props {
 	items: CourseMenuItem[];
 	courseId: string;
 	getRefToActive: React.RefObject<HTMLLIElement>;
+	isStudentMode: boolean;
 }
 
-function CourseNavigationContent({ items, getRefToActive, courseId, }: Props): React.ReactElement {
+function CourseNavigationContent({ items, getRefToActive, courseId, isStudentMode }: Props): React.ReactElement {
 	return (
 		<ol className={ styles.root }>
-			{ items.map(
-				(item) => <CourseNavigationItem courseId={ courseId } getRefToActive={ getRefToActive }
-												key={ item.id } { ...item }/>) }
+			{ items.map((item) =>
+				<CourseNavigationItem
+					key={ item.id }
+					courseId={ courseId }
+					getRefToActive={ getRefToActive } { ...item }
+					isStudentMode={ isStudentMode }
+				/>
+			) }
 		</ol>
 	);
 }
