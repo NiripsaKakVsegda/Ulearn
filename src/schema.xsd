@@ -363,7 +363,12 @@
 
 	<xs:complexType name="GalleryImages">
 		<xs:sequence maxOccurs="unbounded">
-			<xs:element name="image" type="NonEmptyString"/>
+			<xs:element name="image" type="NonEmptyString">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Image filename. Supports masks with * and ?</xs:documentation>
+					<xs:documentation xml:lang="ru">Путь до изображения. Поддерживает маски с * и ?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 

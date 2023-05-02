@@ -31,7 +31,7 @@ using Web.Api.Configuration;
 namespace uLearn.Web.Core.Controllers;
 
 [Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
-public class ExerciseController : JsonDataContractController
+public class ExerciseController : Controller
 {
 	private readonly UlearnDb db;
 	private readonly ICourseStorage courseStorage;

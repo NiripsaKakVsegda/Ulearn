@@ -17,6 +17,7 @@ import styles from "./CourseNavigationItem.less";
 export interface Props extends CourseMenuItem {
 	getRefToActive?: React.RefObject<HTMLLIElement>;
 	courseId: string;
+	isStudentMode: boolean;
 }
 
 function CourseNavigationItem({
@@ -30,17 +31,22 @@ function CourseNavigationItem({
 	additionalContentInfo,
 	id,
 	getRefToActive,
+	isStudentMode
 }: Props): React.ReactElement {
 	const classes = classnames(
 		styles.itemLink,
 		{ [styles.active]: isActive },
 	);
 
+	const hideTitle = isStudentMode && (isNotPublished || additionalContentInfo.isAdditionalContent);
+
 	return (
 		<li className={ styles.root } onClick={ clickHandle } ref={ isActive ? getRefToActive : undefined }>
 			<div className={ classes }>
 					<span className={ styles.text }>
-						{ title }
+						<span className={ hideTitle ? styles['hidden-text'] : '' }>
+							{ title }
+						</span>
 						{ isNotPublished &&
 						<span className={ styles.isNotPublishedIcon } onClick={ hintClickHandle }>
 								{ publicationDate

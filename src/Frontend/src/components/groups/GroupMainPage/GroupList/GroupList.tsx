@@ -56,7 +56,7 @@ const GroupList: FC<Props> = ({
 					page={ page }
 					isSubGroup={ isSubGroup }
 				/>
-				{ group.subGroups &&
+				{ group.subGroups && group.subGroups.length > 0 &&
 					<div className={ styles.subGroupsContainer }>
 						<ul className={ styles.subGroupsWrapper }>
 							{

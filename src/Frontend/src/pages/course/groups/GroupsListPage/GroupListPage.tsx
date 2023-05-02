@@ -23,9 +23,10 @@ import { AppDispatch } from "../../../../setupStore";
 import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
 import texts from './GroupsListPage.texts';
 import { buildUserInfo, isInstructor } from "../../../../utils/courseRoles";
+import { AccountState } from "../../../../redux/account";
 
 interface Props extends WithRouter {
-	userId?: string | null;
+	account: AccountState;
 	isInstructor?: boolean;
 	courses: CourseState;
 
@@ -45,7 +46,7 @@ const GroupListPage: FC<Props> = ({
 }) => {
 	const [deleteGroup] = groupsApi.useDeleteGroupMutation();
 	const [updateGroupSettings] = groupSettingsApi.useSaveGroupSettingsMutation();
-	const userId = account.userId;
+	const userId = account.id;
 	const courseId = params.courseId.toLowerCase();
 	const _isInstructor = isInstructor(buildUserInfo(account, courseId,));
 
@@ -144,10 +145,12 @@ const GroupListPage: FC<Props> = ({
 	}
 
 	function onDeleteGroup(group: GroupInfo) {
+		const isSuperGroup = group.groupType === GroupType.SuperGroup;
+
 		deleteGroup({ group })
 			.unwrap()
 			.then(() => {
-				if(group.groupType === GroupType.SingleGroup) {
+				if(!isSuperGroup) {
 					const params: Partial<GroupsListParameters> = group.isArchived
 						? { courseId, archived: true }
 						: { courseId };
@@ -156,28 +159,21 @@ const GroupListPage: FC<Props> = ({
 						draft.groups = draft.groups.filter(source => source.id !== group.id);
 					});
 				} else {
-					const params: Partial<GroupsListParameters> = group.isArchived
-						? { courseId, archived: true }
-						: { courseId };
-					updateSuperGroupsState(params, draft => {
+					updateSuperGroupsState({ courseId }, draft => {
 						draft.superGroups = draft.superGroups.filter(source => source.id !== group.id);
 					});
 				}
 
-
 				const superGroupId = group.superGroupId;
 				if(superGroupId !== null) {
-					const params: Partial<GroupsListParameters> = group.isArchived
-						? { courseId, archived: true }
-						: { courseId };
-					updateSuperGroupsState(params, draft => {
+					updateSuperGroupsState({ courseId }, draft => {
 						draft.subGroupsBySuperGroupId[superGroupId]
 							= draft.subGroupsBySuperGroupId[superGroupId]
 							.filter(source => source.id !== group.id);
 					});
 				}
 
-				Toast.push(texts.buildDeleteGroupToast(group.name));
+				Toast.push(texts.buildDeleteGroupToast(group.name, isSuperGroup));
 			});
 	}
 

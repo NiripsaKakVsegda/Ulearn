@@ -6,6 +6,7 @@ import Navigation from "./Navigation";
 import { toggleNavigationAction } from "src/actions/navigation";
 
 import { Dispatch } from "redux";
+import { isInstructorFromAccount } from "../../../utils/courseRoles";
 
 const mapStateToProps = (state: RootState) => {
 	const { currentCourseId, } = state.courses;
@@ -18,7 +19,15 @@ const mapStateToProps = (state: RootState) => {
 		? groupsAsStudent.filter(group => group.courseId.toLowerCase() === courseId && !group.isArchived)
 		: [];
 
-	return { groupsAsStudent: courseGroupsAsStudent, deviceType };
+
+	const { instructor, account } = state;
+	const userIsInstructor = courseId ? isInstructorFromAccount(account, courseId) : false;
+
+	return {
+		groupsAsStudent: courseGroupsAsStudent,
+		deviceType,
+		isStudentMode: userIsInstructor && instructor.isStudentMode,
+	};
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

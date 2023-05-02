@@ -5,7 +5,7 @@ import {
 	CreateGroupResponse,
 	GroupInfo,
 	GroupsInfoResponse,
-	GroupsListParameters, SuperGroupsListResponse
+	GroupsListParameters, GroupType, SuperGroupsListResponse
 } from "../../../../models/groups";
 import { fetchBaseQueryWithReauth } from "../../utils/baseQueryWithReauth";
 import { HttpMethods } from "../../../../consts/httpMethods";
@@ -31,7 +31,7 @@ export const groupsApi = createApi({
 				url: '',
 				method: HttpMethods.POST,
 				params: { courseId },
-				body: { name }
+				body: { name, groupType: GroupType.SingleGroup }
 			})
 		}),
 		copyGroup: build.mutation<

@@ -21,6 +21,11 @@
     color: #ffffff;
     background-color: @linkColor;
     text-decoration: none;
+
+    & .hidden-text {
+      color: @white;
+      background: transparent;
+    }
   }
 }
 
@@ -31,10 +36,20 @@
 .text {
   font-size: 16px;
   line-height: 22px;
+  word-break: break-word;
 
   .active & {
     font-weight: 600;
   }
+}
+
+.hidden-text {
+  position: relative;
+  color: transparent;
+  background: url("/src/images/hidden.svg") repeat;
+  background-size: 16px;
+  transition: .5s color;
+  -webkit-transition: .5s color;
 }
 
 .progressWrapper {

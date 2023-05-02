@@ -54,7 +54,7 @@ const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 	);
 
 	function onCopyLink() {
-		navigator.clipboard.writeText(inviteLink);
+		navigator.clipboard.writeText(group.inviteHash);
 		Toast.push(texts.linkCopiedToast);
 	}
 };

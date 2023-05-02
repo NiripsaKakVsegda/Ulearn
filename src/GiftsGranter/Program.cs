@@ -249,7 +249,15 @@ namespace GiftsGranter
 			{
 				var sid = (await db.UserLogins.FirstOrDefaultAsync(ul => ul.UserId == entry.UserId && ul.LoginProvider == "Контур.Паспорт"))?.ProviderKey;
 				//var sid = entry.User.Logins.First(login => login.LoginProvider == "Контур.Паспорт").ProviderKey;
-				var staffUserId = GetUserId(sid);
+				var staffUser = GetUser(sid);
+				
+				if (IsDismissed(staffUser))
+				{
+					Log.Info($"Skipped\t{user.VisibleName} is dismissed");
+					return false;
+				}
+				
+				var staffUserId = GetUserId(staffUser);
 				var gifts = staffClient.GetUserGifts(staffUserId);
 				var giftImagePath = courseSettings.giftImagePath;
 
@@ -276,10 +284,20 @@ namespace GiftsGranter
 			}
 		}
 
-		private int GetUserId(string sid)
+		private JObject GetUser(string sid)
 		{
 			// TODO Use https://staff.skbkontur.ru/api/users/getbylogin?login=kontur\<konturlogin> if not succeeded
-			return staffClient.GetUser(sid)["id"]!.Value<int>();
+			return staffClient.GetUser(sid);
+		}
+		
+		private int GetUserId(JObject user)
+		{
+			return user["id"]!.Value<int>();
+		}
+		
+		private bool IsDismissed(JObject user)
+		{
+			return user["status"]!.Value<string>() == "dismissed";
 		}
 	}
 }

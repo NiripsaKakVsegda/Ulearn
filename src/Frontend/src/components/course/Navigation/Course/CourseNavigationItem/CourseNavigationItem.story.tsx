@@ -24,6 +24,7 @@ const defaultProps: Props = {
 		max: 100,
 		inProgress: 0,
 	},
+	isStudentMode: false
 };
 
 const Template: Story<Partial<Props>[]> = (propsArray) => (

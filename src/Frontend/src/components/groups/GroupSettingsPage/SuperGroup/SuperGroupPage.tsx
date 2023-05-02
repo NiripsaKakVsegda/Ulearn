@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "src/api";
 
 import { Add, Ok, Remove, Warning } from "icons";
@@ -8,7 +8,7 @@ import { Button, Input, Link, Loader, Modal, Toast, } from "ui";
 import { clone } from "src/utils/jsonExtensions";
 import { withNavigate } from "src/utils/router";
 
-import { GroupInfo } from "src/models/groups";
+import { GroupInfo, GroupsListParameters, SuperGroupsListResponse } from "src/models/groups";
 import {
 	SuperGroupItemActions,
 	SuperGroupSheetExtractionResult,
@@ -27,9 +27,18 @@ import SettingsType from "../SettingsType";
 import UpdateSubGroupsSettings from "./UpdateSubGroupsSettings";
 import InviteBlock from "../GroupMembers/StudentsBlock/InviteBlock/InviteBlock";
 import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
+import { RootState } from "../../../../redux/reducers";
+import { AppDispatch } from "../../../../setupStore";
+import { superGroupsApi } from "../../../../redux/toolkit/api/groups/groupsApi";
+import { connect } from "react-redux";
+import { ValidationWrapper } from "@skbkontur/react-ui-validations";
 
 interface SuperGroupProps extends WithNavigate {
 	groupInfo: GroupInfo;
+
+	updateSuperGroupsState: (params: Partial<GroupsListParameters>,
+		recipe: (draft: SuperGroupsListResponse) => void
+	) => void;
 
 	updateSuperGroup?: typeof api.superGroups.updateSuperGroup;
 	extractGoogleSheet?: typeof api.superGroups.extractFromTable;
@@ -55,10 +64,13 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		updateSuperGroup = api.superGroups.updateSuperGroup,
 		resortSuperGroupStudents = api.superGroups.resortSuperGroupStudents,
 		deleteGroup = api.groups.deleteGroup,
+		updateSuperGroupsState,
 	} = props;
 	const { name } = groupInfo;
-
 	const [tableLink, setTableLink] = useState(groupInfo.distributionTableLink || "");
+	useEffect(() => {
+		setTableLink(groupInfo.distributionTableLink || "");
+	}, [groupInfo]);
 	const [extractionResult, setExtractionResult] = useState<SuperGroupSheetExtractionResult>();
 	const [isLoading, setLoading] = useState(false);
 	const [settingsTab, setSettingsSettingsTab] = useState<SettingsType>();
@@ -76,7 +88,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		: null;
 	const neededActionsCount = neededActions ? neededActions.length : -1;
 
-	if(groupInfo.distributionTableLink && !isLoading && !extractionResult) {
+	if(tableLink && !isLoading && !extractionResult) {
 		_extractGoogleSheet();
 	}
 
@@ -122,19 +134,30 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		navigate(-1);
 	}
 
+	function getDateValidationResult(): { message: string } | null {
+		if(tableLink === '' || tableLink === null) {
+			return { message: "Поле не может быть пустым" };
+		}
+		return null;
+	}
+
 	function renderGoogleSheetLink() {
 		return (
 			<div className={ defaultStyles.distributionLinkBlock }>
 				<p>{ texts.instruction }</p>
 				<div className={ defaultStyles.inline }>
-					<Input className={ defaultStyles.distributionLinkBlockInput }
-						   placeholder={ texts.linkPlaceholder }
-						   width={ "30%" }
-						   value={ tableLink }
-						   onValueChange={ setTableLink }
-					/>
+					<ValidationWrapper validationInfo={ getDateValidationResult() }>
+						<Input className={ defaultStyles.distributionLinkBlockInput }
+							   placeholder={ texts.linkPlaceholder }
+							   width={ "30%" }
+							   value={ tableLink }
+							   onValueChange={ setTableLink }
+							   error={ tableLink === '' || tableLink === null }
+						/>
+					</ValidationWrapper>
 					<Button
 						use={ "default" }
+						disabled={ tableLink === '' || tableLink === null }
 						onClick={ _extractGoogleSheet }>
 						{ texts.extractSpreadsheetButton }
 					</Button>
@@ -441,11 +464,25 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	async function _extractGoogleSheet() {
+		updateSuperGroupsState({ courseId: groupInfo.courseId }, draft => {
+			const index = draft.superGroups.findIndex(source => source.id === groupInfo.id);
+			draft.superGroups[index] = {
+				...draft.superGroups[index],
+				distributionTableLink: tableLink,
+			};
+		});
 		setLoading(true);
 		setExtractionResult(await extractGoogleSheet(tableLink, groupInfo.id));
 		setLoading(false);
 	}
 }
 
+const mapStateToProps = (state: RootState) => ({});
 
-export default withNavigate(SuperGroupPage);
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+	updateSuperGroupsState: (params: Partial<GroupsListParameters>, recipe: (draft: SuperGroupsListResponse) => void) =>
+		dispatch(superGroupsApi.util.updateQueryData('getGroups', params, recipe)),
+});
+
+const connected = connect(mapStateToProps, mapDispatchToProps)(SuperGroupPage);
+export default withNavigate(connected);
