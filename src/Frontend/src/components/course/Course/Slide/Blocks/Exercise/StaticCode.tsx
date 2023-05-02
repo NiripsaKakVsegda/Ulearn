@@ -57,7 +57,7 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 	const value = collapseEditor ? lines.splice(0, 5).join('\n') : code;
 
 	return (
-		<div className={ disableStyles ? '' : cn(styles.wrapper, className) }>
+		<div className={ disableStyles ? styles.emptyWrapper : cn(styles.wrapper, className) }>
 			<UnControlled
 				editorDidMount={ onEditorMount }
 				className={ disableStyles
