@@ -3,6 +3,8 @@ import React from "react";
 import { isTimeArrived, momentFromServerToLocal } from "src/utils/momentUtils";
 import { DeadLineInfo } from "src/models/deadLines";
 import { Link } from "react-router-dom";
+import { CourseRoleType } from "../../../consts/accessType";
+import { isCourseAdmin, isInstructor, UserRoles } from "../../../utils/courseRoles";
 
 export default {
 	ulearnDescription: 'Интерактивные учебные онлайн-курсы по программированию',
@@ -10,13 +12,33 @@ export default {
 
 	flashcardsTitle: 'Вопросы для самопроверки',
 	codeReviewLink: '← Код-ревью и проверка тестов',
-	renderFooter: (): React.ReactNode => {
+	renderFooter: (userRoles: UserRoles): React.ReactNode => {
+		const _isCourseAdmin = isCourseAdmin(userRoles);
+		const _isInstructor = _isCourseAdmin || isInstructor(userRoles);
+
+		const availableChannels = [
+			_isCourseAdmin && { name: 'авторов курсов', link: 'ulearnAuthors' },
+			_isInstructor && { name: 'преподавателей', link: 'ulearnteachers' }
+		].filter(c => c) as unknown as { name: string, link: string }[];
+		const availableChannelsMarkup = availableChannels
+			.map<React.ReactNode>(({ link, name }, i) => (
+				<a href={ `https://t.me/${ link }` } rel={ "noopener noreferrer" }
+				   target={ "_blank" }>{ i === 0 ? 'Канал' : 'канал' } { name }</a>));
 		return (
 			<>
 				<p><Link to="/Home/Terms">Условия использования платформы</Link></p>
 				<p>
 					Вопросы и пожеланиями пишите на <a href="mailto:support@ulearn.me">support@ulearn.me</a>
 				</p>
+				{
+					availableChannels.length > 0 &&
+					<p>
+						{
+							availableChannelsMarkup.reduce((prev, curr) => [prev, ', ', curr])
+						}
+						&nbsp;в телеграме
+					</p>
+				}
 				<p>
 					Сделано в <a href="https://kontur.ru/career">Контуре</a>
 				</p>
@@ -30,7 +52,9 @@ export default {
 
 	//deadlines
 	afterDeadLine: (deadLineInfo: DeadLineInfo, slideMaxScore: number,): string => {
-		if(deadLineInfo.scorePercent === 100) return '';
+		if(deadLineInfo.scorePercent === 100) {
+			return '';
+		}
 
 		const score = Math.ceil(deadLineInfo.scorePercent * slideMaxScore / 100);
 

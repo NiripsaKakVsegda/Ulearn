@@ -359,11 +359,22 @@ class Course extends Component<CourseProps, State> {
 			? slideInfo.navigationInfo.current
 			: null;
 
-		const { isSystemAdministrator, roleByCourse } = user;
+		const { isSystemAdministrator, roleByCourse, accessesByCourse, systemAccesses } = user;
 		const courseRole = roleByCourse[courseId] ? roleByCourse[courseId] : CourseRoleType.student;
 		const userRoles: UserRoles = {
 			isSystemAdministrator,
 			courseRole,
+		};
+		const courseAccesses = accessesByCourse[courseId] ? accessesByCourse[courseId] : [];
+
+		const userInfo: UserInfo = {
+			...user as ShortUserInfo,
+
+			isAuthenticated: user.isAuthenticated,
+			isSystemAdministrator,
+			courseRole,
+			courseAccesses,
+			systemAccesses,
 		};
 
 		return (
@@ -407,8 +418,8 @@ class Course extends Component<CourseProps, State> {
 					}
 				</div>
 				<NavigationButtons slideInfo={ slideInfo }/>
-				{ currentSlideInfo && isNavigationVisible && this.renderComments(currentSlideInfo) }
-				{ isNavigationVisible && this.renderFooter() }
+				{ currentSlideInfo && isNavigationVisible && this.renderComments(currentSlideInfo, userInfo) }
+				{ isNavigationVisible && this.renderFooter(userRoles) }
 			</main>
 		);
 	}
@@ -475,21 +486,8 @@ class Course extends Component<CourseProps, State> {
 		);
 	};
 
-	renderComments(currentSlide: ShortSlideInfo,): React.ReactElement {
-		const { user, courseId, isSlideReady, } = this.props;
-		const { isSystemAdministrator, accessesByCourse, roleByCourse, systemAccesses, } = user;
-		const courseAccesses = accessesByCourse[courseId] ? accessesByCourse[courseId] : [];
-
-		const userInfo: UserInfo = {
-			...user as ShortUserInfo,
-
-			isAuthenticated: user.isAuthenticated,
-			isSystemAdministrator,
-			courseRole: roleByCourse[courseId],
-			courseAccesses,
-			systemAccesses,
-		};
-
+	renderComments(currentSlide: ShortSlideInfo, userInfo: UserInfo): React.ReactElement {
+		const { courseId, isSlideReady } = this.props;
 		return (
 			<BlocksWrapper className={ styles.commentsWrapper }>
 				<CommentsView
@@ -503,10 +501,10 @@ class Course extends Component<CourseProps, State> {
 		);
 	}
 
-	renderFooter(): React.ReactElement {
+	renderFooter(userRoles: UserRoles): React.ReactElement {
 		return (
 			<footer className={ styles.footer }>
-				{ texts.renderFooter() }
+				{ texts.renderFooter(userRoles)}
 			</footer>
 		);
 	}
