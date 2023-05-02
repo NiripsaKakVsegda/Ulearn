@@ -250,7 +250,6 @@ public class SuperGroupController : BaseGroupController
 	[Route("resort-students")]
 	[ProducesResponseType((int)HttpStatusCode.OK)]
 	[ProducesResponseType((int)HttpStatusCode.Forbidden)]
-	[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 	public async Task<ActionResult<SuperGroupMoveUserResponse>> ResortStudents([FromQuery] int groupId, [FromBody] Dictionary<string, MoveStudentInfo> moves)
 	{
 		var superGroup = await groupsRepo.FindGroupByIdAsync<SuperGroup>(groupId);

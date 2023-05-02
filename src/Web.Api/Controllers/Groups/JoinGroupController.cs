@@ -75,7 +75,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		/// <param name="inviteHash">Инвайт-хеш группы</param>
 		[HttpPost("join")]
-		[ProducesResponseType((int)HttpStatusCode.Conflict)]
+		
 		[SwaggerResponse((int)HttpStatusCode.Conflict, Description = "User is already a student of this group")]
 		public async Task<IActionResult> Join(Guid inviteHash)
 		{
