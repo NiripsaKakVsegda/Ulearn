@@ -438,8 +438,9 @@ public class Markdown
 	public string HtmlClassFootnotes { get; set; }
 
 	// Callback to format a code block (ie: apply syntax highlighting)
-	// string FormatCodeBlock(code)
+	// string FormatCodeBlock(code, lang)
 	// Code = code block content (ie: the code to format)
+	// Lang = specified lang of code block (can be empty)
 	// Return the formatted code, including <pre> and <code> tags
 	public Func<Markdown, string, string, string> FormatCodeBlock;
 
