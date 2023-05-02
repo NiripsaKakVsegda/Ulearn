@@ -12,8 +12,13 @@ export default function () {
 
 	$studentSubmissions.on('click', 'table tr.has-submissions', function (e) {
 		const $link = $(e.target).closest('tr').find('a');
-		if($link.length > 0)
-			window.location = $link.attr('href');
+		if($link.length > 0) {
+			if(window.event.ctrlKey) {
+				window.open($link.attr('href'), '_blank');
+			} else {
+				window.location = $link.attr('href');
+			}
+		}
 	});
 
 	$studentSubmissions.on('click', '.student-submissions__show-all', function (e) {
