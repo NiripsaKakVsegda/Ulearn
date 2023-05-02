@@ -13,7 +13,7 @@ using Web.Api.Configuration;
 namespace uLearn.Web.Core.Controllers;
 
 [AllowAnonymous]
-public class TelegramController : JsonDataContractController
+public class TelegramController : Controller
 {
 	private static ILog log => LogProvider.Get().ForContext(typeof(TelegramController));
 

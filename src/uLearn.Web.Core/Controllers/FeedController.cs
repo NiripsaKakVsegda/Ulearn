@@ -14,7 +14,7 @@ using uLearn.Web.Core.Authorization;
 namespace uLearn.Web.Core.Controllers;
 
 [Authorize(Policy = UlearnAuthorizationConstants.StudentsPolicyName)]
-public class FeedController : Controller //JsonDataContractController
+public class FeedController : Controller
 {
 	private readonly IServiceProvider serviceProvider;
 	private readonly ICourseStorage courseStorage;

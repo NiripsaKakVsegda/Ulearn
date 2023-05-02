@@ -79,7 +79,6 @@ namespace Ulearn.Web.Api.Controllers.Slides
 
 			var getSlideMaxScoreFunc = await BuildGetSlideMaxScoreFunc(solutionsRepo, userQuizzesRepo, visitsRepo, groupsRepo, course, userId);
 			var getGitEditLinkFunc = await BuildGetGitEditLinkFunc(userId, course, courseRolesRepo, coursesRepo);
-
 			var slideRenderContext = new SlideRenderContext(
 				course.Id,
 				slide,
