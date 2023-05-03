@@ -7,6 +7,6 @@ export default {
 
 	buildLinkHint: (isEnabled: boolean,
 		isSuperGroup: boolean
-	) => `Ссылка для вступления в ${ isSuperGroup && 'супер-' }группу ` + (isEnabled ? 'включена' : 'выключена'),
+	) => `Ссылка для вступления в ${ isSuperGroup ? 'супер-' : '' }группу ` + (isEnabled ? 'включена' : 'выключена'),
 	buildLink: (inviteHash: string) => `${ window.location.origin }/groups/${ inviteHash }`,
 };

@@ -13,6 +13,7 @@ interface Props {
 const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 	const isInviteLinkEnabled = group.isInviteLinkEnabled;
 	const isSuperGroup = group.groupType === GroupType.SuperGroup;
+	const link = texts.buildLink(group.inviteHash);
 
 	const renderInviteLink = (): JSX.Element =>
 		<div className={ styles.inviteLink }>
@@ -30,7 +31,7 @@ const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 					type={ "text" }
 					readOnly
 					selectAllOnFocus
-					value={ texts.buildLink(group.inviteHash) }
+					value={ link }
 					width="65%"
 				/>
 			</div>
@@ -54,7 +55,7 @@ const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 	);
 
 	function onCopyLink() {
-		navigator.clipboard.writeText(group.inviteHash);
+		navigator.clipboard.writeText(link);
 		Toast.push(texts.linkCopiedToast);
 	}
 };
