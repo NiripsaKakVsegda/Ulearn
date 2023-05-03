@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
+using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 using Ulearn.Core.Extensions;
@@ -29,18 +30,20 @@ namespace Ulearn.Web.Api.Controllers
 		private readonly IGroupMembersRepo groupMembersRepo;
 		private readonly IVisitsRepo visitsRepo;
 		private readonly IGroupsRepo groupsRepo;
+		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IUserQuizzesRepo userQuizzesRepo;
 		private readonly IUnitsRepo unitsRepo;
 
 		public ExportController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
-			IGroupMembersRepo groupMembersRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo, IUserQuizzesRepo userQuizzesRepo,
-			ICourseRolesRepo courseRolesRepo, IUnitsRepo unitsRepo)
+			IGroupMembersRepo groupMembersRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo,
+			IUserQuizzesRepo userQuizzesRepo, ICourseRolesRepo courseRolesRepo, IUnitsRepo unitsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.groupMembersRepo = groupMembersRepo;
 			this.visitsRepo = visitsRepo;
 			this.groupsRepo = groupsRepo;
+			this.groupAccessesRepo = groupAccessesRepo;
 			this.userQuizzesRepo = userQuizzesRepo;
 			this.courseRolesRepo = courseRolesRepo;
 			this.unitsRepo = unitsRepo;
@@ -48,7 +51,7 @@ namespace Ulearn.Web.Api.Controllers
 
 		[HttpGet("users-info-and-results")]
 		[Authorize]
-		public async Task<ActionResult> ExportGroupMembersAsTsv([Required]int groupId, Guid? quizSlideId = null)
+		public async Task<ActionResult> ExportGroupMembersAsTsv([Required] int groupId, Guid? quizSlideId = null)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId);
 			if (group == null)
@@ -56,8 +59,9 @@ namespace Ulearn.Web.Api.Controllers
 
 			var isSystemAdministrator = await IsSystemAdministratorAsync();
 			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, group.CourseId, CourseRoleType.CourseAdmin);
+			var hasAccess = await groupAccessesRepo.HasUserGrantedAccessToGroupOrIsOwnerAsync(groupId, UserId).ConfigureAwait(false);
 
-			if (!(isSystemAdministrator || isCourseAdmin))
+			if (!(isSystemAdministrator || isCourseAdmin || hasAccess))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You should be course or system admin");
 
 			var users = await GetExtendedUserInfo(groupId);
@@ -72,12 +76,16 @@ namespace Ulearn.Web.Api.Controllers
 				if (slide == null)
 					return StatusCode((int)HttpStatusCode.NotFound, $"Slide not found in course {courseId}");
 
-				if (!(slide is QuizSlide quizSlide))
+				if (slide is not QuizSlide quizSlide)
 					return StatusCode((int)HttpStatusCode.NotFound, $"Slide is not quiz slide in course {courseId}");
 
 				List<List<string>> answers;
 				(questions, answers) = await GetQuizAnswers(users.Select(s => s.Id), courseId, quizSlide);
-				users = users.Zip(answers, (u, a) => { u.Answers = a; return u; }).ToList();
+				users = users.Zip(answers, (u, a) =>
+				{
+					u.Answers = a;
+					return u;
+				}).ToList();
 			}
 
 			var slides = course.GetSlides(false, visibleUnits).Where(s => s.ShouldBeSolved).Select(s => s.Id).ToList();
@@ -100,11 +108,16 @@ namespace Ulearn.Web.Api.Controllers
 				row.AddRange(scoringGroups.Select(scoringGroup => (scores.ContainsKey((i.Id, scoringGroup.Id)) ? scores[(i.Id, scoringGroup.Id)] : 0).ToString()));
 				rows.Add(row);
 			}
+
 			var content = CreateTsv(rows);
-			Response.Headers.Add("content-disposition", $@"attachment;filename=""users {groupId}.tsv""");
+			Response.Headers.Add("content-disposition", quizSlideId is null
+				? $@"attachment;filename=""{groupId}.tsv"""
+				: $@"attachment;filename=""{quizSlideId} - {groupId}.tsv"""
+			);
+
 			return Content(content, "application/octet-stream");
 		}
-		
+
 		private async Task<List<ExtendedUserInfo>> GetExtendedUserInfo(int groupId)
 		{
 			var users = await groupMembersRepo.GetGroupMembersAsUsersAsync(groupId);
@@ -131,8 +144,10 @@ namespace Ulearn.Web.Api.Controllers
 					info.LastVisit = visit.Timestamp;
 					info.IpAddress = visit.IpAddress;
 				}
+
 				result.Add(info);
 			}
+
 			return result;
 		}
 
@@ -166,6 +181,7 @@ namespace Ulearn.Web.Api.Controllers
 							: "").ToList();
 				rows.Add(answerStrings);
 			}
+
 			return (questions, rows);
 		}
 
@@ -190,18 +206,20 @@ namespace Ulearn.Web.Api.Controllers
 		private static string CreateTsv(List<List<string>> table)
 		{
 			var sb = new StringBuilder();
-			foreach(var row in table)
+			foreach (var row in table)
 			{
 				var isFirst = true;
-				foreach(var cell in row)
+				foreach (var cell in row)
 				{
 					if (!isFirst)
 						sb.Append('\t');
 					sb.Append(cell?.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' '));
 					isFirst = false;
 				}
+
 				sb.Append("\r\n");
 			}
+
 			return sb.ToString();
 		}
 	}
