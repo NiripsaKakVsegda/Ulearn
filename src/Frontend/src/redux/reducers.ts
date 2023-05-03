@@ -18,6 +18,7 @@ import { authSlice } from "./toolkit/slices/authSlice";
 import { coursesApi } from "./toolkit/api/coursesApi";
 import { additionalContentApi } from "./toolkit/api/additionalContentApi";
 import { deadLinesApi } from "./toolkit/api/deadLinesApi";
+import { exportApi } from "./toolkit/api/exportApi";
 
 export const rootReducer = combineReducers({
 	account: accountReducer,
@@ -40,6 +41,7 @@ export const rootReducer = combineReducers({
 	[coursesApi.reducerPath]: coursesApi.reducer,
 	[additionalContentApi.reducerPath]: additionalContentApi.reducer,
 	[deadLinesApi.reducerPath]: deadLinesApi.reducer,
+	[exportApi.reducerPath]: exportApi.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>

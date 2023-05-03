@@ -3,6 +3,7 @@ import { usersApi } from "../api/usersApi";
 import { coursesApi } from "../api/coursesApi";
 import { additionalContentApi } from "../api/additionalContentApi";
 import { deadLinesApi } from "../api/deadLinesApi";
+import { exportApi } from "../api/exportApi";
 
 export default [
 	groupsApi.middleware,
@@ -11,4 +12,5 @@ export default [
 	coursesApi.middleware,
 	additionalContentApi.middleware,
 	deadLinesApi.middleware,
+	exportApi.middleware
 ];
