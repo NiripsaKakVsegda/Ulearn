@@ -478,7 +478,7 @@ public class CourseController : BaseController
 				.Select(g => g.CourseId)
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.Where(c => visibleCourses.Contains(c)).ToList();
-			courses = courses.Where(c => coursesInWhichUserHasVisit[c.Id]
+			courses = courses.Where(c => coursesInWhichUserHasVisit.ContainsKey(c.Id)
 										|| coursesInWhichUserHasAnyRole.Contains(c.Id, StringComparer.OrdinalIgnoreCase)
 										|| coursesWhereIAmStudent.Contains(c.Id, StringComparer.OrdinalIgnoreCase));
 		}
