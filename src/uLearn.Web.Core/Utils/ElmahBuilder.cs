@@ -18,6 +18,10 @@ public class ElmahBuilder : IConfigBuilder<ElmahOptions>
 			var password = msg.Form["password"];
 			if (password != null)
 				msg.Form.Set("password", "***hidden***");
+			
+			var confirmPassword = msg.Form["confirmPassword"];
+			if (confirmPassword != null)
+				msg.Form.Set("confirmPassword", "***hidden***");
 
 			var token = msg.Form["__RequestVerificationToken"];
 			if (token != null)
