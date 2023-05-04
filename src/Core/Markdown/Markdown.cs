@@ -53,49 +53,51 @@ namespace Ulearn.Core.Markdown
 		public static HtmlString RenderTex(this string textWithTex)
 		{
 			var texReplacer = new TexReplacer(textWithTex);
-			string html = WebUtility.HtmlEncode(texReplacer.ReplacedText);
+			var html = WebUtility.HtmlEncode(texReplacer.ReplacedText);
 			return new HtmlString(texReplacer.PlaceTexInsertsBack(html));
 		}
 
-		public static readonly Regex rxExtractLanguage = new("^({{(.+)}}[\r\n])", RegexOptions.Compiled);
+		private static readonly Regex rxExtractLanguage = new("^({{(.+)}}[\r\n])", RegexOptions.Compiled);
 
-		public static string FormatCodePrettyPrint(MarkdownDeep.Markdown m, string code)
+		private static string FormatCodePrettyPrint(MarkdownDeep.Markdown m, string code, string language)
 		{
 			code = code.TrimEnd();
 			
-			// Try to extract the language from the first line
-			var match = rxExtractLanguage.Match(code);
-			string language = null;
-
-			if (match.Success)
+			if (string.IsNullOrEmpty(language))
 			{
-				// Save the language
-				var g = match.Groups[2];
-				language = g.ToString();
+				// Try to extract the language from the first line
+				var match = rxExtractLanguage.Match(code);
 
-				// Remove the first line
-				code = code.Substring(match.Groups[1].Length);
-			}
+				if (match.Success)
+				{
+					// Save the language
+					var g = match.Groups[2];
+					language = g.ToString();
 
-			// If not specified, look for a link definition called "default_syntax" and
-			// grab the language from its title
-			if (language == null)
-			{
-				var d = m.GetLinkDefinition("default_syntax");
-				if (d != null)
-					language = d.title;
+					// Remove the first line
+					code = code[match.Groups[1].Length..];
+				}
+
+				// If not specified, look for a link definition called "default_syntax" and
+				// grab the language from its title
+				if (language == null)
+				{
+					var d = m.GetLinkDefinition("default_syntax");
+					if (d != null)
+						language = d.title;
+				}
 			}
 
 			// Common replacements
-			if (language == "C#" || language == "cs")
+			if (language is "C#" or "cs")
 				language = "csharp";
 			if (language == "C++")
 				language = "cpp";
 
 			// Wrap code in pre/code tags and add PrettyPrint attributes if necessary
-			if (string.IsNullOrEmpty(language))
-				return $"<pre><code>{code}</code></pre>\n";
-			return $"<textarea class='code code-sample' data-lang='{language.ToLowerInvariant()}'>{code}</textarea>\n";
+			return string.IsNullOrEmpty(language) 
+				? $"<pre><code>{code}</code></pre>\n" 
+				: $"<textarea class='code code-sample' data-lang='{language.ToLowerInvariant()}'>{code}</textarea>\n";
 		}
 	}
 }

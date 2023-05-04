@@ -74,6 +74,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uLearn.Web.Core", "uLearn.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSandboxer", "CsSandboxer\CsSandboxer.csproj", "{C0607D49-AFBA-45CC-803F-0073A6C5DE37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownDeep", "MarkdownDeep\MarkdownDeep.csproj", "{870A3E60-B213-4F4C-9BE5-3D69FCF281CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownDeep.Tests", "MarkdownDeep.Tests\MarkdownDeep.Tests.csproj", "{CC8943FD-C88B-493B-A14F-197530534077}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -216,6 +220,14 @@ Global
 		{C0607D49-AFBA-45CC-803F-0073A6C5DE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0607D49-AFBA-45CC-803F-0073A6C5DE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0607D49-AFBA-45CC-803F-0073A6C5DE37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{870A3E60-B213-4F4C-9BE5-3D69FCF281CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{870A3E60-B213-4F4C-9BE5-3D69FCF281CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{870A3E60-B213-4F4C-9BE5-3D69FCF281CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{870A3E60-B213-4F4C-9BE5-3D69FCF281CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC8943FD-C88B-493B-A14F-197530534077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC8943FD-C88B-493B-A14F-197530534077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC8943FD-C88B-493B-A14F-197530534077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC8943FD-C88B-493B-A14F-197530534077}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -35,7 +35,6 @@ namespace Ulearn.Core.Courses.Slides.Blocks
 			RelativeToUnitDirectoryImagePaths = RelativeToUnitDirectoryImagePaths
 				.SelectMany(path => context.UnitDirectory.GetFilesByMask(path).OrderBy(f => f.FullName, StringComparer.InvariantCultureIgnoreCase))
 				.Select(file => file.GetRelativePath(context.UnitDirectory))
-				.Distinct()
 				.ToArray();
 			yield return this;
 		}
