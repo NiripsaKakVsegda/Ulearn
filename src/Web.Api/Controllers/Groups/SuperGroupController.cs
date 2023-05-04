@@ -8,6 +8,7 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Ulearn.Common.Api.Models.Responses;
@@ -18,6 +19,7 @@ using Ulearn.Web.Api.Models.Parameters.Groups.SuperGroup;
 using Ulearn.Web.Api.Models.Responses.Groups;
 using Ulearn.Web.Api.Utils;
 using Ulearn.Web.Api.Utils.SuperGroup;
+using Vostok.Logging.Abstractions;
 using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups;
@@ -30,7 +32,6 @@ public class SuperGroupController : BaseGroupController
 	private readonly IGroupAccessesRepo groupAccessesRepo;
 	private readonly IGroupMembersRepo groupMembersRepo;
 	private readonly IUnitsRepo unitsRepo;
-
 
 	public SuperGroupController(
 		ICourseStorage courseStorage,
@@ -79,7 +80,7 @@ public class SuperGroupController : BaseGroupController
 	public async Task<ActionResult<SuperGroupSheetExtractionResult>> ExtractFromGoogleSheet([FromQuery] string spreadsheetUrl, [FromQuery] int groupId)
 	{
 		var superGroup = await groupsRepo.FindGroupByIdAsync<SuperGroup>(groupId);
-
+		string errorMessage;
 		try
 		{
 			var (createdGroups, spreadSheetGroups)
@@ -90,19 +91,25 @@ public class SuperGroupController : BaseGroupController
 
 			return await BuildSpreadSheetExtractionData(createdGroups, spreadSheetGroups);
 		}
+		catch (GoogleApiException e)
+		{
+			errorMessage = $"Google Api ERROR: {e.Error.Code} {e.Error.Message}";
+		}
+		catch (GoogleSheetFormatException formatException)
+		{
+			return new SuperGroupSheetExtractionResult
+			{
+				Groups = new(),
+				ValidatingResults = new List<ValidatingResult> { new InvalidSheetStructure { RawsIndexes = formatException.RawsIndexes } },
+			};
+		}
 		catch (Exception e)
 		{
-			if (e is GoogleSheetFormatException formatException)
-			{
-				return new SuperGroupSheetExtractionResult
-				{
-					Groups = new(),
-					ValidatingResults = new List<ValidatingResult> { new InvalidSheetStructure { RawsIndexes = formatException.RawsIndexes } },
-				};
-			}
-
-			return BadRequest();
+			errorMessage = e.Message;
 		}
+		
+		log.Warn($"Error while getting spread sheet from {spreadsheetUrl}, {errorMessage}");
+		return BadRequest(errorMessage);
 	}
 
 	[HttpGet]
@@ -460,17 +467,17 @@ public class SuperGroupController : BaseGroupController
 
 	private ChangeableGroupSettings BuildSuperGroupSettings(List<SingleGroup> groupsSettings)
 	{
-		var isManualCheckingNull = groupsSettings.Any(gs=> gs.IsManualCheckingEnabled != groupsSettings[0].IsManualCheckingEnabled);
-		var isManualCheckingNullForOldSolutions = groupsSettings.Any(gs=> gs.IsManualCheckingEnabledForOldSolutions != groupsSettings[0].IsManualCheckingEnabledForOldSolutions);
-		var nullProhibitFurtherReview = groupsSettings.Any(gs=> gs.DefaultProhibitFutherReview != groupsSettings[0].DefaultProhibitFutherReview);
-		var canStudentsSeeGroupProgressIsNull = groupsSettings.Any(gs=> gs.CanUsersSeeGroupProgress != groupsSettings[0].CanUsersSeeGroupProgress);
+		var isManualCheckingNull = groupsSettings.Any(gs => gs.IsManualCheckingEnabled != groupsSettings[0].IsManualCheckingEnabled);
+		var isManualCheckingNullForOldSolutions = groupsSettings.Any(gs => gs.IsManualCheckingEnabledForOldSolutions != groupsSettings[0].IsManualCheckingEnabledForOldSolutions);
+		var nullProhibitFurtherReview = groupsSettings.Any(gs => gs.DefaultProhibitFutherReview != groupsSettings[0].DefaultProhibitFutherReview);
+		var canStudentsSeeGroupProgressIsNull = groupsSettings.Any(gs => gs.CanUsersSeeGroupProgress != groupsSettings[0].CanUsersSeeGroupProgress);
 
 		return new ChangeableGroupSettings
 		{
 			IsManualCheckingEnabled = isManualCheckingNull ? null : groupsSettings[0].IsManualCheckingEnabled,
-			IsManualCheckingEnabledForOldSolutions =  isManualCheckingNullForOldSolutions ? null : groupsSettings[0].IsManualCheckingEnabledForOldSolutions,
-			DefaultProhibitFurtherReview =  nullProhibitFurtherReview ? null : groupsSettings[0].DefaultProhibitFutherReview,
-			CanStudentsSeeGroupProgress =  canStudentsSeeGroupProgressIsNull ? null : groupsSettings[0].CanUsersSeeGroupProgress,
+			IsManualCheckingEnabledForOldSolutions = isManualCheckingNullForOldSolutions ? null : groupsSettings[0].IsManualCheckingEnabledForOldSolutions,
+			DefaultProhibitFurtherReview = nullProhibitFurtherReview ? null : groupsSettings[0].DefaultProhibitFutherReview,
+			CanStudentsSeeGroupProgress = canStudentsSeeGroupProgressIsNull ? null : groupsSettings[0].CanUsersSeeGroupProgress,
 		};
 	}
 }

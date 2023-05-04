@@ -32,7 +32,7 @@ namespace Ulearn.Web.Api.Controllers
 	[Produces("application/json")]
 	public class BaseController : Controller
 	{
-		private static ILog log => LogProvider.Get().ForContext(typeof(BaseController));
+		protected static ILog log => LogProvider.Get().ForContext(typeof(BaseController));
 		protected readonly ICourseStorage courseStorage;
 		protected readonly UlearnDb db;
 		protected readonly IUsersRepo usersRepo;

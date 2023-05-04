@@ -1,38 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
 using Database.Repos.Groups;
+using Google;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Ulearn.Core.GoogleSheet;
 using Ulearn.Web.Api.Utils.SuperGroup;
+using Ulearn.Web.Api.Workers;
+using Vostok.Logging.Abstractions;
 using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Utils;
 
 public class SuperGroupManager
 {
-	private readonly GoogleApiClient client;
+	private readonly string googleAccessCredentials;
 	private readonly IGroupsRepo groupsRepo;
 	private readonly SuperGroupGoogleSheetCache cache;
 
 	public SuperGroupManager(IOptions<WebApiConfiguration> options, IGroupsRepo groupsRepo, SuperGroupGoogleSheetCache cache)
 	{
-		client = new GoogleApiClient(options.Value.GoogleAccessCredentials);
 		this.groupsRepo = groupsRepo;
 		this.cache = cache;
+		googleAccessCredentials = options.Value.GoogleAccessCredentials;
 	}
 
 	private async Task<(string groupName, string studentName)[]> GetSpreadSheetGroups(string spreadsheetUrl)
 	{
+		if (googleAccessCredentials == null)
+			throw new ConfigurationErrorsException("GoogleAccessCredentials are null");
+
+		var client = new GoogleApiClient(googleAccessCredentials);
 		var spreadSheet = await client.GetSheetByUrl(spreadsheetUrl);
 		var range = spreadSheet.ReadRange("A:B");
 
 		var unFilledRows = range
-			.Select((p, index) => p.Count != 2
+			.Select((p, index) => p.Count != 2 || p.Any(s => s == "")
 				? new { columns = p, rawIndex = index }
 				: null)
 			.Where(p => p != null)

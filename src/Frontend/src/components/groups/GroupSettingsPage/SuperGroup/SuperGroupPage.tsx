@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "src/api";
+import api, { RequestError } from "src/api";
 
 import { Add, Ok, Remove, Warning } from "icons";
 import Page from "src/pages";
@@ -73,6 +73,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}, [groupInfo]);
 	const [extractionResult, setExtractionResult] = useState<SuperGroupSheetExtractionResult>();
 	const [isLoading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const [settingsTab, setSettingsSettingsTab] = useState<SettingsType>();
 	const [saveSettings] = groupSettingsApi.useSaveGroupSettingsMutation();
 
@@ -88,7 +89,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		: null;
 	const neededActionsCount = neededActions ? neededActions.length : -1;
 
-	if(tableLink && !isLoading && !extractionResult) {
+	if(tableLink && !isLoading && !extractionResult && !error) {
 		_extractGoogleSheet();
 	}
 
@@ -157,10 +158,12 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 					</ValidationWrapper>
 					<Button
 						use={ "default" }
+						error={ !!error }
 						disabled={ tableLink === '' || tableLink === null }
 						onClick={ _extractGoogleSheet }>
 						{ texts.extractSpreadsheetButton }
 					</Button>
+					{ error && <span className={ styles.requestErrorText }>{ error }</span> }
 				</div>
 			</div>
 		);
@@ -472,7 +475,17 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			};
 		});
 		setLoading(true);
-		setExtractionResult(await extractGoogleSheet(tableLink, groupInfo.id));
+		setError(null);
+		await extractGoogleSheet(tableLink, groupInfo.id)
+			.then(r => {
+				setExtractionResult(r);
+			})
+			.catch(err => {
+				const reqError = err as RequestError;
+				reqError.response
+					.text()
+					.then(t => setError(t));
+			});
 		setLoading(false);
 	}
 }
