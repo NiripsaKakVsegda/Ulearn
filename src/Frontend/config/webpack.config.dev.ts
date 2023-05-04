@@ -44,6 +44,12 @@ const devServerConfig: WebpackDevServer.Configuration = {
 			target: webUrl,
 		},
 		{
+			context: '/elmah/**',
+			secure: false,
+			changeOrigin: true,
+			target: webUrl,
+		},
+		{
 			context: "/exercise/StudentSubmissionsTable",
 			secure: false,
 			changeOrigin: true,
