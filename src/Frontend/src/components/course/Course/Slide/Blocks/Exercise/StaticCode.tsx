@@ -71,13 +71,13 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 					{ texts.controls.showAllCode.text }
 				</button>
 			}
-			<div
+			{ !disableStyles && <div
 				className={ lines.length > 1 ? styles.copyCodeButton : styles.copyCodeButtonSingleLine }
 				onClick={ copyCodeButtonClicked }>
 				<Hint text={ texts.controls.copyCode.text }>
 					<Copy size={ 20 }/>
 				</Hint>
-			</div>
+			</div> }
 			{ (language === Language.python3 || language === Language.python2) &&
 				<div className={ lines.length > 1 ? styles.visualizerButton : styles.visualizerButtonSingleLine }>
 					<Hint text={ texts.controls.visualizer.text }>
