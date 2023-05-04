@@ -16,8 +16,8 @@ namespace Ulearn.Core.CSharp.Validators
 			var mustStartWithUpper = MustStartWithUpper(identifier.Parent);
 			var mustStartWithLower = MustStartWithLower(identifier.Parent);
 			var isUpper = char.IsUpper(name[0]);
-			var isLower = char.IsLower(name[0]) 
-						|| name[0] == '_' && name.Length > 1 && char.IsLower(name[1]);
+			var isLower = char.IsLower(name[0]) ||
+						name[0] == '_' && name.Length > 1 && char.IsLower(name[1]);
 
 			if (mustStartWithLower && !isLower)
 				yield return new SolutionStyleError(StyleErrorType.NamingCase01, identifier);
@@ -28,9 +28,10 @@ namespace Ulearn.Core.CSharp.Validators
 		private bool MustStartWithUpper(SyntaxNode node)
 		{
 			return
-				node is BaseTypeDeclarationSyntax or TypeParameterSyntax or EnumMemberDeclarationSyntax 
-				|| node is MethodDeclarationSyntax methodDeclaration && methodDeclaration.Modifiers.Any(t => t.Kind() == SyntaxKind.PublicKeyword) 
-				|| node is VariableDeclaratorSyntax variableDeclarator && MustStartWithUpper(variableDeclarator);
+				node is BaseTypeDeclarationSyntax or TypeParameterSyntax or EnumMemberDeclarationSyntax ||
+				node is MethodDeclarationSyntax methodDeclaration && methodDeclaration.Modifiers.Any(t => t.IsKind(SyntaxKind.PublicKeyword)) ||
+				node is VariableDeclaratorSyntax variableDeclarator && MustStartWithUpper(variableDeclarator) ||
+				node is ParameterSyntax && node.Parent?.Parent is RecordDeclarationSyntax;
 		}
 
 		private bool MustStartWithUpper(VariableDeclaratorSyntax variableDeclarator)
@@ -38,10 +39,10 @@ namespace Ulearn.Core.CSharp.Validators
 			var field = AsField(variableDeclarator);
 			if (field == null) return false;
 			// Публичные поля и константы → с большой
-			bool isStatic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
-			bool isReadonly = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword));
-			bool isConstant = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword));
-			bool isPublic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword));
+			var isStatic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
+			var isReadonly = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword));
+			var isConstant = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword));
+			var isPublic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword));
 			// статические ридонли могут быть какие угодно.
 			return (isPublic || isConstant) && !(isStatic && isReadonly);
 		}
@@ -50,10 +51,10 @@ namespace Ulearn.Core.CSharp.Validators
 		{
 			var field = AsField(variableDeclarator);
 			if (field == null) return true;
-			bool isStatic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
-			bool isReadonly = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword));
-			bool isConstant = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword));
-			bool isPrivate = field.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)) ||
+			var isStatic = field.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
+			var isReadonly = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword));
+			var isConstant = field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword));
+			var isPrivate = field.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)) ||
 							!field.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword) || m.IsKind(SyntaxKind.InternalKeyword) || m.IsKind(SyntaxKind.ProtectedKeyword));
 			// статические ридонли могут быть какие угодно.
 			return isPrivate && !isConstant && !(isStatic && isReadonly);
@@ -69,8 +70,8 @@ namespace Ulearn.Core.CSharp.Validators
 		private bool MustStartWithLower(SyntaxNode node)
 		{
 			return
-				node is ParameterSyntax
-				|| node is VariableDeclaratorSyntax && MustStartWithLower((VariableDeclaratorSyntax)node);
+				node is ParameterSyntax && node.Parent?.Parent is not RecordDeclarationSyntax ||
+				node is VariableDeclaratorSyntax syntax && MustStartWithLower(syntax);
 		}
 	}
 }
