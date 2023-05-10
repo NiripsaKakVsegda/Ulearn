@@ -28,7 +28,7 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 	]);
 	const [selectedGroup, setSelectedGroup] = useState<GroupInfo>();
 
-	const [downloadQuiz, { isLoading: isDownloading }] = exportApi.useDownloadQuizResultsMutation();
+	const [downloadQuiz, { isLoading: isDownloading }] = exportApi.useLazyDownloadQuizResultsQuery();
 
 	const renderSelectedGroupAction = () => {
 		if(!isGroupsLoading && groups.length === 0) {

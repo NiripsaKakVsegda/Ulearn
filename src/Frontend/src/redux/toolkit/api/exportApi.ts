@@ -10,7 +10,7 @@ export const exportApi = createApi({
 	}),
 	refetchOnMountOrArgChange: true,
 	endpoints: (build) => ({
-		downloadQuizResults: build.mutation<void, { groupId: number, quizSlideId?: string, fileName?: string }>({
+		downloadQuizResults: build.query<void, { groupId: number, quizSlideId?: string, fileName?: string }>({
 			query: ({ groupId, quizSlideId, fileName }) => ({
 				url: 'users-info-and-results',
 				method: HttpMethods.GET,
