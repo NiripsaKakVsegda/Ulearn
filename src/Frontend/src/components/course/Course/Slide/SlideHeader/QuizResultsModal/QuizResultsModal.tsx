@@ -32,13 +32,13 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 
 	const renderSelectedGroupAction = () => {
 		if(!isGroupsLoading && groups.length === 0) {
-			return <p className={ styles["group-error-info"] }>
+			return <p className={ styles.groupErrorInfo }>
 				<b>{ texts.noGroupsMessage }</b>
 			</p>;
 		}
 
 		if(selectedGroup && selectedGroup.studentsCount === 0) {
-			return <p className={ styles["group-error-info"] }>
+			return <p className={ styles.groupErrorInfo }>
 				<b>{ texts.noStudentsMessage }</b>
 			</p>;
 		}
@@ -55,11 +55,11 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 
 	const GroupSelect: FC = () =>
 		<Loader type="normal" active={ isGroupsLoading }>
-			<p className={ styles["group-info"] }>
+			<p className={ styles.groupInfo }>
 				{ texts.selectGroupHint }
 			</p>
 			<Gapped gap={ 10 }>
-				<label className={ styles["select-group"] }>
+				<label className={ styles.selectGroup }>
 					<Select<GroupInfo>
 						items={ groupsItems }
 						onValueChange={ onSelectGroup }
@@ -79,8 +79,8 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 				{ texts.studentsSubmissions }
 			</Modal.Header>
 			<Modal.Body>
-				<div className={ styles["modal-content"] }>
-					<p className={ styles["common-info"] }>
+				<div className={ styles.modalContent }>
+					<p className={ styles.commonInfo }>
 						{ texts.getResultsInfo }
 					</p>
 					<GroupSelect/>
