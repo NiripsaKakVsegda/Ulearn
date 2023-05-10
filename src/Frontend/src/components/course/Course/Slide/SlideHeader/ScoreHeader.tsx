@@ -83,11 +83,11 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 			/>;
 		}
 
-		if(slideType === SlideType.Quiz) {
+		if(slideType === SlideType.Quiz && slideInfo.navigationInfo) {
 			return <QuizResultsModal
 				courseId={ courseId }
 				slideId={ slideId }
-				slideTitle={ slideInfo.navigationInfo?.current.title || 'Квиз' }
+				slideTitle={ slideInfo.navigationInfo.current.title }
 				onCloseModal={ closeModal }
 			/>;
 		}
