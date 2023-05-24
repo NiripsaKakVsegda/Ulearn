@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import config from "../../../proxyConfig";
 import { account } from "../../../consts/routes";
 
-interface AuthState {
+export interface AuthState {
 	token: string | null;
 }
 
