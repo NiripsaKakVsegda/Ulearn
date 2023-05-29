@@ -3,6 +3,7 @@ import { fetchBaseQueryWithReauth } from "../utils/baseQueryWithReauth";
 import { deadLines } from "../../../consts/routes";
 import { DeadLineInfo, DeadLineSlideType, DeadLinesResponse } from "../../../models/deadLines";
 import { HttpMethods } from "../../../consts/httpMethods";
+import { buildQuery } from "../../../utils";
 
 export const deadLinesApi = createApi({
 	reducerPath: 'deadLinesApi',
@@ -50,9 +51,7 @@ export const deadLinesApi = createApi({
 		}),
 		changeDeadLine: build.mutation<Response, { deadLine: DeadLineInfo }>({
 			query: ({ deadLine }) => ({
-				url: `${ deadLine.id }`,
-				method: HttpMethods.PATCH,
-				params: {
+				url: `${ deadLine.id }${ buildQuery({
 					...deadLine,
 					userIds: deadLine.userIds === null ? undefined : deadLine.userIds,
 					slideType: deadLine.slideType === null ? DeadLineSlideType.All : deadLine.slideType,
@@ -60,7 +59,8 @@ export const deadLinesApi = createApi({
 					isOverlappedByOtherDeadLine: undefined,
 					time: undefined,
 					id: undefined,
-				}
+				}) }`,
+				method: HttpMethods.PATCH,
 			}),
 			onQueryStarted({ deadLine }, { dispatch, queryFulfilled }) {
 				queryFulfilled.then(() => {
