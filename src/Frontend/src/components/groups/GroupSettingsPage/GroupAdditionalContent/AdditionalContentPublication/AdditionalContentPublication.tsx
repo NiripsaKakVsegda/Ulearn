@@ -33,6 +33,7 @@ interface Props {
 	maxDate?: string;
 
 	onSavePublication: () => void;
+	publicateNow: (dateTime: PublicationDateTime) => void;
 	onDeletePublication: () => void;
 }
 
@@ -45,6 +46,7 @@ const AdditionalContentPublication: FC<Props> = ({
 	minDate,
 	maxDate,
 	onSavePublication,
+	publicateNow,
 	onDeletePublication
 }) => {
 	const publishedDateTime: PublicationDateTime = published ? parseDateTime(published.date) : {};
@@ -79,7 +81,15 @@ const AdditionalContentPublication: FC<Props> = ({
 
 		return <span className={ styles.additionalText }>
 			{ texts.buildPublicationText(published?.author) }
-		</span>;
+			{ !pendingChanges && !published && <>
+				&nbsp;
+				<Button onClick={ _publicateNow }
+						use={ 'link' }
+						size={ 'medium' }>
+					(опубликовать сейчас)
+				</Button>
+			</> }
+				</span>;
 	};
 
 	return (
@@ -130,6 +140,12 @@ const AdditionalContentPublication: FC<Props> = ({
 			}
 		</tr>
 	);
+
+
+	function _publicateNow() {
+		const now = moment().format('DD.MM.YYYY');
+		publicateNow({ date: now, time: defaultTime });
+	}
 
 	function onChangeDate(value: string) {
 		onChangeDateTime(isDateValid(value)
