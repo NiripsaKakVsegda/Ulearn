@@ -113,6 +113,7 @@ export const getUnitStatistics = (
 				prohibitFurtherManualChecking,
 				timestamp,
 			} = slideProgress;
+			additionalInfoBySlide[id].score = score;
 
 			switch (type) {
 				case SlideType.Lesson: {

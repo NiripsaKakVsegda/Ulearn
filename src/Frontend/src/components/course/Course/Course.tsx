@@ -440,8 +440,8 @@ class Course extends Component<CourseProps, State> {
 		const isCurrentPageIsSlideWithDeadLine = slideInfo.deadLineInfo
 			&& !isReview
 			&& (currentSlideInfo.type === SlideType.Exercise || currentSlideInfo.type === SlideType.Quiz);
-
-		if(courseStatistics.byUnits[currentSlideInfo.unitId]?.additionalInfoBySlide[currentSlideInfo.id].status === SlideProgressStatus.done) {
+		const additionalInfo = courseStatistics.byUnits[currentSlideInfo.unitId]?.additionalInfoBySlide[currentSlideInfo.id];
+		if(!additionalInfo || additionalInfo.status === SlideProgressStatus.done && additionalInfo.score && additionalInfo.score > 0) {
 			return null;
 		}
 

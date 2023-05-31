@@ -49,6 +49,7 @@ export interface UnitProgressWithLastVisit extends UnitProgress {
 
 export interface SlideAdditionalInfo {
 	status: SlideProgressStatus;
+	score?: number;
 	deadLine?: DeadLineSchedule;
 }
 
