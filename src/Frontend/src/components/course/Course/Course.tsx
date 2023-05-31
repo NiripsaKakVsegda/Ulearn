@@ -395,9 +395,14 @@ class Course extends Component<CourseProps, State> {
 						{ currentSlideInfo
 						&& isReview
 						&& currentSlideInfo.type === SlideType.Exercise
-							? <Link to={ constructPathToSlide(courseId, currentSlideInfo.id) }>
-								{ title }
-							</Link>
+							? <>
+								<p className={ styles.unitName }>
+									Модуль «{ openedUnit?.title }»
+								</p>
+								<Link to={ constructPathToSlide(courseId, currentSlideInfo.id) }>
+									{ title }
+								</Link>
+							</>
 							: title }
 						{ currentSlideInfo && currentSlideInfo.gitEditLink && this.renderGitEditLink(currentSlideInfo) }
 					</h1> }
@@ -504,7 +509,7 @@ class Course extends Component<CourseProps, State> {
 	renderFooter(userRoles: UserRoles): React.ReactElement {
 		return (
 			<footer className={ styles.footer }>
-				{ texts.renderFooter(userRoles)}
+				{ texts.renderFooter(userRoles) }
 			</footer>
 		);
 	}
