@@ -59,7 +59,7 @@ const GroupAdditionalContent: FC<Props> = ({ courseId, groupId }) => {
 						additionalContent={ additionalContent }
 
 						onSavePublication={ onSavePublication }
-						publicateNow={ publicateNow }
+						publishNow={ publishNow }
 						onDeletePublication={ onDeletePublication }
 					/>
 				) }
@@ -80,7 +80,7 @@ const GroupAdditionalContent: FC<Props> = ({ courseId, groupId }) => {
 		</Loader>
 	);
 
-	function publicateNow(
+	function publishNow(
 		dateTime: PublicationDateTime,
 		unitId: string,
 		slideId?: string

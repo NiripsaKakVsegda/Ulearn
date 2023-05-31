@@ -23,7 +23,7 @@ interface Props {
 		slideId?: string,
 		publication?: AdditionalContentPublicationResponse
 	) => void;
-	publicateNow: (
+	publishNow: (
 		dateTime: PublicationDateTime,
 		unitId: string,
 		slideId?: string
@@ -39,7 +39,7 @@ const AdditionalContentSlide: FC<Props> = ({
 	unitDateTime,
 	onChangeDateTime,
 	onSavePublication,
-	publicateNow,
+	publishNow,
 	onDeletePublication
 }) => {
 	const published = additionalContent.find(content => content.slideId === slide.id);
@@ -53,7 +53,7 @@ const AdditionalContentSlide: FC<Props> = ({
 		title={ slide.title }
 		minDate={ minDate }
 		onSavePublication={ savePublication }
-		publicateNow={ _publicateNow }
+		publishNow={ _publishNow }
 		onDeletePublication={ deletePublication }
 	/>;
 
@@ -65,8 +65,8 @@ const AdditionalContentSlide: FC<Props> = ({
 		onSavePublication(dateTime, unitId, slide.id, published);
 	}
 
-	function _publicateNow(dateTime: PublicationDateTime) {
-		publicateNow(dateTime, unitId, slide.id);
+	function _publishNow(dateTime: PublicationDateTime) {
+		publishNow(dateTime, unitId, slide.id);
 	}
 
 	function deletePublication() {

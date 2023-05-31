@@ -20,7 +20,7 @@ interface Props {
 		slideId?: string,
 		publication?: AdditionalContentPublicationResponse
 	) => void;
-	publicateNow: (
+	publishNow: (
 		dateTime: PublicationDateTime,
 		unitId: string,
 		slideId?: string
@@ -32,7 +32,7 @@ const AdditionalContentUnit: FC<Props> = ({
 	unit,
 	additionalContent,
 	onSavePublication,
-	publicateNow,
+	publishNow,
 	onDeletePublication
 }) => {
 	const published = additionalContent
@@ -57,7 +57,7 @@ const AdditionalContentUnit: FC<Props> = ({
 				minDate={ minDate }
 				maxDate={ maxDate }
 				onSavePublication={ savePublication }
-				publicateNow={ _publicateNow }
+				publishNow={ _publicateNow }
 				onDeletePublication={ deletePublication }
 			/>
 			{
@@ -70,7 +70,7 @@ const AdditionalContentUnit: FC<Props> = ({
 						additionalContent={ additionalContent }
 						unitDateTime={ dateTime }
 						onChangeDateTime={ onChangeSlideDateTime }
-						publicateNow={ publicateNow }
+						publishNow={ publishNow }
 						onSavePublication={ onSavePublication }
 						onDeletePublication={ onDeletePublication }
 					/>
@@ -104,7 +104,7 @@ const AdditionalContentUnit: FC<Props> = ({
 	}
 
 	function _publicateNow(dateTime: PublicationDateTime) {
-		publicateNow(dateTime, unit.id, undefined);
+		publishNow(dateTime, unit.id, undefined);
 	}
 
 	function deletePublication() {
