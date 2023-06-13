@@ -1,0 +1,5 @@
+matplotlib
+requests
+prettytable
+var_dump
+pandas

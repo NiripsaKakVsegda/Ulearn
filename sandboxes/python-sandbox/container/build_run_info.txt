@@ -1,0 +1,2 @@
+docker build -t python-sandbox .
+docker run --rm -it python-sandbox python main.py
