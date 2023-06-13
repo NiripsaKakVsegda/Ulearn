@@ -36,7 +36,15 @@ export const Editable = Template.bind({});
 Editable.args = {
 	solutionRunStatus: null,
 	selectedSubmission: submissionInfo,
-	score: 10
+	score: 10,
+	exerciseTexts: {
+		allTestsPassed: null,
+		allTestsPassedWithoutReview: null,
+		codeReviewPassed: null,
+		codeReviewPassedInstructorView: null,
+		waitingForCodeReviewInstructorView: null,
+		waitingForCodeReview: null,
+	}
 };
 
 export default {

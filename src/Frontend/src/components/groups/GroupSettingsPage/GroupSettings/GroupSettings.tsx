@@ -1,7 +1,7 @@
 import React, { FC, FormEvent, useEffect, useState } from 'react';
 import { Button, Loader, Toast } from "ui";
 import texts from "./GroupSettings.texts";
-import { ChangeableGroupSettings, GroupInfo, GroupScoringGroupInfo } from "../../../../models/groups";
+import { GroupInfo, GroupScoringGroupInfo } from "../../../../models/groups";
 import styles from "./groupSettings.less";
 import ReviewSettings from "./GroupReviewSettings/GroupReviewSettings";
 import GroupScoresSettingsList from "./GroupScoresSettings/GroupScoresSettingsList";
@@ -12,50 +12,6 @@ import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSett
 interface Props {
 	group: GroupInfo;
 }
-
-interface PropsInternal {
-	saveGroupSettings: () => void;
-	saveScoresSettings: () => void;
-	isLoading: boolean;
-	scores: GroupScoringGroupInfo[];
-	settings: ChangeableGroupSettings;
-}
-
-// const GroupSettingsInternal: FC<PropsInternal> = ({
-// 	onChangeSettings,
-// 	onChangeScores,
-// 	isLoading,
-// 	scores,
-// 	settings
-// }) => {
-// 	return (
-// 		<Loader type={ "big" } active={ isLoading }>
-// 			<form onSubmit={ sendSettings }>
-// 				<div className={ styles.wrapper }>
-// 					<ReviewSettings
-// 						settings={ updatedFields }
-// 						onChangeSettings={ onChangeSettings }
-// 					/>
-// 					{ updatedScoringInfo.length > 0 &&
-// 						<GroupScoresSettingsList
-// 							scoringInfo={ updatedScoringInfo }
-// 							onChangeScoringInfo={ onChangeScoringInfo }
-// 						/> }
-// 				</div>
-// 				<Button
-// 					size={ "medium" }
-// 					use={ "primary" }
-// 					type={ "submit" }
-// 					loading={ isLoading }
-// 				>
-// 					{ texts.saveSettings }
-// 				</Button>
-// 			</form>
-// 		</Loader>
-// 	);
-// };
-//
-// export { GroupSettingsInternal };
 
 const GroupSettings: FC<Props> = ({ group }) => {
 	const [updatedFields, setUpdatedFields] = useState<Partial<GroupInfo>>({});
