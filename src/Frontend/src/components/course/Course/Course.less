@@ -225,6 +225,13 @@
   margin-bottom: 20px;
 }
 
+.unitName {
+  text-align: center;
+  font-size: 10px;
+  line-height: 16px;
+  margin-bottom: 0;
+}
+
 @media (min-width: @minTabletWidth) {
   .rootWrapper {
     width: @tabletSlideWidth;
@@ -234,6 +241,11 @@
     padding: @tabletSlidePadding 0 calc(@tabletSlidePadding * 2 + @additionalFooterMargins) 0;
 
     z-index: unset;
+  }
+
+  .unitName {
+    font-size: 14px;
+    line-height: 20px;
   }
 
   .rootWrapper.review {

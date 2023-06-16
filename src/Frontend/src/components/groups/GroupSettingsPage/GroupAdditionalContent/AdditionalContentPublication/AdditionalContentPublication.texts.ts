@@ -1,14 +1,15 @@
 import { Gender, ShortUserInfo } from "../../../../../models/users";
 
 export default {
-	buildPublicationText: (user?: ShortUserInfo): string => {
+	buildPublicationText: (user?: ShortUserInfo): string | null => {
 		const genderText = user?.gender === Gender.Female ? 'запланировала' : 'запланировал';
 		return user?.visibleName
 			? `${ genderText } публикацию ${ user.visibleName }`
-			: 'не публикуется';
+			: null;
 	},
 
 	publish: 'запланировать публикацию',
+	publishNow: 'опубликовать сейчас',
 	save: 'сохранить изменения',
 	cancel: 'отменить изменения',
 	hide: 'скрыть',

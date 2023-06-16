@@ -15,16 +15,46 @@ namespace RunCheckerJob
 		{
 			try
 			{
+				stdout = stdout.Trim();
+
 				var objectStartCommaIndex = stdout.IndexOf('{');
 				var objectEndCommaIndex = stdout.LastIndexOf('}');
 
 				RunningResults result;
 
-				if (objectStartCommaIndex != 0 || objectEndCommaIndex != stdout.Length - 1)
+				var isCorrectPrefix = objectStartCommaIndex == 0;
+				var isCorrectSuffix = objectEndCommaIndex == stdout.Length - 1;
+
+				if (!isCorrectPrefix || !isCorrectSuffix)
 				{
 					var objectToParse = stdout.Substring(objectStartCommaIndex, objectEndCommaIndex - objectStartCommaIndex + 1);
 					result = JsonConvert.DeserializeObject<RunningResults>(objectToParse);
-					result.Logs = new[] { "При парсинге результата были замечены сторонние символы", "Полный вывод:", stdout, };
+					var additionalParsingInfo = "";
+					switch (isCorrectPrefix)
+					{
+						case false when !isCorrectSuffix:
+							additionalParsingInfo = "до и после";
+							break;
+						case false:
+							additionalParsingInfo = "до";
+							break;
+						default:
+						{
+							if (!isCorrectSuffix)
+							{
+								additionalParsingInfo = "после";
+							}
+
+							break;
+						}
+					}
+					
+					
+					result.Logs = new[]
+					{
+						$"При парсинге результата были замечены сторонние символы {additionalParsingInfo} JSON объекта",
+						"Полный вывод:", stdout,
+					};
 					log.Warn("При парсинге результата были замечены сторонние символы");
 				}
 				else result = JsonConvert.DeserializeObject<RunningResults>(stdout);

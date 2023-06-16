@@ -59,6 +59,7 @@ const GroupAdditionalContent: FC<Props> = ({ courseId, groupId }) => {
 						additionalContent={ additionalContent }
 
 						onSavePublication={ onSavePublication }
+						publishNow={ publishNow }
 						onDeletePublication={ onDeletePublication }
 					/>
 				) }
@@ -78,6 +79,22 @@ const GroupAdditionalContent: FC<Props> = ({ courseId, groupId }) => {
 			</Gapped>
 		</Loader>
 	);
+
+	function publishNow(
+		dateTime: PublicationDateTime,
+		unitId: string,
+		slideId?: string
+	) {
+		const serverDateTime = momentToServerFormat(
+			moment(`${ dateTime.date } ${ dateTime.time }`, 'DD.MM.YYYY HH:mm')
+		);
+
+		const request = addPublication({ courseId, groupId, unitId, slideId, date: serverDateTime }).unwrap();
+
+		request.then(() => {
+			Toast.push(texts.successSave);
+		});
+	}
 
 	function onSavePublication(
 		dateTime: PublicationDateTime,
