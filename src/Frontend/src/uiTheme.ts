@@ -26,6 +26,13 @@ const reviewReplyTextarea = {
 	textareaMinHeight: '20px',
 };
 
+const reviewTooltip = {
+	tooltipBorderRadius: '8px',
+	tooltipPinOffsetX: '7px',
+	popupBorder: '1px solid',
+	popupBorderColor: '#F2F2F2'
+};
+
 export default ThemeFactory.create({
 	...roundButtons,
 	...roundSwitcher
@@ -39,4 +46,8 @@ export const textareaHidden = ThemeFactory.create({
 export const darkFlat = ThemeFactory.create({
 	...darkPopups,
 	...roundButtons,
+}, DEFAULT_THEME);
+
+export const tooltipReview = ThemeFactory.create({
+	...reviewTooltip
 }, DEFAULT_THEME);

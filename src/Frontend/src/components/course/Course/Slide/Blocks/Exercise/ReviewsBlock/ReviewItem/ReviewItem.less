@@ -1,0 +1,97 @@
+@import "/src/components/course/Course/courseVariables";
+
+.tooltipNavigationHeader {
+  height: 36px;
+  border-bottom: 1px solid @whiteSmoke;
+  margin: -16px -16px 12px;
+  padding: 6px 16px 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 20px;
+  color: @additionalColor;
+}
+
+.tooltipNavigationArrow {
+  font-size: 20px;
+  color: @additionalColor;
+  cursor: pointer;
+}
+
+.tooltipNavigationArrowDisabled {
+  color: @geinsboro;
+  cursor: default;
+}
+
+.reviewWrapper {
+  margin-bottom: 12px;
+}
+
+.commentReplyTextArea {
+  position: relative;
+  margin: 16px -16px -16px;
+
+  border-top: 1px solid @whiteSmoke;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.commentReplyTextArea label,
+.commentEditTextArea label {
+  margin-bottom: 0; //TODO remove it after removing ulearn.back.bundle css 16 -16px -35px cuz we have global LABEL margin-bottom: 5px
+  width: 100% !important;
+}
+
+.commentReplyTextArea textarea {
+  width: calc(100% - 22px);
+}
+
+.commentEditTextArea textarea {
+  width: 100%;
+  @media (min-width: @minLaptopWidth) {
+    min-width: 210px;
+  }
+}
+
+li:not(:only-child) {
+  .commentEditTextArea {
+    margin-bottom: 12px;
+  }
+}
+
+
+.commentReplyButton {
+  position: absolute;
+  z-index: 2;
+  border: none;
+  background-color: transparent;
+
+  color: @whiteSmoke;
+
+  right: 3px;
+  bottom: 5px;
+}
+
+.commentReplyButtonActive {
+  .commentReplyButton;
+  color: @blueSmoke;
+}
+
+.commentReplyButton :focus, :active {
+  outline: none;
+}
+
+.commentRepliesList {
+  list-style: none;
+  padding: 0;
+}
+
+.commentReply {
+  margin-bottom: 16px;
+  border-top: 1px solid @whiteSmoke;
+  padding: 12px 0 0;
+}
+
+.commentReply&:last-child {
+  margin-bottom: 0;
+}

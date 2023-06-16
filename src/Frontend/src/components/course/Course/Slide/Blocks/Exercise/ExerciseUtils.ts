@@ -416,6 +416,50 @@ export const areReviewsSame = (
 	return true;
 };
 
+export const areReviewsSameLineCombined = (
+	newReviews: ReviewCompare[],
+	oldReviews: ReviewCompare[]
+): 'containsNewReviews' | 'containsChangedReviews' | 'containsChangedAnchors' | true => {
+	if(newReviews.length !== oldReviews.length) {
+		return 'containsNewReviews';
+	}
+
+	for (let i = 0; i < newReviews.length; i++) {
+		const review = newReviews[i];
+		const compareReview = oldReviews[i];
+
+		if(review.anchor !== compareReview.anchor) {
+			return 'containsChangedAnchors';
+		}
+
+		if(review.startLine !== compareReview.startLine
+			|| review.comment !== compareReview.comment
+			|| review.id !== compareReview.id
+			|| review.instructor?.outdated !== compareReview.instructor?.outdated
+			|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite
+			|| review.comments.length !== compareReview.comments.length
+		) {
+			return 'containsChangedReviews';
+		}
+
+		if(JSON.stringify(review.comments) !== JSON.stringify(compareReview.comments)) {
+			return 'containsChangedReviews';
+		}
+	}
+
+	return true;
+};
+
+export const reviewsComparerByStart = (r1: ReviewInfo, r2: ReviewInfo) => {
+	if(r1.startLine < r2.startLine || (r1.startLine === r2.startLine && r1.startPosition < r2.startPosition)) {
+		return -1;
+	}
+	if(r2.startLine < r1.startLine || (r2.startLine === r1.startLine && r2.startPosition < r1.startPosition)) {
+		return 1;
+	}
+	return 0;
+};
+
 export {
 	SubmissionColor, getSubmissionColor,
 	hasSuccessSubmission,

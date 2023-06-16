@@ -1,0 +1,62 @@
+@import "/src/components/course/Course/courseVariables";
+
+.headerWrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.authorAvatar {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+
+  float: left;
+
+  min-width: 24px;
+}
+
+.commentInfoWrapper {
+  width: 100%;
+  max-width: calc(100% - 24px - 8px);
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.commentInfo {
+  display: flex;
+  margin: 0;
+  max-height: 20px;
+}
+
+.authorName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.previousReviewInfo {
+  margin-left: 5px;
+  color: @additionalColor;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 20px;
+  padding-top: 1px;
+
+  @media (min-width: @minLaptopWidth) {
+    display: none;
+  }
+}
+
+.commentAddingTime {
+  font-size: 12px;
+  line-height: 16px;
+
+  margin-top: 0;
+  margin-bottom: 0;
+
+  color: @additionalColor;
+}

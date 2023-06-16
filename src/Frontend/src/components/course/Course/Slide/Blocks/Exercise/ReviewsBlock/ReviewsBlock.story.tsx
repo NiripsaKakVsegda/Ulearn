@@ -1,6 +1,5 @@
 ﻿import React from "react";
-import Review from "./Review";
-import { ReviewProps } from "./Review.types";
+import ReviewsBlock, {Props} from "./ReviewsBlock";
 
 import type { Story } from "@storybook/react";
 import { UserInfo } from "src/utils/courseRoles";
@@ -60,21 +59,21 @@ const reviews = [
 	{ ...teacherReview, id: 2 },
 ];
 
-const props: ReviewProps = {
+const props: Props = {
 	reviews,
 	selectedReviewId: -1,
 	user: { ...author, id: '-1' },
-	onReviewClick: () => void (0),
-	addReviewComment: () => void (0),
-	deleteReviewOrComment: () => void (0),
-	editReviewOrComment: () => void (0),
-	toggleReviewFavourite: () => void (0),
-	assignBotComment: () => void (0),
+	onSelectReview: () => void (0),
+	onSendComment: () => void (0),
+	onDeleteReviewOrComment: () => void (0),
+	onEditReviewOrComment: () => void (0),
+	onToggleReviewFavourite: () => void (0),
+	onAssignBotComment: () => void (0),
 };
 
-const Template: Story<ReviewProps> = (args: ReviewProps) =>
+const Template: Story<Props> = (args: Props) =>
 	<div style={ { width: '260px', position: 'relative', display: 'flex', } }>
-		<Review { ...args }/>
+		<ReviewsBlock { ...args }/>
 	</div>;
 
 export const NothingSelected = Template.bind({});
@@ -138,5 +137,5 @@ WithLongNames.args = {
 
 export default {
 	title: 'Exercise/Review',
-	component: Review,
+	component: ReviewsBlock,
 };

@@ -2,7 +2,7 @@ import React, { createRef, RefObject } from 'react';
 
 import { Controlled, } from "react-codemirror2";
 import { Checkbox, FLAT_THEME_8PX_OLD, Select, ThemeContext, Toast, Tooltip, } from "ui";
-import Review from "./Review";
+import ReviewsBlock from "./ReviewsBlock/ReviewsBlock";
 import { CongratsModal } from "./CongratsModal/CongratsModal";
 import { ExerciseOutput, HasOutput } from "./ExerciseOutput/ExerciseOutput";
 import { ExerciseFormHeader } from "./ExerciseFormHeader/ExerciseFormHeader";
@@ -328,7 +328,7 @@ class Exercise extends React.Component<Props, State> {
 
 			if(submission && JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) { // Отличаться должны только в случае изменения комментериев
 				this.setCurrentSubmission(submission,
-					() => this.highlightReview(selectedReviewId)); //Сохраняем выделение выбранного ревью
+					() => this.highlightReview(selectedReviewId), selectedReviewId); //Сохраняем выделение выбранного ревью
 			}
 		}
 	}
@@ -484,7 +484,7 @@ class Exercise extends React.Component<Props, State> {
 			.find(s => s.manualChecking && s.manualChecking.reviews.length > 0);
 
 		return (
-			<React.Fragment>
+			<>
 				{ submissions.length !== 0 && this.renderSubmissionsSelect(submissions) }
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageSelect() }
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageLaunchInfoTooltip() }
@@ -496,25 +496,27 @@ class Exercise extends React.Component<Props, State> {
 						onBeforeChange={ this.onBeforeChange }
 						editorDidMount={ this.onEditorMount }
 						onCursorActivity={ this.onCursorActivity }
+						onMouseDown={ this.onEditorMouseDown }
 						onUpdate={ this.scrollToBottomBorderIfNeeded }
 						className={ editorClassName }
 						options={ opts }
 						value={ value }
 					/>
 					{ exerciseCodeDoc && isReview &&
-						<Review
-							user={ user }
-							addReviewComment={ this.addReviewComment }
-							deleteReviewOrComment={ this.deleteReviewOrComment }
-							selectedReviewId={ selectedReviewId }
-							onReviewClick={ this.selectComment }
-							editReviewOrComment={ this.editReviewOrComment }
+						<ReviewsBlock
 							reviews={ getReviewsWithoutDeleted(currentReviews)
 								.map(r => ({
 									...r,
 									markers: undefined,
-									anchor: getReviewAnchorTop(r, editor,),
-								})) }
+									anchor: getReviewAnchorTop(r, editor),
+								}))
+							}
+							selectedReviewId={ selectedReviewId }
+							user={ user }
+							onSendComment={ this.addReviewComment }
+							onDeleteReviewOrComment={ this.deleteReviewOrComment }
+							onSelectReview={ this.selectComment }
+							onEditReviewOrComment={ this.editReviewOrComment }
 						/>
 					}
 				</div>
@@ -571,7 +573,7 @@ class Exercise extends React.Component<Props, State> {
 						submissionColor={ submissionColor }
 					/>
 				}
-			</React.Fragment>
+			</>
 		);
 	};
 
@@ -756,9 +758,9 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	setCurrentSubmission = (submission: SubmissionInfo, callback?: () => void): void => {
+	setCurrentSubmission = (submission: SubmissionInfo, callback?: () => void, selectedReviewId?: number): void => {
 		const { exerciseCodeDoc, } = this.state;
-		this.clearAllTextMarkers();
+		this.clearAllTextMarkers(selectedReviewId);
 		const clonedSubmission = clone(submission);
 		this.setState({
 			currentSubmission: clonedSubmission,
@@ -891,9 +893,8 @@ class Exercise extends React.Component<Props, State> {
 		);
 	};
 
-	selectComment = (e: React.MouseEvent<Element, MouseEvent> | React.FocusEvent, id: number,): void => {
+	selectComment = (id: number): void => {
 		const { isEditable, selectedReviewId, } = this.state;
-		e.stopPropagation();
 
 		if(!isEditable && selectedReviewId !== id) {
 			this.highlightReview(id);
@@ -968,13 +969,13 @@ class Exercise extends React.Component<Props, State> {
 		}
 	};
 
-	clearAllTextMarkers = (): void => {
+	clearAllTextMarkers = (selectedReviewId?: number): void => {
 		const { currentReviews, } = this.state;
 
 		currentReviews.forEach(({ markers }) => markers.forEach(m => m.clear()));
 
 		this.setState({
-			selectedReviewId: -1,
+			selectedReviewId: selectedReviewId ?? -1,
 		});
 	};
 
@@ -1049,6 +1050,10 @@ class Exercise extends React.Component<Props, State> {
 			exerciseCodeDoc: editor.getDoc(),
 			editor,
 		});
+	};
+
+	onEditorMouseDown = (editor: Editor, event?: Event) => {
+		event?.stopPropagation();
 	};
 
 	onCursorActivity = (): void => {
