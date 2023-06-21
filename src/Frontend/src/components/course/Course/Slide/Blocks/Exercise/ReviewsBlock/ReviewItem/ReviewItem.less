@@ -13,14 +13,22 @@
 }
 
 .tooltipNavigationArrow {
+  color: @geinsboro;
   font-size: 20px;
+  width: 23px;
+  height: 23px;
+  text-align: center;
+}
+
+.tooltipNavigationArrowActive {
   color: @additionalColor;
   cursor: pointer;
 }
 
-.tooltipNavigationArrowDisabled {
-  color: @geinsboro;
-  cursor: default;
+.tooltipNavigationArrowActive:active {
+  color: @dimgray;
+  background-color: @geinsboro;
+  border-radius: 50%;
 }
 
 .reviewWrapper {

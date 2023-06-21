@@ -78,16 +78,18 @@ const ReviewItem: FC<Props> = ({
 			<ArrowChevronLeft
 				className={ cn(
 					styles.tooltipNavigationArrow,
-					{ [styles.tooltipNavigationArrowDisabled]: !onNavigatePrevious }
+					{ [styles.tooltipNavigationArrowActive]: !!onNavigatePrevious }
 				) }
+				onMouseDown={ preventSelection }
 				onClick={ onNavigatePrevious }
 			/>
 			{ `${ (reviewIndexInLine ?? 0) + 1 } / ${ totalReviewsInLine ?? 0 }` }
 			<ArrowChevronRight
 				className={ cn(
 					styles.tooltipNavigationArrow,
-					{ [styles.tooltipNavigationArrowDisabled]: !onNavigateNext }
+					{ [styles.tooltipNavigationArrowActive]: !!onNavigateNext }
 				) }
+				onMouseDown={ preventSelection }
 				onClick={ onNavigateNext }
 			/>
 		</div>;
@@ -258,6 +260,10 @@ const ReviewItem: FC<Props> = ({
 
 	function deleteBotReview() {
 		actions.onDeleteReviewOrComment();
+	}
+
+	function preventSelection(e: React.MouseEvent) {
+		e.preventDefault();
 	}
 
 	function handleCtrlEnter(event: React.KeyboardEvent) {
