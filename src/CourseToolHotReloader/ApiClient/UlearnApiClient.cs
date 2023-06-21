@@ -1,80 +1,109 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using CourseToolHotReloader.DirectoryWorkers;
+using CourseToolHotReloader.Application;
+using CourseToolHotReloader.Configs;
 using CourseToolHotReloader.Dtos;
-using JetBrains.Annotations;
+using CourseToolHotReloader.Infrastructure;
 
-namespace CourseToolHotReloader.ApiClient
+namespace CourseToolHotReloader.ApiClient;
+
+public interface IUlearnApiClient
 {
-	public interface IUlearnApiClient
+	Task<Result<string>> RenewToken(CancellationToken token = default);
+	Task<Result<ShortUserInfo>> GetShortUserInfo(CancellationToken token = default);
+	Task<Result<bool>> HasCourse(string courseId, CancellationToken token = default);
+	Task<Result<TempCourseUpdateResponse>> CreateCourse(string courseId, CancellationToken token = default);
+
+	Task<Result<TempCourseUpdateResponse>> SendCourseUpdates(
+		string path,
+		ICollection<CourseUpdate> updates,
+		ICollection<CourseUpdate> deletedFiles,
+		string courseId,
+		List<string> excludeCriterias,
+		CancellationToken token = default
+	);
+
+	Task<Result<TempCourseUpdateResponse>> SendFullCourse(
+		string path,
+		string courseId,
+		List<string> excludeCriterias,
+		CancellationToken token = default
+	);
+}
+
+internal class UlearnApiClient : IUlearnApiClient
+{
+	private readonly IConfig config;
+	private readonly IHttpMethods httpMethods;
+
+	public UlearnApiClient(IConfig config, IHttpMethods httpMethods)
 	{
-		Task<TempCourseUpdateResponse> SendCourseUpdates(string path, IList<ICourseUpdate> update, IList<ICourseUpdate> deletedFiles, string courseId, List<string> excludeCriterias);
-		Task<TempCourseUpdateResponse> SendFullCourse(string path, string courseId, List<string> excludeCriterias);
-		Task<TempCourseUpdateResponse> CreateCourse(string courseId);
-		Task<string> Login(string login, string password);
-		Task<bool> HasCourse(string courseId);
-		Task<string> RenewToken();
-		Task<ShortUserInfo> GetShortUserInfo();
+		this.config = config;
+		this.httpMethods = httpMethods;
 	}
 
-	internal class UlearnApiClient : IUlearnApiClient
+	public async Task<Result<string>> RenewToken(CancellationToken token = default)
 	{
-		private readonly IHttpMethods httpMethods;
+		var accountTokenResponseDto = await httpMethods.RenewToken(token);
+		return accountTokenResponseDto
+			.Then(response => response.Token);
+	}
 
-		public UlearnApiClient(IHttpMethods httpMethods)
-		{
-			this.httpMethods = httpMethods;
-		}
+	public Task<Result<ShortUserInfo>> GetShortUserInfo(CancellationToken token = default)
+	{
+		return httpMethods.GetUserInfo(token);
+	}
 
-		public async Task<TempCourseUpdateResponse> SendCourseUpdates(string path, IList<ICourseUpdate> updates, IList<ICourseUpdate> deletedFiles, string courseId, List<string> excludeCriterias)
-		{
-			using (var ms = ZipUpdater.CreateZipByUpdates(path, updates, deletedFiles, excludeCriterias))
-				return await httpMethods.UploadCourse(ms, courseId);
-		}
+	public async Task<Result<bool>> HasCourse(string courseId, CancellationToken token = default)
+	{
+		var coursesList = await httpMethods.GetCoursesList(token);
+		return coursesList
+			.Then(list => list.Courses.Any(c => string.Equals(c.Id, courseId, StringComparison.OrdinalIgnoreCase)));
+	}
 
-		[ItemCanBeNull]
-		public async Task<TempCourseUpdateResponse> SendFullCourse(string path, string courseId, List<string> excludeCriterias)
+	public async Task<Result<TempCourseUpdateResponse>> SendCourseUpdates(
+		string path,
+		ICollection<CourseUpdate> updates,
+		ICollection<CourseUpdate> deletedFiles,
+		string courseId,
+		List<string> excludeCriterias,
+		CancellationToken token = default
+	)
+	{
+		try
 		{
-			using (var ms = ZipUpdater.CreateZipByFolder(path, excludeCriterias))
-				return await httpMethods.UploadFullCourse(ms, courseId);
+			using var ms = ZipUpdater.CreateZipByUpdates(path, updates, deletedFiles, excludeCriterias);
+			return await httpMethods.UploadCourseChanges(ms, courseId, token);
 		}
-		
-		public async Task<TempCourseUpdateResponse> CreateCourse(string courseId)
+		catch (Exception e)
 		{
-			return await httpMethods.CreateCourse(courseId);
+			return Result.Fail<TempCourseUpdateResponse>($"Ошибка при создании архива с изменениями. {e.GetMessage(config.ApiUrl)}", e);
 		}
+	}
 
-		public async Task<bool> HasCourse(string courseId)
+	public async Task<Result<TempCourseUpdateResponse>> SendFullCourse(
+		string path,
+		string courseId,
+		List<string> excludeCriterias,
+		CancellationToken token = default
+	)
+	{
+		try
 		{
-			var coursesList = await httpMethods.GetCoursesList();
-			return coursesList?.Courses.Any(c => string.Compare(c.Id, courseId, StringComparison.OrdinalIgnoreCase) == 0) ?? false;
+			using var ms = ZipUpdater.CreateZipByFolder(path, excludeCriterias);
+			return await httpMethods.UploadFullCourse(ms, courseId, token);
 		}
+		catch (Exception e)
+		{
+			return Result.Fail<TempCourseUpdateResponse>($"Ошибка при создании архива с курсом. {e.GetMessage(config.ApiUrl)}");
+		}
+	}
 
-		[ItemCanBeNull]
-		public async Task<string> Login(string login, string password)
-		{
-			var loginPasswordParameters = new LoginPasswordParameters
-			{
-				Login = login,
-				Password = password
-			};
-
-			var accountTokenResponseDto = await httpMethods.GetJwtToken(loginPasswordParameters);
-			return accountTokenResponseDto?.Token;
-		}
-		
-		[ItemCanBeNull]
-		public async Task<string> RenewToken()
-		{
-			var accountTokenResponseDto = await httpMethods.RenewToken();
-			return accountTokenResponseDto?.Token;
-		}
-
-		public async Task<ShortUserInfo> GetShortUserInfo()
-		{
-			return await httpMethods.GetUserInfo();
-		}
+	public Task<Result<TempCourseUpdateResponse>> CreateCourse(string courseId, CancellationToken token = default)
+	{
+		return httpMethods.CreateCourse(courseId, token);
 	}
 }

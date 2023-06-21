@@ -11,6 +11,7 @@ import JoinGroup from "./components/groups/JoinGroup/JoinGroup.page";
 
 import { getQueryStringParameter } from "src/utils";
 import { AccountState } from "src/redux/account";
+import TokenPage from "./components/token/TokenPage";
 
 interface Props {
 	account: AccountState;
@@ -25,6 +26,10 @@ function Router({ account }: Props): React.ReactElement {
 		<Route key={ 'course' }
 			   path="/course/:courseId/:slideSlugOrAction/*"
 			   element={ <Course/> }
+		/>,
+		<Route key={ 'token' }
+			   path="/token"
+			   element={ <TokenPage/> }
 		/>,
 	];
 

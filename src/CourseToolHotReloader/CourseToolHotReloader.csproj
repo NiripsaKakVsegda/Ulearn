@@ -5,6 +5,7 @@
         <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
         <Authors>SKB Kontur Ulearn Team</Authors>
         <AssemblyName>ulearn</AssemblyName>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.4.0" />

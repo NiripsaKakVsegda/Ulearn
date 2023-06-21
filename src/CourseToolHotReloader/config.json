@@ -1,7 +1,6 @@
 {
-  "jwtToken": null,
-  "apiUrl": "https://api.ulearn.me",
-  "siteUrl": "https://ulearn.me",
-  "sendFullArchive": false,
-  "courseIds": {}
+	"jwtToken": null,
+	"apiUrl": "https://localhost:8000",
+	"siteUrl": "https://localhost:3000",
+	"sendFullArchive": false
 }

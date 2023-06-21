@@ -1,174 +1,193 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using CourseToolHotReloader.Configs;
 using CourseToolHotReloader.Dtos;
-using CourseToolHotReloader.Exceptions;
+using CourseToolHotReloader.Infrastructure;
+using CourseToolHotReloader.Infrastructure.Exceptions;
 
-using JetBrains.Annotations;
+namespace CourseToolHotReloader.ApiClient;
 
-namespace CourseToolHotReloader.ApiClient
+public interface IHttpMethods
 {
-	public interface IHttpMethods
+	Task<Result<TokenResponseDto>> RenewToken(CancellationToken token = default);
+	Task<Result<ShortUserInfo>> GetUserInfo(CancellationToken token = default);
+	Task<Result<CoursesListResponse>> GetCoursesList(CancellationToken token = default);
+	Task<Result<TempCourseUpdateResponse>> CreateCourse(string id, CancellationToken token = default);
+	Task<Result<TempCourseUpdateResponse>> UploadCourseChanges(MemoryStream memoryStream, string id, CancellationToken token = default);
+	Task<Result<TempCourseUpdateResponse>> UploadFullCourse(MemoryStream memoryStream, string id, CancellationToken token = default);
+}
+
+public class HttpMethods : IHttpMethods
+{
+	private readonly IConfig config;
+
+	public HttpMethods(IConfig config)
 	{
-		Task<TokenResponseDto> GetJwtToken(LoginPasswordParameters parameters);
-		Task<TempCourseUpdateResponse> UploadCourse(MemoryStream memoryStream, string id);
-		Task<TempCourseUpdateResponse> UploadFullCourse(MemoryStream memoryStream, string id);
-		Task<TempCourseUpdateResponse> CreateCourse(string id);
-		Task<CoursesListResponse> GetCoursesList();
-		Task<TokenResponseDto> RenewToken();
-		Task<ShortUserInfo> GetUserInfo();
+		this.config = config;
 	}
 
-	public class HttpMethods : IHttpMethods
+	public async Task<Result<TokenResponseDto>> RenewToken(CancellationToken token = default)
 	{
-		private readonly IConfig config;
+		var url = $"{config.ApiUrl}/account/api-token?days=3";
 
-		public HttpMethods(IConfig config)
-		{
-			this.config = config;
-		}
+		return await GetResponseAsync(url, HttpMethod.Post, token)
+			.Then(CheckStatusCode)
+			.Then(DeserializeResponseContent<TokenResponseDto>)
+			.RefineError("Ошибка при обновлении токена");
+	}
 
-		[ItemCanBeNull]
-		public async Task<TokenResponseDto> GetJwtToken(LoginPasswordParameters parameters)
-		{
-			var url = $"{config.ApiUrl}/account/login";
-			var json = JsonSerializer.Serialize(parameters);
-			var data = new StringContent(json, Encoding.UTF8, "application/json");
-			using var client = new HttpClient();
-			var response = await client.PostAsync(url, data);
-			try
-			{
-				ThrowExceptionIfBadCode(response);
-			}
-			catch (UnauthorizedException)
-			{
-				return null;
-			}
-			catch (ForbiddenException)
-			{
-				return null;
-			}
-			var result = response.Content.ReadAsStringAsync().Result;
-			return JsonSerializer.Deserialize<TokenResponseDto>(result);
-		}
 
-		[ItemCanBeNull]
-		public async Task<TokenResponseDto> RenewToken()
-		{
-			var url = $"{config.ApiUrl}/account/api-token?days=3";
-			using var client = HttpClient();
-			var response = await client.PostAsync(url, null);
-			try
-			{
-				ThrowExceptionIfBadCode(response);
-			}
-			catch (UnauthorizedException)
-			{
-				return null;
-			}
-			catch (ForbiddenException)
-			{
-				return null;
-			}
-			var result = response.Content.ReadAsStringAsync().Result;
-			return JsonSerializer.Deserialize<TokenResponseDto>(result);
-		}
+	public async Task<Result<ShortUserInfo>> GetUserInfo(CancellationToken token = default)
+	{
+		var url = $"{config.ApiUrl}/account";
 
-		public async Task<TempCourseUpdateResponse> UploadCourse(MemoryStream memoryStream, string id)
-		{
-			var url = $"{config.ApiUrl}/temp-courses/{id}";
-			return await UpdateTempCourse(memoryStream, url, HttpMethod.Patch);
-		}
+		return await GetResponseAsync(url, HttpMethod.Get, token)
+			.Then(CheckStatusCode)
+			.Then(DeserializeResponseContent<AccountResponse>)
+			.Then(account => account.User)
+			.RefineError("Ошибка при получении id пользователя");
+	}
 
-		public async Task<TempCourseUpdateResponse> UploadFullCourse(MemoryStream memoryStream, string id)
-		{
-			var url = $"{config.ApiUrl}/temp-courses/{id}";
-			return await UpdateTempCourse(memoryStream, url, HttpMethod.Put);
-		}
+	public async Task<Result<CoursesListResponse>> GetCoursesList(CancellationToken token = default)
+	{
+		var url = $"{config.ApiUrl}/courses";
+		using var client = HttpClient();
 
-		public async Task<TempCourseUpdateResponse> CreateCourse(string id)
-		{
-			var url = $"{config.ApiUrl}/temp-courses/{id}";
-			using var client = HttpClient();
-			var response = await client.PostAsync(url, null);
-			ThrowExceptionIfBadCode(response);
-			return DeserializeResponseContent<TempCourseUpdateResponse>(response);
-		}
+		return await GetResponseAsync(url, HttpMethod.Get, token)
+			.Then(CheckStatusCode)
+			.Then(DeserializeResponseContent<CoursesListResponse>)
+			.RefineError("Ошибка при получении списка курсов");
+	}
 
-		public async Task<CoursesListResponse> GetCoursesList()
-		{
-			var url = $"{config.ApiUrl}/courses";
-			using var client = HttpClient();
-			var response = await client.GetAsync(url);
-			ThrowExceptionIfBadCode(response);
-			return response.StatusCode != HttpStatusCode.OK
-				? null
-				: DeserializeResponseContent<CoursesListResponse>(response);
-		}
+	public async Task<Result<TempCourseUpdateResponse>> CreateCourse(string id, CancellationToken token = default)
+	{
+		var url = $"{config.ApiUrl}/temp-courses/{id}";
 
-		public async Task<ShortUserInfo> GetUserInfo()
-		{
-			var url = $"{config.ApiUrl}/account";
-			using var client = HttpClient();
-			var response = await client.GetAsync(url);
-			ThrowExceptionIfBadCode(response);
-			return DeserializeResponseContent<AccountResponse>(response).User;
-		}
+		return await GetResponseAsync(url, HttpMethod.Post, token)
+			.Then(CheckStatusCode)
+			.Then(DeserializeResponseContent<TempCourseUpdateResponse>)
+			.ThenCheckNoErrors()
+			.RefineError("Ошибка при создании временного курса");
+	}
 
-		private static T DeserializeResponseContent<T>(HttpResponseMessage response)
-		{
-			var result = response.Content.ReadAsStringAsync().Result;
-			return JsonSerializer.Deserialize<T>(result);
-		}
+	public async Task<Result<TempCourseUpdateResponse>> UploadCourseChanges(MemoryStream memoryStream, string id, CancellationToken token = default)
+	{
+		var url = $"{config.ApiUrl}/temp-courses/{id}";
+		return await UpdateTempCourse(memoryStream, url, HttpMethod.Patch, token)
+			.RefineError("Ошибка при отправке изменений");
+	}
 
-		private async Task<TempCourseUpdateResponse> UpdateTempCourse(MemoryStream memoryStream, string url, HttpMethod httpMethod)
-		{
-			using var client = HttpClient();
-			memoryStream.Position = 0;
-			var fileContent = new ByteArrayContent(memoryStream.ToArray());
-			var multiContent = new MultipartFormDataContent { { fileContent, "files", "course.zip" } };
-			var response = httpMethod == HttpMethod.Patch ? await client.PatchAsync(url, multiContent) : await client.PutAsync(url, multiContent);
-			ThrowExceptionIfBadCode(response);
-			return DeserializeResponseContent<TempCourseUpdateResponse>(response);
-		}
+	public async Task<Result<TempCourseUpdateResponse>> UploadFullCourse(MemoryStream memoryStream, string id, CancellationToken token = default)
+	{
+		var url = $"{config.ApiUrl}/temp-courses/{id}";
+		return await UpdateTempCourse(memoryStream, url, HttpMethod.Put, token)
+			.RefineError("Ошибка при отправке курса");
+	}
 
-		private void ThrowExceptionIfBadCode(HttpResponseMessage response)
-		{
-			switch (response.StatusCode)
-			{
-				case HttpStatusCode.OK:
-					return;
-				case HttpStatusCode.Unauthorized:
-					throw new UnauthorizedException();
-				case HttpStatusCode.Forbidden:
-					throw new ForbiddenException();
-				case HttpStatusCode.InternalServerError:
-					string message = null;
-					try
-					{
-						message = DeserializeResponseContent<ServerErrorDto>(response).Message;
-					}
-					catch (Exception)
-					{
-						// ignore
-					}
-					throw new InternalServerErrorException(message);
-				default:
-					throw new StatusCodeException(response.StatusCode);
-			}
-		}
+	private async Task<Result<TempCourseUpdateResponse>> UpdateTempCourse(
+		MemoryStream memoryStream,
+		string url,
+		HttpMethod httpMethod,
+		CancellationToken token
+	)
+	{
+		memoryStream.Position = 0;
+		var fileContent = new ByteArrayContent(memoryStream.ToArray());
+		var multiContent = new MultipartFormDataContent { { fileContent, "files", "course.zip" } };
 
-		private HttpClient HttpClient()
+		return await GetResponseAsync(url, httpMethod, token, multiContent)
+			.Then(CheckStatusCode)
+			.Then(DeserializeResponseContent<TempCourseUpdateResponse>)
+			.ThenCheckNoErrors();
+	}
+
+	private Task<Result<HttpResponseMessage>> GetResponseAsync(
+		string url,
+		HttpMethod method,
+		CancellationToken token,
+		HttpContent? content = null
+	) => ResultAsync.Of(async () =>
+	{
+		using var client = HttpClient();
+		return method switch
 		{
-			var client = new HttpClient();
-			client.DefaultRequestHeaders.Authorization =
-				new AuthenticationHeaderValue("Bearer", config.JwtToken);
-			return client;
-		}
+			HttpMethod.Get => await client.GetAsync(url, token),
+			HttpMethod.Post => await client.PostAsync(url, content, token),
+			HttpMethod.Put => await client.PutAsync(url, content, token),
+			HttpMethod.Patch => await client.PatchAsync(url, content, token),
+			_ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+		};
+	}, e => e.GetMessage());
+
+	private Result<HttpResponseMessage> CheckStatusCode(HttpResponseMessage response)
+	{
+		return response.StatusCode switch
+		{
+			HttpStatusCode.OK => response,
+			HttpStatusCode.Unauthorized => Result.Fail<HttpResponseMessage>(
+				"Сервер вернул код 401. Повторите процесс авторизации",
+				new UnauthorizedException()
+			),
+			HttpStatusCode.Forbidden => Result.Fail<HttpResponseMessage>(
+				"Сервер вернул код 403. Нет прав на операцию",
+				new ForbiddenException()
+			),
+			HttpStatusCode.InternalServerError => TryGetResponseMessage(response, out var message)
+				? Result.Fail<HttpResponseMessage>(
+					"Сервер вернул код 500. Это похоже на баг. Подробнее в логах",
+					new InternalServerErrorException(message)
+				)
+				: Result.Fail<HttpResponseMessage>(
+					"Сервер вернул код 500. Это похоже на баг"
+				),
+			_ => Result.Fail<HttpResponseMessage>(
+				$"Сервер вернул код {response.StatusCode}",
+				new StatusCodeException(response.StatusCode)
+			)
+		};
+	}
+
+	private bool TryGetResponseMessage(HttpResponseMessage response, [NotNullWhen(true)] out string? message)
+	{
+		var result = DeserializeResponseContent<ServerErrorDto>(response);
+		message = result.IsSuccess
+			? result.Value.Message
+			: null;
+		return message is not null;
+	}
+
+	private Result<T> DeserializeResponseContent<T>(HttpResponseMessage response)
+	{
+		return Result.Of(
+				() => JsonSerializer.Deserialize<T>(response.Content.ReadAsStringAsync().Result),
+				e => e.GetMessage(config.ApiUrl)
+			)
+			.Then(result => result is null
+				? Result.Fail<T>("Не удалось прочитать ответ сервера.")
+				: result.AsResult()
+			);
+	}
+
+	private HttpClient HttpClient()
+	{
+		var client = new HttpClient();
+		client.DefaultRequestHeaders.Authorization =
+			new AuthenticationHeaderValue("Bearer", config.JwtToken);
+		return client;
+	}
+
+	private enum HttpMethod
+	{
+		Get,
+		Post,
+		Put,
+		Patch
 	}
 }

@@ -1,17 +1,3 @@
-﻿namespace CourseToolHotReloader.Dtos
-{
-	public interface ICourseUpdate
-	{
-		public string FullPath { get; set; }
-	}
+﻿namespace CourseToolHotReloader.Dtos;
 
-	public class CourseUpdate : ICourseUpdate
-	{
-		public CourseUpdate(string fullPath)
-		{
-			FullPath = fullPath;
-		}
-		
-		public string FullPath { get; set; }
-	}
-}
+public readonly record struct CourseUpdate(string FullPath);

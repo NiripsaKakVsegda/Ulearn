@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CourseToolHotReloader.Dtos
+namespace CourseToolHotReloader.Dtos;
+
+public class TokenResponseDto
 {
-	public class TokenResponseDto
-	{
-		[JsonPropertyName("token")]
-		public string Token { get; set; }
-	}
+	[JsonPropertyName("token")]
+	public string Token { get; set; }
 }

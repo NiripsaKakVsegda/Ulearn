@@ -1,7 +1,7 @@
 using System.IO;
 using System.Linq;
 using CourseToolHotReloader.Dtos;
-using CourseToolHotReloader.UpdateQuery;
+using CourseToolHotReloader.UpdateWorkers;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -74,7 +74,7 @@ namespace CourseToolHotReloader.Tests
 			courseUpdateQuery.GetAllCourseUpdate().Count.Should().Be(2);
 		}
 
-		private static ICourseUpdate CreateSimpleCourseUpdate(string name)
+		private static CourseUpdate CreateSimpleCourseUpdate(string name)
 		{
 			return new CourseUpdate(name);
 		}
