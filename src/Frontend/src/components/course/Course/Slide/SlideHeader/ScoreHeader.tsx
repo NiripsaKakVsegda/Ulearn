@@ -12,18 +12,15 @@ import { getSubmissionsWithReviews, SlideInfo } from "../../CourseUtils";
 import { SlideType } from "src/models/slide";
 import { constructPathToStudentSubmissions } from "src/consts/routes";
 import { RootState } from "src/models/reduxState";
+import QuizResultsModal from "./QuizResultsModal/QuizResultsModal";
+
 
 import texts from "./SlideHeader.texts";
 import styles from "../SlideHeader/SlideHeader.less";
 
-interface State {
-	isModalShowed: boolean;
-	isContentInModalReady: boolean;
-}
-
 const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
-	const [{ isModalShowed, isContentInModalReady }, setState] = useState<State>(
-		{ isModalShowed: false, isContentInModalReady: false, });
+	const [isModalOpened, setIsModalOpened] = useState(false);
+	const [isModalLoaded, setIsModalLoaded] = useState(false);
 
 	const {
 		scoreHeader,
@@ -36,10 +33,13 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 		slideId,
 		showStudentSubmissions,
 		anyAttemptsUsed,
+		slideInfo
 	} = props;
 	if(scoreHeader === null || maxScore === null) {
 		return null;
 	}
+
+	const slideType = slideInfo.slideType;
 
 	const isMaxScore = scoreHeader === maxScore;
 	let message: string | null = null;
@@ -59,33 +59,54 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 	const modalWidth: undefined | number = maxModalWidth > 880 ? 880 : maxModalWidth; //TODO пока что это мок, в будущем width будет другой
 	const anyTryUsed = isSkipped || hasReviewedSubmissions || waitingForManualChecking || anyAttemptsUsed;
 
+	const renderSubmissionsLink = () => {
+		const title = slideType === SlideType.Exercise
+			? texts.showAcceptedSolutionsText
+			: texts.downloadQuizSubmissions;
+
+		return <Link
+			loading={ isModalOpened && !isModalLoaded }
+			onClick={ openModal }
+			className={ styles.headerLinkText }
+		>
+			<Loader type={ 'mini' } caption={ '' } active={ isModalOpened && !isModalLoaded }>
+				{ title }
+			</Loader>
+		</Link>;
+	};
+
+	const renderModal = () => {
+		if(slideType === SlideType.Exercise) {
+			return <DownloadedHtmlContent
+				url={ constructPathToStudentSubmissions(courseId, slideId) }
+				injectInWrapperAfterContentReady={ injectInWrapperAfterContentReady }
+			/>;
+		}
+
+		if(slideType === SlideType.Quiz && slideInfo.navigationInfo) {
+			return <QuizResultsModal
+				courseId={ courseId }
+				slideId={ slideId }
+				slideTitle={ slideInfo.navigationInfo.current.title }
+				onCloseModal={ closeModal }
+			/>;
+		}
+	};
+
 	return (
 		<div className={ styles.header }>
 			<span className={ classNames(styles.headerText, styles.scoreTextWeight, styles.scoreTextColor) }>
 				{ texts.getSlideScore(scoreHeader, maxScore, anyTryUsed) }
 			</span>
 			{ message && <span className={ styles.headerStatusText }>{ message }</span> }
-			{ showStudentSubmissions &&
-			<Link loading={ !isContentInModalReady && isModalShowed } onClick={ openModal }
-				  className={ styles.headerLinkText }>
-				<Loader type={ 'mini' } caption={ '' }
-						active={ !isContentInModalReady && isModalShowed }>
-					{ texts.showAcceptedSolutionsText }
-				</Loader>
-			</Link>
-			}
-			{ isModalShowed &&
-			<DownloadedHtmlContent
-				url={ constructPathToStudentSubmissions(courseId, slideId) }
-				injectInWrapperAfterContentReady={ injectInWrapperAfterContentReady }
-			/>
-			}
+			{ showStudentSubmissions && renderSubmissionsLink() }
+			{ isModalOpened && renderModal() }
 		</div>
 	);
 
 	function injectInWrapperAfterContentReady(html: React.ReactNode) {
-		if(!isContentInModalReady) {
-			setState({ isContentInModalReady: true, isModalShowed: true });
+		if(!isModalLoaded) {
+			setIsModalLoaded(true);
 		}
 		return (
 			<Modal width={ modalWidth } onClose={ closeModal }>
@@ -101,12 +122,14 @@ const ScoreHeaderInternal = (props: PropsFromRedux & ScoreHeaderProps) => {
 	}
 
 	function closeModal() {
-		setState({ isContentInModalReady: false, isModalShowed: false });
+		setIsModalOpened(false);
+		setIsModalLoaded(false);
 	}
 
 	function openModal() {
-		if(!isModalShowed) {
-			setState({ isContentInModalReady: false, isModalShowed: true });
+		if(!isModalOpened) {
+			setIsModalOpened(true);
+			setIsModalLoaded(slideType !== SlideType.Exercise);
 		}
 	}
 };
@@ -147,7 +170,7 @@ const mapState = (state: RootState, ownProps: ScoreHeaderProps) => {
 		prohibitFurtherManualChecking: slideProgress?.prohibitFurtherManualChecking ?? false,
 		maxScore: slideInfo.navigationInfo?.current.maxScore || 0,
 		hasReviewedSubmissions: hasReviewedSubmissions,
-		showStudentSubmissions: slideType === SlideType.Exercise && instructor,
+		showStudentSubmissions: instructor && (slideType === SlideType.Exercise || slideType === SlideType.Quiz),
 		anyAttemptsUsed: slideProgress?.usedAttempts > 0,
 	};
 };
