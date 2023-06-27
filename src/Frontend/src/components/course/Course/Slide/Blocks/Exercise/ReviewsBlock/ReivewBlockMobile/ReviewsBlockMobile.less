@@ -1,0 +1,65 @@
+@import "/src/components/course/Course/courseVariables";
+
+.reviewsContainerMobile {
+  width: 0;
+  margin: 0;
+  list-style: none;
+  padding: 0;
+
+  @media (min-width: @minTabletWidth) {
+    font-size: 18px;
+    line-height: 20px;
+  }
+}
+
+.tooltipWrapper {
+  width: 272px;
+  @media (max-width: 304px) {
+    width: 200px;
+  }
+  @media (min-width: @minLaptopWidth) {
+    width: 100%;
+  }
+}
+
+.reviewItem {
+  margin-left: 2px;
+  cursor: pointer;
+  display: flex;
+}
+
+.reviewIconWrapper {
+  display: flex;
+  position: relative;
+  text-align: center;
+}
+
+.reviewIcon {
+  color: @accentColor;
+  font-size: 12px;
+  line-height: 14px;
+
+  @media (min-width: @minTabletWidth) {
+    font-size: 18px;
+    line-height: 20px;
+  }
+}
+
+.reviewCount {
+  color: @white;
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+
+  user-select: none;
+
+  line-height: 14px;
+  font-size: 7px;
+
+  @media (min-width: @minTabletWidth) {
+    font-size: 10px;
+    line-height: 20px;
+  }
+}

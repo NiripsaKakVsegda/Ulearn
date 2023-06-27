@@ -1,10 +1,12 @@
-import React, { CSSProperties, RefObject } from "react";
+import React, { CSSProperties } from "react";
 import { Button, Gapped, Hint, ScrollContainer, } from "ui";
 import MarkdownEditor from "src/components/comments/CommentSendForm/MarkdownEditor/MarkdownEditor";
 import { LastUsedReview } from "src/redux/instructor";
 import { MarkdownDescription } from "src/consts/comments";
 
-import Review from "../../Blocks/Exercise/Review";
+import SampleReviewCommentWrapper from "../../Blocks/Exercise/ReviewsBlock/SampleReviewCommentWrapper/SampleReviewCommentWrapper";
+import ReviewHeader from "../../Blocks/Exercise/ReviewsBlock/ReviewHeader/ReviewHeader";
+import ReviewContent from "../../Blocks/Exercise/ReviewsBlock/ReviewContent/ReviewContent";
 import { Delete, Star, Star2, } from "icons";
 import { SvgIconProps } from "@skbkontur/react-icons/icons/internal/SvgIcon";
 import { ShortUserInfo } from "src/models/users";
@@ -403,10 +405,10 @@ class AddCommentForm extends React.Component<Props, State> {
 					<Hint pos={ "right middle" } maxWidth={ this.maxCommentHintWidth }
 						  text={ <span className={ styles.preview }>
 							  <p className={ styles.previewHeader }> { texts.preview } </p>
-							  { Review.renderSampleCommentWrapper(<>
-								  { Review.renderHeaderContent(user, new Date().toDateString()) }
-								  { Review.renderCommentContent(renderSimpleMarkdown(comment.text)) }
-							  </>) }
+							  <SampleReviewCommentWrapper>
+								  <ReviewHeader author={ user } time={ new Date().toDateString() }/>
+								  <ReviewContent content={ renderSimpleMarkdown(comment.text) }/>
+							  </SampleReviewCommentWrapper>
 						  </span> }>
 						<span
 							className={ styles.commentTextElapsed }
@@ -446,10 +448,10 @@ class AddCommentForm extends React.Component<Props, State> {
 					<Hint pos={ "right middle" } maxWidth={ this.maxCommentHintWidth }
 						  text={ <span className={ styles.preview }>
 							  <p className={ styles.previewHeader }> Превью </p>
-							  { Review.renderSampleCommentWrapper(<>
-								  { Review.renderHeaderContent(user, new Date().toDateString()) }
-								  { Review.renderCommentContent(renderSimpleMarkdown(text)) }
-							  </>) }
+							  <SampleReviewCommentWrapper>
+								  <ReviewHeader author={ user } time={ new Date().toDateString() }/>
+								  <ReviewContent content={ renderSimpleMarkdown(text) }/>
+							  </SampleReviewCommentWrapper>
 						  </span> }>
 						<span
 							className={ styles.commentTextElapsed }

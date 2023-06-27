@@ -40,11 +40,7 @@
   margin-bottom: @wrapperMargin;
 
   border: 1px solid @lightGrey;
-  border-top-left-radius: 9px;
-  border-bottom-left-radius: @defaultBorderRadius;
-  border-bottom-right-radius: @defaultBorderRadius;
-
-  overflow: hidden;
+  border-radius: 9px 9px @defaultBorderRadius @defaultBorderRadius;
 }
 
 .wrapperStickerStopper {
@@ -60,6 +56,7 @@
   display: inline-flex;
   width: 100%;
   align-items: baseline;
+  flex-wrap: wrap;
 }
 
 .submissionsSelect {
@@ -248,8 +245,19 @@
     font-size: 14px;
     line-height: 20px;
   }
+}
+
+@media (min-width: @minLaptopWidth) {
+  .editor {
+    font-size: 14px;
+    line-height: 20px;
+  }
 
   .leaveCommentGuideText {
     display: initial;
+  }
+
+  .topControlsWrapper {
+    flex-wrap: nowrap;
   }
 }

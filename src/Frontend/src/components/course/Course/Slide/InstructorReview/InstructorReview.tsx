@@ -5,7 +5,7 @@ import { Button, FLAT_THEME_8PX_OLD, Hint, Select, Tabs, ThemeContext, Toast, To
 import { UnControlled, } from "react-codemirror2";
 import { UrlError } from "../../../../common/Error/NotFoundErrorBoundary";
 
-import Review from "../Blocks/Exercise/Review";
+import ReviewsBlock from "../Blocks/Exercise/ReviewsBlock/ReviewsBlock";
 import { BlocksWrapper, } from "../Blocks";
 import ScoreControls from "./ScoreControls/ScoreControls";
 import CourseLoader from "../../CourseLoader";
@@ -911,19 +911,20 @@ class InstructorReview extends React.Component<Props, State> {
 							: currentSubmission.code
 						}
 						onCursorActivity={ this.onCursorActivity }
+						onMouseDown={ this.onEditorMouseDown }
 					/>
-					<Review
+					<ReviewsBlock
+						reviews={ this.getAllReviewsAsInstructorReviews() }
+						selectedReviewId={ selectedReviewId }
+						user={ user }
 						className={ styles.reviewsContainer }
 						backgroundColor={ 'gray' }
-						user={ user }
-						addReviewComment={ this.onAddReviewComment }
-						assignBotComment={ isEditable ? this.assignBotReview : undefined }
-						toggleReviewFavourite={ this.onToggleReviewFavouriteByReviewId }
-						deleteReviewOrComment={ this.onDeleteReviewOrComment }
-						editReviewOrComment={ this.editReviewOrComment }
-						selectedReviewId={ selectedReviewId }
-						onReviewClick={ this.selectComment }
-						reviews={ this.getAllReviewsAsInstructorReviews() }
+						onSendComment={ this.onAddReviewComment }
+						onAssignBotComment={ isEditable ? this.assignBotReview : undefined }
+						onDeleteReviewOrComment={ this.onDeleteReviewOrComment }
+						onEditReviewOrComment={ this.editReviewOrComment }
+						onSelectReview={ this.selectComment }
+						onToggleReviewFavourite={ this.onToggleReviewFavouriteByReviewId }
 					/>
 				</div>
 				{ isEditable && addCommentFormCoords !== undefined &&
@@ -1473,6 +1474,10 @@ class InstructorReview extends React.Component<Props, State> {
 		}, this.resetMarkers);
 	};
 
+	onEditorMouseDown = (editor: Editor, event?: Event) => {
+		event?.stopPropagation();
+	};
+
 	onCursorActivity = (): void => {
 		const { reviews, outdatedReviews, editor, selectedReviewId, showDiff, currentSubmissionContext, } = this.state;
 
@@ -1500,9 +1505,8 @@ class InstructorReview extends React.Component<Props, State> {
 		this.highlightReview(id);
 	};
 
-	selectComment = (e: React.MouseEvent<Element, MouseEvent> | React.FocusEvent, id: number,): void => {
+	selectComment = (id: number): void => {
 		const { selectedReviewId, editor, } = this.state;
-		e.stopPropagation();
 
 		if(selectedReviewId !== id && editor) {
 			this.highlightReview(id);

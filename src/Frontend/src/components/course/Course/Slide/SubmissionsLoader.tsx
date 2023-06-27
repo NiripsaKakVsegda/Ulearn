@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 
 import api from "src/api";
 import { connect } from "react-redux";
@@ -32,14 +32,14 @@ const SubmissionsLoader: React.FC<PropsWithChildren<SubmissionsLoaderProps>> = (
 	slideContext,
 	children,
 }) => {
-	const { slideInfo, } = slideContext;
-	const { slideId, courseId, } = slideInfo;
+	useEffect(() => {
+		const { slideInfo, } = slideContext;
+		const { slideId, courseId } = slideInfo;
 
-	if(userId && slideId && !isSubmissionsLoading) {
-		if(!submissions) {
+		if(userId && slideId && !isSubmissionsLoading && !submissions) {
 			loadSubmissions(userId, courseId, slideId);
 		}
-	}
+	}, [userId, slideContext, submissions, loadSubmissions, isSubmissionsLoading]);
 
 	return (
 		<>{ children }</>

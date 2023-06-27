@@ -1,6 +1,8 @@
 const reviewPolicyChecker = {
 	isReviewOrCommentCanBeAdded: (reviewText: string): boolean => {
-		return reviewText !== undefined && reviewPolicyChecker.removeWhiteSpaces(reviewText).length > 0;
+		return reviewText !== undefined &&
+			reviewPolicyChecker.removeWhiteSpaces(reviewText).length > 0 &&
+			reviewText.length <= reviewPolicyChecker.maxReviewLength;
 	},
 	removeWhiteSpaces: (text: string): string => {
 		//do not replace spaces in text to avoid scenario with multi line code //
