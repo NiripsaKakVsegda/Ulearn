@@ -4,7 +4,6 @@ import React from "react";
 import moment from "moment-timezone";
 import styles from "./utils.less";
 import { getDateDDMMYY, serverFormat } from "../../utils/momentUtils";
-import { GoogleSheetsExportTaskResponse } from "../../models/googleSheet";
 
 export const sheetRegex = /^https:\/\/docs.google.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)\/edit#gid=(\d)+$/;
 export const linkExample = 'https://docs.google.com/spreadsheets/d/{spreadsheet-id}/edit#gid={list-id}';

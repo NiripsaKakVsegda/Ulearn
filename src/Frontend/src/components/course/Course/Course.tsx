@@ -116,7 +116,7 @@ class Course extends Component<CourseProps, State> {
 			loadUserProgress(courseId, user.id);
 		}
 
-		/* TODO: (rozentor) for now it copied from downloadedHtmlContetn, which run documentReadyFunctions scripts. In future, we will have no scripts in back, so it can be removed totally ( in other words, remove it when DownloadedHtmlContent will be removed)  */
+		/* TODO: (rozentor) for now it copied from downloadedHtmlContent, which run documentReadyFunctions scripts. In future, we will have no scripts in back, so it can be removed totally ( in other words, remove it when DownloadedHtmlContent will be removed)  */
 		runLegacy(documentReadyFunctions);
 	}
 

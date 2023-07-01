@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace CourseToolHotReloader.Infrastructure;
 
+// copy-paste from Core\Result.cs
 public class None
 {
 	private None()
