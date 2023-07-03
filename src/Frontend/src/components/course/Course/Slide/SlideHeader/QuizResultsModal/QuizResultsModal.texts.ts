@@ -13,4 +13,11 @@ export default {
 	noStudentsMessage: 'В выбранной группе нет ни одного студента',
 	downloadResults: 'Скачать',
 	closeModal: 'Закрыть',
+
+	options: {
+		gender: 'Пол',
+		vk: 'Вконтакте',
+		telegram: 'Телеграм',
+		email: 'Почта'
+	}
 };

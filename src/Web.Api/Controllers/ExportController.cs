@@ -51,15 +51,23 @@ namespace Ulearn.Web.Api.Controllers
 
 		[HttpGet("users-info-and-results")]
 		[Authorize]
-		public async Task<ActionResult> ExportGroupMembersAsTsv([Required] int groupId, Guid? quizSlideId = null)
+		public async Task<ActionResult> ExportGroupMembersAsTsv(
+			[Required] int groupId,
+			bool vk = false,
+			bool telegram = false,
+			bool email = false,
+			bool ip = false,
+			bool scoring = false,
+			bool gender = false,
+			Guid? quizSlideId = null)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId);
 			if (group == null)
 				return StatusCode((int)HttpStatusCode.NotFound, "Group not found");
 
 			var isSystemAdministrator = await IsSystemAdministratorAsync();
-			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, group.CourseId, CourseRoleType.CourseAdmin);
-			var hasAccess = await groupAccessesRepo.HasUserGrantedAccessToGroupOrIsOwnerAsync(groupId, UserId).ConfigureAwait(false);
+			var isCourseAdmin = isSystemAdministrator || await courseRolesRepo.HasUserAccessToCourse(UserId, group.CourseId, CourseRoleType.CourseAdmin);
+			var hasAccess = isCourseAdmin || await groupAccessesRepo.HasUserGrantedAccessToGroupOrIsOwnerAsync(groupId, UserId).ConfigureAwait(false);
 
 			if (!(isSystemAdministrator || isCourseAdmin || hasAccess))
 				return StatusCode((int)HttpStatusCode.Forbidden, "You should be course or system admin");
@@ -93,19 +101,50 @@ namespace Ulearn.Web.Api.Controllers
 			var scoringGroupsWithScores = scores.Select(kvp => kvp.Key.ScoringGroup).ToHashSet();
 			var scoringGroups = course.Settings.Scoring.Groups.Values.Where(sg => scoringGroupsWithScores.Contains(sg.Id)).ToList();
 
-			var headers = new List<string> { "Id", "Login", "Email", "VkUrl", "Telegram", "FirstName", "LastName", "VisibleName", "Gender", "LastVisit", "IpAddress" };
+			var headers = new List<string> { "Id", "Login", "FirstName", "LastName" };
+
+			if (gender)
+				headers.Add("Gender");
+			if (email)
+				headers.Add("Email");
+			if (vk)
+				headers.Add("VkUrl");
+			if (telegram)
+				headers.Add("Telegram");
+			if (ip)
+			{
+				headers.Add("IpAddress");
+				headers.Add("LastVisit");
+			}
+
 			if (questions != null)
 				headers = headers.Concat(questions).ToList();
-			if (scoringGroups.Count > 0)
+			if (scoring && scoringGroups.Count > 0)
 				headers = headers.Concat(scoringGroups.Select(s => s.Abbreviation)).ToList();
 
 			var rows = new List<List<string>> { headers };
 			foreach (var i in users)
 			{
-				var row = new List<string> { i.Id, i.Login, i.Email, i.VkUrl, i.Telegram, i.FirstName, i.LastName, i.VisibleName, i.Gender.ToString(), i.LastVisit.ToSortableDate(), i.IpAddress };
+				var row = new List<string> { i.Id, i.Login, i.FirstName, i.LastName };
+
+				if (gender)
+					row.Add(i.Gender.ToString());
+				if (email)
+					row.Add(i.Email);
+				if (vk)
+					row.Add(i.VkUrl);
+				if (telegram)
+					row.Add(i.Telegram);
+				if (ip)
+				{
+					row.Add(i.IpAddress);
+					row.Add(i.LastVisit.ToSortableDate());
+				}
+
 				if (i.Answers != null)
 					row = row.Concat(i.Answers).ToList();
-				row.AddRange(scoringGroups.Select(scoringGroup => (scores.ContainsKey((i.Id, scoringGroup.Id)) ? scores[(i.Id, scoringGroup.Id)] : 0).ToString()));
+				if (scoring)
+					row.AddRange(scoringGroups.Select(scoringGroup => (scores.ContainsKey((i.Id, scoringGroup.Id)) ? scores[(i.Id, scoringGroup.Id)] : 0).ToString()));
 				rows.Add(row);
 			}
 

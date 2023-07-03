@@ -10,17 +10,28 @@ export const exportApi = createApi({
 	}),
 	refetchOnMountOrArgChange: true,
 	endpoints: (build) => ({
-		downloadQuizResults: build.query<void, { groupId: number, quizSlideId?: string, fileName?: string }>({
-			query: ({ groupId, quizSlideId, fileName }) => ({
-				url: 'users-info-and-results',
-				method: HttpMethods.GET,
-				params: {
-					groupId,
-					quizSlideId
-				},
-				cache: "no-cache",
-				responseHandler: response => responseDownloadHandler(response, fileName)
+		downloadQuizResults: build.query<void, {
+			groupId: number, quizSlideId?: string, fileName?: string,
+			gender?: boolean,
+			telegram?: boolean,
+			vk?: boolean,
+			email?: boolean
+		}>(
+			{
+				query: ({ groupId, quizSlideId, fileName, telegram, vk, email, gender }) => ({
+					url: 'users-info-and-results',
+					method: HttpMethods.GET,
+					params: {
+						groupId,
+						quizSlideId,
+						telegram,
+						vk,
+						email,
+						gender,
+					},
+					cache: "no-cache",
+					responseHandler: response => responseDownloadHandler(response, fileName)
+				})
 			})
-		})
 	})
 });
