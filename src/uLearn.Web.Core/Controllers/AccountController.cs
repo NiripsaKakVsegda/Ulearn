@@ -694,8 +694,8 @@ public class AccountController : BaseUserController
 		/* Some users enter text with trailing whitespaces. Remove them (not users, but spaces!) */
 		var newName = userModel.Name.Trim();
 		var newEmail = userModel.Email?.Trim();
-		var newFirstName = userModel.FirstName.Trim();
-		var newLastName= userModel.LastName.Trim();
+		var newFirstName = userModel.FirstName?.Trim();
+		var newLastName= userModel.LastName?.Trim();
 		
 		var nameChanged = user.UserName != newName;
 		if (nameChanged && await userManager.FindByNameAsync(newName) != null)
