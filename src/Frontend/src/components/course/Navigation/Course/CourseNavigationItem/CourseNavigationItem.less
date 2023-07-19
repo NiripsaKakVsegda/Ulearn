@@ -17,8 +17,14 @@
   text-decoration: none;
   font-weight: 600;
 
-  &:hover {
-    color: #ffffff;
+
+  &:focus {
+    color: @black;
+    text-decoration: none;
+  }
+
+  &:hover, &:active {
+    color: @white;
     background-color: @linkColor;
     text-decoration: none;
 
@@ -50,6 +56,10 @@
   background-size: 16px;
   transition: .5s color;
   -webkit-transition: .5s color;
+
+  @media (min-width: @navigationGrowthWidth) {
+    background-size: 18px;
+  }
 }
 
 .progressWrapper {
