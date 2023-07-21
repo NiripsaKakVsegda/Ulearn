@@ -1,9 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models;
 
+[Index(nameof(UserId), nameof(CourseId), nameof(SlideId))]
+[Index(nameof(UserId), nameof(CourseId), nameof(SlideId), nameof(CheckupId))]
+[Index(nameof(CheckupId))]
 public class SelfCheckup
 {
 	[Key]

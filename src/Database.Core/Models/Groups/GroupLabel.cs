@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(OwnerId))]
+	[Index(nameof(OwnerId), nameof(IsDeleted))]
 	public class GroupLabel
 	{
 		[Key]
@@ -28,6 +31,9 @@ namespace Database.Models
 	/* For backward compatibility: EF Core changed table naming convention.
 	   See https://github.com/aspnet/Announcements/issues/167 for details */
 	[Table("LabelOnGroups")]
+	[Index(nameof(GroupId))]
+	[Index(nameof(LabelId))]
+	[Index(nameof(GroupId), nameof(LabelId), IsUnique = true)]
 	public class LabelOnGroup
 	{
 		[Key]

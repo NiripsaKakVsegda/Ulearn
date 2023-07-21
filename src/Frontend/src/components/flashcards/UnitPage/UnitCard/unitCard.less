@@ -70,15 +70,19 @@
 }
 
 .unitCardTitle {
-  max-height: @cardHeight - 140px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  max-height: @cardHeight - 250px;
 
   margin: 0 0 17px;
 
   font-size: 40px;
   line-height: 42px;
   font-weight: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .unitCardBody {
@@ -88,10 +92,45 @@
   line-height: 1.2;
 }
 
-.startButtonContainer {
-  background-color: @white;
-  border-radius: 8px;
+.approvedCardsInfo {
+  font-size: 16px;
+  line-height: 1.2;
+  margin-left: 5px;
+}
+
+.moderatorInfo {
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.moderationButton {
+  padding: 0;
+  border: none;
+  background: none;
+  margin-left: 5px;
+  color: @white;
+  text-decoration: underline;
+
+  &:hover {
+    color: @geinsboro;
+  }
+}
+
+.buttonsContainer {
+  background-color: transparent;
   position: absolute;
   bottom: 30px;
   left: 28px;
+  right: 28px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttonsUnion {
+  font-size: 20px;
+  line-height: 44px;
 }

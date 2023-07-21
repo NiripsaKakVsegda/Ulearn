@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId), nameof(GroupId))]
+	[Index(nameof(CourseId), nameof(GroupId), nameof(UserIds))]
+	[Index(nameof(CourseId), nameof(GroupId), nameof(UnitId), nameof(SlideType), nameof(SlideValue), nameof(UserIds))]
 	public class DeadLine
 	{
 		[Key]

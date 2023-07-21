@@ -3,10 +3,22 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 
 namespace Database.Models
 {
+	[Index(nameof(AutomaticCheckingId))]
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(AutomaticCheckingIsRightAnswer))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(AutomaticCheckingIsRightAnswer))]
+	[Index(nameof(AutomaticCheckingIsRightAnswer))]
+	[Index(nameof(AntiPlagiarismSubmissionId))]
+	[Index(nameof(Language))]
+	[Index(nameof(Sandbox))]
+	[Index(nameof(Timestamp))]
 	public class UserExerciseSubmission : ITimedSlideAction
 	{
 		[Key]

@@ -3,8 +3,8 @@ import { DEFAULT_TIMEZONE } from "src/consts/defaultTimezone";
 
 export const serverFormat = 'YYYY-MM-DDTHH:mm:ss';
 
-export function getMoment(time: string): string {
-	return moment(moment.tz(time, DEFAULT_TIMEZONE).format()).fromNow();
+export function getMoment(time: string, withoutSuffix?: boolean): string {
+	return moment(moment.tz(time, DEFAULT_TIMEZONE).format()).fromNow(withoutSuffix);
 }
 
 export function getDateDDMMYY(time: string, format = 'DD MMMM YYYY в HH:mm'): string {

@@ -241,8 +241,6 @@ namespace Database
 				.HasDiscriminator(x => x.GroupType)
 				.HasValue<SingleGroup>(GroupType.SingleGroup)
 				.HasValue<SuperGroup>(GroupType.SuperGroup);
-
-			CreateIndexes(modelBuilder);
 		}
 
 		private static void SetDeleteBehavior<T1, T2>(ModelBuilder modelBuilder, Expression<Func<T1, T2>> oneWay, Expression<Func<T1, object>> secondWay, DeleteBehavior deleteBehavior = DeleteBehavior.Restrict)
@@ -254,183 +252,6 @@ namespace Database
 				.WithMany()
 				.HasForeignKey(secondWay)
 				.OnDelete(deleteBehavior);
-		}
-
-		private void CreateIndexes(ModelBuilder modelBuilder)
-		{
-			AddIndex<AdditionalScore>(modelBuilder, c => new { c.CourseId, c.UserId });
-			AddIndex<AdditionalScore>(modelBuilder, c => new { c.CourseId, c.UserId, c.UnitId, c.ScoringGroupId }, isUnique: true);
-			AddIndex<AdditionalScore>(modelBuilder, c => c.UnitId);
-
-			AddIndex<ApplicationUser>(modelBuilder, c => c.TelegramChatId);
-			AddIndex<ApplicationUser>(modelBuilder, c => c.IsDeleted);
-
-			AddIndex<Certificate>(modelBuilder, c => c.TemplateId);
-			AddIndex<Certificate>(modelBuilder, c => c.UserId);
-
-			AddIndex<CertificateTemplate>(modelBuilder, c => c.CourseId);
-
-			AddIndex<Comment>(modelBuilder, c => c.SlideId);
-			AddIndex<Comment>(modelBuilder, c => new { c.AuthorId, c.PublishTime });
-
-			AddIndex<CommentLike>(modelBuilder, c => new { c.UserId, c.CommentId }, isUnique: true);
-			AddIndex<CommentLike>(modelBuilder, c => c.CommentId);
-
-			AddIndex<CourseAccess>(modelBuilder, c => c.CourseId);
-			AddIndex<CourseAccess>(modelBuilder, c => new { c.CourseId, c.IsEnabled });
-			AddIndex<CourseAccess>(modelBuilder, c => new { c.CourseId, c.UserId, c.IsEnabled });
-			AddIndex<CourseAccess>(modelBuilder, c => c.GrantTime);
-
-			AddIndex<CourseVersion>(modelBuilder, c => new { c.CourseId, c.PublishTime });
-			AddIndex<CourseVersion>(modelBuilder, c => new { c.CourseId, c.LoadingTime });
-
-			AddIndex<EnabledAdditionalScoringGroup>(modelBuilder, c => c.GroupId);
-
-			AddIndex<ExerciseCodeReview>(modelBuilder, c => c.ExerciseCheckingId);
-			AddIndex<ExerciseCodeReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.SubmissionAuthorId });
-
-			AddIndex<FeedViewTimestamp>(modelBuilder, c => c.UserId);
-			AddIndex<FeedViewTimestamp>(modelBuilder, c => c.Timestamp);
-			AddIndex<FeedViewTimestamp>(modelBuilder, c => new { c.UserId, c.TransportId });
-
-			AddIndex<GroupBase>(modelBuilder, c => c.CourseId);
-			AddIndex<GroupBase>(modelBuilder, c => c.OwnerId);
-			AddIndex<GroupBase>(modelBuilder, c => c.InviteHash);
-
-			AddIndex<GroupAccess>(modelBuilder, c => c.GroupId);
-			AddIndex<GroupAccess>(modelBuilder, c => new { c.GroupId, c.IsEnabled });
-			AddIndex<GroupAccess>(modelBuilder, c => new { c.GroupId, c.UserId, c.IsEnabled });
-			AddIndex<GroupAccess>(modelBuilder, c => c.UserId);
-			AddIndex<GroupAccess>(modelBuilder, c => c.GrantTime);
-
-			AddIndex<GroupLabel>(modelBuilder, c => c.OwnerId);
-			AddIndex<GroupLabel>(modelBuilder, c => new { c.OwnerId, c.IsDeleted });
-
-			AddIndex<LabelOnGroup>(modelBuilder, c => c.GroupId);
-			AddIndex<LabelOnGroup>(modelBuilder, c => c.LabelId);
-			AddIndex<LabelOnGroup>(modelBuilder, c => new { c.GroupId, c.LabelId }, isUnique: true);
-
-			AddIndex<GroupMember>(modelBuilder, c => c.GroupId);
-			AddIndex<GroupMember>(modelBuilder, c => c.UserId);
-
-			AddIndex<Like>(modelBuilder, c => c.SubmissionId);
-			AddIndex<Like>(modelBuilder, c => new { c.UserId, c.SubmissionId });
-			AddIndex<Like>(modelBuilder, c => new { c.CourseId, c.SlideId, c.SubmissionId });
-
-			AddIndex<AcceptedSolutionsPromote>(modelBuilder, c => new { c.CourseId, c.SlideId });
-
-			AddIndex<LtiConsumer>(modelBuilder, c => c.Key);
-
-			AddIndex<LtiSlideRequest>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-
-			AddIndex<NotificationTransport>(modelBuilder, c => c.UserId);
-			AddIndex<NotificationTransport>(modelBuilder, c => new { c.UserId, c.IsDeleted });
-
-			AddIndex<NotificationTransportSettings>(modelBuilder, c => c.NotificationTransportId);
-			AddIndex<NotificationTransportSettings>(modelBuilder, c => c.CourseId);
-			AddIndex<NotificationTransportSettings>(modelBuilder, c => c.NotificationType);
-			AddIndex<NotificationTransportSettings>(modelBuilder, c => new { c.CourseId, c.NotificationType });
-
-			AddIndex<NotificationDelivery>(modelBuilder, c => c.CreateTime);
-			AddIndex<NotificationDelivery>(modelBuilder, c => c.Status);
-			AddIndex<NotificationDelivery>(modelBuilder, c => c.NextTryTime);
-			AddIndex<NotificationDelivery>(modelBuilder, c => new { c.NotificationId, c.NotificationTransportId });
-
-			AddIndex<Notification>(modelBuilder, c => c.CourseId);
-			AddIndex<Notification>(modelBuilder, c => c.CreateTime);
-			AddIndex<Notification>(modelBuilder, c => c.AreDeliveriesCreated);
-
-			AddIndex<ManualExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<ManualExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId, c.ProhibitFurtherManualCheckings });
-			AddIndex<ManualExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-			AddIndex<ManualExerciseChecking>(modelBuilder, c => new { c.CourseId, c.UserId });
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => new { c.CourseId, c.UserId });
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => c.IsRightAnswer);
-			AddIndex<AutomaticExerciseChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.IsRightAnswer });
-			AddIndex<ManualQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<ManualQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<ManualQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-			AddIndex<ManualQuizChecking>(modelBuilder, c => new { c.CourseId, c.UserId });
-			AddIndex<AutomaticQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<AutomaticQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<AutomaticQuizChecking>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-			AddIndex<AutomaticQuizChecking>(modelBuilder, c => new { c.CourseId, c.UserId });
-
-			AddIndex<ExerciseCodeReviewComment>(modelBuilder, c => new { c.ReviewId, c.IsDeleted });
-			AddIndex<ExerciseCodeReviewComment>(modelBuilder, c => c.AddingTime);
-
-			AddIndex<SlideHint>(modelBuilder, c => new { c.CourseId, c.SlideId, c.HintId, c.UserId, c.IsHintHelped });
-
-			AddIndex<SlideRate>(modelBuilder, c => new { c.SlideId, c.UserId });
-
-			AddIndex<StepikAccessToken>(modelBuilder, c => c.AddedTime);
-
-			AddIndex<StepikExportProcess>(modelBuilder, c => c.OwnerId);
-
-			AddIndex<StepikExportSlideAndStepMap>(modelBuilder, c => c.UlearnCourseId);
-			AddIndex<StepikExportSlideAndStepMap>(modelBuilder, c => new { c.UlearnCourseId, c.StepikCourseId });
-			AddIndex<StepikExportSlideAndStepMap>(modelBuilder, c => new { c.UlearnCourseId, c.SlideId });
-
-			AddIndex<SystemAccess>(modelBuilder, c => c.UserId);
-			AddIndex<SystemAccess>(modelBuilder, c => c.GrantTime);
-			AddIndex<SystemAccess>(modelBuilder, c => c.IsEnabled);
-			AddIndex<SystemAccess>(modelBuilder, c => new { c.UserId, c.IsEnabled });
-
-			AddIndex<UnitAppearance>(modelBuilder, c => new { c.CourseId, c.PublishTime });
-
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => c.AutomaticCheckingIsRightAnswer);
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => new { c.CourseId, c.AutomaticCheckingIsRightAnswer });
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.AutomaticCheckingIsRightAnswer });
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => c.AntiPlagiarismSubmissionId);
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => c.Language);
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => c.Sandbox);
-			AddIndex<UserExerciseSubmission>(modelBuilder, c => c.Timestamp);
-
-			AddIndex<UserQuizAnswer>(modelBuilder, c => new { c.SubmissionId, c.BlockId });
-			AddIndex<UserQuizAnswer>(modelBuilder, c => new { c.ItemId });
-
-			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<UserQuizSubmission>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-
-			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId }, true);
-			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp }); // посещения за период
-			AddIndex<Visit>(modelBuilder, c => new { c.CourseId, c.UserId }); // поиск всех слайдов
-
-			AddIndex<LastVisit>(modelBuilder, c => new { c.CourseId, c.UserId });
-
-			AddIndex<UserFlashcardsVisit>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId, c.FlashcardId }, false);
-			AddIndex<UserFlashcardsUnlocking>(modelBuilder, c => new { c.UserId, c.CourseId, c.UnitId }, false);
-
-			AddIndex<GoogleSheetExportTask>(modelBuilder, c => new { c.CourseId, c.AuthorId });
-
-			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId });
-			AddIndex<FavouriteReview>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Text }, true);
-
-			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.UserId });
-			AddIndex<FavouriteReviewByUser>(modelBuilder, c => new { c.CourseId, c.SlideId, c.Timestamp });
-
-			AddIndex<AdditionalContentPublication>(modelBuilder, c => new { c.CourseId, c.GroupId });
-			AddIndex<AdditionalContentPublication>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideId });
-
-			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, });
-			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UserIds });
-			AddIndex<DeadLine>(modelBuilder, c => new { c.CourseId, c.GroupId, c.UnitId, c.SlideType, c.SlideValue, c.UserIds });
-
-			AddIndex<SelfCheckup>(modelBuilder, c => new { c.UserId, c.CourseId, c.SlideId }); // getting all user checkups for slide
-			AddIndex<SelfCheckup>(modelBuilder, c => new { c.UserId, c.CourseId, c.SlideId, c.CheckupId }); // updating single user checkup for slide
-			AddIndex<SelfCheckup>(modelBuilder, c => new { c.CheckupId }); // delete outdated checkup
-		}
-
-		private void AddIndex<TEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, object>> indexFunction, bool isUnique = false) where TEntity : class
-		{
-			modelBuilder.Entity<TEntity>().HasIndex(indexFunction).IsUnique(isUnique);
 		}
 
 		private static List<Type> GetNonAbstractSubclasses(Type type)
@@ -541,7 +362,7 @@ namespace Database
 		public DbSet<SystemAccess> SystemAccesses { get; set; }
 
 		public DbSet<UserFlashcardsVisit> UserFlashcardsVisits { get; set; }
-		public DbSet<UserFlashcardsUnlocking> UserFlashcardsUnlocking { get; set; }
+		public DbSet<UserGeneratedFlashcard> UserGeneratedFlashcards { get; set; }
 
 		public DbSet<TempCourse> TempCourses { get; set; }
 

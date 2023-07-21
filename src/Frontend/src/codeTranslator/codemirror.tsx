@@ -28,6 +28,22 @@ export default function translateTextareaToCode(
 	/>);
 }
 
+export function renderCode(
+	code: string,
+	lang?: string,
+	disableStyles?: boolean,
+	editorConfig?: EditorConfiguration
+): React.ReactNode {
+	const language = (lang || Language.cSharp) as Language;
+
+	return <StaticCode
+		language={ language }
+		code={ code }
+		codeMirrorOptions={ editorConfig }
+		disableStyles={ disableStyles }
+	/>;
+}
+
 export const settingsForFlashcards = {
 	settings: {
 		disableStyles: true,

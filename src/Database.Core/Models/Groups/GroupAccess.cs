@@ -1,11 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Database.Models
 {
+	[Index(nameof(GroupId))]
+	[Index(nameof(GroupId), nameof(IsEnabled))]
+	[Index(nameof(GroupId), nameof(UserId), nameof(IsEnabled))]
+	[Index(nameof(UserId))]
+	[Index(nameof(GrantTime))]
 	public class GroupAccess
 	{
 		[Key]

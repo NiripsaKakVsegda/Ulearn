@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using Database.Models.Quizzes;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Extensions;
 
 namespace Database.Models
@@ -75,6 +76,12 @@ namespace Database.Models
 		RequestTimeLimit = 6 // Не взято из очереди за разумное время
 	}
 
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(UserId))]
+	[Index(nameof(IsRightAnswer))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(IsRightAnswer))]
 	public class AutomaticExerciseChecking : AbstractAutomaticSlideChecking
 	{
 		[Key]
@@ -135,6 +142,10 @@ namespace Database.Models
 
 	/* Manual Exercise Checking is Code Review */
 
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId), nameof(ProhibitFurtherManualCheckings))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(UserId))]
 	public class ManualExerciseChecking : AbstractManualSlideChecking
 	{
 		[Key]
@@ -166,6 +177,10 @@ namespace Database.Models
 		}
 	}
 
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(UserId))]
 	public class AutomaticQuizChecking : AbstractAutomaticSlideChecking
 	{
 		/* This field is not identity and is not database-generated because EF generates Id as foreign key to UserQuizSubmission.Id */
@@ -179,6 +194,10 @@ namespace Database.Models
 		public bool IgnoreInAttemptsCount { get; set; }
 	}
 
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(UserId))]
 	public class ManualQuizChecking : AbstractManualSlideChecking
 	{
 		/* This field is not identity and is not database-generated because EF generates Id as foreign key to UserQuizSubmission.Id */

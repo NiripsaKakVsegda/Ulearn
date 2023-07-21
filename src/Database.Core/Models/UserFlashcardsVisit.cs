@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Database.Models
 {
+	[Index(nameof(UserId), nameof(CourseId), nameof(UnitId), nameof(FlashcardId))]
 	public class UserFlashcardsVisit
 	{
 		[Key]

@@ -52,9 +52,12 @@
   transform: translate(-50%, @headerHeight + @progressBarHeight);
 
   background-color: @modalBackgroundColor;
-  padding: 26px 10px;
   border-radius: 0;
   margin-top: -30px;
+}
+
+.noProgressBar {
+  height: calc(100vh - @headerHeight);
 }
 
 .secondModal {
@@ -129,34 +132,21 @@
   }
 }
 
-.controlGuideContainer {
+.guidesContainer {
   display: none;
-
-  width: 100%;
+  @media (min-width: @minLaptopWidth) {
+    & {
+      display: flex;
+    }
+  }
+  justify-content: center;
+  align-items: center;
 
   position: absolute;
+  width: 100%;
   top: 24%;
-  transform: translate(0, calc(@modalMaxHeight + 10px));
-  padding-bottom: 50px;
-
-  margin: 0;
-
-  color: @lightYellow;
-  text-align: center;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: lighter;
-
-  & > span {
-    padding: 3px 9px;
-    margin: 5px;
-    border-radius: 2px;
-    box-sizing: border-box;
-
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid @lightYellow;
-    text-transform: uppercase;
-  }
+  transform: translate(0, calc(@modalMaxHeight));
+  padding-bottom: 10px;
 }
 
 .progressBarContainer {
@@ -174,8 +164,8 @@
     max-width: 100%;
     top: 24%;
     transform: translate(-50%, 0);
-    padding: 37px 57px 48px;
     border-radius: 10px;
+    padding-bottom: 0 !important;
   }
 
   .overlay {
@@ -194,10 +184,6 @@
   .fourthModal {
     display: initial;
     transform: translate(-50%, -18%) scale(0.85);
-  }
-
-  .controlGuideContainer {
-    display: initial;
   }
 
   @keyframes moveFromSecondToFirst {

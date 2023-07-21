@@ -50,10 +50,10 @@ interface Props {
 	width?: string;
 	lengthCounter?: number;
 
+	placeholder?: string;
 	hasError: boolean;
 	isShowFocus: boolean;
 	hideDescription?: boolean;
-	hidePlaceholder?: boolean;
 
 	handleChange: (text: string, callback?: () => void) => void;
 	handleSubmit: (event: React.KeyboardEvent) => void;
@@ -119,7 +119,7 @@ class MarkdownEditor extends Component<Props> {
 			hideDescription,
 			rows = 4,
 			maxRows = 15,
-			hidePlaceholder,
+			placeholder,
 			className,
 			lengthCounter,
 			beforeButtonsElement,
@@ -143,7 +143,7 @@ class MarkdownEditor extends Component<Props> {
 					autoResize
 					lengthCounter={ lengthCounter }
 					showLengthCounter={ !!lengthCounter }
-					placeholder={ hidePlaceholder ? undefined : "Комментарий" }/>
+					placeholder={ placeholder }/>
 				{ beforeButtonsElement }
 				<div className={ styles.formFooter }>
 					{ children }

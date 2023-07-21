@@ -1,9 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(UserId))]
+	[Index(nameof(Timestamp))]
+	[Index(nameof(UserId), nameof(TransportId))]
 	public class FeedViewTimestamp
 	{
 		[Key]

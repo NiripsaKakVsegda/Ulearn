@@ -10,6 +10,7 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Common;
 using Ulearn.Common.Extensions;
@@ -21,6 +22,8 @@ using Ulearn.Core.Courses.Units;
 
 namespace Database.Models
 {
+	[Index(nameof(UserId))]
+	[Index(nameof(UserId), nameof(IsDeleted))]
 	public abstract class NotificationTransport
 	{
 		[Key]
@@ -61,6 +64,10 @@ namespace Database.Models
 		}
 	}
 
+	[Index(nameof(NotificationTransportId))]
+	[Index(nameof(CourseId))]
+	[Index(nameof(NotificationType))]
+	[Index(nameof(CourseId), nameof(NotificationType))]
 	public class NotificationTransportSettings
 	{
 		[Key]
@@ -79,6 +86,10 @@ namespace Database.Models
 		public bool IsEnabled { get; set; }
 	}
 
+	[Index(nameof(CreateTime))]
+	[Index(nameof(Status))]
+	[Index(nameof(NextTryTime))]
+	[Index(nameof(NotificationId), nameof(NotificationTransportId))]
 	public class NotificationDelivery
 	{
 		[Key]
@@ -301,6 +312,9 @@ namespace Database.Models
 		public string Text { get; private set; }
 	}
 
+	[Index(nameof(CourseId))]
+	[Index(nameof(CreateTime))]
+	[Index(nameof(AreDeliveriesCreated))]
 	public abstract class Notification
 	{
 		[Key]

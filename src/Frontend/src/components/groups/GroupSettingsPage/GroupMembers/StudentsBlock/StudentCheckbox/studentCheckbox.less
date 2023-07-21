@@ -1,18 +1,69 @@
-.student-block {
+@import "/src/variables";
+
+.checkbox {
   display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  width: fit-content;
+  align-items: center;
+  margin: 0;
+  padding: 0;
 
-  & > label > div > * {
-    vertical-align: top;
+  & > span {
+    flex-grow: 1;
   }
+}
 
-  .addingTime {
-    color: #999;
+.checkboxContent {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+
+  margin: 0;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+
+  &:hover {
+    background-color: @backgroundGray;
+
+    .changeAccessesButton {
+      display: inline-block;
+    }
   }
 }
 
 .studentBlockSelectable {
   user-select: text;
+}
+
+.studentInfo {
+  display: inline-flex;
+  gap: 5px;
+  width: 220px;
+}
+
+.addingTime {
+  color: @additionalColor;
+  flex-shrink: 1;
+  line-height: 1.4;
+}
+
+.accessesControlsWrapper {
+  display: inline-flex;
+  width: 300px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  line-height: 1.4;
+}
+
+.accessesInfo {
+  color: @additionalColor;
+}
+
+.changeAccessesButton {
+  margin-left: 0;
+
+  @media (min-width: @minLaptopWidth) {
+    display: none;
+  }
 }

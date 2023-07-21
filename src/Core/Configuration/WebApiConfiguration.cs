@@ -22,6 +22,7 @@ namespace Web.Api.Configuration
 
 		public SuperGroupCacheConfiguration SuperGroupCache { get; set; } // настройки кэша для супер-групп
 		
+		public StudentCourseAccessesConfiguration StudentCourseAccesses { get; set; } // настройки срока действия прав для студентов
 	}
 	
 	public class SuperGroupCacheConfiguration
@@ -29,6 +30,12 @@ namespace Web.Api.Configuration
 		public int Capacity { get; set; } = 50;
 
 		public TimeSpan MaxLifeTime { get; set; } = TimeSpan.FromHours(1);
+	}
+
+	public class StudentCourseAccessesConfiguration
+	{
+		public TimeSpan ExpiresIn => TimeSpan.FromDays(ExpiresInDays);
+		public int ExpiresInDays { get; set; } = 180;
 	}
 
 	public class WebConfiguration : WebApiConfiguration

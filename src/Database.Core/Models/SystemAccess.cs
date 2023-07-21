@@ -1,11 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Database.Models
 {
+	[Index(nameof(UserId))]
+	[Index(nameof(GrantTime))]
+	[Index(nameof(IsEnabled))]
+	[Index(nameof(UserId), nameof(IsEnabled))]
 	public class SystemAccess
 	{
 		[Key]

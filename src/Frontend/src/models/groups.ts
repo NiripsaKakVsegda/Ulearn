@@ -1,5 +1,6 @@
 import { ShortUserInfo } from "./users";
 import { AbstractScoringGroupInfo } from "./course";
+import { ShortCourseAccess } from "./courseAccess";
 
 export interface GroupAsStudentInfo {
 	id: number;
@@ -32,6 +33,7 @@ export interface GroupStudentsResponse {
 export interface GroupStudentInfo {
 	user: ShortUserInfo;
 	addingTime: string;
+	accesses: ShortCourseAccess[];
 }
 
 export interface GroupsInfoResponse {

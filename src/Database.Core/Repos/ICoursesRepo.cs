@@ -21,10 +21,14 @@ namespace Database.Repos
 		Task DeleteCourseVersion(string courseId, Guid versionId);
 		Task<List<CourseVersion>> GetPublishedCourseVersions();
 		Task<CourseAccess> GrantAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment);
-		Task<List<CourseAccess>> RevokeAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment);
+		Task<CourseAccess> RevokeAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment);
 		Task<List<CourseAccess>> GetCourseAccesses(string courseId);
 		Task<List<CourseAccess>> GetCourseAccesses(string courseId, string userId);
 		Task<DefaultDictionary<string, List<CourseAccess>>> GetCoursesAccesses(IEnumerable<string> coursesIds);
+
+		[ItemCanBeNull]
+		Task<CourseAccess> FindCourseAccess(string userId, string courseId, CourseAccessType accessType);
+
 		Task<bool> HasCourseAccess(string userId, string courseId, CourseAccessType accessType);
 		Task<List<CourseAccess>> GetUserAccesses(string userId);
 		Task<List<string>> GetPublishedCourseIds();

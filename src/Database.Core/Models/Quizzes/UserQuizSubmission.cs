@@ -1,9 +1,13 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models.Quizzes
 {
+	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
 	public class UserQuizSubmission : ITimedSlideAction
 	{
 		[Required]

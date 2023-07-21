@@ -7,20 +7,19 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Options;
 using Vostok.Logging.Abstractions;
 using Swashbuckle.AspNetCore.Annotations;
 using Ulearn.Common.Api.Models.Responses;
-using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Core.Courses.Units;
-using Ulearn.Web.Api.Models.Common;
 using Ulearn.Web.Api.Models.Parameters.Groups;
+using Ulearn.Web.Api.Models.Responses;
 using Ulearn.Web.Api.Models.Responses.Groups;
+using Web.Api.Configuration;
 using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups
@@ -39,11 +38,13 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		private readonly IGroupsCreatorAndCopier groupsCreatorAndCopier;
 		private readonly IUnitsRepo unitsRepo;
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
+		private readonly ICoursesRepo coursesRepo;
+		private readonly WebApiConfiguration configuration;
 		private static ILog log => LogProvider.Get().ForContext(typeof(GroupController));
 
-		public GroupController(ICourseStorage courseStorage, UlearnDb db,
+		public GroupController(ICourseStorage courseStorage, UlearnDb db, IOptions<WebApiConfiguration> options,
 			IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo, IGroupMembersRepo groupMembersRepo, IUsersRepo usersRepo, ICourseRolesRepo courseRolesRepo, INotificationsRepo notificationsRepo,
-			IGroupsCreatorAndCopier groupsCreatorAndCopier, IUnitsRepo unitsRepo, ISlideCheckingsRepo slideCheckingsRepo, IGroupsArchiver groupsArchiver)
+			IGroupsCreatorAndCopier groupsCreatorAndCopier, IUnitsRepo unitsRepo, ISlideCheckingsRepo slideCheckingsRepo, IGroupsArchiver groupsArchiver, ICoursesRepo coursesRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.groupsRepo = groupsRepo;
@@ -54,6 +55,8 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			this.groupsCreatorAndCopier = groupsCreatorAndCopier;
 			this.unitsRepo = unitsRepo;
 			this.slideCheckingsRepo = slideCheckingsRepo;
+			this.coursesRepo = coursesRepo;
+			configuration = options.Value;
 		}
 
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -301,13 +304,31 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		[ProducesResponseType((int)HttpStatusCode.OK)]
 		public async Task<ActionResult<GroupStudentsResponse>> GroupStudents(int groupId)
 		{
-			var members = await groupMembersRepo.GetGroupMembersAsync(groupId).ConfigureAwait(false);
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			var members = await groupMembersRepo.GetGroupMembersAsync(group.Id).ConfigureAwait(false);
+			var accessesByUserId = (await coursesRepo.GetCourseAccesses(group.CourseId))
+				.Where(a => a.AccessType.IsStudentCourseAccess())
+				.GroupBy(a => a.UserId)
+				.ToDictionary(g => g.Key, g => g.ToList());
 			return new GroupStudentsResponse
 			{
 				Students = members.Select(m => new GroupStudentInfo
 				{
 					User = BuildShortUserInfo(m.User, discloseLogin: true),
-					AddingTime = m.AddingTime
+					AddingTime = m.AddingTime,
+					Accesses = accessesByUserId.TryGetValue(m.UserId, out var accesses)
+						? accesses
+							.Select(a => new ShortCourseAccessResponse
+							{
+								Id = a.Id,
+								CourseId = a.CourseId,
+								AccessType = a.AccessType,
+								GrantedBy = BuildShortUserInfo(a.GrantedBy),
+								GrantTime = a.GrantTime,
+								ExpiresOn = a.GrantTime + configuration.StudentCourseAccesses.ExpiresIn
+							})
+							.ToList()
+						: new List<ShortCourseAccessResponse>(),
 				}).ToList()
 			};
 		}

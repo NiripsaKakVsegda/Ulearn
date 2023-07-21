@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace Ulearn.Common.Extensions
@@ -12,9 +13,11 @@ namespace Ulearn.Common.Extensions
 		public static TAttribute GetAttribute<TAttribute>(this Enum value) where TAttribute : Attribute
 		{
 			var type = value.GetType();
-			var memberInfo = type.GetMember(value.ToString())[0];
-			var attributes = memberInfo.GetCustomAttributes(typeof(TAttribute), false);
-			return attributes.Length > 0 ? (TAttribute)attributes[0] : null;
+			var memberInfo = type.GetMember(value.ToString()).FirstOrDefault();
+			var attributes = memberInfo?.GetCustomAttributes(typeof(TAttribute), false);
+			return attributes is not null && attributes.Length > 0
+				? (TAttribute)attributes[0]
+				: null;
 		}
 
 		public static bool TryParseToNullableEnum<TEnum>(this string value, out TEnum? result) where TEnum : struct

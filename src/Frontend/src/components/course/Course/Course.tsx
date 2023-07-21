@@ -7,9 +7,9 @@ import api from "src/api";
 import Navigation from "../Navigation";
 import { CourseNavigationProps, UnitNavigationProps } from "../Navigation/Navigation";
 import AnyPage from 'src/pages/AnyPage';
-import UnitFlashcardsPage from 'src/pages/course/UnitFlashcardsPage.js';
-import CourseFlashcardsPage from 'src/pages/course/CourseFlashcardsPage.js';
-import PreviewUnitPageFromAllCourse from "src/components/flashcards/UnitPage/PreviewUnitPageFromAllCourse";
+import UnitFlashcardsPageConnected from "src/components/flashcards/UnitPage/UnitFlashcardsPageConnected";
+import CourseFlashcardsPageConnected from "src/components/flashcards/CourseFlashcardsPage/CourseFlashcardsPageConnected";
+import PreviewUnitPageFromAllCourseConnected from "src/components/flashcards/PreviewUnitPageFromAllCourse/PreviewUnitPageFromAllCourseConnected";
 import SlideHeader from "./Slide/SlideHeader/SlideHeader";
 import { BlocksWrapper } from "src/components/course/Course/Slide/Blocks";
 import NavigationButtons from "./NavigationButtons";
@@ -258,11 +258,11 @@ class Course extends Component<CourseProps, State> {
 		slideType: SlideType | undefined,
 	): React.ComponentType | React.ElementType => {
 		if(slideType === SlideType.PreviewFlashcards) {
-			return PreviewUnitPageFromAllCourse;
+			return PreviewUnitPageFromAllCourseConnected;
 		}
 
 		if(slideType === SlideType.CourseFlashcards) {
-			return CourseFlashcardsPage;
+			return CourseFlashcardsPageConnected;
 		}
 
 		if(!courseInfo || !courseInfo.units) {
@@ -274,7 +274,7 @@ class Course extends Component<CourseProps, State> {
 		}
 
 		if(slideType === SlideType.Flashcards) {
-			return UnitFlashcardsPage;
+			return UnitFlashcardsPageConnected;
 		}
 
 		if(slideType &&

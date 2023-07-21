@@ -207,7 +207,7 @@ const config: Configuration = {
 			favicon: paths.appPublic + '/favicon.ico',
 		}),
 		new webpack.ProvidePlugin({
-			process: 'process/browser',
+			process: 'process/browser.js',
 			$: 'jquery',
 			jQuery: 'jquery',
 			"window.$": 'jquery',

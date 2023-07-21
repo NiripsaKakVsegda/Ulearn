@@ -2336,33 +2336,6 @@ namespace Database.Migrations
                     b.ToTable("UserExerciseSubmissions");
                 });
 
-            modelBuilder.Entity("Database.Models.UserFlashcardsUnlocking", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CourseId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("UnitId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("character varying(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "CourseId", "UnitId");
-
-                    b.ToTable("UserFlashcardsUnlocking");
-                });
-
             modelBuilder.Entity("Database.Models.UserFlashcardsVisit", b =>
                 {
                     b.Property<int>("Id")
@@ -2399,6 +2372,59 @@ namespace Database.Migrations
                     b.HasIndex("UserId", "CourseId", "UnitId", "FlashcardId");
 
                     b.ToTable("UserFlashcardsVisits");
+                });
+
+            modelBuilder.Entity("Database.Models.UserGeneratedFlashcard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("LastUpdateTimestamp")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("ModerationStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModerationTimestamp")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ModeratorId")
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModeratorId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("CourseId", "ModerationStatus");
+
+                    b.HasIndex("CourseId", "OwnerId");
+
+                    b.HasIndex("CourseId", "UnitId", "ModerationStatus");
+
+                    b.ToTable("UserGeneratedFlashcards");
                 });
 
             modelBuilder.Entity("Database.Models.UserQuestion", b =>
@@ -3816,7 +3842,7 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Models.UserFlashcardsUnlocking", b =>
+            modelBuilder.Entity("Database.Models.UserFlashcardsVisit", b =>
                 {
                     b.HasOne("Database.Models.ApplicationUser", "User")
                         .WithMany()
@@ -3827,15 +3853,21 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Models.UserFlashcardsVisit", b =>
+            modelBuilder.Entity("Database.Models.UserGeneratedFlashcard", b =>
                 {
-                    b.HasOne("Database.Models.ApplicationUser", "User")
+                    b.HasOne("Database.Models.ApplicationUser", "Moderator")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("ModeratorId");
+
+                    b.HasOne("Database.Models.ApplicationUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Moderator");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Database.Models.UserQuestion", b =>
@@ -3976,7 +4008,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.CreatedGroupNotification", b =>
                 {
-                    b.HasOne("Database.Models.SingleGroup", "Group")
+                    b.HasOne("Database.Models.GroupBase", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)

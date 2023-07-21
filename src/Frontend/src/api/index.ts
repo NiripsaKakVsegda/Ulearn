@@ -7,7 +7,6 @@ import * as groups from "./groups";
 import * as users from "./users";
 import * as userProgress from "./userProgress";
 import * as comments from "./comments";
-import * as cards from "./flashcards";
 import * as submissions from "./submissions";
 import * as slides from "./slides";
 import * as instructor from "./instructor";
@@ -243,7 +242,6 @@ const api = {
 	users,
 	userProgress,
 	comments,
-	cards,
 	submissions,
 	slides,
 	instructor,

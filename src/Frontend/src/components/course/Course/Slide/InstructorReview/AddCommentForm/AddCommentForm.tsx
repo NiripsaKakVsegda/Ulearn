@@ -299,7 +299,6 @@ class AddCommentForm extends React.Component<Props, State> {
 				handleChange={ this.props.onValueChange }
 				handleSubmit={ this.onAddComment }
 				hideDescription
-				hidePlaceholder
 				lengthCounter={ comment.length > reviewPolicyChecker.maxReviewLength ? reviewPolicyChecker.maxReviewLength : undefined }
 				markupByOperation={ markupByOperation }>
 				{ this.renderControls(

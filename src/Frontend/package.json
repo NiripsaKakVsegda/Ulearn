@@ -63,6 +63,7 @@
     "react-helmet": "6.1.0",
     "react-image-gallery": "1.2.8",
     "react-lifecycles-compat": "3.0.4",
+    "react-markdown": "8.0.7",
     "react-redux": "8.0.5",
     "react-responsive": "8.2.0",
     "react-router-dom": "6.3.0",

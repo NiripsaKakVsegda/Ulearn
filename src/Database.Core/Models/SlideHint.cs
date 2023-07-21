@@ -1,12 +1,14 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
 	/* For backward compatibility: EF Core changed table naming convention.
 	   See https://github.com/aspnet/Announcements/issues/167 for details */
 	[Table("SlideHints")]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(HintId), nameof(UserId), nameof(IsHintHelped))]
 	public class SlideHint : ISlideAction
 	{
 		[Key]

@@ -8,9 +8,12 @@ import { GroupInfo } from "../../../../../models/groups";
 import { AccountState } from "../../../../../redux/account";
 import texts from "./StudentsBlock.texts";
 import { coursesApi } from "../../../../../redux/toolkit/api/coursesApi";
-import { groupStudentsApi } from "../../../../../redux/toolkit/api/groups/groupStudentsApi";
+import { groupStudentsApi, updateStudentAccessesCache } from "../../../../../redux/toolkit/api/groups/groupStudentsApi";
 import { groupLimitsApi } from "../../../../../redux/toolkit/api/groups/groupLimitsApi";
 import { groupSettingsApi } from "../../../../../redux/toolkit/api/groups/groupSettingsApi";
+import { courseAccessesApi } from "../../../../../redux/toolkit/api/courseAccessesApi";
+import { CourseAccessType } from "../../../../../consts/accessType";
+import { useAppDispatch } from "../../../../../redux/toolkit/hooks/useAppDispatch";
 
 interface Props {
 	account: AccountState;
@@ -37,6 +40,10 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 	const [removeStudents] = groupStudentsApi.useRemoveGroupStudentsMutation();
 	const [copyStudents] = groupStudentsApi.useCopyStudentsMutation();
 
+	const dispatch = useAppDispatch();
+	const [grantAccessMutation] = courseAccessesApi.useGrantAccessMutation();
+	const [revokeAccessMutation] = courseAccessesApi.useRevokeAccessMutation();
+
 	return (
 		<Loader type="big" active={ isStudentsLoading }>
 			<h4 className={ styles["students-header"] }>
@@ -51,11 +58,14 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 					<GroupStudents
 						account={ account }
 						students={ students }
+						courseTitle={ group.courseTitle }
 						getCourses={ getCourses }
 						getCourseGroups={ getCourseGroups }
 						onRemoveStudents={ onRemoveStudents }
 						onResetLimits={ onResetLimits }
 						onCopyStudents={ onCopyStudents }
+						onGrantAccess={ grantAccess }
+						onRevokeAccess={ revokeAccess }
 					/>
 				}
 			</div>
@@ -103,6 +113,38 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 			.then(() => {
 				Toast.push(texts.buildCopyStudentsToast(group.name));
 			});
+	}
+
+	function grantAccess(userId: string, accessType: CourseAccessType) {
+		grantAccessMutation({
+			courseId: group.courseId,
+			userId: userId,
+			accessType,
+			comment: ''
+		}).unwrap().then(access => {
+			updateStudentAccessesCache(dispatch, group.id, userId, accesses => {
+				const current = accesses.find(a => a.accessType === accessType);
+				return current
+					? accesses.map(a => a.accessType === accessType
+						? access
+						: a
+					)
+					: [...accesses, access];
+			});
+		});
+	}
+
+	function revokeAccess(userId: string, accessType: CourseAccessType) {
+		revokeAccessMutation({
+			courseId: group.courseId,
+			userId: userId,
+			accessType,
+			comment: ''
+		}).unwrap().then(() => {
+			updateStudentAccessesCache(dispatch, group.id, userId, accesses =>
+				accesses.filter(a => a.accessType !== accessType)
+			);
+		});
 	}
 };
 

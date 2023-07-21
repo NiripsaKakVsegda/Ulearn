@@ -207,7 +207,7 @@
 
 	<xs:complexType name="FlashcardSlide">
 		<xs:sequence>
-			<xs:element name="flashcard" type="Flashcard" maxOccurs="unbounded"/>
+			<xs:element name="flashcard" type="Flashcard" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 
 		<xs:attribute name="id" type="NonEmptyString" use="required">

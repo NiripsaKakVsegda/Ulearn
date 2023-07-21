@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common;
 
 namespace Database.Models
 {
 	// You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
+	[Index(nameof(TelegramChatId))]
+	[Index(nameof(IsDeleted))]
 	public class ApplicationUser : IdentityUser
 	{
 		public ApplicationUser()

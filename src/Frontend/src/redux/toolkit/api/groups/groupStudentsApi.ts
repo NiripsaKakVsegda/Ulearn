@@ -1,6 +1,8 @@
 import { groupsApi } from "./groupsApi";
 import { GroupStudentsResponse } from "../../../../models/groups";
 import { HttpMethods } from "../../../../consts/httpMethods";
+import { ShortCourseAccess } from "../../../../models/courseAccess";
+import { AppDispatch } from "../../../../setupStore";
 
 export const groupStudentsApi = groupsApi.injectEndpoints({
 	endpoints: (build) => ({
@@ -38,3 +40,21 @@ export const groupStudentsApi = groupsApi.injectEndpoints({
 		}),
 	})
 });
+
+export function updateStudentAccessesCache(
+	dispatch: AppDispatch,
+	groupId: number,
+	studentId: string,
+	updateRecipe: (currentAccesses: ShortCourseAccess[]) => ShortCourseAccess[]
+) {
+	dispatch(groupStudentsApi.util.updateQueryData(
+		'getGroupStudents',
+		{ groupId },
+		(draft) => {
+			const student = draft.students.find(s => s.user.id === studentId);
+			if(student) {
+				student.accesses = updateRecipe(student.accesses);
+			}
+		}
+	));
+}

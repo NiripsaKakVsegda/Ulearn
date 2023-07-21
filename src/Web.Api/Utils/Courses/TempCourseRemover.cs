@@ -71,7 +71,7 @@ order by t.table_name;
 				db.TempCourses.RemoveRange(db.TempCourses.Where(e => e.CourseId == tempCourseId));
 				db.UnitAppearances.RemoveRange(db.UnitAppearances.Where(e => e.CourseId == tempCourseId));
 				db.UserExerciseSubmissions.RemoveRange(db.UserExerciseSubmissions.Where(e => e.CourseId == tempCourseId));
-				db.UserFlashcardsUnlocking.RemoveRange(db.UserFlashcardsUnlocking.Where(e => e.CourseId == tempCourseId));
+				db.UserGeneratedFlashcards.RemoveRange(db.UserGeneratedFlashcards.Where(e => e.CourseId == tempCourseId));
 				db.UserFlashcardsVisits.RemoveRange(db.UserFlashcardsVisits.Where(e => e.CourseId == tempCourseId));
 				//db.UserQuestions.RemoveRange(db.UserQuestions.Where(e => e.CourseId == tempCourseId));
 				db.UserQuizSubmissions.RemoveRange(db.UserQuizSubmissions.Where(e => e.CourseId == tempCourseId));

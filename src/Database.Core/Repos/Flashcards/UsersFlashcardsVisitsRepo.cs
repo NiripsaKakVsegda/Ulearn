@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repos.Flashcards
@@ -16,40 +17,58 @@ namespace Database.Repos.Flashcards
 			this.db = db;
 		}
 
-		public async Task<UserFlashcardsVisit> AddFlashcardVisitAsync(string userId, string courseId, Guid unitId, string flashcardId, Rate rate, DateTime timestamp)
+		public async Task<UserFlashcardsVisit> AddFlashcardVisitAsync(string userId, string courseId, Guid unitId, string flashcardId, Rate rate)
 		{
 			courseId = courseId.ToLower();
-			var record = new UserFlashcardsVisit
-				{ UserId = userId, CourseId = courseId, UnitId = unitId, FlashcardId = flashcardId, Rate = rate, Timestamp = timestamp };
-			db.UserFlashcardsVisits.Add(record);
+			var visit = new UserFlashcardsVisit
+			{
+				UserId = userId,
+				CourseId = courseId,
+				UnitId = unitId,
+				FlashcardId = flashcardId,
+				Rate = rate,
+				Timestamp = DateTime.Now
+			};
+			db.UserFlashcardsVisits.Add(visit);
 
 			await db.SaveChangesAsync();
 
-			return await GetUserFlashcardVisitAsync(userId, courseId, unitId, flashcardId);
+			return visit;
 		}
 
-		public async Task<List<UserFlashcardsVisit>> GetUserFlashcardsVisitsAsync(string userId, string courseId, Guid unitId)
-		{
-			courseId = courseId.ToLower();
-			return await db.UserFlashcardsVisits.Where(c => c.UserId == userId && c.CourseId == courseId && c.UnitId == unitId).ToListAsync();
-		}
-
-		public async Task<List<UserFlashcardsVisit>> GetUserFlashcardsVisitsAsync(string courseId)
+		public async Task<List<UserFlashcardsVisit>> GetAllFlashcardsVisitsByCourseAsync(string courseId)
 		{
 			courseId = courseId.ToLower();
 			return await db.UserFlashcardsVisits.Where(c => c.CourseId == courseId).ToListAsync();
 		}
 
-		public async Task<UserFlashcardsVisit> GetUserFlashcardVisitAsync(string userId, string courseId, Guid unitId, string flashcardId)
+		public async Task<List<UserFlashcardsVisit>> GetLastUserFlashcardsVisitsAsync(string userId, string courseId)
 		{
 			courseId = courseId.ToLower();
-			return await db.UserFlashcardsVisits.FirstOrDefaultAsync(c => c.UserId == userId && c.CourseId == courseId && c.UnitId == unitId && c.FlashcardId == flashcardId);
+			return await db.UserFlashcardsVisits
+				.Where(v => v.UserId == userId && v.CourseId == courseId)
+				.GroupBy(v => new { v.UserId, v.FlashcardId })
+				.Select(g => g.OrderByDescending(v => v.Timestamp).First())
+				.ToListAsync();
 		}
 
-		public async Task<List<UserFlashcardsVisit>> GetUserFlashcardsVisitsAsync(string userId, string courseId)
+		public async Task<List<UserFlashcardsVisit>> GetLastUserFlashcardsVisitsAsync(string userId, string courseId, Guid unitId)
 		{
 			courseId = courseId.ToLower();
-			return await db.UserFlashcardsVisits.Where(c => c.UserId == userId && c.CourseId == courseId).ToListAsync();
+			return await db.UserFlashcardsVisits
+				.Where(v => v.UserId == userId && v.CourseId == courseId && v.UnitId == unitId)
+				.GroupBy(v => new { v.UserId, v.FlashcardId })
+				.Select(g => g.OrderByDescending(v => v.Timestamp).First())
+				.ToListAsync();
+		}
+
+		public async Task<UserFlashcardsVisit> FindLastUserFlashcardVisitAsync(string userId, string courseId, string flashcardId)
+		{
+			courseId = courseId.ToLower();
+			return await db.UserFlashcardsVisits
+				.Where(v => v.CourseId == courseId && v.UserId == userId && v.FlashcardId == flashcardId)
+				.OrderByDescending(v => v.Timestamp)
+				.FirstOrDefaultAsync();
 		}
 	}
 }

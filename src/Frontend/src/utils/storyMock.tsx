@@ -17,6 +17,6 @@ export function returnPromiseAfterDelay<T>(ms: number,
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function mockFunc() {
+export function mockFunc(): any {
 	return ({});
 }

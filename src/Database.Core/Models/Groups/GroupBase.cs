@@ -1,10 +1,13 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models;
 
+[Index(nameof(CourseId))]
+[Index(nameof(OwnerId))]
+[Index(nameof(InviteHash))]
 public abstract class GroupBase
 {
 	[Required]

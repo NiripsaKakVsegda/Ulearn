@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models.Quizzes
 {
+	[Index(nameof(SubmissionId), nameof(BlockId))]
+	[Index(nameof(ItemId))]
 	public class UserQuizAnswer
 	{
 		[Required]

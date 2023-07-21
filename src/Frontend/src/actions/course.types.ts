@@ -1,6 +1,4 @@
 import { FAIL, START, SUCCESS } from "src/consts/actions";
-import { RateTypes } from "src/consts/rateTypes";
-import { UnitFlashcards } from "src/models/flashcards";
 import { CourseInfo } from "src/models/course";
 
 export const COURSES_COURSE_ENTERED = "COURSES__COURSE_ENTERED";
@@ -44,59 +42,6 @@ export interface CourseLoadFailAction {
 	error: string,
 }
 
-//flashcards
-const FLASHCARDS = "FLASHCARDS";
-const FLASHCARDS_RATE = FLASHCARDS + "__RATE";
-export const FLASHCARDS_RATE_START = FLASHCARDS_RATE + START;
-export const FLASHCARDS_RATE_FAIL = FLASHCARDS_RATE + FAIL;
-export const FLASHCARDS_RATE_SUCCESS = FLASHCARDS_RATE + SUCCESS;
-
-const FLASHCARDS_LOAD = FLASHCARDS + "__LOAD";
-export const FLASHCARDS_LOAD_START = FLASHCARDS_LOAD + START;
-export const FLASHCARDS_LOAD_SUCCESS = FLASHCARDS_LOAD + SUCCESS;
-export const FLASHCARDS_LOAD_FAIL = FLASHCARDS_LOAD + FAIL;
-
-export interface FlashcardsLoadStartAction {
-	type: typeof FLASHCARDS_LOAD_START,
-}
-
-export interface FlashcardsLoadSuccessAction {
-	type: typeof FLASHCARDS_LOAD_SUCCESS,
-	courseId: string,
-	result: UnitFlashcards[],
-}
-
-export interface FlashcardsLoadFailAction {
-	type: typeof FLASHCARDS_LOAD_FAIL,
-}
-
-
-export interface FlashcardsRateStartAction {
-	type: typeof FLASHCARDS_RATE_START,
-	courseId: string,
-	unitId: string,
-	flashcardId: string,
-	rate: RateTypes,
-	newTLast: number,
-}
-
-export interface FlashcardsRateSuccessAction {
-	type: typeof FLASHCARDS_RATE_FAIL,
-}
-
-export interface FlashcardsRateFailAction {
-	type: typeof FLASHCARDS_RATE_SUCCESS,
-}
-
-
-export type FlashcardsAction =
-	FlashcardsLoadStartAction
-	| FlashcardsLoadSuccessAction
-	| FlashcardsLoadFailAction
-	| FlashcardsRateStartAction
-	| FlashcardsRateSuccessAction
-	| FlashcardsRateFailAction;
-
 export type CourseLoadAction = CourseEnteredAction
 	| CourseLoadErrorsAction
 	| CourseUpdatedAction
@@ -104,4 +49,4 @@ export type CourseLoadAction = CourseEnteredAction
 	| CourseLoadSuccessAction
 	| CourseLoadStartAction
 
-export type CourseAction = CourseLoadAction | FlashcardsAction;
+export type CourseAction = CourseLoadAction;

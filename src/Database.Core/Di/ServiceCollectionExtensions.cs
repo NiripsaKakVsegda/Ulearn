@@ -66,8 +66,8 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<ISearcher, SearcherBySocialLogin>();
 
 		/*Flashcards*/
+		services.AddScoped<IUserGeneratedFlashcardsRepo, UserGeneratedFlashcardsRepo>();
 		services.AddScoped<IUsersFlashcardsVisitsRepo, UsersFlashcardsVisitsRepo>();
-		services.AddScoped<IUserFlashcardsUnlockingRepo, UserFlashcardsUnlockingRepo>();
 
 		/* Others */
 		services.AddScoped<ICourseRolesRepo, CourseRolesRepo>();

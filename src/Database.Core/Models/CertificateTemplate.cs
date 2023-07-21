@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId))]
 	public class CertificateTemplate
 	{
 		[Key]

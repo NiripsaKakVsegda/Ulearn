@@ -9,14 +9,13 @@ import styles from "./MarkdownButtons.less";
 
 interface Props {
 	markupByOperation: MarkdownDescription;
-
 	hideDescription?: boolean;
-
-	onClick: (operation: MarkdownOperation) => void;
+	hideHotkeys?: boolean;
+	onClick?: (operation: MarkdownOperation) => void;
 }
 
 function MarkdownButtons(props: Props): React.ReactElement {
-	const { markupByOperation, onClick, hideDescription, } = props;
+	const { markupByOperation, onClick, hideDescription, hideHotkeys, } = props;
 
 	return (
 		<div className={ styles.markdownButtons }>
@@ -36,10 +35,14 @@ function MarkdownButtons(props: Props): React.ReactElement {
 	);
 
 	function renderMarkdownButton(name: string, operation: MarkdownOperation) {
+		const click = onClick
+			? () => onClick(operation)
+			: undefined;
 		return (
 			<button
 				className={ styles.button }
-				onClick={ () => onClick(operation) }
+				style={ { cursor: click ? "initial" : "default" } }
+				onClick={ click }
 				type="button">
 				{ operation.icon }
 			</button>
@@ -52,8 +55,9 @@ function MarkdownButtons(props: Props): React.ReactElement {
 				{ markup }
 				<span className={ styles.white }>{ description }</span>
 				{ markup }<br/>
-				{ !isMobile() &&
-				<span className={ styles.lightYellow }>{ hotkey.asText }</span> }
+				{ !isMobile() && !hideHotkeys &&
+					<span className={ styles.lightYellow }>{ hotkey.asText }</span>
+				}
 			</span>);
 	}
 }

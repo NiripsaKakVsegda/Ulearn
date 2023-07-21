@@ -111,46 +111,47 @@ namespace Database.Repos
 
 		private async Task<List<CourseAccess>> GetActualEnabledCourseAccesses(string courseId = null, string userId = null)
 		{
-			var queryable = db.CourseAccesses
-				.Include(a => a.User)
-				.Where(a => a.IsEnabled);
+			var query = db.CourseAccesses.AsQueryable();
 			if (courseId != null)
-				queryable = queryable.Where(x => x.CourseId == courseId);
+				query = query.Where(x => x.CourseId == courseId);
 			if (userId != null)
-				queryable = queryable.Where(x => x.UserId == userId);
-			return (await queryable.ToListAsync())
-				.GroupBy(x => x.CourseId + x.UserId + x.AccessType, StringComparer.OrdinalIgnoreCase)
-				.Select(gr => gr.OrderByDescending(x => x.Id))
-				.Select(gr => gr.FirstOrDefault())
+				query = query.Where(x => x.UserId == userId);
+
+			query = query
+				.GroupBy(a => new { a.CourseId, a.UserId, a.AccessType })
+				.Select(g => g.OrderByDescending(a => a.GrantTime).First());
+
+			return (await query.ToListAsync())
+				.Where(a => a.IsEnabled)
 				.ToList();
 		}
 
 		public async Task<CourseAccess> GrantAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment)
 		{
 			courseId = courseId.ToLower();
-			var currentAccess = new CourseAccess
+			var access = new CourseAccess
 			{
 				CourseId = courseId,
 				UserId = userId,
 				AccessType = accessType,
-				GrantTime = DateTime.Now.ToUniversalTime(),
+				GrantTime = DateTime.Now,
 				GrantedById = grantedById,
 				IsEnabled = true,
 				Comment = comment
 			};
-			db.CourseAccesses.Add(currentAccess);
+			db.CourseAccesses.Add(access);
 
 			await db.SaveChangesAsync().ConfigureAwait(false);
-			return await db.CourseAccesses.Include(a => a.GrantedBy).FirstOrDefaultAsync(a => a.Id == currentAccess.Id);
+			return access;
 		}
 
-		public async Task<List<CourseAccess>> RevokeAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment)
+		public async Task<CourseAccess> RevokeAccess(string courseId, string userId, CourseAccessType accessType, string grantedById, string comment)
 		{
 			courseId = courseId.ToLower();
 			var revoke = new CourseAccess
 			{
 				UserId = userId,
-				GrantTime = DateTime.Now.ToUniversalTime(),
+				GrantTime = DateTime.Now,
 				GrantedById = grantedById,
 				Comment = comment,
 				IsEnabled = false,
@@ -160,7 +161,7 @@ namespace Database.Repos
 			db.CourseAccesses.Add(revoke);
 
 			await db.SaveChangesAsync();
-			return new List<CourseAccess> { revoke };
+			return revoke;
 		}
 
 		public async Task<List<CourseAccess>> GetCourseAccesses(string courseId)
@@ -184,8 +185,28 @@ namespace Database.Repos
 
 		public async Task<bool> HasCourseAccess(string userId, string courseId, CourseAccessType accessType)
 		{
-			return (await GetActualEnabledCourseAccesses(courseId: courseId, userId: userId))
-				.Any(a => a.AccessType == accessType);
+			var access = await db.CourseAccesses
+				.Where(a =>
+					a.CourseId == courseId &&
+					a.UserId == userId &&
+					a.AccessType == accessType
+				)
+				.OrderByDescending(a => a.GrantTime)
+				.FirstOrDefaultAsync();
+			return access is not null && access.IsEnabled;
+		}
+
+		public Task<CourseAccess> FindCourseAccess(string userId, string courseId, CourseAccessType accessType)
+		{
+			return db.CourseAccesses
+				.Where(a =>
+					a.CourseId == courseId &&
+					a.UserId == userId &&
+					a.IsEnabled &&
+					a.AccessType == accessType
+				)
+				.OrderByDescending(a => a.GrantTime)
+				.FirstOrDefaultAsync();
 		}
 
 		public async Task<List<CourseAccess>> GetUserAccesses(string userId)
@@ -198,7 +219,8 @@ namespace Database.Repos
 			return (await GetActualEnabledCourseAccesses(userId: userId))
 				.Where(a => a.AccessType == accessType)
 				.Select(a => a.CourseId)
-				.Distinct().ToList();
+				.Distinct()
+				.ToList();
 		}
 
 		public async Task<CourseVersionFile> GetVersionFile(Guid courseVersion)

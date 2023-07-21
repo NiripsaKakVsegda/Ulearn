@@ -5,6 +5,7 @@ import Profile from "../../../../common/Profile/Profile";
 import { GroupStudentInfo } from "../../../../../models/groups";
 import { AccountState } from "../../../../../redux/account";
 import texts from './ChooseStudentsModal.texts';
+import { SystemAccessType } from "../../../../../consts/accessType";
 
 interface Props {
 	account: AccountState;
@@ -32,8 +33,10 @@ const ChooseStudentsModal: FC<Props> = ({
 				<Avatar user={ student.user } size={ "small" }/>
 				<Profile
 					user={ student.user }
-					systemAccesses={ account.systemAccesses }
-					isSysAdmin={ account.isSystemAdministrator }
+					canViewProfiles={
+						account.isSystemAdministrator ||
+						account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
+					}
 				/>
 			</Checkbox>
 		</div>;

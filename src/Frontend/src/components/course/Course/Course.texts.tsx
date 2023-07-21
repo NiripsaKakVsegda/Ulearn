@@ -22,8 +22,15 @@ export default {
 		].filter(c => c) as unknown as { name: string, link: string }[];
 		const availableChannelsMarkup = availableChannels
 			.map<React.ReactNode>(({ link, name }, i) => (
-				<a href={ `https://t.me/${ link }` } rel={ "noopener noreferrer" }
-				   target={ "_blank" }>{ i === 0 ? 'Канал' : 'канал' } { name }</a>));
+				<a
+					key={ i }
+					href={ `https://t.me/${ link }` }
+					rel={ "noopener noreferrer" }
+					target={ "_blank" }
+				>
+					{ i === 0 ? 'Канал' : 'канал' } { name }
+				</a>
+			));
 		return (
 			<>
 				<p><Link to="/Home/Terms">Условия использования платформы</Link></p>

@@ -2,11 +2,17 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Ulearn.Common.Extensions;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId))]
+	[Index(nameof(CourseId), nameof(IsEnabled))]
+	[Index(nameof(CourseId), nameof(UserId), nameof(IsEnabled))]
+	[Index(nameof(GrantTime))]
 	public class CourseAccess
 	{
 		[Key]
@@ -57,6 +63,10 @@ namespace Database.Models
 		[Display(Name = "Видеть, в каких группах состоят все студенты")]
 		ViewAllGroupMembers = 4,
 
+		[Display(Name = "Модерировать флешкарты созданные пользователями")]
+		[StudentCourseAccess]
+		ModerateUserGeneratedFlashcards = 5,
+
 		[Display(Name = "Получать в АПИ статистику по код-ревью (/codereveiew/statistics)")]
 		ApiViewCodeReviewStatistics = 101,
 
@@ -68,11 +78,19 @@ namespace Database.Models
 		*/
 	}
 
+	[AttributeUsage(AttributeTargets.Field)]
+	public class StudentCourseAccess : Attribute
+	{
+	}
+
 	public static class CourseAccessTypeExtensions
 	{
 		public static string GetAuthorizationPolicyName(this CourseAccessType accessType)
 		{
 			return "CourseAccess." + Enum.GetName(typeof(CourseAccessType), accessType);
 		}
+
+		public static bool IsStudentCourseAccess(this CourseAccessType accessType) =>
+			accessType.GetAttribute<StudentCourseAccess>() is not null;
 	}
 }

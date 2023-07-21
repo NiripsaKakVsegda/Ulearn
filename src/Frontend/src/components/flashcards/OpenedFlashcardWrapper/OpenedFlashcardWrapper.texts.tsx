@@ -1,0 +1,49 @@
+import { getMoment } from "../../../utils/momentUtils";
+import { FlashcardModerationStatus } from "../../../models/flashcards";
+import styles from './openedFlashcardWrapper.less';
+import { Edit, EyeClosed, EyeOpened, Trash } from "icons";
+import React from "react";
+
+export default {
+	buildUnitTitle: (title: string) => `Модуль «${ title }»`,
+	flashcardPublishedInfo: 'Флешкарта была опубликована, вы не можете отредактировать или удалить ёё.',
+	meta: {
+		buildAuthorInfo: (name: string) => `Автор: ${ name }`,
+		buildLastChangeInfo: (timeStamp: string) => `Последнее изменение ${ getMoment(timeStamp) }`,
+		buildStatusInfo: (status: FlashcardModerationStatus) => {
+			let statusNode = <span></span>;
+			switch (status) {
+				case FlashcardModerationStatus.New:
+					statusNode = <span className={ styles.newColor }>на модерации</span>;
+					break;
+				case FlashcardModerationStatus.Approved:
+					statusNode = <span className={ styles.approvedColor }>опубликована</span>;
+					break;
+				case FlashcardModerationStatus.Declined:
+					statusNode = <span className={ styles.declinedColor }>отлконена</span>;
+					break;
+			}
+			return <>Статус: { statusNode }</>;
+		},
+		buildModeratorInfo: (name: string) => `Модератор: ${ name }`,
+		buildModerationTimeStampInfo: (timestamp: string, status: FlashcardModerationStatus) => {
+			let verb = 'Последняя модерация';
+			switch (status) {
+				case FlashcardModerationStatus.Approved:
+					verb = 'Опубликована';
+					break;
+				case FlashcardModerationStatus.Declined:
+					verb = 'Отклонена';
+					break;
+			}
+			return `${ verb } ${ getMoment(timestamp) }`;
+		}
+	},
+	controls: {
+		edit: <span><Edit/> Редактировать</span>,
+		remove: <span><Trash/> Удалить</span>,
+		publish: <span><EyeOpened/> Опубликовать</span>,
+		decline: <span><EyeClosed/> Отклонить</span>,
+		publishHint: 'Вы сможете отредактировать карточку перед публикацией'
+	}
+};

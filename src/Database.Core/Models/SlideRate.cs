@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
@@ -11,6 +12,7 @@ namespace Database.Models
 		NotWatched
 	}
 
+	[Index(nameof(SlideId), nameof(UserId))]
 	public class SlideRate : ISlideAction
 	{
 		[Key]

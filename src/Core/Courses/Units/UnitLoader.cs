@@ -52,9 +52,11 @@ namespace Ulearn.Core.Courses.Units
 				.Select(f => LoadSlide(f, unit, context))
 				.ToList());
 
-			var flashcardSlides = unit.GetSlides(true).OfType<FlashcardSlide>();
+			var flashcardSlides = unit.GetSlides(true)
+				.OfType<FlashcardSlide>();
 			foreach (var flashcardSlide in flashcardSlides)
 			{
+				unit.ContainsFlashcards = true;
 				foreach (var flashcard in flashcardSlide.FlashcardsList)
 				{
 					unit.Flashcards.Add(flashcard);

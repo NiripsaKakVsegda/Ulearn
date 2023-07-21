@@ -36,6 +36,7 @@ export function isCacheBlocked(): boolean {
 	return blockCache;
 }
 
+export const flashcardsToCreate = 'flashcards_to_create';
 export const exerciseSolutions = 'exercise_solutions';
 export const reviewPreviousReviewToggle = 'review';
 export const studentMode = 'student_mode';

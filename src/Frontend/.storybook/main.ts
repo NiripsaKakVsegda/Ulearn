@@ -70,7 +70,7 @@ export default {
 			}]
 		});
 		config.plugins!.push(new webpack.ProvidePlugin({
-			process: 'process/browser',
+			process: 'process/browser.js',
 			$: 'jquery',
 			jQuery: 'jquery',
 			"window.$": 'jquery',

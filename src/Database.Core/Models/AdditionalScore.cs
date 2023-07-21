@@ -1,9 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(UserId), nameof(UnitId), nameof(ScoringGroupId), IsUnique = true)]
+	[Index(nameof(UnitId))]
 	public class AdditionalScore
 	{
 		[Key]

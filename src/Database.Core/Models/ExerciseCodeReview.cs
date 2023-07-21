@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(ExerciseCheckingId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(SubmissionAuthorId))]
 	public class ExerciseCodeReview
 	{
 		[Key]

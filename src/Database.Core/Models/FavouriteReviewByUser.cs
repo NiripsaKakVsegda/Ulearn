@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
 	public class FavouriteReviewByUser
 	{
 		[Key]

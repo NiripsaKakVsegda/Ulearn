@@ -1,8 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models.Comments
 {
+	[Index(nameof(UserId), nameof(CommentId), IsUnique = true)]
+	[Index(nameof(CommentId))]
 	public class CommentLike
 	{
 		[Key]

@@ -4,6 +4,7 @@ import styles from "./teacher.less";
 import Avatar from "../../../../../common/Avatar/Avatar";
 import Profile from "../../../../../common/Profile/Profile";
 import { AccountState } from "../../../../../../redux/account";
+import { SystemAccessType } from "../../../../../../consts/accessType";
 
 interface Props {
 	account: AccountState;
@@ -19,8 +20,10 @@ const Teacher: FC<Props> = ({ account, user, status, kebab }) => {
 			<div className={ styles["teacher-name"] }>
 				<Profile
 					user={ user }
-					systemAccesses={ account.systemAccesses }
-					isSysAdmin={ account.isSystemAdministrator }
+					canViewProfiles={
+						account.isSystemAdministrator ||
+						account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
+					}
 				/>
 				<span className={ styles["teacher-status"] }>
 					{ status }

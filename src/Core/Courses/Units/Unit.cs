@@ -27,6 +27,8 @@ namespace Ulearn.Core.Courses.Units
 			get { return notHiddenSlides ??= Slides.Where(s => !s.Hide).ToList(); }
 		}
 
+		public bool ContainsFlashcards { get; set; }
+
 		public List<Flashcard> Flashcards { get; set; }
 
 		public string UnitDirectoryRelativeToCourse { get; }

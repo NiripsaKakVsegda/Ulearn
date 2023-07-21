@@ -40,8 +40,6 @@ interface InfoByUnit {
 	unitId: string;
 	unitTitle: string;
 	unlocked: boolean;
-	flashcardsIds: string[];
-	unratedFlashcardsCount: number;
 	cardsCount: number;
 	flashcardsSlideSlug: string;
 }

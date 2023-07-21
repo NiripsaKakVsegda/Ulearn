@@ -21,5 +21,8 @@ namespace Ulearn.Web.Api.Models.Responses.Groups
 
 		[DataMember]
 		public DateTime? AddingTime { get; set; }
+
+		[DataMember]
+		public List<ShortCourseAccessResponse> Accesses { get; set; }
 	}
 }

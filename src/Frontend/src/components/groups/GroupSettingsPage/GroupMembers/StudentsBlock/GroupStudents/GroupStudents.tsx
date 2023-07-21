@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { AccountState } from "../../../../../../redux/account";
 import { GroupInfo, GroupStudentInfo } from "../../../../../../models/groups";
 
@@ -11,8 +11,11 @@ import ResetsLimitsModal from "../ResetLimitsModal/ResetsLimitsModal";
 import StudentActions from "../StudentActions/StudentActions";
 import StudentCheckbox from "../StudentCheckbox/StudentCheckbox";
 import { ShortCourseInfo } from "../../../../../../models/course";
+import UserAccessesModal, { AccessesType } from "../../../../../common/UserAccessesModal/UserAccessesModal";
+import { CourseAccessType, SystemAccessType } from "../../../../../../consts/accessType";
 
 interface Props {
+	courseTitle: string;
 	account: AccountState;
 	students: GroupStudentInfo[];
 
@@ -26,12 +29,28 @@ interface Props {
 	onRemoveStudents: (studentIds: string[]) => void;
 	onResetLimits: (studentIds: string[]) => void;
 	onCopyStudents: (group: GroupInfo, studentIds: string[]) => void;
+
+	onGrantAccess: (userId: string, accessType: CourseAccessType) => void;
+	onRevokeAccess: (userId: string, accessType: CourseAccessType) => void;
 }
 
-const GroupStudents: FC<Props> = ({ account, students, ...actions }) => {
+const GroupStudents: FC<Props> = ({
+	courseTitle,
+	account,
+	students,
+	...actions
+}) => {
 	const [checkedStudentIds, setCheckedStudentIds] = useState<string[]>([]);
 	const [copyStudentsModalOpen, setCopyStudentsModalOpen] = useState<boolean>(false);
 	const [resetLimitsModalOpen, setResetLimitsModalOpen] = useState<boolean>(false);
+	const [accessesModalStudent, setAccessesModalStudent] =
+		useState<GroupStudentInfo>();
+
+	useEffect(() => {
+		if(accessesModalStudent) {
+			setAccessesModalStudent(students.find(s => s.user.id === accessesModalStudent.user.id));
+		}
+	}, [students]);
 
 	const renderStudents = (): JSX.Element =>
 		<div>
@@ -45,6 +64,7 @@ const GroupStudents: FC<Props> = ({ account, students, ...actions }) => {
 							account={ account }
 							isChecked={ checkedStudentIds.includes(studentInfo.user.id) }
 							onCheck={ onCheckStudent }
+							onChangeStudentAccesses={ openStudentsAccessesModal }
 						/>
 					)
 			}
@@ -83,6 +103,21 @@ const GroupStudents: FC<Props> = ({ account, students, ...actions }) => {
 					onResetLimits={ actions.onResetLimits }
 				/>
 			}
+			{ accessesModalStudent &&
+				<UserAccessesModal
+					user={ accessesModalStudent.user }
+					accesses={ accessesModalStudent.accesses }
+					accessesType={ AccessesType.StudentAccesses }
+					courseTitle={ courseTitle }
+					canViewProfile={
+						account.isSystemAdministrator ||
+						account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
+					}
+					onClose={ closeStudentsAccessesModal }
+					onGrantAccess={ actions.onGrantAccess }
+					onRevokeAccess={ actions.onRevokeAccess }
+				/>
+			}
 		</>
 	);
 
@@ -104,6 +139,14 @@ const GroupStudents: FC<Props> = ({ account, students, ...actions }) => {
 
 	function toggleResetLimitsModal() {
 		setResetLimitsModalOpen(!resetLimitsModalOpen);
+	}
+
+	function openStudentsAccessesModal(student: GroupStudentInfo) {
+		setAccessesModalStudent(student);
+	}
+
+	function closeStudentsAccessesModal() {
+		setAccessesModalStudent(undefined);
 	}
 
 	function onRemoveStudents() {

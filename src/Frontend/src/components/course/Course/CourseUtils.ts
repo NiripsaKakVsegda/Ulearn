@@ -195,7 +195,7 @@ export const getUnitStatistics = (
 	};
 };
 
-export function findUnitIdBySlideId(slideId ?: string, courseInfo ?: CourseInfo): string | null {
+export function findUnitIdBySlideId(slideId?: string, courseInfo?: CourseInfo): string | null {
 	if(!courseInfo || !courseInfo.units) {
 		return null;
 	}

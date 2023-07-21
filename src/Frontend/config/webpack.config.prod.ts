@@ -160,7 +160,7 @@ const config: Configuration = {
 			},
 		}),
 		new webpack.ProvidePlugin({
-			process: 'process/browser',
+			process: 'process/browser.js',
 			$: 'jquery',
 			jQuery: 'jquery',
 			"window.$": 'jquery',

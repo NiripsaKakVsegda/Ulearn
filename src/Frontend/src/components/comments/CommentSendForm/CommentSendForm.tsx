@@ -66,6 +66,7 @@ class CommentSendForm extends Component<Props, State> {
 						text={ text }
 						handleChange={ this.handleChange }
 						handleSubmit={ this.handleSubmit }
+						placeholder={"Комментарий"}
 						beforeButtonsElement={ isCodePresented &&
 							<p className={ styles.dontLeakCodeMessage }>
 								Не публикуйте свои решения задач в комментариях! Кажется, ваш комментарий содержит

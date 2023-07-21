@@ -1,12 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
 	/* For backward compatibility: EF Core changed table naming convention.
 	See https://github.com/aspnet/Announcements/issues/167 for details */
 	[Table("Likes")]
+	[Index(nameof(SubmissionId))]
+	[Index(nameof(UserId), nameof(SubmissionId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(SubmissionId))]
 	public class Like
 	{
 		[Key]

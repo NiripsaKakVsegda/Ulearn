@@ -240,7 +240,7 @@ namespace Ulearn.Web.Api.Controllers
 			if (units.Count == 0)
 				return NotFound(new ErrorResponse("Course not found"));
 
-			var containsFlashcards = visibleUnits.Any(x => x.GetSlides(true).OfType<FlashcardSlide>().Any());
+			var containsFlashcards = visibleUnits.Any(x => x.ContainsFlashcards);
 			var scoringSettings = GetScoringSettings(course);
 			var tempCourseError = (await tempCoursesRepo.GetCourseError(courseId))?.Error;
 			var tempCourse = await tempCoursesRepo.Find(courseId);

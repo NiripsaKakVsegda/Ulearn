@@ -1,0 +1,77 @@
+@import "/src/variables";
+
+.modal {
+  font-family: @defaultFonts;
+  font-size: 14px;
+}
+
+.headerTitle{
+  margin-top: 0;
+  font-size: 22px;
+}
+
+.courseTitle {
+  font-size: 16px;
+  margin: 0;
+}
+
+.userInfo {
+  font-size: 16px;
+  margin: 0;
+}
+
+.accessesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 500px;
+}
+
+.accessListItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  padding: 10px;
+  border: 1px solid @borderColor;
+
+  &:first-child {
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+  }
+
+  &:last-child {
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+}
+
+.activeAccess {
+  background-color: @lightGreen;
+}
+
+.expiredAccess {
+  background-color: @lightRed;
+}
+
+.accessInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.accessGrantInfo {
+  display: flex;
+  flex-direction: column;
+  color: @additionalColor;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.accessControls {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(UlearnCourseId))]
+	[Index(nameof(UlearnCourseId), nameof(StepikCourseId))]
+	[Index(nameof(UlearnCourseId), nameof(SlideId))]
 	public class StepikExportSlideAndStepMap
 	{
 		[Key]

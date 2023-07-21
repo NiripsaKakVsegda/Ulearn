@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models
 {
+	[Index(nameof(CourseId), nameof(GroupId))]
+	[Index(nameof(CourseId), nameof(GroupId), nameof(UnitId), nameof(SlideId))]
 	public class AdditionalContentPublication
 	{
 		[Key]

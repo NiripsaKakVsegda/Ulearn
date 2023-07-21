@@ -19,6 +19,9 @@ import { coursesApi } from "./toolkit/api/coursesApi";
 import { additionalContentApi } from "./toolkit/api/additionalContentApi";
 import { deadLinesApi } from "./toolkit/api/deadLinesApi";
 import { exportApi } from "./toolkit/api/exportApi";
+import { userFlashcardsApi } from "./toolkit/api/userFlashcardsApi";
+import { flashcardsApi } from "./toolkit/api/flashcardsApi";
+import { courseAccessesApi } from "./toolkit/api/courseAccessesApi";
 
 export const rootReducer = combineReducers({
 	account: accountReducer,
@@ -42,6 +45,9 @@ export const rootReducer = combineReducers({
 	[additionalContentApi.reducerPath]: additionalContentApi.reducer,
 	[deadLinesApi.reducerPath]: deadLinesApi.reducer,
 	[exportApi.reducerPath]: exportApi.reducer,
+	[userFlashcardsApi.reducerPath]: userFlashcardsApi.reducer,
+	[flashcardsApi.reducerPath]: flashcardsApi.reducer,
+	[courseAccessesApi.reducerPath]: courseAccessesApi.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>

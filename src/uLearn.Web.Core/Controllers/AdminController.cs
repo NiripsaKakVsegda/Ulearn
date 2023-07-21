@@ -939,6 +939,7 @@ public class AdminController : Controller
 			var courseAccesses = usersCourseAccesses.ContainsKey(user.UserId) ? usersCourseAccesses[user.UserId] : null;
 			user.CourseAccesses[courseId] = Enum.GetValues(typeof(CourseAccessType))
 				.Cast<CourseAccessType>()
+				.Where(a => !a.IsStudentCourseAccess())
 				.ToDictionary(
 					a => a,
 					a => new CourseAccessModel
@@ -1532,11 +1533,8 @@ public class AdminController : Controller
 		var currentUserId = User.GetUserId();
 		var comment = Request.Form["comment"];
 		var userRoles = await courseRolesRepo.GetRoles(userId);
-		var errorMessage = "Выдавать дополнительные права можно только преподавателям. Сначала назначьте пользователя администратором курса или преподавателем";
-		if (!userRoles.ContainsKey(courseId))
-			return Json(new { status = "error", message = errorMessage });
-		if (userRoles[courseId] > CourseRoleType.Instructor)
-			return Json(new { status = "error", message = errorMessage });
+		if (!userRoles.TryGetValue(courseId, out var role) || role > CourseRoleType.Instructor)
+			return Json(new { status = "error", message = "Выдавать дополнительные права можно только преподавателям. Сначала назначьте пользователя администратором курса или преподавателем" });
 
 		if (isEnabled)
 			await coursesRepo.GrantAccess(courseId, userId, accessType, currentUserId, comment);

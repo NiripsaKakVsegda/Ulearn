@@ -11,7 +11,6 @@ using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.SystemAccessesRepo;
 using Database.Repos.Users;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -191,14 +190,20 @@ namespace Ulearn.Web.Api.Controllers
 
 			var rolesByCourse = (await courseRolesRepo.GetRoles(userId).ConfigureAwait(false))
 				.Where(kvp => kvp.Value != CourseRoleType.Student).ToList();
-			var courseAccesses = await coursesRepo.GetUserAccesses(userId).ConfigureAwait(false);
-			var courseAccessesByCourseId = courseAccesses.GroupBy(a => a.CourseId).Select(
-				g => new CourseAccessResponse
-				{
-					CourseId = g.Key,
-					Accesses = g.Select(a => a.AccessType).ToList()
-				}
-			).ToList();
+ 			var courseAccesses = await coursesRepo.GetUserAccesses(userId).ConfigureAwait(false);
+			var courseAccessesByCourseId = courseAccesses
+				.GroupBy(a => a.CourseId)
+				.Select(g =>
+					new CourseAccessResponse
+					{
+						CourseId = g.Key,
+						Accesses = g
+							.Where(a => !IsAccessExpired(a))
+							.Select(a => a.AccessType)
+							.ToList()
+					}
+				)
+				.ToList();
 			var coursesInWhichUserHasAnyRole = new HashSet<string>(rolesByCourse.Select(kvp => kvp.Key), StringComparer.OrdinalIgnoreCase);
 			var groupsWhereIAmStudent = (await groupMembersRepo.GetUserGroupsAsync(userId).ConfigureAwait(false))
 				.Where(g => visibleCourses.Contains(g.CourseId) || coursesInWhichUserHasAnyRole.Contains(g.CourseId) || isSystemAdministrator);
@@ -229,6 +234,15 @@ namespace Ulearn.Web.Api.Controllers
 			{
 				Logout = true
 			};
+		}
+
+		private bool IsAccessExpired(CourseAccess courseAccess)
+		{
+			if (!courseAccess.AccessType.IsStudentCourseAccess())
+				return false;
+
+			var expiresDate = courseAccess.GrantTime + configuration.StudentCourseAccesses.ExpiresIn;
+			return expiresDate < DateTime.Now;
 		}
 	}
 }
