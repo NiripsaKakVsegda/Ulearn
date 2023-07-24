@@ -19,6 +19,7 @@ UnitCardStory.storyName = "Default";
 UnitCardStory.args = {
 	unitTitle: unitTitle,
 	isCompleted: false,
+	isAuthenticated: true,
 	isModerator: true,
 	totalPublishedFlashcardsCount: 20,
 	approvedUserFlashcardsCount: 5,
@@ -36,6 +37,7 @@ UnitCardEmptyForUserStory.storyName = "Empty for user";
 UnitCardEmptyForUserStory.args = {
 	unitTitle: unitTitle,
 	isCompleted: true,
+	isAuthenticated: true,
 	isModerator: false,
 	totalPublishedFlashcardsCount: 0,
 	onStartChecking: mockFunc,
@@ -47,6 +49,7 @@ UnitCardEmptyForModeratorStory.storyName = "Empty for moderator";
 UnitCardEmptyForModeratorStory.args = {
 	unitTitle: unitTitle,
 	isCompleted: true,
+	isAuthenticated: true,
 	isModerator: true,
 	totalPublishedFlashcardsCount: 0,
 	approvedUserFlashcardsCount: 0,
@@ -64,6 +67,7 @@ UnitCardEmptyForModeratorStoryWithNewAndDeclinedStory.storyName = "Empty for mod
 UnitCardEmptyForModeratorStoryWithNewAndDeclinedStory.args = {
 	unitTitle: unitTitle,
 	isCompleted: true,
+	isAuthenticated: true,
 	isModerator: true,
 	totalPublishedFlashcardsCount: 0,
 	approvedUserFlashcardsCount: 0,
@@ -82,6 +86,7 @@ UnitCard3Story.args = {
 	isCompleted: true,
 	totalPublishedFlashcardsCount: 3,
 	unitTitle: unitTitle,
+	isAuthenticated: true,
 	isModerator: false,
 	onStartChecking: mockFunc,
 	onCreateNewFlashcard: mockFunc,
@@ -93,6 +98,7 @@ UnitCard2Story.args = {
 	isCompleted: true,
 	totalPublishedFlashcardsCount: 2,
 	unitTitle: unitTitle,
+	isAuthenticated: true,
 	isModerator: false,
 	onStartChecking: mockFunc,
 	onCreateNewFlashcard: mockFunc,
@@ -104,6 +110,7 @@ UnitCard1Story.args = {
 	isCompleted: true,
 	totalPublishedFlashcardsCount: 1,
 	unitTitle: unitTitle,
+	isAuthenticated: true,
 	isModerator: false,
 	onStartChecking: mockFunc,
 	onCreateNewFlashcard: mockFunc,
@@ -115,6 +122,7 @@ LongTitleStory.args = {
 	unitTitle: getBigTitle(),
 	isCompleted: true,
 	totalPublishedFlashcardsCount: 1,
+	isAuthenticated: true,
 	isModerator: false,
 	onStartChecking: mockFunc,
 	onCreateNewFlashcard: mockFunc,

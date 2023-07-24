@@ -105,6 +105,7 @@ const UnitPage: FC<Props> = (props) => {
 		<>
 			<UnitCard
 				isCompleted={ completedUnit }
+				isAuthenticated={ !!userId }
 				isModerator={ isModerator }
 				totalPublishedFlashcardsCount={ totalFlashcardsCount }
 				newUserFlashcardsCount={ newUserFlashcards.length }

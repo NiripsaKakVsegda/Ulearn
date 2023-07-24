@@ -9,6 +9,7 @@ export default {
 	viewCardsButton: 'посмотреть',
 
 	noCardsInUnitInfo: 'В модуле пока нет карточек, можете создать свои',
+	authBeforeCreateHint: 'Войдите или зарегестрируйтесь, чтобы создавать карточки.',
 	cannotCreateHint: 'Сначала ознакомьтесь со всеми существующими карточками.',
 
 	buildCardsCountInfo: (count: number) => `${ count } ${ getCardsPluralForm(count) }`,

@@ -7,6 +7,7 @@ import texts from './UnitCard.texts';
 interface Props {
 	unitTitle: string;
 	isCompleted: boolean;
+	isAuthenticated: boolean;
 	isModerator: boolean;
 
 	totalPublishedFlashcardsCount: number;
@@ -23,12 +24,13 @@ interface Props {
 
 const UnitCard: FC<Props> = ({
 	unitTitle,
+	isCompleted,
+	isAuthenticated,
+	isModerator,
 	totalPublishedFlashcardsCount,
 	approvedUserFlashcardsCount,
 	newUserFlashcardsCount,
 	declinedUserFlashcardsCount,
-	isCompleted,
-	isModerator,
 	...actions
 }) => {
 	const unitCardStyle = classNames(
@@ -99,7 +101,12 @@ const UnitCard: FC<Props> = ({
 				</Button>
 
 				<Hint
-					text={ canCreateFlashcard ? '' : texts.cannotCreateHint }
+					text={ !isAuthenticated
+						? texts.authBeforeCreateHint
+						: !canCreateFlashcard
+							? texts.cannotCreateHint
+							: ''
+					}
 				>
 					<Button
 						size={ 'large' }
