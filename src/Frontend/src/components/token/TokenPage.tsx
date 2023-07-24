@@ -48,10 +48,6 @@ const TokenPage: FC<Props> = ({ account, auth, refreshToken }) => {
 				onValueChange={ setIsTokenShown }
 			>
 			</Toggle>
-			{ isTokenShown
-				? <EyeOpenedIcon className={ styles.toggleTokenIcon }/>
-				: <EyeClosedIcon className={ styles.toggleTokenIcon }/>
-			}
 			<span className={ styles.toggleTokenText }>
 				{ texts.buildTokenHideText(isTokenShown) }
 			</span>

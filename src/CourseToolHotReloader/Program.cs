@@ -52,7 +52,7 @@ internal static class Program
 		await application.InitializeAsync();
 		application.PrintCourses();
 		Console.WriteLine();
-		ConsoleWorker.WriteLine("Нажмите любую клавишу чтобы открыть меню.");
+		ConsoleWorker.WriteLine("Нажмите любую клавишу, чтобы открыть меню.");
 
 		await consoleMenu.StartListeningAsync();
 	}
