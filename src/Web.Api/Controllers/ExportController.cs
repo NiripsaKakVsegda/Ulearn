@@ -67,6 +67,9 @@ namespace Ulearn.Web.Api.Controllers
 			if (!hasAccess)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse($"You has no access to group with id {groupId}"));
 
+			if (ip && !isCourseAdmin)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least course admin to request ip"));
+
 			var users = await GetExtendedUserInfo(groupId, vk, ip);
 
 			List<string>? questions = null;
@@ -88,21 +91,27 @@ namespace Ulearn.Web.Api.Controllers
 					user.Answers = answers[user.Id];
 			}
 
-			var slides = course.GetSlides(false, visibleUnits)
-				.Where(s => s.ShouldBeSolved)
-				.Select(s => s.Id)
-				.ToList();
-			var scores = GetScoresByScoringGroups(
-				users.Select(u => u.Id).ToList(),
-				slides,
-				course
-			);
-			var scoringGroupsWithScores = scores.Keys
-				.Select(key => key.ScoringGroup)
-				.ToHashSet();
-			var scoringGroups = course.Settings.Scoring.Groups.Values
-				.Where(sg => scoringGroupsWithScores.Contains(sg.Id))
-				.ToList();
+			var scores = (Dictionary<(string UserId, string ScoringGroup), int>?)null;
+			var scoringGroups = (List<ScoringGroup>?)null;
+
+			if (scoring)
+			{
+				var slides = course.GetSlides(false, visibleUnits)
+					.Where(s => s.ShouldBeSolved)
+					.Select(s => s.Id)
+					.ToList();
+				scores = GetScoresByScoringGroups(
+					users.Select(u => u.Id).ToList(),
+					slides,
+					course
+				);
+				var scoringGroupsWithScores = scores.Keys
+					.Select(key => key.ScoringGroup)
+					.ToHashSet();
+				scoringGroups = course.Settings.Scoring.Groups.Values
+					.Where(sg => scoringGroupsWithScores.Contains(sg.Id))
+					.ToList();
+			}
 
 			var headers = new List<string?> { "Id", "Login", "FirstName", "LastName" };
 
@@ -122,7 +131,7 @@ namespace Ulearn.Web.Api.Controllers
 
 			if (questions != null)
 				headers.AddRange(questions);
-			if (scoring && scoringGroups.Count > 0)
+			if (scoringGroups is { Count: > 0 })
 				headers.AddRange(scoringGroups.Select(s => s.Abbreviation));
 
 			var table = new List<List<string?>> { headers };
@@ -146,12 +155,11 @@ namespace Ulearn.Web.Api.Controllers
 
 				if (user.Answers != null)
 					row = row.Concat(user.Answers).ToList();
-				if (scoring)
-					row.AddRange(scoringGroups
-						.Select(scoringGroup => (scores.ContainsKey((user.Id, scoringGroup.Id))
-								? scores[(user.Id, scoringGroup.Id)]
-								: 0
-							).ToString()));
+				if (scoringGroups is not null && scores is not null)
+					row.AddRange(scoringGroups.Select(scoringGroup =>
+						scores.GetOrDefault((user.Id, scoringGroup.Id), 0).ToString()
+					));
+
 				table.Add(row);
 			}
 
