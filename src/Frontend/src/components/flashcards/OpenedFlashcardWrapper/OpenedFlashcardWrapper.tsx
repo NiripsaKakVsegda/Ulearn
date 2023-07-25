@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren } from 'react';
+import React, { FC, PropsWithChildren, useEffect } from 'react';
 import { ShortUserInfo } from "../../../models/users";
 import { DropdownMenu, Hint, MenuItem, Tooltip } from "ui";
 import { Info, Settings } from "icons";
@@ -32,6 +32,11 @@ export interface Props {
 
 const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 	const { unitTitle, meta, controls } = props;
+
+	useEffect(() => {
+		document.addEventListener('keyup', handleEscapeKey);
+		return () => document.removeEventListener('keyup', handleEscapeKey);
+	}, [props.onClose]);
 
 	const renderFlashcardMeta = (): React.ReactNode => {
 		if(!meta) {
@@ -150,6 +155,12 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 			</div>
 		</div>
 	);
+
+	function handleEscapeKey(e: KeyboardEvent) {
+		if(props.onClose && e.key === 'Escape') {
+			props.onClose();
+		}
+	}
 };
 
 export default OpenedFlashcardWrapper;

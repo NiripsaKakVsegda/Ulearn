@@ -13,7 +13,7 @@ export default {
 	cannotCreateHint: 'Сначала ознакомьтесь со всеми существующими карточками.',
 
 	buildCardsCountInfo: (count: number) => `${ count } ${ getCardsPluralForm(count) }`,
-	buildApprovedUserCardsCountInfo: (count: number) => `${ count } ${ getCardsPluralForm(count) } от пользовтелей`,
+	buildApprovedUserCardsCountInfo: (count: number) => `${ count } ${ getCardsPluralForm(count) } от пользователей`,
 	buildNewUserCardsCountInfo: (count: number) => {
 		const plural = getPluralForm(
 			count,
@@ -28,7 +28,7 @@ export default {
 		const plural = getPluralForm(
 			count,
 			'непубликуемая карточка',
-			'небубликуемые карточки',
+			'непубликуемые карточки',
 			'непубликуемых карточек'
 		);
 

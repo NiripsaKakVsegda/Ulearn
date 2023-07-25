@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { Button, Hint } from "ui";
 import styles from './unitCard.less';
 import texts from './UnitCard.texts';
+import { useMediaQuery } from "react-responsive";
 
 interface Props {
 	unitTitle: string;
@@ -44,6 +45,8 @@ const UnitCard: FC<Props> = ({
 		isModerator ||
 		totalPublishedFlashcardsCount === 0 ||
 		isCompleted;
+
+	const isNotPhone = useMediaQuery({ minWidth: 800 });
 
 	return (
 		<div className={ styles.unitCardContainer }>
@@ -96,7 +99,7 @@ const UnitCard: FC<Props> = ({
 				</div>
 			</header>
 			<div className={ styles.buttonsContainer }>
-				<Button size={ 'large' } onClick={ actions.onStartChecking }>
+				<Button size={ isNotPhone ? "large" : "small" } onClick={ actions.onStartChecking }>
 					{ totalPublishedFlashcardsCount > 0 ? texts.startCheckButton : texts.learnMoreButton }
 				</Button>
 
@@ -109,7 +112,7 @@ const UnitCard: FC<Props> = ({
 					}
 				>
 					<Button
-						size={ 'large' }
+						size={ isNotPhone ? "large" : "small" }
 						onClick={ actions.onCreateNewFlashcard }
 						disabled={ !canCreateFlashcard }
 					>

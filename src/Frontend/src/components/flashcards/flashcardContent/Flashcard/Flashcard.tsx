@@ -20,7 +20,6 @@ interface Props {
 	rendered: boolean,
 	theorySlides?: TheorySlideInfo[]
 	onRateClick: (rate: RateTypes) => void;
-	onClose: () => void;
 }
 
 const mapRateToRateType: { [rate: number]: RateTypes } = {
@@ -138,15 +137,12 @@ const Flashcard: FC<Props> = ({
 	function handleKeyUp(e: KeyboardEvent) {
 		const code = e.key;
 		const spaceChar = ' ';
-		const escapeChar = 'Escape';
 		const rateNum = parseInt(code);
 
 		if(code === spaceChar) {
 			showAnswer();
 		} else if(!isNaN(rateNum) && rateNum >= 1 && rateNum <= 5 && isAnswerShown) {
 			handleResultsClick(rateNum);
-		} else if(code === escapeChar) {
-			actions.onClose();
 		}
 	}
 

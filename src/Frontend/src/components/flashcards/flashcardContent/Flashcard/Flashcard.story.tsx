@@ -20,7 +20,6 @@ const Template: ComponentStory<typeof Flashcard> = (args) => (
 const args = {
 	courseId: 'basicprogramming',
 	theorySlides: [],
-	onClose: mockFunc,
 	onRateClick: mockFunc,
 };
 

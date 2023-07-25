@@ -11,10 +11,19 @@
   font-size: 26px;
   line-height: 1.2;
   font-family: @defaultFonts;
+
+  @media (min-width: @minLaptopWidth) {
+    font-size: 32px;
+  }
 }
 
 .buttonsWrapper {
   display: flex;
-  justify-content: left;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 15px;
+
+  @media (min-width: @minLaptopWidth) {
+    justify-content: left;
+  }
 }

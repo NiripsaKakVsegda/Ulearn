@@ -17,6 +17,5 @@ const Template: ComponentStory<typeof FlashcardGuide> = (args) => (
 export const FlashcardGuideStory = Template.bind({});
 FlashcardGuideStory.storyName = "Default";
 FlashcardGuideStory.args = {
-	onRateClick: mockFunc,
-	onClose: mockFunc
+	onRateClick: mockFunc
 };

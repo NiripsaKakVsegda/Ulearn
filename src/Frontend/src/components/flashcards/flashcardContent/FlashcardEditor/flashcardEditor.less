@@ -61,7 +61,14 @@
 
 .buttonsWrapper {
   margin-top: 30px;
-  display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
   align-items: center;
+  display: flex;
+
+  justify-content: center;
+  gap: 15px;
+
+  @media (min-width: @minLaptopWidth) {
+    justify-content: left;
+  }
 }

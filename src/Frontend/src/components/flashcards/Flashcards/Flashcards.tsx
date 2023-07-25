@@ -155,7 +155,6 @@ const Flashcards: FC<Props> = (props) => {
 		if(isFlashcardGuide) {
 			return <FlashcardGuide
 				onRateClick={ takeNextFlashcard }
-				onClose={ props.onClose }
 			/>;
 		}
 
@@ -204,7 +203,6 @@ const Flashcards: FC<Props> = (props) => {
 			rendered={ currentFlashcard.flashcardType === FlashcardType.CourseFlashcard }
 			theorySlides={ (currentFlashcard as CourseFlashcard)?.theorySlides }
 			onRateClick={ handleRateClick }
-			onClose={ props.onClose }
 		/>;
 	};
 
@@ -266,12 +264,14 @@ const Flashcards: FC<Props> = (props) => {
 			return;
 		}
 
+		const newLastRateIndex = maxLastRateIndex + 1;
+		props.flashcardsActions.onSendFlashcardRate(props.courseId, currentFlashcard.id, rate, newLastRateIndex);
+
 		const newStatistics = { ...statistics };
 		newStatistics[currentFlashcard.rate]--;
 		newStatistics[rate]++;
 		setStatistics(newStatistics);
 
-		const newLastRateIndex = maxLastRateIndex + 1;
 		setMaxLastRateIndex(newLastRateIndex);
 
 		let newSessionFlashcards = sessionFlashcards;
@@ -283,17 +283,17 @@ const Flashcards: FC<Props> = (props) => {
 			setSessionFlashcards(newSessionFlashcards);
 		}
 
-		props.flashcardsActions.onSendFlashcardRate(props.courseId, currentFlashcard.id, rate, newLastRateIndex);
 		takeNextFlashcard(state, newSessionFlashcards);
 	}
 
 	function createFlashcard(question: string, answer: string, approved?: boolean) {
 		if(props.flashcardsActions.onCreateFlashcard && unitId) {
+			Toast.push(approved ? texts.toasts.flashcardApproved : texts.toasts.flashcardSaved);
+			takeNextFlashcard();
+
 			props.flashcardsActions.onCreateFlashcard(props.courseId, unitId, question, answer, approved)
 				.then(() => {
 					clearFlashcardContentFromLocalStorage(props.courseId, unitId);
-					Toast.push(approved ? texts.toasts.flashcardApproved : texts.toasts.flashcardSaved);
-					takeNextFlashcard();
 				});
 		}
 	}

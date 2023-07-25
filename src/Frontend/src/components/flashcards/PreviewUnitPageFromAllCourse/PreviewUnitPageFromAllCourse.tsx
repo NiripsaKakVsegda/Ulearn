@@ -63,7 +63,6 @@ const PreviewUnitPageFromAllCourse: FC<Props> = (props) => {
 						rendered={ f.flashcardType === FlashcardType.CourseFlashcard }
 						theorySlides={ (f as CourseFlashcard)?.theorySlides }
 						onRateClick={ mockFunc }
-						onClose={ mockFunc }
 					/>
 				</OpenedFlashcardWrapper>
 			</div>;
