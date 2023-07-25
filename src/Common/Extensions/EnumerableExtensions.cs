@@ -87,5 +87,15 @@ namespace System.Linq
 				result[keySelector(e)] = elementSelector(e);
 			return result;
 		}
+
+		public static string JoinToString(this IEnumerable<string> items, string splitter)
+		{
+			return string.Join(splitter, items);
+		}
+
+		public static string JoinToString(this IEnumerable<string> items, char splitter)
+		{
+			return string.Join(splitter, items);
+		}
 	}
 }

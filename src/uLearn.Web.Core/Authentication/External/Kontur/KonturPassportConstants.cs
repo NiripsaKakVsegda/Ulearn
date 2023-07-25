@@ -1,8 +1,10 @@
-﻿namespace uLearn.Web.Core.Authentication.External.Kontur;
+﻿using Database.Models;
+
+namespace uLearn.Web.Core.Authentication.External.Kontur;
 
 public static class KonturPassportConstants
 {
-	public const string AuthenticationType = "Контур.Паспорт";
+	public const string AuthenticationType = LoginProviders.KonturPassport;
 	public const string LoginClaimType = "sub";
 	public const string SidClaimType = "id";
 	public const string EmailClaimType = "email";

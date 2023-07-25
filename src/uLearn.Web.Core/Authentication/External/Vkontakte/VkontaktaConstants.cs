@@ -1,6 +1,8 @@
-﻿namespace uLearn.Web.Core.Authentication.External.Vkontakte;
+﻿using Database.Models;
+
+namespace uLearn.Web.Core.Authentication.External.Vkontakte;
 
 public static class VkontakteConstants
 {
-	public const string DefaultAuthenticationType = "ВКонтакте";
+	public const string DefaultAuthenticationType = LoginProviders.Vk;
 }

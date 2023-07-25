@@ -209,7 +209,7 @@ namespace GiftsGranter
 				.Select(r => r.UserId)
 				.ToHashSet();
 			var konturRating = (await db.UserLogins
-					.Where(ul => ul.LoginProvider == "Контур.Паспорт" && ratingUserIds.Contains(ul.UserId))
+					.Where(ul => ul.LoginProvider == LoginProviders.KonturPassport && ratingUserIds.Contains(ul.UserId))
 					.Select(ul => ul.UserId)
 					.ToListAsync())
 				.Select(id => ratingById[id])
@@ -247,7 +247,7 @@ namespace GiftsGranter
 			var user = await db.Users.FindAsync(entry.UserId);
 			try
 			{
-				var sid = (await db.UserLogins.FirstOrDefaultAsync(ul => ul.UserId == entry.UserId && ul.LoginProvider == "Контур.Паспорт"))?.ProviderKey;
+				var sid = (await db.UserLogins.FirstOrDefaultAsync(ul => ul.UserId == entry.UserId && ul.LoginProvider == LoginProviders.KonturPassport))?.ProviderKey;
 				//var sid = entry.User.Logins.First(login => login.LoginProvider == "Контур.Паспорт").ProviderKey;
 				var staffUser = GetUser(sid);
 				

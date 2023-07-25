@@ -390,7 +390,7 @@ namespace ManualUtils
 				var user = db.Users.FirstOrDefault(u => u.Email == email);
 				if (user != null)
 				{
-					var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == "ВКонтакте" && l.UserId == user.Id);
+					var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == LoginProviders.Vk && l.UserId == user.Id);
 					if (vkLogin != null)
 					{
 						vk = $"https://vk.com/id{vkLogin.ProviderKey}";
@@ -838,66 +838,66 @@ namespace ManualUtils
 				{
 					//using (var transaction = db.Database.BeginTransaction())
 					//{
-						courseCounter++;
-						Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
-						var slides = course.GetSlidesNotSafe().OfType<ExerciseSlide>().ToList();
-						var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
-						var slideCounter = 0;
-						foreach (var slide in slides)
+					courseCounter++;
+					Console.WriteLine($@"BuildFavouriteReviews: checking course {course.Id}, its {courseCounter} out of {courses.Count} ");
+					var slides = course.GetSlidesNotSafe().OfType<ExerciseSlide>().ToList();
+					var instructorIds = await courseRolesRepo.GetListOfUsersWithCourseRole(CourseRoleType.Instructor, course.Id, false);
+					var slideCounter = 0;
+					foreach (var slide in slides)
+					{
+						slideCounter++;
+						Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
+
+						var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
+						foreach (var instructorId in instructorIds)
 						{
-							slideCounter++;
-							Console.WriteLine($@"BuildFavouriteReviews: checking slide {slide.Id}, its {slideCounter} out of {slides.Count} ");
+							var slideTopReviewsForInstructor = db.ExerciseCodeReviews
+								.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && r.AuthorId == instructorId && !r.HiddenFromTopComments && !r.IsDeleted)
+								.ToList();
 
-							var textToFavoriteReview = new Dictionary<string, FavouriteReview>();
-							foreach (var instructorId in instructorIds)
+							if (!slideTopReviewsForInstructor.Any())
+								continue;
+
+							var userTopReviews = slideTopReviewsForInstructor
+								.GroupBy(r => r.Comment)
+								.OrderByDescending(g => g.Count())
+								.ThenByDescending(g => g.Max(r => r.AddingTime))
+								.Take(5)
+								.Select(g => g.Key)
+								.ToList();
+
+							foreach (var review in userTopReviews)
 							{
-								var slideTopReviewsForInstructor = db.ExerciseCodeReviews
-									.Where(r => r.CourseId == course.Id && r.SlideId == slide.Id && r.AuthorId == instructorId && !r.HiddenFromTopComments && !r.IsDeleted)
-									.ToList();
-
-								if (!slideTopReviewsForInstructor.Any())
-									continue;
-
-								var userTopReviews = slideTopReviewsForInstructor
-									.GroupBy(r => r.Comment)
-									.OrderByDescending(g => g.Count())
-									.ThenByDescending(g => g.Max(r => r.AddingTime))
-									.Take(5)
-									.Select(g => g.Key)
-									.ToList();
-
-								foreach (var review in userTopReviews)
+								if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
 								{
-									if (!textToFavoriteReview.TryGetValue(review, out var favouriteReview))
-									{
-										favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
-										textToFavoriteReview[review] = favouriteReview;
-										db.FavouriteReviews.Add(favouriteReview);
-										updateDbCounter++;
-									}
-
-									var favouriteReviewByUser = new FavouriteReviewByUser
-									{
-										CourseId = course.Id,
-										SlideId = slide.Id,
-										UserId = instructorId,
-										Timestamp = DateTime.Now,
-										FavouriteReview = favouriteReview,
-									};
-									db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+									favouriteReview = new FavouriteReview { CourseId = course.Id, SlideId = slide.Id, Text = review, };
+									textToFavoriteReview[review] = favouriteReview;
+									db.FavouriteReviews.Add(favouriteReview);
 									updateDbCounter++;
+								}
 
-									if (updateDbCounter >= updateDbMaxCount)
-									{
-										await db.SaveChangesAsync();
-										updateDbCounter = 0;
-									}
+								var favouriteReviewByUser = new FavouriteReviewByUser
+								{
+									CourseId = course.Id,
+									SlideId = slide.Id,
+									UserId = instructorId,
+									Timestamp = DateTime.Now,
+									FavouriteReview = favouriteReview,
+								};
+								db.FavouriteReviewsByUsers.Add(favouriteReviewByUser);
+								updateDbCounter++;
+
+								if (updateDbCounter >= updateDbMaxCount)
+								{
+									await db.SaveChangesAsync();
+									updateDbCounter = 0;
 								}
 							}
 						}
+					}
 
-						await db.SaveChangesAsync();
-						//transaction.Commit();
+					await db.SaveChangesAsync();
+					//transaction.Commit();
 					//}
 				}
 			}
@@ -948,10 +948,10 @@ namespace ManualUtils
 				var courseStorage = scope.ServiceProvider.GetService<ICourseStorage>();
 
 				var tasksWithScore = (await db.ManualExerciseCheckings
-					.Where(c => c.IsChecked && c.Score != null && c.Percent == null)
-					.Select(c => new { c.CourseId, c.SlideId, c.UserId })
-					.Distinct()
-					.ToListAsync())
+						.Where(c => c.IsChecked && c.Score != null && c.Percent == null)
+						.Select(c => new { c.CourseId, c.SlideId, c.UserId })
+						.Distinct()
+						.ToListAsync())
 					.OrderBy(c => c.CourseId)
 					.ThenBy(c => c.SlideId)
 					.ThenBy(c => c.UserId)
@@ -1000,6 +1000,7 @@ namespace ManualUtils
 							found = true;
 						}
 					}
+
 					if (!found)
 					{
 						var course = courseStorage.GetCourse(courseId);
@@ -1055,10 +1056,11 @@ namespace ManualUtils
 					if (tasksCount % 100 == 0)
 						Console.WriteLine($"{tasksCount}/{tasksWithScore.Count}");
 				}
+
 				await db.SaveChangesAsync();
 			}
 		}
-		
+
 		/*
 		private async Task<List<ExtendedUserInfo>> GetExtendedUserInfo(UlearnDb db)
 		{

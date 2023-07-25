@@ -38,7 +38,7 @@ namespace ManualUtils
 			foreach (var t in data)
 			{
 				string vk = null;
-				var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == "ВКонтакте" && l.UserId == t.User.Id);
+				var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == LoginProviders.Vk && l.UserId == t.User.Id);
 				if (vkLogin != null)
 					vk = $"https://vk.com/id{vkLogin.ProviderKey}";
 				dataWithVk.Add((t.User, t.IpAddress, vk));

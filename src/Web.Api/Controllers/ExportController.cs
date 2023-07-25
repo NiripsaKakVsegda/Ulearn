@@ -1,9 +1,10 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Database;
 using Database.Models;
@@ -12,39 +13,33 @@ using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
-using Ulearn.Core.Courses.Slides;
 using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Courses.Slides.Quizzes.Blocks;
 using Ulearn.Core.Extensions;
 using Ulearn.Web.Api.Models.Common;
-
 
 namespace Ulearn.Web.Api.Controllers
 {
 	[Route("/export")]
 	public class ExportController : BaseController
 	{
-		private readonly IGroupMembersRepo groupMembersRepo;
 		private readonly IVisitsRepo visitsRepo;
 		private readonly IGroupsRepo groupsRepo;
 		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly ICourseRolesRepo courseRolesRepo;
-		private readonly IUserQuizzesRepo userQuizzesRepo;
 		private readonly IUnitsRepo unitsRepo;
 
-		public ExportController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo,
-			IGroupMembersRepo groupMembersRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo,
-			IUserQuizzesRepo userQuizzesRepo, ICourseRolesRepo courseRolesRepo, IUnitsRepo unitsRepo)
+		public ExportController(ICourseStorage courseStorage, UlearnDb db, IUsersRepo usersRepo, IVisitsRepo visitsRepo, IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo, ICourseRolesRepo courseRolesRepo, IUnitsRepo unitsRepo)
 			: base(courseStorage, db, usersRepo)
 		{
-			this.groupMembersRepo = groupMembersRepo;
 			this.visitsRepo = visitsRepo;
 			this.groupsRepo = groupsRepo;
 			this.groupAccessesRepo = groupAccessesRepo;
-			this.userQuizzesRepo = userQuizzesRepo;
 			this.courseRolesRepo = courseRolesRepo;
 			this.unitsRepo = unitsRepo;
 		}
@@ -59,22 +54,22 @@ namespace Ulearn.Web.Api.Controllers
 			bool ip = false,
 			bool scoring = false,
 			bool gender = false,
-			Guid? quizSlideId = null)
+			Guid? quizSlideId = null
+		)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId);
 			if (group == null)
-				return StatusCode((int)HttpStatusCode.NotFound, "Group not found");
+				return NotFound(new ErrorResponse($"Group with id {groupId} not found"));
 
-			var isSystemAdministrator = await IsSystemAdministratorAsync();
-			var isCourseAdmin = isSystemAdministrator || await courseRolesRepo.HasUserAccessToCourse(UserId, group.CourseId, CourseRoleType.CourseAdmin);
-			var hasAccess = isCourseAdmin || await groupAccessesRepo.HasUserGrantedAccessToGroupOrIsOwnerAsync(groupId, UserId).ConfigureAwait(false);
+			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, group.CourseId, CourseRoleType.CourseAdmin);
+			var hasAccess = isCourseAdmin || await groupAccessesRepo.HasUserGrantedAccessToGroupOrIsOwnerAsync(groupId, UserId);
 
-			if (!(isSystemAdministrator || isCourseAdmin || hasAccess))
-				return StatusCode((int)HttpStatusCode.Forbidden, "You should be course or system admin");
+			if (!hasAccess)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse($"You has no access to group with id {groupId}"));
 
-			var users = await GetExtendedUserInfo(groupId);
+			var users = await GetExtendedUserInfo(groupId, vk, ip);
 
-			List<string> questions = null;
+			List<string>? questions = null;
 			var courseId = group.CourseId;
 			var course = courseStorage.GetCourse(courseId);
 			var visibleUnits = await unitsRepo.GetPublishedUnitIds(course);
@@ -87,21 +82,29 @@ namespace Ulearn.Web.Api.Controllers
 				if (slide is not QuizSlide quizSlide)
 					return StatusCode((int)HttpStatusCode.NotFound, $"Slide is not quiz slide in course {courseId}");
 
-				List<List<string>> answers;
-				(questions, answers) = await GetQuizAnswers(users.Select(s => s.Id), courseId, quizSlide);
-				users = users.Zip(answers, (u, a) =>
-				{
-					u.Answers = a;
-					return u;
-				}).ToList();
+				questions = GetQuizQuestions(quizSlide);
+				var answers = await GetQuizAnswers(users.Select(s => s.Id).ToList(), courseId, quizSlide);
+				foreach (var user in users)
+					user.Answers = answers[user.Id];
 			}
 
-			var slides = course.GetSlides(false, visibleUnits).Where(s => s.ShouldBeSolved).Select(s => s.Id).ToList();
-			var scores = GetScoresByScoringGroups(users.Select(u => u.Id).ToList(), slides, course);
-			var scoringGroupsWithScores = scores.Select(kvp => kvp.Key.ScoringGroup).ToHashSet();
-			var scoringGroups = course.Settings.Scoring.Groups.Values.Where(sg => scoringGroupsWithScores.Contains(sg.Id)).ToList();
+			var slides = course.GetSlides(false, visibleUnits)
+				.Where(s => s.ShouldBeSolved)
+				.Select(s => s.Id)
+				.ToList();
+			var scores = GetScoresByScoringGroups(
+				users.Select(u => u.Id).ToList(),
+				slides,
+				course
+			);
+			var scoringGroupsWithScores = scores.Keys
+				.Select(key => key.ScoringGroup)
+				.ToHashSet();
+			var scoringGroups = course.Settings.Scoring.Groups.Values
+				.Where(sg => scoringGroupsWithScores.Contains(sg.Id))
+				.ToList();
 
-			var headers = new List<string> { "Id", "Login", "FirstName", "LastName" };
+			var headers = new List<string?> { "Id", "Login", "FirstName", "LastName" };
 
 			if (gender)
 				headers.Add("Gender");
@@ -118,110 +121,202 @@ namespace Ulearn.Web.Api.Controllers
 			}
 
 			if (questions != null)
-				headers = headers.Concat(questions).ToList();
+				headers.AddRange(questions);
 			if (scoring && scoringGroups.Count > 0)
-				headers = headers.Concat(scoringGroups.Select(s => s.Abbreviation)).ToList();
+				headers.AddRange(scoringGroups.Select(s => s.Abbreviation));
 
-			var rows = new List<List<string>> { headers };
-			foreach (var i in users)
+			var table = new List<List<string?>> { headers };
+			foreach (var user in users)
 			{
-				var row = new List<string> { i.Id, i.Login, i.FirstName, i.LastName };
+				var row = new List<string?> { user.Id, user.Login, user.FirstName, user.LastName };
 
 				if (gender)
-					row.Add(i.Gender.ToString());
+					row.Add(user.Gender?.ToString());
 				if (email)
-					row.Add(i.Email);
+					row.Add(user.Email);
 				if (vk)
-					row.Add(i.VkUrl);
+					row.Add(user.VkUrl);
 				if (telegram)
-					row.Add(i.Telegram);
+					row.Add(user.Telegram);
 				if (ip)
 				{
-					row.Add(i.IpAddress);
-					row.Add(i.LastVisit.ToSortableDate());
+					row.Add(user.IpAddress);
+					row.Add(user.LastVisit.ToSortableDate());
 				}
 
-				if (i.Answers != null)
-					row = row.Concat(i.Answers).ToList();
+				if (user.Answers != null)
+					row = row.Concat(user.Answers).ToList();
 				if (scoring)
-					row.AddRange(scoringGroups.Select(scoringGroup => (scores.ContainsKey((i.Id, scoringGroup.Id)) ? scores[(i.Id, scoringGroup.Id)] : 0).ToString()));
-				rows.Add(row);
+					row.AddRange(scoringGroups
+						.Select(scoringGroup => (scores.ContainsKey((user.Id, scoringGroup.Id))
+								? scores[(user.Id, scoringGroup.Id)]
+								: 0
+							).ToString()));
+				table.Add(row);
 			}
 
-			var content = CreateTsv(rows);
-			Response.Headers.Add("content-disposition", quizSlideId is null
-				? $@"attachment;filename=""{groupId}.tsv"""
-				: $@"attachment;filename=""{quizSlideId} - {groupId}.tsv"""
+			var content = CreateTsv(table);
+			Response.Headers.Add(
+				"content-disposition",
+				quizSlideId is null
+					? $@"attachment;filename=""{groupId}.tsv"""
+					: $@"attachment;filename=""{quizSlideId} - {groupId}.tsv"""
 			);
 
 			return Content(content, "application/octet-stream");
 		}
 
-		private async Task<List<ExtendedUserInfo>> GetExtendedUserInfo(int groupId)
+		private Task<List<ExtendedUserInfo>> GetExtendedUserInfo(int groupId, bool vk, bool ip)
 		{
-			var users = await groupMembersRepo.GetGroupMembersAsUsersAsync(groupId);
-			var visits = await visitsRepo.FindLastVisitsInGroup(groupId);
-
-			var result = new List<ExtendedUserInfo>();
-			foreach (var user in users)
-			{
-				var info = new ExtendedUserInfo
+			var query = db.GroupMembers
+				.Where(m => m.GroupId == groupId)
+				.Select(m => m.User)
+				.Select(user => new
 				{
-					Id = user.Id,
-					Login = user.UserName,
-					Email = user.Email,
-					VkUrl = GetVk(user),
-					Telegram = user.TelegramChatTitle,
-					FirstName = user.FirstName,
-					LastName = user.LastName,
-					VisibleName = user.VisibleName,
-					AvatarUrl = user.AvatarUrl,
-					Gender = user.Gender,
-				};
-				if (visits.TryGetValue(user.Id, out var visit))
+					User = user,
+					LastVisit = new DateTime(),
+					IpAddress = (string?)null,
+					VkUrl = (string?)null
+				});
+
+			if (vk)
+				query = query
+					.GroupJoin(
+						db.UserLogins,
+						userInfo => userInfo.User.Id,
+						login => login.UserId,
+						(userInfo, logins) => new
+						{
+							userInfo.User,
+							userInfo.LastVisit,
+							userInfo.IpAddress,
+							logins
+						}
+					)
+					.SelectMany(userInfo => userInfo.logins
+							.Where(login => login.LoginProvider == LoginProviders.Vk)
+							.DefaultIfEmpty(),
+						(userInfo, login) => new
+						{
+							userInfo.User,
+							userInfo.LastVisit,
+							userInfo.IpAddress,
+							VkUrl = login == null
+								? null
+								: $"https://vk.com/id{login.ProviderKey}"
+						}
+					);
+
+			if (ip)
+				query = query
+					.Select(userInfo => new
+						{
+							userInfo.User,
+							LastVisit = db.Visits
+								.Where(visit => visit.UserId == userInfo.User.Id)
+								.OrderByDescending(v => v.Timestamp)
+								.Select(v => v.Timestamp)
+								.FirstOrDefault(),
+							IpAddress = db.Visits
+								.Where(visit => visit.UserId == userInfo.User.Id)
+								.OrderByDescending(v => v.Timestamp)
+								.Select(v => v.IpAddress)
+								.FirstOrDefault(),
+							userInfo.VkUrl
+						}
+					);
+
+			return query
+				.Select(userInfo => new ExtendedUserInfo
 				{
-					info.LastVisit = visit.Timestamp;
-					info.IpAddress = visit.IpAddress;
-				}
-
-				result.Add(info);
-			}
-
-			return result;
-		}
-
-		private string GetVk(ApplicationUser user)
-		{
-			var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == "ВКонтакте" && l.UserId == user.Id);
-			return vkLogin != null ? $"https://vk.com/id{vkLogin.ProviderKey}" : null;
+					Id = userInfo.User.Id,
+					Login = userInfo.User.UserName,
+					Email = userInfo.User.Email,
+					Telegram = userInfo.User.TelegramChatTitle,
+					FirstName = userInfo.User.FirstName,
+					LastName = userInfo.User.LastName,
+					VisibleName = userInfo.User.VisibleName,
+					AvatarUrl = userInfo.User.AvatarUrl,
+					Gender = userInfo.User.Gender,
+					LastVisit = userInfo.LastVisit,
+					IpAddress = userInfo.IpAddress,
+					VkUrl = userInfo.VkUrl
+				})
+				.ToListAsync();
 		}
 
 		private class ExtendedUserInfo : ShortUserInfo
 		{
 			public DateTime LastVisit;
-			public string IpAddress;
-			public List<string> Answers;
-			public string VkUrl;
-			public string Telegram;
+			public string? IpAddress;
+			public string? VkUrl;
+			public string Telegram = null!;
+			public string[]? Answers;
 		}
 
-		private async Task<(List<string> questions, List<List<string>> values)> GetQuizAnswers(IEnumerable<string> userIds, string courseId, QuizSlide slide)
+		private List<string> GetQuizQuestions(QuizSlide slide)
 		{
-			var questionBlocks = slide.Blocks.OfType<AbstractQuestionBlock>().ToList();
-			var questions = questionBlocks.Select(q => q.Text.TruncateWithEllipsis(50)).ToList();
-			var rows = new List<List<string>>();
-			foreach (var userId in userIds)
+			return slide.Blocks
+				.OfType<AbstractQuestionBlock>()
+				.Select(q => q.Text.TruncateWithEllipsis(50))
+				.ToList();
+		}
+
+		private async Task<Dictionary<string, string[]>> GetQuizAnswers(
+			List<string> userIds,
+			string courseId,
+			QuizSlide slide
+		)
+		{
+			var query = db.UserQuizSubmissions
+				.Where(s => s.CourseId == courseId && s.SlideId == slide.Id && userIds.Contains(s.UserId))
+				.GroupJoin(db.UserQuizAnswers,
+					s => s.Id,
+					a => a.SubmissionId,
+					(s, answers) => new
+					{
+						s.UserId,
+						s.Timestamp,
+						Answers = answers
+					}
+				)
+				.SelectMany(
+					sa => sa.Answers,
+					(sa, a) => new
+					{
+						sa.UserId,
+						sa.Timestamp,
+						a.BlockId,
+						Answer = a.ItemId ?? a.Text
+					}
+				)
+				.GroupBy(a => new { a.UserId, a.BlockId })
+				.Select(g => g.OrderByDescending(a => a.Timestamp).First());
+
+			var usersAnswers = (await query.ToListAsync())
+				.GroupBy(e => e.UserId)
+				.Select(g => new
+				{
+					UserId = g.Key,
+					Answers = g.AsEnumerable()
+				});
+
+			var questionIndexesByIds = slide.Blocks
+				.OfType<AbstractQuestionBlock>()
+				.Select((q, i) => (q.Id, i))
+				.ToDictionary(pair => pair.Id, pair => pair.i);
+
+			var result = userIds
+				.ToDictionary(userId => userId, _ => new string[questionIndexesByIds.Count]);
+
+			foreach (var userAnswers in usersAnswers)
 			{
-				var answers = await userQuizzesRepo.GetAnswersForShowingOnSlideAsync(courseId, slide, userId);
-				var answerStrings = questionBlocks
-					.Select(q
-						=> answers.ContainsKey(q.Id)
-							? string.Join(",", answers[q.Id].Select(i => i.ItemId ?? i.Text).Where(t => t != null))
-							: "").ToList();
-				rows.Add(answerStrings);
+				var sortedAnswers = result[userAnswers.UserId];
+				foreach (var answer in userAnswers.Answers)
+					sortedAnswers[questionIndexesByIds[answer.BlockId]] = answer.Answer;
 			}
 
-			return (questions, rows);
+			return result;
 		}
 
 		private Dictionary<(string UserId, string ScoringGroup), int> GetScoresByScoringGroups(List<string> userIds, List<Guid> slides, Course course)
@@ -234,32 +329,26 @@ namespace Ulearn.Web.Api.Controllers
 				PeriodStart = DateTime.MinValue,
 				PeriodFinish = DateTime.MaxValue
 			};
+
 			return visitsRepo.GetVisitsInPeriod(filterOptions)
 				.Select(v => new { v.UserId, v.SlideId, v.Score })
 				.AsEnumerable()
-				.Where(v => slides.Contains(v.SlideId))
-				.GroupBy(v => (v.UserId, course.FindSlideByIdNotSafe(v.SlideId)?.ScoringGroup))
-				.ToDictionary(g => g.Key, g => g.Sum(v => v.Score));
+				.GroupBy(v => (v.UserId, course.GetSlideByIdNotSafe(v.SlideId).ScoringGroup))
+				.ToDictionary(
+					g => g.Key,
+					g => g.Sum(v => v.Score)
+				);
 		}
 
-		private static string CreateTsv(List<List<string>> table)
-		{
-			var sb = new StringBuilder();
-			foreach (var row in table)
-			{
-				var isFirst = true;
-				foreach (var cell in row)
-				{
-					if (!isFirst)
-						sb.Append('\t');
-					sb.Append(cell?.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' '));
-					isFirst = false;
-				}
-
-				sb.Append("\r\n");
-			}
-
-			return sb.ToString();
-		}
+		private static string CreateTsv(IEnumerable<IEnumerable<string?>> table) =>
+			table
+				.Select(row => row
+					.Select(cell => cell is null
+						? ""
+						: Regex.Replace(cell, "[\t\r\n]", " ").Trim()
+					)
+					.JoinToString('\t')
+				)
+				.JoinToString(Environment.NewLine);
 	}
 }
