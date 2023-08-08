@@ -129,7 +129,6 @@ const UnitPage: FC<Props> = (props) => {
 						unitTitle={ unitTitle }
 						courseFlashcards={ courseFlashcards }
 						moderationFlashcards={ moderationFlashcards }
-						showModerationGuides={ moderationStatus === FlashcardModerationStatus.New }
 						onClose={ hideFlashcards }
 						flashcardsActions={ props.flashcardsActions }
 					/>

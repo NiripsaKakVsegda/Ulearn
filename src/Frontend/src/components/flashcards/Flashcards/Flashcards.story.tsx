@@ -39,7 +39,6 @@ FlashcardsGuideStory.args = {
 	initialState: FlashcardsState.NoFlashcards,
 	courseFlashcards: [],
 	moderationFlashcards: [userGeneratedFlashcard],
-	showModerationGuides: false,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };
@@ -55,7 +54,6 @@ FlashcardsUnitStory.args = {
 	initialState: FlashcardsState.Unit,
 	courseFlashcards: flashcards,
 	moderationFlashcards: [userGeneratedFlashcard],
-	showModerationGuides: false,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };
@@ -71,7 +69,6 @@ FlashcardsCreateCardBeforeUnitStory.args = {
 	initialState: FlashcardsState.CreateCardBeforeUnit,
 	courseFlashcards: flashcards,
 	moderationFlashcards: [userGeneratedFlashcard],
-	showModerationGuides: false,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };
@@ -87,7 +84,6 @@ FlashcardsCourseRepeatingStory.args = {
 	initialState: FlashcardsState.CourseRepeating,
 	courseFlashcards: flashcards,
 	moderationFlashcards: [userGeneratedFlashcard],
-	showModerationGuides: false,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };
@@ -103,7 +99,6 @@ FlashcardsModerationGuidesShownStory.args = {
 	initialState: FlashcardsState.ModerateFlashcards,
 	courseFlashcards: flashcards,
 	moderationFlashcards: [{ ...userGeneratedFlashcard, moderationStatus: FlashcardModerationStatus.New }],
-	showModerationGuides: true,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };
@@ -119,7 +114,6 @@ FlashcardsModerationGuidesHiddenStory.args = {
 	initialState: FlashcardsState.ModerateFlashcards,
 	courseFlashcards: flashcards,
 	moderationFlashcards: [userGeneratedFlashcard],
-	showModerationGuides: false,
 	onClose: mockFunc,
 	flashcardsActions: flashcardsActions
 };

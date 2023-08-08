@@ -1,12 +1,14 @@
 import React, { FC } from 'react';
 import styles from "./studentCheckbox.less";
 import texts from "./StudentCheckbox.texts";
-import { Button, Checkbox } from "ui";
+import { Button, Checkbox, Kebab, MenuItem } from "ui";
 import Avatar from "../../../../../common/Avatar/Avatar";
 import Profile from "../../../../../common/Profile/Profile";
 import { GroupStudentInfo } from "../../../../../../models/groups";
 import { AccountState } from "../../../../../../redux/account";
 import { SystemAccessType } from "../../../../../../consts/accessType";
+import { useMediaQuery } from "react-responsive";
+import { EditIcon } from "@skbkontur/react-ui/internal/icons/16px";
 
 interface Props {
 	studentInfo: GroupStudentInfo;
@@ -25,9 +27,11 @@ const StudentCheckbox: FC<Props> = ({
 }) => {
 	const user = studentInfo.user;
 
+	const isPhone = useMediaQuery({ maxWidth: 767 });
+
 	return (
 		<Checkbox
-			className={styles.checkbox}
+			className={ styles.checkbox }
 			checked={ isChecked }
 			onValueChange={ onValueChange }
 		>
@@ -47,20 +51,31 @@ const StudentCheckbox: FC<Props> = ({
 							{ texts.buildAddingTimeInfo(studentInfo) }
 						</span>
 					</div>
-					<div className={ styles.accessesControlsWrapper }>
-						{ studentInfo.accesses.length > 0 &&
-							<span className={ styles.accessesInfo }>
-								{ texts.buildAccessesCountInfo(studentInfo.accesses.length) }
-							</span>
-						}
-						<Button
-							className={ styles.changeAccessesButton }
-							size={ "small" }
-							use={ "link" }
-							onClick={ changeStudentAccesses }
-							children={ texts.changeAccessesButton }
-						/>
-					</div>
+					{ isPhone
+						? <span onClick={stopPropagationPreventDefault}>
+							<Kebab>
+								<MenuItem
+									icon={ <EditIcon/> }
+									onClick={ changeStudentAccesses }
+									children={ texts.changeAccessesButton }
+								/>
+							</Kebab>
+						</span>
+						: <div className={ styles.accessesControlsWrapper }>
+							{ studentInfo.accesses.length > 0 &&
+								<span className={ styles.accessesInfo }>
+									{ texts.buildAccessesCountInfo(studentInfo.accesses.length) }
+								</span>
+							}
+							<Button
+								className={ styles.changeAccessesButton }
+								size={ "small" }
+								use={ "link" }
+								onClick={ changeStudentAccesses }
+								children={ texts.changeAccessesButton.toLowerCase() }
+							/>
+						</div>
+					}
 				</span>
 			</div>
 		</Checkbox>
@@ -71,9 +86,13 @@ const StudentCheckbox: FC<Props> = ({
 	}
 
 	function changeStudentAccesses(event: React.MouseEvent | React.SyntheticEvent) {
+		stopPropagationPreventDefault(event);
+		onChangeStudentAccesses(studentInfo);
+	}
+
+	function stopPropagationPreventDefault(event: React.MouseEvent | React.SyntheticEvent) {
 		event.stopPropagation();
 		event.preventDefault();
-		onChangeStudentAccesses(studentInfo);
 	}
 };
 

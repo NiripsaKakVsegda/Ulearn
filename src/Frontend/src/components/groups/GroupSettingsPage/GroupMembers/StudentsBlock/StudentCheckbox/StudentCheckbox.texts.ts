@@ -14,5 +14,5 @@ export default {
 
 		return `выдано ${ count } доп. ${ accessPlural }`;
 	},
-	changeAccessesButton: 'управлять правами'
+	changeAccessesButton: 'Управлять правами'
 };

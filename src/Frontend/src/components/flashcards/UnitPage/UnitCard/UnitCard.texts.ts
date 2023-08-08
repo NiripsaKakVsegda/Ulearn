@@ -19,9 +19,6 @@ export default {
 
 	buildCardsCountInfo: (count: number) => `${ count } ${ getCardsPluralForm(count) }`,
 	buildApprovedUserCardsCountInfo: (count: number) => {
-		if(count <= 0) {
-			return 'Нет опубликованных карточек от пользователей';
-		}
 		const plural = getPluralForm(
 			count,
 			'опубликованная карточка',
@@ -32,9 +29,6 @@ export default {
 		return `${ count } ${ plural } от пользователей`;
 	},
 	buildNewUserCardsCountInfo: (count: number) => {
-		if(count <= 0) {
-			return 'Нет новых карточек от пользователей';
-		}
 		const plural = getPluralForm(
 			count,
 			'новая карточка',
@@ -45,9 +39,6 @@ export default {
 		return `${ count } ${ plural } от пользователей`;
 	},
 	buildDeclinedUserCardsCountInfo: (count: number) => {
-		if(count <= 0) {
-			return 'Нет непубликуемых карточек от пользователей';
-		}
 		const plural = getPluralForm(
 			count,
 			'непубликуемая карточка',

@@ -63,19 +63,6 @@ const UnitCard: FC<Props> = ({
 					</div>
 					{ isModerator &&
 						<div>
-							{ texts.buildApprovedUserCardsCountInfo(approvedUserFlashcardsCount ?? 0) }
-							&nbsp;
-							{ !!approvedUserFlashcardsCount &&
-								<button
-									className={ styles.moderationButton }
-									onClick={ actions.onModerateApprovedFlashcards }
-									children={ texts.viewCardsButton }
-								/>
-							}
-						</div>
-					}
-					{ isModerator &&
-						<div>
 							{ texts.buildNewUserCardsCountInfo(newUserFlashcardsCount ?? 0) }
 							&nbsp;
 							{ !!newUserFlashcardsCount &&
@@ -83,6 +70,19 @@ const UnitCard: FC<Props> = ({
 									className={ styles.moderationButton }
 									onClick={ actions.onModerateNewFlashcards }
 									children={ texts.viewAndPublishCardsButton }
+								/>
+							}
+						</div>
+					}
+					{ (isModerator && !!approvedUserFlashcardsCount) &&
+						<div>
+							{ texts.buildApprovedUserCardsCountInfo(approvedUserFlashcardsCount ?? 0) }
+							&nbsp;
+							{ !!approvedUserFlashcardsCount &&
+								<button
+									className={ styles.moderationButton }
+									onClick={ actions.onModerateApprovedFlashcards }
+									children={ texts.viewCardsButton }
 								/>
 							}
 						</div>

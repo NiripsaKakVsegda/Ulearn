@@ -35,7 +35,6 @@ import { findMaxLastRateIndex } from "../utils/findMaxLastRateIndex";
 import { getUnitFlashcards } from "../utils/getUnitFlashcards";
 import { getUnlockedCourseFlashcards } from "../utils/getUnlockedCourseFlashcards";
 import ControlGuides from "../components/ControlGuides/ControlGuides";
-import ModerationGuides from "../components/ModerationGuides/ModerationGuides";
 import { EditingState, FlashcardsActions, FlashcardsState, InitialFlashcardsState } from "./Flashcards.types";
 import FlashcardGuide from "../flashcardContent/FlashcardGuide/FlashcardGuide";
 import styles from './flashcards.less';
@@ -49,7 +48,6 @@ interface Props {
 	unitTitle?: string;
 	courseFlashcards: UnitFlashcards[];
 	moderationFlashcards?: UserGeneratedFlashcard[];
-	showModerationGuides?: boolean;
 	initialState: InitialFlashcardsState;
 
 	flashcardsActions: FlashcardsActions;
@@ -246,12 +244,6 @@ const Flashcards: FC<Props> = (props) => {
 				<div className={ styles.progressBarContainer }>
 					<ProgressBar statistics={ statistics } totalFlashcardsCount={ totalFlashcardsCount }/>
 				</div>
-			}
-			{ (isModerating && props.showModerationGuides) &&
-				<ModerationGuides
-					guides={ texts.moderationGuides }
-					classname={ styles.guidesContainer }
-				/>
 			}
 		</div>
 	);

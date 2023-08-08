@@ -1143,6 +1143,13 @@ hr.without-top-margin {
 }
 
 /* modals */
+
+@media (max-width: 577px) {
+	[data-tid='modal-content'] > div {
+		border-radius: 0; /* TODO Убрать когда пофиксят модалку в react-ui */
+	}
+}
+
 .modal-body > h3:first-child,
 .modal-body h3.first-header {
 	margin-top: 0;
