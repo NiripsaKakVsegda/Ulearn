@@ -101,7 +101,6 @@ const UserAccessesModal: FC<Props> = ({
 
 	return (
 		<Modal
-			className={ styles.modal }
 			alignTop
 			onClose={ actions.onClose }
 		>

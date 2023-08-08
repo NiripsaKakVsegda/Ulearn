@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { CourseFlashcard, FlashcardType, UnitFlashcards } from "../../../models/flashcards";
 import CourseLoader from "../../course/Course/CourseLoader/CourseLoader";
-import override from "../UnitPage/courseToolUnitPage.less";
+import styles from "./previewUnitPageFromAllCourse.less";
 import { Tabs } from "ui";
 import { Link } from "react-router-dom";
 import { constructPathToSlide } from "../../../consts/routes";
@@ -39,7 +39,7 @@ const PreviewUnitPageFromAllCourse: FC<Props> = (props) => {
 	}
 
 	return <>
-		<div className={ override.tabsWrapper }>
+		<div className={ styles.tabsWrapper }>
 			<Tabs value={ unitId } onValueChange={ onChangeUnit }>
 				{
 					courseFlashcards.map(({ unitId, unitTitle }) =>
@@ -48,13 +48,13 @@ const PreviewUnitPageFromAllCourse: FC<Props> = (props) => {
 				}
 			</Tabs>
 		</div>
-		<div className={ override.flashcardsLink }>
+		<div className={ styles.flashcardsLink }>
 			<Link to={ constructPathToSlide(courseId, flashcardSlideSlugsByUnitId[unitId]) }>
 				Страница с флешкартами за этот модуль
 			</Link>
 		</div>
 		{ unitFlashcards.flashcards.map((f, i) => {
-			return <div className={ classnames(override.modal) } key={ i }>
+			return <div className={ classnames(styles.modal, styles.flashcardsContainer) } key={ i }>
 				<OpenedFlashcardWrapper unitTitle={ unitFlashcards.unitTitle }>
 					<Flashcard
 						courseId={ courseId }

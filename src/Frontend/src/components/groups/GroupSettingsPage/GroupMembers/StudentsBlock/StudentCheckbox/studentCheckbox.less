@@ -13,7 +13,6 @@
 
 .checkboxContent {
   display: flex;
-  flex-flow: row wrap;
   align-items: center;
 
   margin: 0;
@@ -33,37 +32,55 @@
 
 .studentBlockSelectable {
   user-select: text;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: clamp(0px, 700px, 100%);
 }
 
 .studentInfo {
   display: inline-flex;
   gap: 5px;
-  width: 220px;
-}
+  line-height: normal;
+  flex-grow: 1;
+  white-space: nowrap;
 
-.addingTime {
-  color: @additionalColor;
-  flex-shrink: 1;
-  line-height: 1.4;
+  .addingTime {
+    color: @additionalColor;
+    flex-shrink: 1;
+
+    @media (max-width: @maxPhoneWidth) {
+      display: none;
+    }
+  }
 }
 
 .accessesControlsWrapper {
   display: inline-flex;
-  width: 300px;
+  gap: 0 16px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  line-height: 1.4;
-}
+  font-size: 14px;
+  line-height: normal;
 
-.accessesInfo {
-  color: @additionalColor;
-}
+  .accessesInfo {
+    color: @additionalColor;
+  }
 
-.changeAccessesButton {
-  margin-left: 0;
+  @media (min-width: @minTabletWidth) {
+    min-width: 290px;
+    .accessesInfo {
+      margin-right: auto;
+    }
 
-  @media (min-width: @minLaptopWidth) {
+    .changeAccessesButton {
+      display: none;
+    }
+  }
+
+  @media (max-width: 400px) {
     display: none;
   }
 }

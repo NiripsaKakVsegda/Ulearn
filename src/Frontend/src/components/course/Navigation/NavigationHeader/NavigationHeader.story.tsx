@@ -5,7 +5,7 @@ import type { Story } from "@storybook/react";
 import { Button } from "ui";
 import { mock } from "src/storiesUtils";
 import { DesktopWrapper } from "../stroies.data";
-import { useNavigate } from "react-router-dom";
+import { mockFunc } from "../../../../utils/storyMock";
 
 export default {
 	title: "CourseNavigationHeader",
@@ -20,7 +20,7 @@ const defaultProps: Props = {
 	groupsAsStudent: [],
 
 	returnToCourseNavigationClicked: mock,
-	navigate: useNavigate()
+	navigate: mockFunc
 };
 
 const ListTemplate: Story<Partial<Props>[]> = propsArray => {

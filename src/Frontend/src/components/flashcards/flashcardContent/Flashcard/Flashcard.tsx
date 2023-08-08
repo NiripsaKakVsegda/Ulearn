@@ -6,9 +6,7 @@ import { Button } from "ui";
 import Results from "../../components/Results/Results";
 import translateCode from "../../../../codeTranslator/translateCode";
 import { settingsForFlashcards } from "../../../../codeTranslator/codemirror";
-import Markdown from "../../../common/Markdown/Markdown";
-import { EditorConfiguration } from "codemirror";
-import FlashcardBackContent from "../../components/FlashcardBackContent/FlashcardBackContent";
+import FlashcardQuestionAnswer from "../../components/FlashcardQuestionAnswer/FlashcardQuestionAnswer";
 import styles from "./flashcard.less";
 import texts from './Flashcard.texts';
 import { constructPathToSlide } from "../../../../consts/routes";
@@ -84,32 +82,6 @@ const Flashcard: FC<Props> = ({
 			</p>);
 	};
 
-	const renderBackContent = (linksToTheorySlides: React.ReactNode) =>
-		<FlashcardBackContent
-			question={ question }
-			answer={ answer }
-			isRendered={ rendered }
-			className={ styles.backTextContainer }
-			theorySlides={ linksToTheorySlides }
-		/>;
-
-	const renderFrontContent = (question: string) => {
-		if(rendered) {
-			return <div className={ styles.questionFront }
-						dangerouslySetInnerHTML={ { __html: question } }
-			/>;
-		}
-		return <Markdown
-			className={ styles.questionFront }
-			codeRenderOptions={ {
-				disableStyles: settingsForFlashcards.settings.disableStyles,
-				editorConfig: settingsForFlashcards.config as EditorConfiguration
-			} }
-		>
-			{ question }
-		</Markdown>;
-	};
-
 	const renderBackControl = () => <Results onResultClick={ handleResultsClick }/>;
 
 	const renderFrontControl = () =>
@@ -121,15 +93,16 @@ const Flashcard: FC<Props> = ({
 
 
 	return <div className={ styles.wrapper } ref={ modal }>
+		<FlashcardQuestionAnswer
+			className={ styles.questionAnswerWrapper }
+			question={ question }
+			answer={ isAnswerShown ? answer : undefined }
+			rendered={ rendered }
+			theorySlides={ renderLinksToTheorySlides(theorySlides) }
+		/>
 		{ isAnswerShown
-			? <>
-				{ renderBackContent(renderLinksToTheorySlides(theorySlides)) }
-				{ renderBackControl() }
-			</>
-			: <>
-				{ renderFrontContent(question) }
-				{ renderFrontControl() }
-			</>
+			? renderBackControl()
+			: renderFrontControl()
 		}
 	</div>;
 

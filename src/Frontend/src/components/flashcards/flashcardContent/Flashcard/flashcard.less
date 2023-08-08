@@ -6,33 +6,19 @@
   flex-direction: column;
 }
 
-.questionFront {
+.questionAnswerWrapper {
   width: 100%;
-  flex-grow: 6;
-
-  margin: 20px 0;
-
-  overflow-y: auto;
-  font-size: 26px;
-  line-height: 1.2;
-  font-family: @defaultFonts;
-}
-
-.questionFront :global {
-  .tex {
-    font-size: 24px;
-  }
+  flex-grow: 1;
+  margin-bottom: 20px;
 }
 
 .showAnswerButtonContainer {
-  margin-top: auto;
   display: flex;
   justify-content: center;
-}
 
-.backTextContainer {
-  margin: 20px 0;
-  flex-grow: 6;
+  @media (min-width: @minLaptopWidth) {
+      justify-content: initial;
+  }
 }
 
 .theoryLinks {
@@ -42,14 +28,4 @@
 
 .wrapper i {
   padding: 0 2px; //fixing bug causing italic text overlap
-}
-
-@media (min-width: @minLaptopWidth) {
-  .questionFront {
-    font-size: 32px;
-  }
-
-  .showAnswerButtonContainer {
-    justify-content: initial;
-  }
 }

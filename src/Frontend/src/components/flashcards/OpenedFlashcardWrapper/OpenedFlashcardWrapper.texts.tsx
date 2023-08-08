@@ -6,7 +6,9 @@ import React from "react";
 
 export default {
 	buildUnitTitle: (title: string) => `Модуль «${ title }»`,
-	flashcardPublishedInfo: 'Флешкарта была опубликована, вы не можете отредактировать или удалить ёё.',
+	flashcardPublishedInfo: 'Поздравляем, модератор опубликовал вашу карточку для всех пользователей! ' +
+		'Её больше нельзя редактировать и удалять. ' +
+		'Спасибо за развитие курса!',
 	meta: {
 		buildAuthorInfo: (name: string) => `Автор: ${ name }`,
 		buildLastChangeInfo: (timeStamp: string) => `Последнее изменение ${ getMoment(timeStamp) }`,
@@ -42,7 +44,7 @@ export default {
 	controls: {
 		edit: <span><Edit/> Редактировать</span>,
 		remove: <span><Trash/> Удалить</span>,
-		publish: <span><EyeOpened/> Опубликовать</span>,
+		publish: <span><EyeOpened/> Начать публикацию</span>,
 		decline: <span><EyeClosed/> Отклонить</span>,
 		publishHint: 'Вы сможете отредактировать карточку перед публикацией'
 	}

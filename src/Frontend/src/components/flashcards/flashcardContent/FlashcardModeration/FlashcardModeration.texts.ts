@@ -1,5 +1,5 @@
 export default {
-	publishButton: 'Опубликовать',
+	publishButton: 'Начать публикацию',
 	declineButton: 'Отклонить',
 	skipButton: 'Пропустить'
 }

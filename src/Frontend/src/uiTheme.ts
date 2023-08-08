@@ -14,6 +14,10 @@ const roundSwitcher = {
 	switcherLabelGapMedium: '24px',
 };
 
+const roundModals = {
+	modalBorderRadius: '16px'
+};
+
 const darkPopups = {
 	textColorDefault: '#fff',
 	bgDefault: '#333333cc',
@@ -35,7 +39,8 @@ const reviewTooltip = {
 
 export default ThemeFactory.create({
 	...roundButtons,
-	...roundSwitcher
+	...roundSwitcher,
+	...roundModals
 }, DEFAULT_THEME);
 
 export const textareaHidden = ThemeFactory.create({

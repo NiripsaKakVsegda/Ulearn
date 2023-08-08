@@ -55,52 +55,59 @@ const UnitCard: FC<Props> = ({
 					{ unitTitle }
 				</h3>
 				<div className={ styles.unitCardBody }>
-					<span>
+					<div>
 						{ totalPublishedFlashcardsCount > 0
 							? texts.buildCardsCountInfo(totalPublishedFlashcardsCount)
 							: texts.noCardsInUnitInfo
 						}
-					</span>
-					{ (isModerator && !!approvedUserFlashcardsCount) &&
-						<span className={ styles.approvedCardsInfo }>
-							({ texts.buildApprovedUserCardsCountInfo(approvedUserFlashcardsCount) }
-							<button
-								className={ styles.moderationButton }
-								onClick={ actions.onModerateApprovedFlashcards }
-								children={ texts.viewCardsButton }
-							/>)
-						</span>
+					</div>
+					{ isModerator &&
+						<div>
+							{ texts.buildApprovedUserCardsCountInfo(approvedUserFlashcardsCount ?? 0) }
+							&nbsp;
+							{ !!approvedUserFlashcardsCount &&
+								<button
+									className={ styles.moderationButton }
+									onClick={ actions.onModerateApprovedFlashcards }
+									children={ texts.viewCardsButton }
+								/>
+							}
+						</div>
 					}
 					{ isModerator &&
-						<div className={ styles.moderatorInfo }>
-							<div>
-								{ texts.buildNewUserCardsCountInfo(newUserFlashcardsCount ?? 0) }
-								{ !!newUserFlashcardsCount &&
-									<button
-										className={ styles.moderationButton }
-										onClick={ actions.onModerateNewFlashcards }
-										children={ texts.viewAndPublishCardsButton }
-									/>
-								}
-							</div>
-							<div>
-								{ !!declinedUserFlashcardsCount && <>
-									{ texts.buildDeclinedUserCardsCountInfo(declinedUserFlashcardsCount ?? 0) }
-									<button
-										className={ styles.moderationButton }
-										onClick={ actions.onModerateDeclinedFlashcards }
-										children={ texts.viewCardsButton }
-									/>
-								</>
-								}
-							</div>
+						<div>
+							{ texts.buildNewUserCardsCountInfo(newUserFlashcardsCount ?? 0) }
+							&nbsp;
+							{ !!newUserFlashcardsCount &&
+								<button
+									className={ styles.moderationButton }
+									onClick={ actions.onModerateNewFlashcards }
+									children={ texts.viewAndPublishCardsButton }
+								/>
+							}
+						</div>
+					}
+					{ (isModerator && !!declinedUserFlashcardsCount) &&
+						<div>
+							{ texts.buildDeclinedUserCardsCountInfo(declinedUserFlashcardsCount ?? 0) }
+							&nbsp;
+							<button
+								className={ styles.moderationButton }
+								onClick={ actions.onModerateDeclinedFlashcards }
+								children={ texts.viewCardsButton }
+							/>
 						</div>
 					}
 				</div>
 			</header>
 			<div className={ styles.buttonsContainer }>
 				<Button size={ isNotPhone ? "large" : "small" } onClick={ actions.onStartChecking }>
-					{ totalPublishedFlashcardsCount > 0 ? texts.startCheckButton : texts.learnMoreButton }
+					{ totalPublishedFlashcardsCount > 0
+						? texts.startCheckButton
+						: isNotPhone
+							? texts.learnMoreButton
+							: texts.learnMoreButtonMobile
+					}
 				</Button>
 
 				<Hint
@@ -116,7 +123,10 @@ const UnitCard: FC<Props> = ({
 						onClick={ actions.onCreateNewFlashcard }
 						disabled={ !canCreateFlashcard }
 					>
-						{ texts.createCardButton }
+						{ isNotPhone
+							? texts.createCardButton
+							: texts.createCardButtonMobile
+						}
 					</Button>
 				</Hint>
 			</div>

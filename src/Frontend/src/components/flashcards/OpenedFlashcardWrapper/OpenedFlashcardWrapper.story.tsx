@@ -4,6 +4,7 @@ import { userGeneratedFlashcard } from "../storyData";
 import { mockFunc } from "../../../utils/storyMock";
 import { ShortUserInfo } from "../../../models/users";
 import { FlashcardModerationStatus } from "../../../models/flashcards";
+import { disableViewport } from "../../course/Navigation/stroies.data";
 
 export default {
 	title: "cards/OpenedFlashcardWrapper",
@@ -13,7 +14,8 @@ export default {
 			options: [mockFunc, undefined],
 			control: { type: 'radio' }
 		}
-	}
+	},
+	...disableViewport
 } as ComponentMeta<typeof OpenedFlashcardWrapper>;
 const Template: ComponentStory<typeof OpenedFlashcardWrapper> = (args) => (
 	<OpenedFlashcardWrapper
@@ -72,7 +74,7 @@ OpenedFlashcardWrapperForModeratorOwnerPublishedStory.args = {
 	controls: {
 		onStartEditFlashcard: mockFunc,
 		onRemoveFlashcard: mockFunc,
-		onApproveFlashcard: mockFunc,
+		onDeclineFlashcard: mockFunc,
 	},
 	onClose: mockFunc
 };

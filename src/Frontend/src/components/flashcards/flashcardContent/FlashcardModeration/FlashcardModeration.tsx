@@ -1,8 +1,7 @@
 import React, { FC } from 'react';
 import { FlashcardModerationStatus } from "../../../../models/flashcards";
-import FlashcardBackContent from "../../components/FlashcardBackContent/FlashcardBackContent";
+import FlashcardQuestionAnswer from "../../components/FlashcardQuestionAnswer/FlashcardQuestionAnswer";
 import { Button } from "ui";
-import { EyeClosed, EyeOpened, Skip } from "icons";
 import styles from './flashcardModeration.less';
 import texts from './FlashcardModeration.texts';
 
@@ -20,7 +19,6 @@ const FlashcardModeration: FC<Props> = ({ question, answer, status, ...actions }
 		return <div className={ styles.buttonsWrapper }>
 			{ status !== FlashcardModerationStatus.Approved &&
 				<Button
-					icon={ <EyeOpened/> }
 					use={ 'primary' }
 					size={ "large" }
 					onClick={ actions.onApproveFlashcard }
@@ -30,7 +28,6 @@ const FlashcardModeration: FC<Props> = ({ question, answer, status, ...actions }
 			}
 			{ status !== FlashcardModerationStatus.Declined &&
 				<Button
-					icon={ <EyeClosed/> }
 					size={ "large" }
 					use={ 'danger' }
 					children={ texts.declineButton }
@@ -38,7 +35,6 @@ const FlashcardModeration: FC<Props> = ({ question, answer, status, ...actions }
 				/>
 			}
 			<Button
-				icon={ <Skip/> }
 				size={ "large" }
 				children={ texts.skipButton }
 				onClick={ skipFlashcard }
@@ -48,7 +44,7 @@ const FlashcardModeration: FC<Props> = ({ question, answer, status, ...actions }
 
 	return (
 		<div className={ styles.wrapper }>
-			<FlashcardBackContent
+			<FlashcardQuestionAnswer
 				className={ styles.flashcardContentWrapper }
 				question={ question }
 				answer={ answer }

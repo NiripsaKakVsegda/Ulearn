@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/reducers";
 import { SlideType } from "../../../models/slide";
 import getFlashcardsWithTheorySlides, { getCourseSlides } from "../utils/getFlashcardsWithTheorySlides";
+import { FlashcardType, UserGeneratedFlashcard } from "../../../models/flashcards";
 
 const PreviewUnitPageFromAllCourseConnected: FC = () => {
 	const params = useParams<Partial<MatchParams>>();
@@ -27,6 +28,16 @@ const PreviewUnitPageFromAllCourseConnected: FC = () => {
 		})
 	});
 
+	const approvedCourseFlashcards = courseFlashcards
+		.map(unitFlashcards => ({
+			...unitFlashcards,
+			flashcards: unitFlashcards.flashcards
+				.filter(f =>
+					f.flashcardType !== FlashcardType.UserFlashcard ||
+					(f as UserGeneratedFlashcard).isPublished
+				)
+		}))
+
 	const flashcardSlideSlugsByUnitId = (courseInfo?.units ?? []).reduce(
 		(result, unitInfo) => {
 			const flashcardSlide = unitInfo.slides.find(slide => slide.type === SlideType.Flashcards);
@@ -42,7 +53,7 @@ const PreviewUnitPageFromAllCourseConnected: FC = () => {
 			courseId={ courseId }
 			unitId={ unitId ?? undefined }
 			onChangeUnit={ changeUnit }
-			courseFlashcards={ courseFlashcards }
+			courseFlashcards={ approvedCourseFlashcards }
 			isFlashcardsLoading={ isFlashcardsLoading }
 			flashcardSlideSlugsByUnitId={ flashcardSlideSlugsByUnitId }
 		/>

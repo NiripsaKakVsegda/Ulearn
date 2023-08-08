@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import { Button, Hint, Textarea } from "ui";
 import MarkdownDocLink from "../../../common/Markdown/MarkdownDocLink";
-import FlashcardBackContent from "../../components/FlashcardBackContent/FlashcardBackContent";
+import FlashcardQuestionAnswer from "../../components/FlashcardQuestionAnswer/FlashcardQuestionAnswer";
 import styles from './flashcardEditor.less';
 import texts from './FlashcardEditor.texts';
 
@@ -29,7 +29,7 @@ const FlashcardEditor: FC<Props> = (props) => {
 	return (
 		<div className={ styles.wrapper }>
 			{ isPreviewMode
-				? <FlashcardBackContent
+				? <FlashcardQuestionAnswer
 					className={ styles.previewWrapper }
 					question={ question }
 					answer={ answer }

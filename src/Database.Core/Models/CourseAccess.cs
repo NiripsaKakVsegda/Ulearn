@@ -63,7 +63,7 @@ namespace Database.Models
 		[Display(Name = "Видеть, в каких группах состоят все студенты")]
 		ViewAllGroupMembers = 4,
 
-		[Display(Name = "Модерировать флешкарты созданные пользователями")]
+		[Display(Name = "Модерировать флешкарты")]
 		[StudentCourseAccess]
 		ModerateUserGeneratedFlashcards = 5,
 

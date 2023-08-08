@@ -1,0 +1,47 @@
+@import "/src/variables";
+
+.scrollContainer > div {
+  height: 100%; // Фикс для ScrollContainer. Иначе скролл показывается даже когда контент влазит без него
+}
+
+.contentWrapper {
+  padding-right: 8px;
+  font-family: @defaultFonts;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  animation: appear 300ms;
+
+   img {
+     max-width: 100%;
+   }
+}
+
+.question {
+  font-size: 24px;
+}
+
+.questionSingle {
+  font-size: 26px;
+
+  @media (min-width: @minLaptopWidth) {
+    font-size: 32px;
+  }
+}
+
+.answer {
+  margin-top: 25px;
+  font-size: 20px;
+
+  & > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1.0;
+  }
+}

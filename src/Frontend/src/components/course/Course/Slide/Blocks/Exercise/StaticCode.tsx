@@ -78,7 +78,7 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 					<Copy size={ 20 }/>
 				</Hint>
 			</div> }
-			{ (language === Language.python3 || language === Language.python2) &&
+			{ (!disableStyles && (language === Language.python3 || language === Language.python2)) &&
 				<div className={ lines.length > 1 ? styles.visualizerButton : styles.visualizerButtonSingleLine }>
 					<Hint text={ texts.controls.visualizer.text }>
 						<VisualizerButton
