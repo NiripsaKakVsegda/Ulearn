@@ -5,7 +5,7 @@ import Guides from "../components/Guides/Guides";
 import Flashcards from "../Flashcards/Flashcards";
 import { Button } from "ui";
 import { guides as defaultGuides } from "../utils/consts";
-import { UnitFlashcards } from "../../../models/flashcards";
+import { UnitFlashcards, UserGeneratedFlashcard } from "../../../models/flashcards";
 import { InfoByUnit } from "../../../models/course";
 import styles from './courseFlashcardsPage.less';
 import texts from './CourseFlashcardsPage.texts';
@@ -20,6 +20,7 @@ interface Props {
 	flashcardSlideSlugsByUnitId?: { [unitId: string]: string };
 
 	courseFlashcards: UnitFlashcards[];
+	newUserFlashcards: UserGeneratedFlashcard[];
 	isFlashcardsLoading: boolean;
 	flashcardsActions: FlashcardsActions;
 }
@@ -27,7 +28,7 @@ interface Props {
 const CourseFlashcardsPage: FC<Props> = (props) => {
 	const { userId, isModerator } = props;
 	const { courseId, guides, flashcardSlideSlugsByUnitId } = props;
-	const { courseFlashcards, isFlashcardsLoading } = props;
+	const { courseFlashcards, newUserFlashcards, isFlashcardsLoading } = props;
 	const [isFlashcardsShown, setIsFlashcardsShown] = useState(false);
 
 	if(isFlashcardsLoading) {
@@ -60,7 +61,7 @@ const CourseFlashcardsPage: FC<Props> = (props) => {
 		<>
 			{ renderHeader() }
 			<CourseCards
-				infoByUnits={ buildInfoByUnits(courseFlashcards) }
+				infoByUnits={ buildInfoByUnits(courseFlashcards, newUserFlashcards) }
 				courseId={ courseId }
 			/>
 			<Guides guides={ guides ?? defaultGuides }/>
@@ -86,12 +87,15 @@ const CourseFlashcardsPage: FC<Props> = (props) => {
 		setIsFlashcardsShown(false);
 	}
 
-	function buildInfoByUnits(flashcards: UnitFlashcards[]): InfoByUnit[] {
+	function buildInfoByUnits(flashcards: UnitFlashcards[], newUserFlashcards: UserGeneratedFlashcard[]): InfoByUnit[] {
 		return flashcards.map(unit => ({
 			unitId: unit.unitId,
 			unitTitle: unit.unitTitle,
 			unlocked: unit.unlocked,
 			cardsCount: unit.flashcards.length,
+			newUsersCardsCount: isModerator
+				? newUserFlashcards.filter(f => f.unitId === unit.unitId).length
+				: undefined,
 			flashcardsSlideSlug: flashcardSlideSlugsByUnitId?.[unit.unitId] ?? ''
 		}));
 	}

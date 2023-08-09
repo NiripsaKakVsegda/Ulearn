@@ -10,7 +10,7 @@ public interface IUserGeneratedFlashcardsRepo
 {
 	Task<UserGeneratedFlashcard> GetFlashcardById(Guid id);
 	[ItemCanBeNull] Task<UserGeneratedFlashcard> FindFlashcardById(Guid id);
-	Task<List<UserGeneratedFlashcard>> GetUnitFlashcards(string courseId, Guid unitId, [CanBeNull] FlashcardModerationStatus? status = null);
+	Task<List<UserGeneratedFlashcard>> GetFlashcards(string courseId, [CanBeNull] Guid? unitId = null, [CanBeNull] FlashcardModerationStatus? status = null);
 	Task<List<UserGeneratedFlashcard>> GetCourseFlashcardsRatableForUser(string courseId, string userId);
 	Task<UserGeneratedFlashcard> AddFlashcard(string ownerId, string courseId, Guid unitId, string question, string answer, bool approved = false);
 	Task<UserGeneratedFlashcard> EditFlashcard(Guid flashcardId, [CanBeNull] string question = null, [CanBeNull] string answer = null);

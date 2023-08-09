@@ -105,7 +105,7 @@ const Flashcards: FC<Props> = (props) => {
 		? buildFlashcardControls(currentFlashcard)
 		: undefined;
 
-	const unitTitle = currentFlashcard
+	const unitTitle = !isModerating && currentFlashcard
 		? props.courseFlashcards
 			.find(u => u.flashcards.some(f => f.id === currentFlashcard.id))?.unitTitle
 		: props.unitTitle;

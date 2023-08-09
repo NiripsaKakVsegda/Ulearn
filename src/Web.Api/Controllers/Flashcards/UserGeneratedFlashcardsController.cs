@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 using Ulearn.Common.Api.Models.Responses;
-using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Parameters.Flashcards;
 using Ulearn.Web.Api.Models.Responses.Flashcards;
@@ -46,26 +46,33 @@ public class UserGeneratedFlashcardsController : BaseFlashcardController
 		this.unitsRepo = unitsRepo;
 	}
 
-	[HttpGet("{courseId}/{unitId:guid}")]
+	[HttpGet]
 	[Authorize]
 	[SwaggerResponse((int)HttpStatusCode.OK)]
 	[SwaggerResponse((int)HttpStatusCode.NotFound)]
 	[SwaggerResponse((int)HttpStatusCode.Forbidden)]
 	public async Task<ActionResult<UserGeneratedFlashcardsResponse>> GetUserGeneratedFlashcards(
-		[FromRoute] Course course,
-		[FromRoute] Guid unitId,
+		[FromQuery] [Required] string courseId,
+		[FromQuery] [CanBeNull] Guid? unitId,
 		[FromQuery] [CanBeNull] FlashcardModerationStatus? status
 	)
 	{
+		var course = courseStorage.FindCourse(courseId);
+		if (course is null)
+			return NotFound(new ErrorResponse($"Course with id {courseId} not found"));
+
 		if (!await CanUserModerateFlashcards(course.Id))
 			return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You has no access to user flashcards!"));
 
-		var visibleUnitsIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
-		var unit = course.FindUnitById(unitId, visibleUnitsIds);
-		if (unit is null)
-			return NotFound(new ErrorResponse($"Unit with id {unitId} not found in course!"));
+		if (unitId is { } unitIdValue)
+		{
+			var visibleUnitsIds = await unitsRepo.GetVisibleUnitIds(course, UserId);
+			var unit = course.FindUnitById(unitIdValue, visibleUnitsIds);
+			if (unit is null)
+				return NotFound(new ErrorResponse($"Unit with id {unitId} not found in course!"));
+		}
 
-		var flashcards = await userFlashcardsRepo.GetUnitFlashcards(course.Id, unitId, status);
+		var flashcards = await userFlashcardsRepo.GetFlashcards(course.Id, unitId, status);
 		var flashcardsRates = (await visitsRepo.GetLastUserFlashcardsVisitsAsync(UserId, course.Id, unitId))
 			.ToDictionary(
 				g => g.FlashcardId,

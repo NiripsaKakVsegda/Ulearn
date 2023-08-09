@@ -42,13 +42,14 @@ const UnitFlashcardsPageConnected: FC = () => {
 	});
 
 	const { newUserFlashcards, isNewUserFlashcardsLoading } = userFlashcardsApi.useGetFlashcardsQuery(
-		{ courseId, unitId: unit?.id ?? '', status: FlashcardModerationStatus.New },
+		{ courseId, status: FlashcardModerationStatus.New },
 		{
 			selectFromResult: ({ data, isLoading }) => ({
-				newUserFlashcards: data?.flashcards ?? [],
+				newUserFlashcards: data?.flashcards
+					.filter(f => f.unitId === unit?.id) ?? [],
 				isNewUserFlashcardsLoading: isLoading
 			}),
-			skip: !isModerator || !unit
+			skip: !isModerator
 		});
 
 	const { declinedUserFlashcards, isDeclinedUserFlashcardsLoading } = userFlashcardsApi.useGetFlashcardsQuery(

@@ -72,8 +72,12 @@
 .unitCardTitle {
   max-height: 84px;
 
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+
   font-size: 20px;
   line-height: 28px;
   font-weight: normal;
@@ -81,9 +85,11 @@
 }
 
 .unitCardBody {
-  margin: 0;
+  margin-top: 8px;
   font-size: 14px;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
 }
 
 .unitCardButton {

@@ -25,12 +25,12 @@ export const userFlashcardsApi = createApi({
 			UserGeneratedFlashcardsResponse,
 			{
 				courseId: string,
-				unitId: string,
-				status: FlashcardModerationStatus
+				unitId?: string,
+				status?: FlashcardModerationStatus
 			}
 		>({
-			query: ({ courseId, unitId, ...params }) => ({
-				url: `${ courseId }/${ unitId }`,
+			query: (params) => ({
+				url: '',
 				params: params
 			})
 		}),
@@ -226,6 +226,11 @@ function updateQueryData(
 	updateRecipe: (draft: MaybeDrafted<UserGeneratedFlashcardsResponse>) => void
 ) {
 	if(flashcard.moderationStatus) {
+		dispatch(userFlashcardsApi.util.updateQueryData(
+			'getFlashcards',
+			{ courseId: flashcard.courseId, status: flashcard.moderationStatus },
+			updateRecipe
+		));
 		dispatch(userFlashcardsApi.util.updateQueryData(
 			'getFlashcards',
 			{ courseId: flashcard.courseId, unitId: flashcard.unitId, status: flashcard.moderationStatus },

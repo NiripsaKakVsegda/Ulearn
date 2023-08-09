@@ -9,6 +9,8 @@ import { SlideType } from "../../../models/slide";
 import getFlashcardsWithTheorySlides, { getCourseSlides } from "../utils/getFlashcardsWithTheorySlides";
 import { useFlashcardsActions } from "../utils/useFlashcardsActions";
 import { canModerateFlashcards } from "../utils/canModerateFlashcards";
+import { userFlashcardsApi } from "../../../redux/toolkit/api/userFlashcardsApi";
+import { FlashcardModerationStatus } from "../../../models/flashcards";
 
 const CourseFlashcardsPageConnected: FC = () => {
 	const params = useParams<Partial<MatchParams>>();
@@ -33,6 +35,16 @@ const CourseFlashcardsPageConnected: FC = () => {
 		})
 	});
 
+	const { newUserFlashcards, isNewUserFlashcardsLoading } = userFlashcardsApi.useGetFlashcardsQuery(
+		{ courseId, status: FlashcardModerationStatus.New },
+		{
+			selectFromResult: ({ data, isLoading }) => ({
+				newUserFlashcards: data?.flashcards ?? [],
+				isNewUserFlashcardsLoading: isLoading
+			}),
+			skip: !isModerator
+		});
+
 	const flashcardActions = useFlashcardsActions();
 
 	const flashcardSlideSlugsByUnitId = (courseInfo?.units ?? []).reduce(
@@ -50,7 +62,8 @@ const CourseFlashcardsPageConnected: FC = () => {
 		isModerator={ isModerator }
 		courseId={ courseId }
 		courseFlashcards={ courseFlashcards }
-		isFlashcardsLoading={ isFlashcardsLoading }
+		newUserFlashcards={ newUserFlashcards }
+		isFlashcardsLoading={ isFlashcardsLoading || isNewUserFlashcardsLoading }
 		flashcardSlideSlugsByUnitId={ flashcardSlideSlugsByUnitId }
 		flashcardsActions={ flashcardActions }
 	/>;

@@ -42,6 +42,7 @@ interface InfoByUnit {
 	unlocked: boolean;
 	cardsCount: number;
 	flashcardsSlideSlug: string;
+	newUsersCardsCount?: number;
 }
 
 export interface AbstractScoringGroupInfo {

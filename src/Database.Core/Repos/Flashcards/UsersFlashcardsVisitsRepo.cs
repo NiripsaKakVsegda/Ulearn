@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repos.Flashcards
@@ -42,21 +41,16 @@ namespace Database.Repos.Flashcards
 			return await db.UserFlashcardsVisits.Where(c => c.CourseId == courseId).ToListAsync();
 		}
 
-		public async Task<List<UserFlashcardsVisit>> GetLastUserFlashcardsVisitsAsync(string userId, string courseId)
+		public Task<List<UserFlashcardsVisit>> GetLastUserFlashcardsVisitsAsync(string userId, string courseId, Guid? unitId)
 		{
 			courseId = courseId.ToLower();
-			return await db.UserFlashcardsVisits
-				.Where(v => v.UserId == userId && v.CourseId == courseId)
-				.GroupBy(v => new { v.UserId, v.FlashcardId })
-				.Select(g => g.OrderByDescending(v => v.Timestamp).First())
-				.ToListAsync();
-		}
+			var query = db.UserFlashcardsVisits
+				.Where(v => v.UserId == userId && v.CourseId == courseId);
 
-		public async Task<List<UserFlashcardsVisit>> GetLastUserFlashcardsVisitsAsync(string userId, string courseId, Guid unitId)
-		{
-			courseId = courseId.ToLower();
-			return await db.UserFlashcardsVisits
-				.Where(v => v.UserId == userId && v.CourseId == courseId && v.UnitId == unitId)
+			if (unitId is { } unitIdValue)
+				query = query
+					.Where(v => v.UnitId == unitIdValue);
+			return query
 				.GroupBy(v => new { v.UserId, v.FlashcardId })
 				.Select(g => g.OrderByDescending(v => v.Timestamp).First())
 				.ToListAsync();

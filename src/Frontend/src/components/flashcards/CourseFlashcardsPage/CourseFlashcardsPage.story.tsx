@@ -1,6 +1,6 @@
 import React from "react";
 import CourseFlashcardsPage from "./CourseFlashcardsPage";
-import { flashcardsActions, flashcards } from "../storyData";
+import { flashcardsActions, flashcards, userGeneratedFlashcard } from "../storyData";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 
@@ -29,6 +29,7 @@ CourseFlashcardsPageStory.args = {
 	isModerator: false,
 	isFlashcardsLoading: false,
 	courseFlashcards: flashcards,
+	newUserFlashcards: [userGeneratedFlashcard],
 	flashcardSlideSlugsByUnitId: {},
 	guides: guides,
 	flashcardsActions: flashcardsActions,

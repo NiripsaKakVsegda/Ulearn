@@ -27,14 +27,18 @@ public class UserGeneratedFlashcardsRepo : IUserGeneratedFlashcardsRepo
 		return db.UserGeneratedFlashcards.FindAsync(id).AsTask();
 	}
 
-	public Task<List<UserGeneratedFlashcard>> GetUnitFlashcards(string courseId, Guid unitId, FlashcardModerationStatus? status = null)
+	public Task<List<UserGeneratedFlashcard>> GetFlashcards(string courseId, Guid? unitId = null, FlashcardModerationStatus? status = null)
 	{
 		var query = db.UserGeneratedFlashcards
-			.Where(f => f.CourseId == courseId && f.UnitId == unitId);
+			.Where(f => f.CourseId == courseId);
 
-		if (status is not null)
+		if (unitId is { } unitIdValue)
 			query = query
-				.Where(f => f.ModerationStatus == status);
+				.Where(f => f.UnitId == unitIdValue);
+
+		if (status is { } statusValue)
+			query = query
+				.Where(f => f.ModerationStatus == statusValue);
 
 		return query.ToListAsync();
 	}

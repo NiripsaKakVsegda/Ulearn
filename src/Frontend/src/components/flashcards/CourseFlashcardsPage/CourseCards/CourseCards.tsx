@@ -35,9 +35,12 @@ const CourseCards: FC<Props> = ({ courseId, infoByUnits }) => {
 					<h3 className={ styles.unitCardTitle }>
 						{ infoByUnit.unitTitle }
 					</h3>
-					<p className={ styles.unitCardBody }>
-						{ infoByUnit.cardsCount } { getCardsPluralForm(infoByUnit.cardsCount) }
-					</p>
+					<div className={ styles.unitCardBody }>
+						<span>{ infoByUnit.cardsCount } { getCardsPluralForm(infoByUnit.cardsCount) }</span>
+						{ !!infoByUnit.newUsersCardsCount &&
+							<span>{ texts.getNewUserFlashcardsInfo(infoByUnit.newUsersCardsCount) }</span>
+						}
+					</div>
 				</div>
 				<div className={ styles.unitCardButton }>
 					{ !infoByUnit.unlocked &&
