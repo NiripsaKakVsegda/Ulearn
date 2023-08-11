@@ -17,7 +17,14 @@ const mapRateTypeToSortingCoefficient = {
 	[RateTypes.rate5]: 1,
 };
 
-export function getNextFlashcardRandomly(sequence: BaseFlashcard[], maxLastRateIndex: number): BaseFlashcard | undefined {
+export function getNextFlashcardRandomly(
+	sequence: BaseFlashcard[],
+	maxLastRateIndex: number
+): BaseFlashcard | undefined {
+	if(!sequence.length) {
+		return;
+	}
+
 	const probabilities = sequence
 		.map(calculateProbability)
 		.sort((a, b) => b.probability - a.probability);
@@ -36,6 +43,8 @@ export function getNextFlashcardRandomly(sequence: BaseFlashcard[], maxLastRateI
 			return flashcard;
 		}
 	}
+
+	return probabilities[probabilities.length - 1].flashcard;
 
 	function calculateProbability(flashcard: BaseFlashcard) {
 		const ratingCoefficient = mapRateTypeToProbabilityCoefficient[flashcard.rate];

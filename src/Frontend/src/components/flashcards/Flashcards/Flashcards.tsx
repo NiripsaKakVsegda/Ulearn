@@ -32,7 +32,7 @@ import {
 import FlashcardModeration from "../flashcardContent/FlashcardModeration/FlashcardModeration";
 import flashcardModerationComparer from "../utils/flashcardModerationComparer";
 import { findMaxLastRateIndex } from "../utils/findMaxLastRateIndex";
-import { getUnitFlashcards } from "../utils/getUnitFlashcards";
+import { getFailedFlashcards, getUnitFlashcards } from "../utils/getUnitFlashcards";
 import { getUnlockedCourseFlashcards } from "../utils/getUnlockedCourseFlashcards";
 import ControlGuides from "../components/ControlGuides/ControlGuides";
 import { EditingState, FlashcardsActions, FlashcardsState, InitialFlashcardsState } from "./Flashcards.types";
@@ -116,7 +116,7 @@ const Flashcards: FC<Props> = (props) => {
 			(result, unit) => ([...result, ...unit.flashcards]),
 			[] as BaseFlashcard[]
 		)));
-		handleChooseNextState(state);
+		initializeState(state);
 
 		const body = document.querySelector('body');
 		body?.classList.add(styles.overflow);
@@ -128,7 +128,7 @@ const Flashcards: FC<Props> = (props) => {
 		if(chooseFlashcardState) {
 			return <FlashcardChoose
 				currentState={ chooseFlashcardState }
-				onChooseNextState={ handleChooseNextState }
+				onChooseNextState={ initializeState }
 			/>;
 		}
 
@@ -258,6 +258,11 @@ const Flashcards: FC<Props> = (props) => {
 
 		const newLastRateIndex = maxLastRateIndex + 1;
 		props.flashcardsActions.onSendFlashcardRate(props.courseId, currentFlashcard.id, rate, newLastRateIndex);
+		const updatedFlashcard = {
+			...currentFlashcard,
+			rate,
+			lastRateIndex: newLastRateIndex
+		};
 
 		const newStatistics = { ...statistics };
 		newStatistics[currentFlashcard.rate]--;
@@ -268,14 +273,14 @@ const Flashcards: FC<Props> = (props) => {
 
 		let newSessionFlashcards = sessionFlashcards;
 		if(state === FlashcardsState.CourseRepeating) {
-			newSessionFlashcards = newSessionFlashcards.map(f => f.id === currentFlashcard.id
-				? { ...f, rate, lastRateIndex: newLastRateIndex }
+			newSessionFlashcards = newSessionFlashcards.map(f => f.id === updatedFlashcard.id
+				? updatedFlashcard
 				: f
 			);
 			setSessionFlashcards(newSessionFlashcards);
 		}
 
-		takeNextFlashcard(state, newSessionFlashcards);
+		takeNextFlashcard(state, newSessionFlashcards, updatedFlashcard);
 	}
 
 	function createFlashcard(question: string, answer: string, approved?: boolean) {
@@ -436,7 +441,7 @@ const Flashcards: FC<Props> = (props) => {
 // End ActionsHandlers
 
 // StateMachine
-	function handleChooseNextState(newState: FlashcardsState) {
+	function initializeState(newState: FlashcardsState) {
 		setChooseFlashcardState(undefined);
 		switch (newState) {
 			case FlashcardsState.NoFlashcards:
@@ -461,7 +466,11 @@ const Flashcards: FC<Props> = (props) => {
 		animateCards();
 	}
 
-	function takeNextFlashcard(currentState?: FlashcardsState, flashcards?: BaseFlashcard[]): void {
+	function takeNextFlashcard(
+		currentState?: FlashcardsState,
+		flashcards?: BaseFlashcard[],
+		lastRatedFlashcard?: BaseFlashcard
+	) {
 		currentState ??= state;
 		flashcards ??= sessionFlashcards;
 
@@ -476,7 +485,7 @@ const Flashcards: FC<Props> = (props) => {
 				if(flashcards.length > 0) {
 					getNextCardByShift(flashcards);
 				} else {
-					initializeUnitRepeatingState();
+					initializeUnitRepeatingState(lastRatedFlashcard);
 				}
 				break;
 			case FlashcardsState.UnitRepeating:
@@ -522,20 +531,35 @@ const Flashcards: FC<Props> = (props) => {
 		setSessionFlashcards(newSessionFlashcards);
 	}
 
-	function initializeUnitRepeatingState() {
-		const failedUnitFlashcards = unitId
-			? sortFlashcardsInAuthorsOrderWithRate(getUnitFlashcards(props.courseFlashcards, unitId, true))
-			: [];
+	function initializeUnitRepeatingState(lastRatedFlashcard?: BaseFlashcard) {
+		if(!unitId) {
+			takeNextFlashcard(FlashcardsState.UnitRepeating, []);
+			return;
+		}
 
-		if(failedUnitFlashcards.length === 0) {
+		let flashcards = getUnitFlashcards(props.courseFlashcards, unitId);
+		if(lastRatedFlashcard) {
+			flashcards = flashcards
+				.map(f => f.id === lastRatedFlashcard?.id
+					? lastRatedFlashcard
+					: f
+				);
+		}
+		flashcards = sortFlashcardsInAuthorsOrderWithRate(getFailedFlashcards(flashcards));
+		if(flashcards.length > 1 && flashcards[0].id === lastRatedFlashcard?.id) {
+			flashcards.shift();
+			flashcards.push(lastRatedFlashcard);
+		}
+
+		if(flashcards.length === 0 || flashcards[0].id === lastRatedFlashcard?.id) {
 			takeNextFlashcard(FlashcardsState.UnitRepeating, []);
 			return;
 		}
 
 		setState(FlashcardsState.UnitRepeating);
-		const newCurrentFlashcard = failedUnitFlashcards.shift();
+		const newCurrentFlashcard = flashcards.shift();
 		setCurrentFlashcard(newCurrentFlashcard);
-		setSessionFlashcards(failedUnitFlashcards);
+		setSessionFlashcards(flashcards);
 	}
 
 	function initializeCourseRepeatingState() {

@@ -40,6 +40,10 @@
   width: 100vw;
   height: calc(100vh - @headerHeight - @progressBarHeight);
 
+  @supports (height: 100dvh) {
+    height: calc(100dvh - @headerHeight - @progressBarHeight)
+  }
+
   max-width: 100vw;
   max-height: 100%;
 
