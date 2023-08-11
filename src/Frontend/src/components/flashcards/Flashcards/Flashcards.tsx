@@ -528,7 +528,7 @@ const Flashcards: FC<Props> = (props) => {
 			: [];
 
 		if(failedUnitFlashcards.length === 0) {
-			takeNextFlashcard(FlashcardsState.NoFlashcards, []);
+			takeNextFlashcard(FlashcardsState.UnitRepeating, []);
 			return;
 		}
 
