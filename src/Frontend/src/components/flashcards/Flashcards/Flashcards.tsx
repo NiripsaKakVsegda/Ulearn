@@ -43,6 +43,7 @@ import texts from './Flashcards.texts';
 interface Props {
 	userId?: string;
 	isModerator: boolean;
+	canViewProfiles?: boolean;
 	courseId: string;
 	unitId?: string;
 	unitTitle?: string;
@@ -206,35 +207,41 @@ const Flashcards: FC<Props> = (props) => {
 
 	return (
 		<div ref={ overlay } className={ styles.overlay } onMouseDown={ handleOverlayClick }>
-			<div className={ cn([
-				{ [modalsClassNames.first]: !isAnimating },
-				{ [modalsClassNames.second]: isAnimating },
-				{ [styles.move]: isAnimating },
-				{ [styles.noProgressBar]: noProgressBar }
-			]) }
+			<div
+				className={ cn({
+					[modalsClassNames.first]: !isAnimating,
+					[modalsClassNames.second]: isAnimating,
+					[styles.move]: isAnimating,
+					[styles.noProgressBar]: noProgressBar
+				}) }
 			>
 				<OpenedFlashcardWrapper
 					unitTitle={ unitTitle }
 					onClose={ props.onClose }
 					meta={ flashcardMeta }
 					controls={ flashcardControls }
+					canViewProfiles={ props.canViewProfiles }
 				>
 					{ renderFlashcardContent() }
 				</OpenedFlashcardWrapper>
 			</div>
 
-			<div className={ cn([
-				{ [modalsClassNames.second]: !isAnimating },
-				{ [modalsClassNames.third]: isAnimating },
-				{ [styles.move]: isAnimating },
-				{ [styles.noProgressBar]: noProgressBar }
-			]) }/>
-			<div className={ cn([
-				{ [modalsClassNames.third]: !isAnimating },
-				{ [modalsClassNames.fourth]: isAnimating },
-				{ [styles.move]: isAnimating },
-				{ [styles.noProgressBar]: noProgressBar }
-			]) }/>
+			<div
+				className={ cn({
+					[modalsClassNames.second]: !isAnimating,
+					[modalsClassNames.third]: isAnimating,
+					[styles.move]: isAnimating,
+					[styles.noProgressBar]: noProgressBar
+				}) }
+			/>
+			<div
+				className={ cn({
+					[modalsClassNames.third]: !isAnimating,
+					[modalsClassNames.fourth]: isAnimating,
+					[styles.move]: isAnimating,
+					[styles.noProgressBar]: noProgressBar
+				}) }
+			/>
 			<div className={ modalsClassNames.fourth }/>
 
 			{ !noControlGuides &&

@@ -19,6 +19,13 @@ export function isInstructorFromAccount(accountState: AccountState, courseId: st
 	});
 }
 
+export function canViewProfilesFromAccount(account: AccountState): boolean {
+	return account.isAuthenticated && (
+		account.isSystemAdministrator ||
+		account.systemAccesses.includes(SystemAccessType.viewAllProfiles)
+	);
+}
+
 export function buildUserInfo(user: AccountState, courseId: string,): UserInfo {
 	const { isSystemAdministrator, accessesByCourse, roleByCourse, systemAccesses, isAuthenticated, } = user;
 	const courseAccesses = accessesByCourse[courseId] ? accessesByCourse[courseId] : [];

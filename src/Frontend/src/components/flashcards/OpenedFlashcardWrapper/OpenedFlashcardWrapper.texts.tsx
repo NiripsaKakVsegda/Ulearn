@@ -10,7 +10,7 @@ export default {
 		'Её больше нельзя редактировать и удалять. ' +
 		'Спасибо за развитие курса!',
 	meta: {
-		buildAuthorInfo: (name: string) => `Автор: ${ name }`,
+		author: 'Автор',
 		buildLastChangeInfo: (timeStamp: string) => `Последнее изменение ${ getMoment(timeStamp) }`,
 		buildStatusInfo: (status: FlashcardModerationStatus) => {
 			let statusNode = <span></span>;
@@ -27,7 +27,7 @@ export default {
 			}
 			return <>Статус: { statusNode }</>;
 		},
-		buildModeratorInfo: (name: string) => `Модератор: ${ name }`,
+		moderator: 'Модератор',
 		buildModerationTimeStampInfo: (timestamp: string, status: FlashcardModerationStatus) => {
 			let verb = 'Последняя модерация';
 			switch (status) {

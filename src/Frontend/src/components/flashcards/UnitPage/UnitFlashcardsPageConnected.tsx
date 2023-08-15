@@ -1,15 +1,16 @@
 import React, { FC } from 'react';
-import { useParams } from "react-router-dom";
-import { MatchParams } from "../../../models/router";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import { FlashcardModerationStatus } from "../../../models/flashcards";
+import { MatchParams } from "../../../models/router";
 import { RootState } from "../../../redux/reducers";
-import UnitPage from "./UnitPage";
 import { flashcardsApi } from "../../../redux/toolkit/api/flashcardsApi";
 import { userFlashcardsApi } from "../../../redux/toolkit/api/userFlashcardsApi";
-import { FlashcardModerationStatus } from "../../../models/flashcards";
+import { canViewProfilesFromAccount } from "../../../utils/courseRoles";
+import { canModerateFlashcards } from "../utils/canModerateFlashcards";
 import getFlashcardsWithTheorySlides, { getCourseSlides } from "../utils/getFlashcardsWithTheorySlides";
 import { useFlashcardsActions } from "../utils/useFlashcardsActions";
-import { canModerateFlashcards } from "../utils/canModerateFlashcards";
+import UnitPage from "./UnitPage";
 
 const UnitFlashcardsPageConnected: FC = () => {
 	const params = useParams<Partial<MatchParams>>();
@@ -26,6 +27,7 @@ const UnitFlashcardsPageConnected: FC = () => {
 	const account = state.account;
 	const userId = account.id;
 	const isModerator = canModerateFlashcards(account, courseId, state.instructor.isStudentMode);
+	const canViewProfiles = !state.instructor.isStudentMode && canViewProfilesFromAccount(account);
 
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
 
@@ -68,6 +70,7 @@ const UnitFlashcardsPageConnected: FC = () => {
 		<UnitPage
 			userId={ userId }
 			isModerator={ isModerator }
+			canViewProfiles={ canViewProfiles }
 			courseId={ courseId }
 			unitId={ unit?.id ?? '' }
 			unitTitle={ unit?.title ?? '' }

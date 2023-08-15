@@ -23,6 +23,7 @@ import LoginForContinue from "../../notificationModal/LoginForContinue";
 interface Props {
 	userId?: string;
 	isModerator: boolean;
+	canViewProfiles?: boolean;
 
 	courseId: string;
 	unitId: string;
@@ -123,6 +124,7 @@ const UnitPage: FC<Props> = (props) => {
 					? <Flashcards
 						userId={ userId }
 						isModerator={ isModerator }
+						canViewProfiles={ props.canViewProfiles }
 						initialState={ flashcardsState }
 						courseId={ courseId }
 						unitId={ unitId }

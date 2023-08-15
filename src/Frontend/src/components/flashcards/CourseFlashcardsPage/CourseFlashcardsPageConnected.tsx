@@ -11,6 +11,7 @@ import { useFlashcardsActions } from "../utils/useFlashcardsActions";
 import { canModerateFlashcards } from "../utils/canModerateFlashcards";
 import { userFlashcardsApi } from "../../../redux/toolkit/api/userFlashcardsApi";
 import { FlashcardModerationStatus } from "../../../models/flashcards";
+import { canViewProfilesFromAccount } from "../../../utils/courseRoles";
 
 const CourseFlashcardsPageConnected: FC = () => {
 	const params = useParams<Partial<MatchParams>>();
@@ -24,6 +25,7 @@ const CourseFlashcardsPageConnected: FC = () => {
 	const account = state.account;
 	const userId = account.id;
 	const isModerator = canModerateFlashcards(account, courseId, state.instructor.isStudentMode);
+	const canViewProfiles = !state.instructor.isStudentMode && canViewProfilesFromAccount(account);
 
 	const courseInfo = state.courses.fullCoursesInfo[courseId];
 	const slides = getCourseSlides(courseInfo);
@@ -60,6 +62,7 @@ const CourseFlashcardsPageConnected: FC = () => {
 	return <CourseFlashcardsPage
 		userId={ userId }
 		isModerator={ isModerator }
+		canViewProfiles={ canViewProfiles }
 		courseId={ courseId }
 		courseFlashcards={ courseFlashcards }
 		newUserFlashcards={ newUserFlashcards }

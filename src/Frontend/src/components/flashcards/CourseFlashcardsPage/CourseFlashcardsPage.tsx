@@ -15,6 +15,7 @@ import { getUnlockedCourseFlashcards } from "../utils/getUnlockedCourseFlashcard
 interface Props {
 	userId?: string;
 	isModerator: boolean;
+	canViewProfiles?: boolean;
 	courseId: string;
 	guides?: string[];
 	flashcardSlideSlugsByUnitId?: { [unitId: string]: string };
@@ -46,10 +47,11 @@ const CourseFlashcardsPage: FC<Props> = (props) => {
 						{ texts.flashcardsDescription }
 					</p>
 				</div>
-				<Button disabled={ !hasUnlockedFlashcards }
-						use="primary"
-						size="large"
-						onClick={ showFlashcards }
+				<Button
+					disabled={ !hasUnlockedFlashcards }
+					use="primary"
+					size="large"
+					onClick={ showFlashcards }
 				>
 					{ texts.showFlashcardsButton }
 				</Button>
@@ -69,6 +71,7 @@ const CourseFlashcardsPage: FC<Props> = (props) => {
 				<Flashcards
 					userId={ userId }
 					isModerator={ isModerator }
+					canViewProfiles={ props.canViewProfiles }
 					initialState={ FlashcardsState.CourseRepeating }
 					courseFlashcards={ courseFlashcards }
 					courseId={ courseId }

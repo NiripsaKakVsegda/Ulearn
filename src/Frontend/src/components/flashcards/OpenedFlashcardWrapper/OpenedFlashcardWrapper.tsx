@@ -6,6 +6,7 @@ import { CrossIcon } from "@skbkontur/react-ui/internal/icons/CrossIcon";
 import { FlashcardModerationStatus } from "../../../models/flashcards";
 import styles from "./openedFlashcardWrapper.less";
 import texts from './OpenedFlashcardWrapper.texts';
+import Profile from "../../common/Profile/Profile";
 
 export interface FlashcardMeta {
 	isPublished: boolean;
@@ -28,6 +29,7 @@ export interface Props {
 	onClose?: () => void;
 	meta?: FlashcardMeta;
 	controls?: FlashcardControls;
+	canViewProfiles?: boolean;
 }
 
 const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
@@ -46,7 +48,7 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 		return <div className={ styles.flashcardMetaWrapper }>
 			<div className={ styles.authorInfo }>
 				<span>
-					{ texts.meta.buildAuthorInfo(meta.owner.visibleName) }
+					{ texts.meta.author }: <Profile user={ meta.owner } canViewProfiles={ props.canViewProfiles }/>
 				</span>
 				<span>
 					{ texts.meta.buildLastChangeInfo(meta.lastUpdateTimestamp) }
@@ -58,7 +60,10 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 						{ texts.meta.buildStatusInfo(meta.moderationStatus) }
 					</span>
 					<span>
-						{ texts.meta.buildModeratorInfo(meta.moderator.visibleName) }
+						{ texts.meta.moderator }: <Profile
+						user={ meta.moderator }
+						canViewProfiles={ props.canViewProfiles }
+					/>
 					</span>
 					<span>
 						{ texts.meta.buildModerationTimeStampInfo(meta.moderationTimestamp, meta.moderationStatus) }
