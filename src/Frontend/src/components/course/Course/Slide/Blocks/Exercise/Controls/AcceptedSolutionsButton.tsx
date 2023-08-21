@@ -1,16 +1,15 @@
+import { EyeOpenIcon16Regular } from "@skbkontur/icons/EyeOpenIcon16Regular";
 import React, { useRef } from "react";
+import defaultTheme from "src/uiTheme";
 
-import { Button, Tooltip, TooltipTrigger, ThemeContext, } from "ui";
+import { Button, ThemeContext, Tooltip, TooltipTrigger } from "ui";
 
-import { EyeOpened } from "icons";
+import texts from "../Exercise.texts";
+
+import styles from './Controls.less';
 import IControlWithText from "./IControlWithText";
 
 import ShowControlsTextContext from "./ShowControlsTextContext";
-
-import styles from './Controls.less';
-
-import texts from "../Exercise.texts";
-import defaultTheme from "src/uiTheme";
 
 
 export interface Props extends IControlWithText {
@@ -32,19 +31,19 @@ export default function AcceptedSolutionsButtonFC({
 		<ThemeContext.Provider value={ defaultTheme }>
 				<span className={ styles.exerciseControls } onClick={ showAcceptedSolutionsWarning }>
 					<Tooltip
-						useWrapper
 						ref={ tooltip }
 						pos={ "bottom left" }
 						trigger={ tooltipTrigger }
-						render={ renderAcceptedSolutionsHint }>
-						<span className={ styles.exerciseControlsIcon }>
-							<EyeOpened/>
+						render={ renderAcceptedSolutionsHint }
+					>
+						<span className={ styles.exerciseControlsGapped }>
+							<EyeOpenIcon16Regular/>
+							<ShowControlsTextContext.Consumer>
+								{
+									(showControlsTextContext) => (showControlsText || showControlsTextContext) && texts.controls.acceptedSolutions.text
+								}
+							</ShowControlsTextContext.Consumer>
 						</span>
-						<ShowControlsTextContext.Consumer>
-							{
-								(showControlsTextContext) => (showControlsText || showControlsTextContext) && texts.controls.acceptedSolutions.text
-							}
-						</ShowControlsTextContext.Consumer>
 					</Tooltip>
 				</span>
 		</ThemeContext.Provider>

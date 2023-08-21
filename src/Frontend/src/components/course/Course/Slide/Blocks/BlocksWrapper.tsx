@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Hint, } from "ui";
-import { EyeClosed } from "icons";
+import { EyeOffIcon20Regular } from "@skbkontur/icons/EyeOffIcon20Regular";
 
 import classNames from "classnames";
 
@@ -55,7 +55,7 @@ function BlocksWrapper({
 		return (
 			<div className={ wrapperClass }>
 				<Hint pos={ "top right" } text={ hiddenHintText }>
-					<EyeClosed/>
+					<EyeOffIcon20Regular className={ styles.eyeClosedIcon }/>
 				</Hint>
 			</div>
 		);

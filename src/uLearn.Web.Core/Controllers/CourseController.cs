@@ -321,7 +321,7 @@ public class CourseController : BaseController
 		if (manualChecking != null)
 			userId = manualChecking.UserId;
 
-		var defaultProhibitFurtherReview = await groupsRepo.GetDefaultProhibitFutherReviewForUser(course.Id, userId, User.GetUserId());
+		var defaultProhibitFurtherReview = await groupsRepo.GetDefaultProhibitFurtherReviewForUser(course.Id, userId, User.GetUserId());
 		var manualCheckingsLeftInQueue = manualChecking != null ? await ControllerUtils.GetManualCheckingsCountInQueue(slideCheckingsRepo, groupsRepo, groupAccessesRepo, User, course.Id, slide, groupsIds) : 0;
 
 		var (notArchivedGroupNames, archivedGroupNames) = await GetGroupNames(course, manualChecking);

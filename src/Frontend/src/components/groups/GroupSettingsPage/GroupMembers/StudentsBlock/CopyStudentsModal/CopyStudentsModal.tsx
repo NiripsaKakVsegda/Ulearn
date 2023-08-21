@@ -2,23 +2,20 @@ import React, { FC, FormEvent, useState } from 'react';
 import styles from './copyStudentsModal.less';
 import texts from './CopyStudentsModal.Texts';
 import { Button, Loader, Modal, Select } from "ui";
-import { GroupInfo } from "../../../../../../models/groups";
 import { ShortCourseInfo } from "../../../../../../models/course";
+import { useGroupsSearch } from "../../../../../common/GroupsSearch/useGroupsSearch";
+import GroupsSearchCombobox from "../../../../../common/GroupsSearch/GroupsSearchCombobox";
+import { ShortGroupInfo } from "../../../../../../models/comments";
 
 interface Props {
 	checkedStudentIds: string[];
 	onClose: () => void;
 
 	getCourses: () => { courses: ShortCourseInfo[], isCoursesLoading: boolean };
-	getCourseGroups: () => {
-		groups: GroupInfo[],
-		isGroupsLoading: boolean,
-		fetchGroups: (courseId: string) => void
-	};
-	onCopyStudents: (group: GroupInfo, studentIds: string[]) => void;
+	onCopyStudents: (group: ShortGroupInfo, studentIds: string[]) => void;
 }
 
-const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, getCourseGroups, onCopyStudents }) => {
+const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, onCopyStudents }) => {
 	const { courses, isCoursesLoading } = getCourses();
 	const coursesItems = courses
 		.filter(course => !course.isTempCourse)
@@ -26,56 +23,38 @@ const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, 
 		.map(course => [course.id, course.title]);
 	const [selectedCourseId, setSelectedCourseId] = useState<string>();
 
-	const { groups, isGroupsLoading, fetchGroups } = getCourseGroups();
-	const groupsItems = groups.map(group => [
-		group.id,
-		`${ group.name }: ${ texts.buildStudentsCountMessage(group.studentsCount) }`
-	]);
-	const [selectedGroupId, setSelectedGroupId] = useState<number>();
+	const searchGroups = useGroupsSearch(selectedCourseId);
+	const [selectedGroup, setSelectedGroup] = useState<ShortGroupInfo>();
 
-	const CourseSelect: FC = () => {
-		return (
-			<Loader type="normal" active={ isCoursesLoading }>
-				<p className={ styles["course-info"] }>
-					{ texts.selectCourseInfo }
-				</p>
-				<label className={ styles["select-course"] }>
-					<Select<string>
-						items={ coursesItems }
-						onValueChange={ onCourseChange }
-						width={ 200 }
-						placeholder={ texts.selectCoursePlaceholder }
-						value={ selectedCourseId }
-					/>
-				</label>
-			</Loader>
-		);
-	};
+	const renderCourseSelect = () =>
+		<Loader type="normal" active={ isCoursesLoading }>
+			<p className={ styles["course-info"] }>
+				{ texts.selectCourseInfo }
+			</p>
+			<label className={ styles["select-course"] }>
+				<Select<string>
+					items={ coursesItems }
+					onValueChange={ onCourseChange }
+					width={ 200 }
+					placeholder={ texts.selectCoursePlaceholder }
+					value={ selectedCourseId }
+				/>
+			</label>
+		</Loader>;
 
-	const GroupSelect: FC = () => {
-		return (
-			<Loader type="normal" active={ isGroupsLoading }>
-				<p className={ styles["group-info"] }>
-					{ texts.selectGroupInfo }
-				</p>
-				<label className={ styles["select-group"] }>
-					<Select<number>
-						items={ groupsItems }
-						onValueChange={ setSelectedGroupId }
-						width={ 200 }
-						placeholder={ texts.selectGroupPlaceholder }
-						value={ selectedGroupId }
-						disabled={ !groups.length }
-					/>
-				</label>
-				{ (selectedCourseId && !isGroupsLoading && !groups.length) &&
-					<p className={ styles["empty-group-info"] }>
-						<b>{ texts.buildGroupsNotFoundMessage(getTitle()) }</b>
-					</p>
-				}
-			</Loader>
-		);
-	};
+	const renderGroupSelect = () =>
+		<div>
+			<p className={ styles["group-info"] }>
+				{ texts.selectGroupInfo }
+			</p>
+			<GroupsSearchCombobox
+				searchGroups={ searchGroups }
+				group={ selectedGroup }
+				onSelectGroup={ setSelectedGroup }
+				width={ 200 }
+				disabled={ !selectedCourseId }
+			/>
+		</div>;
 
 	return (
 		<Modal onClose={ onClose } width="100%">
@@ -83,14 +62,14 @@ const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, 
 			<Modal.Body>
 				<form onSubmit={ onSubmit }>
 					<div className={ styles["modal-content"] }>
-						<CourseSelect/>
-						<GroupSelect/>
+						{ renderCourseSelect() }
+						{ renderGroupSelect() }
 					</div>
 					<Button
 						use="primary"
 						size="medium"
 						type="submit"
-						disabled={ !selectedGroupId }
+						disabled={ !selectedGroup }
 					>
 						{ texts.copyButtonText }
 					</Button>
@@ -101,26 +80,20 @@ const CopyStudentsModal: FC<Props> = ({ checkedStudentIds, onClose, getCourses, 
 
 	function onCourseChange(courseId: string) {
 		setSelectedCourseId(courseId);
-		setSelectedGroupId(undefined);
-		fetchGroups(courseId);
+		setSelectedGroup(undefined);
 	}
 
 	function onSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
-		if(!selectedCourseId || !selectedGroupId) {
+		if(!selectedCourseId || !selectedGroup) {
 			return;
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const group = groups.find(group => group.id === selectedGroupId)!;
 
-		onCopyStudents(group, checkedStudentIds);
+		onCopyStudents(selectedGroup, checkedStudentIds);
 		onClose();
-	}
-
-	function getTitle(): string {
-		return courses.find(course => course.id === selectedCourseId)?.title || '';
 	}
 };
 

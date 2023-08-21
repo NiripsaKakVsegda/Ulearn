@@ -1,12 +1,17 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import classnames from 'classnames';
+import { CalendarIcon16Regular } from "@skbkontur/icons/CalendarIcon16Regular";
+import { DevCodeIcon16Regular } from "@skbkontur/icons/DevCodeIcon16Regular";
+import { DocTextIcon16Regular } from "@skbkontur/icons/DocTextIcon16Regular";
+import { EyeOffIcon16Regular } from "@skbkontur/icons/EyeOffIcon16Regular";
+import { MediaUiRectPlayIcon16Regular } from "@skbkontur/icons/MediaUiRectPlayIcon16Regular";
+import { QuestionCircleIcon16Regular } from "@skbkontur/icons/QuestionCircleIcon16Regular";
+import { TimeClockIcon16Regular } from "@skbkontur/icons/TimeClockIcon16Regular";
 
-import { Calendar, Clock, DocumentLite, EyeClosed, } from "icons";
-import { exercise, flashcards, videoLesson } from "./icons";
-import { Hint, Toast, Tooltip, } from "ui";
+import classnames from 'classnames';
+import React from "react";
+import { Link } from "react-router-dom";
 
 import { SlideType } from 'src/models/slide';
+import { Hint, Toast, Tooltip } from "ui";
 import { MenuItem, SlideProgressStatus } from "../../types";
 
 import styles from './NavigationItem.less';
@@ -43,14 +48,19 @@ function NavigationItem({
 	deadLineInfo,
 	isStudentMode
 }: Props): React.ReactElement {
-	const isSlideCanBeVisited = !additionalContentInfo.isAdditionalContent || !additionalContentInfo.hideInfo || additionalContentInfo.isPublished;
-	const slideHasPublication = additionalContentInfo.hideInfo && additionalContentInfo.publicationDate && !additionalContentInfo.isPublished;
-	const userCanSeeAdditionalContentTooltip = additionalContentInfo.isAdditionalContent && !additionalContentInfo.hideInfo;
+	const isSlideCanBeVisited = !additionalContentInfo.isAdditionalContent ||
+								!additionalContentInfo.hideInfo ||
+								additionalContentInfo.isPublished;
+	const slideHasPublication = additionalContentInfo.hideInfo &&
+								additionalContentInfo.publicationDate &&
+								!additionalContentInfo.isPublished;
+	const userCanSeeAdditionalContentTooltip = additionalContentInfo.isAdditionalContent &&
+											   !additionalContentInfo.hideInfo;
 	const anyAdditionalInfoExist = slideHasPublication || userCanSeeAdditionalContentTooltip;
 
 	const classes = {
 		[styles.itemLink]: true,
-		[styles.active]: isActive,
+		[styles.active]: isActive
 	};
 
 	const hideTitle = isStudentMode && (hide || anyAdditionalInfoExist);
@@ -60,30 +70,30 @@ function NavigationItem({
 			className={ styles.root }
 			ref={ isActive ? getRefToActive : undefined }
 		>
-			<Link to={ isSlideCanBeVisited ? url : '#' } className={ classnames(classes) }
-				  onClick={ isSlideCanBeVisited ? onClick : slideNotPublishedToast }>
+			<Link
+				to={ isSlideCanBeVisited ? url : '#' } className={ classnames(classes) }
+				onClick={ isSlideCanBeVisited ? onClick : slideNotPublishedToast }
+			>
 				{ metro && renderMetro() }
 				<div className={ styles.firstLine }>
 					<span className={ styles.icon }>
 						{ renderIcon() }
 					</span>
 					<span className={ styles.text }>
-						<span
-							className={ hideTitle ? styles['hidden-text'] : '' }
-						>
+						<span className={ hideTitle ? styles['hidden-text'] : '' }>
 							{ title }
 						</span>
 						{ hide &&
-							<span className={ styles.isHiddenIcon }>
+						  <span>
 								<Hint text={ texts.hiddenSlide }>
-									<EyeClosed/>
+									<EyeOffIcon16Regular align={ 'baseline' }/>
 								</Hint>
 							</span>
 						}
 						{ deadLineInfo && deadLineInfo.next && !anyAdditionalInfoExist && score === 0 &&
-							<span className={ styles.isHiddenIcon }>
+						  <span>
 							<Hint text={ texts.getDeadLineInfo(deadLineInfo.next, maxScore) }>
-								<Clock/>
+								<TimeClockIcon16Regular align={ 'baseline' }/>
 							</Hint>
 						</span> }
 						<span onClick={ stopPropagation }>
@@ -104,19 +114,20 @@ function NavigationItem({
 		return (
 			<>
 				{ additionalContentInfo.publicationDate && slideHasPublication &&
-					<span className={ styles.isHiddenIcon }>
+				  <span>
 						<Hint text={ texts.getAdditionalContentPublicationDate(additionalContentInfo) }>
-							<Calendar/>
+							<CalendarIcon16Regular align={ 'baseline' }/>
 						</Hint>
 					</span>
 				}
 				{ userCanSeeAdditionalContentTooltip &&
-					<Tooltip
-						render={ renderAdditionalContentTooltip }>
-							<span className={ styles.isHiddenIcon }>
-								<EyeClosed/>
-							</span>
-					</Tooltip>
+				  <Tooltip
+					  render={ renderAdditionalContentTooltip }
+				  >
+					<span>
+						<EyeOffIcon16Regular align={ 'baseline' }/>
+					</span>
+				  </Tooltip>
 				}
 			</>
 		);
@@ -134,24 +145,24 @@ function NavigationItem({
 	function renderIcon() {
 		switch (type) {
 			case SlideType.Exercise:
-				return exercise;
+				return <DevCodeIcon16Regular align={ 'baseline' }/>;
 			case SlideType.Lesson:
-				if(containsVideo) {
-					return videoLesson;
+				if (containsVideo) {
+					return <MediaUiRectPlayIcon16Regular align={ 'baseline' }/>;
 				}
-				return <DocumentLite/>;
+				return <DocTextIcon16Regular align={ 'baseline' }/>;
 			case SlideType.Quiz:
 			case SlideType.Flashcards:
-				return flashcards;
+				return <QuestionCircleIcon16Regular align={ 'baseline' }/>;
 		}
 	}
 
 	function renderScore() {
-		if(!maxScore) {
+		if (!maxScore) {
 			return;
 		}
 
-		if(type === SlideType.Exercise || type === SlideType.Quiz) {
+		if (type === SlideType.Exercise || type === SlideType.Quiz) {
 			return (
 				<span className={ styles.score }>{ score || 0 }/{ maxScore }</span>
 			);
@@ -159,7 +170,7 @@ function NavigationItem({
 	}
 
 	function renderMetro() {
-		if(!metro) {
+		if (!metro) {
 			return null;
 		}
 
@@ -170,14 +181,18 @@ function NavigationItem({
 			[styles.withoutBottomLine]: isLastItem,
 			[styles.noTopLine]: isFirstItem,
 			[styles.completeTop]: connectToPrev,
-			[styles.completeBottom]: connectToNext,
+			[styles.completeBottom]: connectToNext
 		};
 
 		return (
 			<div className={ classnames(classes) }>
-				<span className={ classnames(styles.pointer,
-					{ [styles.canBeImproved]: status === SlideProgressStatus.canBeImproved },
-					{ [styles.complete]: status === SlideProgressStatus.done }) }/>
+				<span
+					className={ classnames(
+						styles.pointer,
+						{ [styles.canBeImproved]: status === SlideProgressStatus.canBeImproved },
+						{ [styles.complete]: status === SlideProgressStatus.done }
+					) }
+				/>
 			</div>
 		);
 	}

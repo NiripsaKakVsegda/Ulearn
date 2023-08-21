@@ -8,13 +8,14 @@
   position: relative;
   display: inline-flex;
   align-items: baseline;
+  gap: 24px;
   width: 100%;
 }
 
 .exerciseControlsButtonsContainer {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: -@controlsMargin;
+  gap: @controlsMargin 24px;
 }
 
 .exerciseControls {
@@ -22,9 +23,12 @@
   line-height: 22px;
   color: @linkColor;
   user-select: none;
+}
 
-  margin-right: 24px;
-  margin-bottom: @controlsMargin;
+.exerciseControlsGapped {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .exerciseControls:hover {
@@ -33,11 +37,6 @@
 
 .sendButton {
   order: -1;
-}
-
-.exerciseControlsIcon {
-  font-size: @tabletFontSize;
-  margin-right: 4px;
 }
 
 .hintsWrapper {

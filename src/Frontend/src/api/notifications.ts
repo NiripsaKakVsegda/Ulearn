@@ -5,7 +5,9 @@ import { NotificationBarResponse, NotificationsInfo } from "src/models/notificat
 
 export function getNotificationsCount(lastTimestamp?: string) {
 	return (dispatch: Dispatch): Promise<void> => {
-		return api.get<NotificationsInfo>("notifications/count?lastTimestamp=" + (lastTimestamp ? lastTimestamp : ""))
+		return api.get<NotificationsInfo>("notifications/count?lastTimestamp=" + (
+				lastTimestamp ? lastTimestamp : ""
+			))
 			.then(json => {
 				dispatch(notificationUpdateAction(json.count, json.lastTimestamp));
 			});

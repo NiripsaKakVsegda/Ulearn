@@ -46,16 +46,11 @@ namespace Ulearn.Web.Api.Controllers
 		[HttpGet]
 		[CourseAccessAuthorize(CourseAccessType.ApiViewCodeReviewStatistics)]
 		public async Task<ActionResult<CodeReviewInstructorsStatisticsResponse>> InstructorsStatistics([FromQuery][BindRequired] string courseId,
-			int count = 10000, DateTime? from = null, DateTime? to = null)
+			int count = 10000)
 		{
 			var course = courseStorage.FindCourse(courseId);
 			if (course == null)
 				return NotFound();
-
-			if (!from.HasValue)
-				from = DateTime.MinValue;
-			if (!to.HasValue)
-				to = DateTime.MaxValue;
 
 			count = Math.Min(count, 10000);
 
@@ -68,9 +63,7 @@ namespace Ulearn.Web.Api.Controllers
 			{
 				CourseId = course.Id,
 				Count = count,
-				OnlyChecked = null,
-				From = @from.Value,
-				To = to.Value,
+				OnlyReviewed = null
 			}).ToListAsync();
 
 			var result = new CodeReviewInstructorsStatisticsResponse

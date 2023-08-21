@@ -1,10 +1,12 @@
+import { ArrowCDownIcon16Regular } from '@skbkontur/icons/ArrowCDownIcon16Regular';
+import { ArrowCUpIcon16Regular } from '@skbkontur/icons/ArrowCUpIcon16Regular';
 import React from "react";
-
-import { BlockRenderContext } from "../../BlocksRenderer";
 import { BlocksWrapper, Text } from "src/components/course/Course/Slide/Blocks";
 import { Block } from "src/models/slide";
+
+import { BlockRenderContext } from "../../BlocksRenderer";
 import { SlideContext } from "../../Slide.types";
-import { ArrowChevronDown, ArrowChevronUp } from "icons";
+
 
 import styles from './Spoiler.less';
 
@@ -88,8 +90,14 @@ class Spoiler extends React.Component<Props, State> {
 							{ text }
 							<span className={ styles.arrow }>
 								{ contentVisible
-									? <ArrowChevronUp/>
-									: <ArrowChevronDown/> }
+									? <ArrowCUpIcon16Regular
+										size={ 14 }
+										align={ 'baseline' }
+									/>
+									: <ArrowCDownIcon16Regular
+										size={ 14 }
+										align={ 'baseline' }
+									/> }
 							</span>
 						</span>
 					</Text>

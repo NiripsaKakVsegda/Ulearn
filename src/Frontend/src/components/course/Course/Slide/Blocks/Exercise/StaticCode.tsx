@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UnControlled, } from "react-codemirror2";
 import { Hint, Toast } from "ui";
-import { Copy } from "icons";
+import { CopyIcon20Regular } from "@skbkontur/icons/CopyIcon20Regular";
 
 import cn from "classnames";
 
@@ -73,9 +73,10 @@ function StaticCode(props: Props): React.ReactElement<Props> {
 			}
 			{ !disableStyles && <div
 				className={ lines.length > 1 ? styles.copyCodeButton : styles.copyCodeButtonSingleLine }
-				onClick={ copyCodeButtonClicked }>
+				onClick={ copyCodeButtonClicked }
+			>
 				<Hint text={ texts.controls.copyCode.text }>
-					<Copy size={ 20 }/>
+					<CopyIcon20Regular/>
 				</Hint>
 			</div> }
 			{ (!disableStyles && (language === Language.python3 || language === Language.python2)) &&

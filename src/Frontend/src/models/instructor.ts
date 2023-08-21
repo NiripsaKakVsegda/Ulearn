@@ -1,4 +1,5 @@
 import { SubmissionInfo, } from "./exercise";
+import { ShortUserInfo } from "./users";
 
 export interface SubmissionsResponse {
 	submissions: SubmissionInfo[];
@@ -29,16 +30,56 @@ export interface FavouriteReviewResponse {
 	lastUsedReviews: string[];
 }
 
+export interface ReviewQueueFilterParameters {
+	courseId: string;
+	studentsFilter?: StudentsFilter;
+	groupIds?: number[];
+	studentIds?: string[];
+	slideIds?: string[];
+	sort?: DateSort;
+	count?: number;
+}
+
+export interface ReviewQueueHistoryFilterParameters extends ReviewQueueFilterParameters {
+	minTimestamp?: string;
+}
+
+export enum StudentsFilter {
+	All = 'all',
+	MyGroups = 'mygroups',
+	GroupIds = 'groupids',
+	StudentIds = 'studentids'
+}
+
+export enum DateSort {
+	Ascending = 'ascending',
+	Descending = 'descending'
+}
+
 export interface ReviewQueueResponse {
 	checkings: ReviewQueueItem[];
 }
 
 export interface ReviewQueueItem {
-	isLocked: boolean;
+	type: QueueItemType;
 	submissionId: number;
 	slideId: string;
-	userId: string;
-	type: QueueItemType;
+	user: ShortUserInfo;
+	timestamp: string;
+	score?: number;
+	maxScore: number;
+	lockedBy?: ShortUserInfo;
+	lockedUntil?: string;
+	checkedTimestamp?: string;
+	checkedBy?: ShortUserInfo;
+	reviews?: ShortReviewInfo[];
+}
+
+export interface ShortReviewInfo {
+	commentId: number;
+	author: ShortUserInfo;
+	codeFragment: string;
+	comment: string;
 }
 
 export enum QueueItemType {

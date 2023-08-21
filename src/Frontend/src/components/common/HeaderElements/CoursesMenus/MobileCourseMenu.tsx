@@ -2,7 +2,7 @@ import React from "react";
 import cn from "classnames";
 
 import { DropdownMenu, MenuSeparator } from "ui";
-import { DocumentSolid } from "icons";
+import { DocTextIcon20Solid } from '@skbkontur/icons/DocTextIcon20Solid';
 
 import { getCourseMenuItems, maxDropdownHeight, menuItems, sysAdminMenuItems } from "./CoursesMenuUtils";
 
@@ -43,7 +43,7 @@ function MobileCourseMenu({
 			menuWidth={ 250 }
 			caption={
 				<button className={ cn(styles.headerElement, styles.button) }>
-					<DocumentSolid size={ 20 }/>
+					<DocTextIcon20Solid/>
 				</button> }
 		>
 			{ isCourseMenuVisible && courseId && course

@@ -1,26 +1,29 @@
-import React from "react";
-import InstructorReview from "./InstructorReview";
-import { Language } from "src/consts/languages";
 import type { Story } from "@storybook/react";
-import {
-	AutomaticExerciseCheckingProcessStatus,
-	AutomaticExerciseCheckingResult,
-	ReviewCommentResponse,
-	ReviewInfo,
-	SubmissionInfo,
-} from "src/models/exercise";
-import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
-import { getMockedShortUser, getMockedUser, instructor, loadUserToRedux, reduxStore, renderMd } from "src/storiesUtils";
-import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview, } from "src/models/instructor";
-import { GroupInfo, } from "src/models/groups";
-import { UserInfo } from "src/utils/courseRoles";
-import { BlocksWrapper, StaticCode } from "../Blocks";
-import { ApiFromRedux, PropsFromSlide } from "./InstructorReview.types";
-import { SlideType } from "src/models/slide";
-import { RootState } from "src/redux/reducers";
-import { getDataIfLoaded, } from "src/redux";
-import { Dispatch } from "redux";
+import React from "react";
 import { connect } from "react-redux";
+import { Dispatch } from "redux";
+import {
+	favouriteReviewsAddFailAction,
+	favouriteReviewsAddStartAction,
+	favouriteReviewsAddSuccessAction,
+	favouriteReviewsDeleteFailAction,
+	favouriteReviewsDeleteStartAction,
+	favouriteReviewsDeleteSuccessAction,
+	favouriteReviewsLoadFailAction,
+	favouriteReviewsLoadStartAction,
+	favouriteReviewsLoadSuccessAction
+} from "src/actions/favouriteReviews";
+import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
+import {
+	antiplagiarimsStatusLoadFailAction,
+	antiplagiarimsStatusLoadStartAction,
+	antiplagiarimsStatusLoadSuccessAction,
+	studentLoadFailAction,
+	studentLoadStartAction,
+	studentLoadSuccessAction,
+	studentProhibitFurtherManualCheckingFailAction,
+	studentProhibitFurtherManualCheckingStartAction
+} from "src/actions/instructor";
 import {
 	reviewsAddCommentFailAction,
 	reviewsAddCommentStartAction,
@@ -46,37 +49,45 @@ import {
 	submissionsEnableManualCheckingStartAction,
 	submissionsLoadSuccessAction
 } from "src/actions/submissions";
+import { assignBotReview } from "src/api/submissions";
+import { Language } from "src/consts/languages";
 import {
-	favouriteReviewsAddFailAction,
-	favouriteReviewsAddStartAction,
-	favouriteReviewsAddSuccessAction,
-	favouriteReviewsDeleteFailAction,
-	favouriteReviewsDeleteStartAction,
-	favouriteReviewsDeleteSuccessAction,
-	favouriteReviewsLoadFailAction,
-	favouriteReviewsLoadStartAction,
-	favouriteReviewsLoadSuccessAction
-} from "src/actions/favouriteReviews";
-import {
-	antiplagiarimsStatusLoadFailAction,
-	antiplagiarimsStatusLoadStartAction,
-	antiplagiarimsStatusLoadSuccessAction,
-	studentLoadFailAction,
-	studentLoadStartAction,
-	studentLoadSuccessAction,
-	studentProhibitFurtherManualCheckingFailAction,
-	studentProhibitFurtherManualCheckingStartAction
-} from "src/actions/instructor";
-import { ShortUserInfo } from "src/models/users";
-import { clone } from "src/utils/jsonExtensions";
-import { FavouriteReviewRedux } from "src/redux/instructor";
-import { groupLoadFailAction, groupLoadStartAction, groupLoadSuccessAction } from "src/actions/groups";
-import { assignBotReview, } from "src/api/submissions";
-import { Button } from "ui";
+	AutomaticExerciseCheckingProcessStatus,
+	AutomaticExerciseCheckingResult,
+	ReviewCommentResponse,
+	ReviewInfo,
+	SubmissionInfo
+} from "src/models/exercise";
+import { GroupInfo } from "src/models/groups";
+import { AntiPlagiarismInfo, AntiPlagiarismStatusResponse, FavouriteReview } from "src/models/instructor";
 import { WithRouter } from "src/models/router";
+import { SlideType } from "src/models/slide";
+import { ShortUserInfo } from "src/models/users";
+import { getDataIfLoaded } from "src/redux";
+import { FavouriteReviewRedux } from "src/redux/instructor";
+import { RootState } from "src/redux/reducers";
+import {
+	getMockedGroup,
+	getMockedShortUser,
+	getMockedUser,
+	instructor,
+	loadUserToRedux,
+	reduxStore,
+	renderMd
+} from "src/storiesUtils";
+import { UserInfo } from "src/utils/courseRoles";
+import { clone } from "src/utils/jsonExtensions";
+import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
+import { Button } from "ui";
+import { withNavigate } from "../../../../../utils/router";
+import {
+	getInstructorReviewFilterSearchParamsFromQuery
+} from "../../../../reviewQueue/utils/getFilterSearchParamsFromQuery";
 import { skipLoki } from "../../../Navigation/stroies.data";
+import { BlocksWrapper, StaticCode } from "../Blocks";
+import InstructorReview from "./InstructorReview";
 import { mapStateToProps } from "./InstructorReview.redux";
-import { withNavigate, withOldRouter } from "../../../../../utils/router";
+import { ApiFromRedux, PropsFromSlide } from "./InstructorReview.types";
 
 
 const user: UserInfo = getMockedUser({
@@ -87,7 +98,7 @@ const user: UserInfo = getMockedUser({
 	id: "0",
 	avatarUrl: "",
 	email: "user@email.com",
-	login: 'Administrator of everything on ulearn.me',
+	login: 'Administrator of everything on ulearn.me'
 });
 
 const student: ShortUserInfo = getMockedShortUser({
@@ -96,36 +107,37 @@ const student: ShortUserInfo = getMockedShortUser({
 	firstName: 'Студент',
 	id: 'studentId',
 	email: "user@email.com",
-	login: 'superStudnet',
+	login: 'superStudnet'
 });
 
 const extra = {
 	suspicionLevel: 0,
-	reviewId: 0,
+	reviewId: 0
 };
 
 const addIdToReview = (review: any): ReviewInfo => ({
-	...review, id: extra.reviewId++,
+	...review, id: extra.reviewId++
 });
 
-const studentGroups: GroupInfo[] = [{
-	id: 12,
-	apiUrl: 'groupApi',
-	isArchived: false,
-	name: 'группа Екатеринбург АТ-666, 333 юг-запад Авеню Гейб',
-	accesses: [],
-	areYouStudent: false,
-	canStudentsSeeGroupProgress: false,
-	createTime: null,
-	defaultProhibitFurtherReview: true,
-	inviteHash: '',
-	isInviteLinkEnabled: false,
-	isManualCheckingEnabled: true,
-	isManualCheckingEnabledForOldSolutions: false,
-	owner: user,
-	studentsCount: 20,
-},
-	{
+const studentGroups: GroupInfo[] = [
+	getMockedGroup({
+		id: 12,
+		apiUrl: 'groupApi',
+		isArchived: false,
+		name: 'группа Екатеринбург АТ-666, 333 юг-запад Авеню Гейб',
+		accesses: [],
+		areYouStudent: false,
+		canStudentsSeeGroupProgress: false,
+		createTime: null,
+		defaultProhibitFurtherReview: true,
+		inviteHash: '',
+		isInviteLinkEnabled: false,
+		isManualCheckingEnabled: true,
+		isManualCheckingEnabledForOldSolutions: false,
+		owner: user,
+		studentsCount: 20
+	}),
+	getMockedGroup({
 		id: 13,
 		apiUrl: 'groupApi',
 		isArchived: true,
@@ -140,23 +152,24 @@ const studentGroups: GroupInfo[] = [{
 		isManualCheckingEnabled: true,
 		isManualCheckingEnabledForOldSolutions: false,
 		owner: user,
-		studentsCount: 20,
-	}];
+		studentsCount: 20
+	})
+];
 
 const favouriteReviews: FavouriteReviewRedux[] = [
-	{ text: 'комментарий', renderedText: 'комментарий', isFavourite: true, },
+	{ text: 'комментарий', renderedText: 'комментарий', isFavourite: true },
 	{
 		text: '**bold** __italic__ ```code```',
-		isFavourite: true,
+		isFavourite: true
 	},
 	{
 		text: 'Ой! Наш робот нашёл решения других студентов, подозрительно похожие на ваше. ' +
-			'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
-			'Выполняйте задания самостоятельно.',
+			  'Так может быть, если вы позаимствовали части программы, взяли их из открытых источников либо сами поделились своим кодом. ' +
+			  'Выполняйте задания самостоятельно.'
 	},
 	{
-		text: 'Так делать не стоит из-за сложности в O(N^3). Есть более оптимизированные алгоритмы',
-	},
+		text: 'Так делать не стоит из-за сложности в O(N^3). Есть более оптимизированные алгоритмы'
+	}
 ].map((c, i) => ({ ...c, renderedText: renderMd(c.text), id: i }));
 
 const submissions: SubmissionInfo[] = [
@@ -191,7 +204,7 @@ const submissions: SubmissionInfo[] = [
 		timestamp: '2020-04-06',
 		manualCheckingPassed: false,
 		manualCheckingReviews: [],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		"code": "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing System.Reflection;\n\nnamespace Reflection.Randomness\n{\n    public class FromDistributionAttribute : Attribute\n    {\n        public IContinuousDistribution DistributionType { get; }\n        public FromDistributionAttribute(Type type, params object[] args)\n        {\n            if (type.GetInterface(\"IContinuousDistribution\") == null)\n                throw new ArgumentException($\"Type {type.Name} doesn't implement IContinuousDistribution interface.\");\n            var constructor = type.GetConstructor(args.Select(x => x.GetType()).ToArray());\n            if (constructor is null)\n                throw new ArgumentException($\"{type.Name} has no constructor with given parameters.\");\n            DistributionType = (IContinuousDistribution)constructor.Invoke(args);\n        }\n    }\n\n    public class Generator<T> where T : new()\n    {\n        private static readonly List<(PropertyInfo, IContinuousDistribution)> _distributionAttributeProperties\n            = new List<(PropertyInfo, IContinuousDistribution)>();\n        static Generator()\n        {\n            foreach (var property in typeof(T).GetProperties())\n            {\n                var attribute = property.GetCustomAttributes(true).OfType<FromDistributionAttribute>().FirstOrDefault();\n                if (attribute != null)\n                    _distributionAttributeProperties.Add((property, attribute.DistributionType));\n            }\n        }\n\n        public T Generate(Random rnd)\n        {\n            var result = (T)typeof(T).GetConstructor(new Type[] { })?.Invoke(new object[] { });\n            foreach (var (propertyInfo, distribution) in _distributionAttributeProperties)\n                propertyInfo.SetValue(result, distribution.Generate(rnd));\n            return result;\n        }\n    }\n}\n",
@@ -318,44 +331,44 @@ const submissions: SubmissionInfo[] = [
 		timestamp: '2020-04-06',
 		manualCheckingPassed: true,
 		manualCheckingReviews: [],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		code: 'void Main()\n' +
-			'{\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tEnd\n' +
-			'}',
+			  '{\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tEnd\n' +
+			  '}',
 		language: Language.cSharp,
 		timestamp: '2020-04-06',
 		manualCheckingPassed: false,
 		manualCheckingReviews: [],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		code: 'void Main()\n' +
-			'{\n' +
-			'\tint i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tint i = 0;\n' +
-			'\tvar i = 0;\n' +
-			'}',
+			  '{\n' +
+			  '\tint i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tint i = 0;\n' +
+			  '\tvar i = 0;\n' +
+			  '}',
 		language: Language.cSharp,
 		timestamp: '2020-04-06',
 		manualCheckingPassed: true,
@@ -369,7 +382,7 @@ const submissions: SubmissionInfo[] = [
 				comment: "var",
 				renderedComment: "var",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
+				comments: []
 			},
 			{
 				author: user,
@@ -380,7 +393,7 @@ const submissions: SubmissionInfo[] = [
 				comment: "var 1",
 				renderedComment: "var 1",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
+				comments: []
 			},
 			{
 				author: user,
@@ -391,7 +404,7 @@ const submissions: SubmissionInfo[] = [
 				comment: "var 2",
 				renderedComment: "var 2",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
+				comments: []
 			},
 			{
 				author: user,
@@ -402,7 +415,7 @@ const submissions: SubmissionInfo[] = [
 				comment: "var 3",
 				renderedComment: "var 3",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
+				comments: []
 			},
 			{
 				author: user,
@@ -413,51 +426,51 @@ const submissions: SubmissionInfo[] = [
 				comment: "var ВЕЗДЕ",
 				renderedComment: "var ВЕЗДЕ",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
-			},
+				comments: []
+			}
 		],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		code: 'void Main()\n' +
-			'{\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tConsole.WriteLine("Coding is there tatat");\n' +
-			'\tEnd\n' +
-			'}',
+			  '{\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tConsole.WriteLine("Coding is there tatat");\n' +
+			  '\tEnd\n' +
+			  '}',
 		language: Language.cSharp,
 		timestamp: '2020-04-06',
 		manualCheckingPassed: false,
 		manualCheckingReviews: [],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		code: 'void Main()\n' +
-			'{\n' +
-			'\tConsole.WriteLine("Coding is here right now tarara");\n' +
-			'}',
+			  '{\n' +
+			  '\tConsole.WriteLine("Coding is here right now tarara");\n' +
+			  '}',
 		language: Language.java,
 		timestamp: '2020-04-05',
 		manualCheckingPassed: false,
 		manualCheckingReviews: [],
-		automaticChecking: null,
+		automaticChecking: null
 	},
 	{
 		code: 'void Main()\n' +
-			'{\n' +
-			'\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 1ra");\n' +
-			'\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 2ra");\n' +
-			'\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 3ra");\n' +
-			'\tEnd\n' +
-			'}',
+			  '{\n' +
+			  '\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 1ra");\n' +
+			  '\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 2ra");\n' +
+			  '\tConsole.WriteLine("Coding is here right now tarasfaasfsaf PASSED 3ra");\n' +
+			  '\tEnd\n' +
+			  '}',
 		language: Language.java,
 		timestamp: '2020-04-01',
 		manualCheckingPassed: true,
@@ -471,7 +484,7 @@ const submissions: SubmissionInfo[] = [
 				comment: "Это ты зряяя",
 				renderedComment: "Это ты зряяя",
 				addingTime: "2020-08-04 23:04",
-				comments: [],
+				comments: []
 			}
 		],
 		automaticChecking: {
@@ -489,11 +502,11 @@ const submissions: SubmissionInfo[] = [
 					comment: "Робот не доволен",
 					renderedComment: "Робот не доволен",
 					addingTime: null,
-					comments: [],
+					comments: []
 				}
 			]
-		},
-	},
+		}
+	}
 ]
 	.map((c, i) => ({
 		...c,
@@ -501,15 +514,15 @@ const submissions: SubmissionInfo[] = [
 		automaticChecking: c.automaticChecking
 			? {
 				...c.automaticChecking,
-				reviews: c.automaticChecking?.reviews.map(addIdToReview) || null,
+				reviews: c.automaticChecking?.reviews.map(addIdToReview) || null
 			}
 			: null,
 		manualChecking: i > 0
 			? {
 				reviews: c.manualChecking?.reviews.map(addIdToReview) || [],
-				percent: i > 0 && i % 2 === 0 ? i * 10 : null,
+				percent: i > 0 && i % 2 === 0 ? i * 10 : null
 			}
-			: null,
+			: null
 	}));
 
 const loadingTimes = {
@@ -525,7 +538,7 @@ const loadingTimes = {
 	submissions: 100,
 	prohibitFurtherReview: 100,
 	enableManualChecking: 100,
-	loadDeadLines: 100,
+	loadDeadLines: 100
 };
 
 const getNextAPStatus = () => {
@@ -533,11 +546,11 @@ const getNextAPStatus = () => {
 	let suspicionLevel: AntiPlagiarismInfo['suspicionLevel'] = 'none';
 	let suspicionCount = 0;
 
-	if(extra.suspicionLevel === 1) {
+	if (extra.suspicionLevel === 1) {
 		suspicionCount = Math.ceil(rnd * 10);
 		suspicionLevel = 'faint';
 	}
-	if(extra.suspicionLevel === 2) {
+	if (extra.suspicionLevel === 2) {
 		suspicionCount = Math.ceil(rnd * 50);
 		suspicionLevel = "strong";
 	}
@@ -573,16 +586,16 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				comment: comment,
 				renderedComment: renderMd(comment),
 				addingTime: new Date().toDateString(),
-				comments: [],
+				comments: []
 			};
 			dispatch(reviewsAddStartAction(submissionId, review));
 			return returnPromiseAfterDelay(loadingTimes.addReview, review)
 				.then(review => {
-					dispatch(reviewsAddSuccessAction(submissionId, review,));
+					dispatch(reviewsAddSuccessAction(submissionId, review));
 					return review;
 				})
 				.catch(error => {
-					dispatch(reviewsAddFailAction(submissionId, error,));
+					dispatch(reviewsAddFailAction(submissionId, error));
 					return error;
 				});
 		},
@@ -607,9 +620,9 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				text,
 				renderedText: renderMd(text),
 				publishTime: new Date().toDateString(),
-				author: user,
+				author: user
 			};
-			return returnPromiseAfterDelay(loadingTimes.addReview, comment,)
+			return returnPromiseAfterDelay(loadingTimes.addReview, comment)
 				.then(r => {
 					dispatch(reviewsAddCommentSuccessAction(submissionId, reviewId, r));
 					return r;
@@ -638,15 +651,15 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			const favouriteReview: FavouriteReview = {
 				id: extra.reviewId++,
 				renderedText: renderMd(text),
-				text,
+				text
 			};
 			return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite, favouriteReview)
 				.then(favouriteReview => {
-					dispatch(favouriteReviewsAddSuccessAction(courseId, slideId, favouriteReview,));
+					dispatch(favouriteReviewsAddSuccessAction(courseId, slideId, favouriteReview));
 					return favouriteReview;
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsAddFailAction(courseId, slideId, error,));
+					dispatch(favouriteReviewsAddFailAction(courseId, slideId, error));
 					return error;
 				});
 		},
@@ -654,15 +667,15 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			dispatch(favouriteReviewsDeleteStartAction(courseId, slideId, favouriteReviewId));
 			return returnPromiseAfterDelay(loadingTimes.toggleReviewFavourite)
 				.then(() => {
-					dispatch(favouriteReviewsDeleteSuccessAction(courseId, slideId, favouriteReviewId,));
+					dispatch(favouriteReviewsDeleteSuccessAction(courseId, slideId, favouriteReviewId));
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error,));
+					dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error));
 					return error;
 				});
 		},
 		editReviewOrComment: (submissionId: number, reviewId: number, parentReviewId: number | undefined, text: string,
-			oldText: string,
+			oldText: string
 		) => {
 			dispatch(reviewsEditStartAction(submissionId, reviewId, parentReviewId, text));
 			const store = reduxStore.getState() as RootState;
@@ -672,22 +685,24 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					c => (c as ReviewCommentResponse).id === reviewId)
 				: reviews?.find(r => r.id === reviewId);
 
-			if(!reviewOrComment) {
+			if (!reviewOrComment) {
 				return Promise.reject();
 			}
 			const review = reviewOrComment as ReviewInfo;
-			if(review.comment) {
+			if (review.comment) {
 				review.comment = text;
 				review.renderedComment = renderMd(text);
 			}
 			const comment = reviewOrComment as ReviewCommentResponse;
-			if(comment.text) {
+			if (comment.text) {
 				comment.text = text;
 				comment.renderedText = renderMd(text);
 			}
 
-			return returnPromiseAfterDelay(loadingTimes.editReview,
-				reviewOrComment as ReviewCommentResponse | ReviewInfo)
+			return returnPromiseAfterDelay(
+				loadingTimes.editReview,
+				reviewOrComment as ReviewCommentResponse | ReviewInfo
+			)
 				.then(r => {
 					dispatch(reviewsEditSuccessAction(submissionId, reviewId, parentReviewId, r));
 					return r;
@@ -699,7 +714,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 		},
 
 		prohibitFurtherReview: (courseId: string, slideId: string, userId: string, prohibit: boolean) => {
-			dispatch(studentProhibitFurtherManualCheckingStartAction(courseId, slideId, userId, prohibit,));
+			dispatch(studentProhibitFurtherManualCheckingStartAction(courseId, slideId, userId, prohibit));
 			return returnPromiseAfterDelay(loadingTimes.prohibitFurtherReview, Promise.resolve())
 				.catch(error => {
 					dispatch(
@@ -707,7 +722,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return error;
 				});
 		},
-		onScoreSubmit: (submissionId: number, percent: number, oldPercent: number | null,) => {
+		onScoreSubmit: (submissionId: number, percent: number, oldPercent: number | null) => {
 			dispatch(reviewsAddScoreStart(submissionId, percent));
 			return returnPromiseAfterDelay(loadingTimes.scoreSubmit, Promise.resolve())
 				.catch(err => {
@@ -716,11 +731,11 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 				});
 		},
 
-		getStudentInfo: (studentId: string,) => {
-			dispatch(studentLoadStartAction(studentId,));
+		getStudentInfo: (studentId: string) => {
+			dispatch(studentLoadStartAction(studentId));
 			return returnPromiseAfterDelay(loadingTimes.student, student)
 				.then(user => {
-					if(user) {
+					if (user) {
 						dispatch(studentLoadSuccessAction(user));
 						return user;
 					} else {
@@ -732,38 +747,38 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return error;
 				});
 		},
-		getAntiPlagiarismStatus: (courseId: string, submissionId: number,) => {
-			dispatch(antiplagiarimsStatusLoadStartAction(submissionId,));
+		getAntiPlagiarismStatus: (courseId: string, submissionId: number) => {
+			dispatch(antiplagiarimsStatusLoadStartAction(submissionId));
 			return returnPromiseAfterDelay(loadingTimes.getPlagiarismStatus, getNextAPStatus())
 				.then(json => {
-					dispatch(antiplagiarimsStatusLoadSuccessAction(submissionId, json,));
+					dispatch(antiplagiarimsStatusLoadSuccessAction(submissionId, json));
 					return json;
 				})
 				.catch(error => {
-					dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error,));
+					dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error));
 					return error;
 				});
 		},
-		getFavouriteReviews: (courseId: string, slideId: string,) => {
-			dispatch(favouriteReviewsLoadStartAction(courseId, slideId,));
+		getFavouriteReviews: (courseId: string, slideId: string) => {
+			dispatch(favouriteReviewsLoadStartAction(courseId, slideId));
 			const state = reduxStore.getState() as RootState;
 			const fr = getDataIfLoaded(state.favouriteReviews.favouritesReviewsByCourseIdBySlideId[courseId]?.[slideId])
-				|| clone(favouriteReviews);
+					   || clone(favouriteReviews);
 			return returnPromiseAfterDelay(loadingTimes.favouriteReviews, fr)
 				.then(favouriteReviews => {
 					dispatch(favouriteReviewsLoadSuccessAction(courseId, slideId, {
 						favouriteReviews: favouriteReviews.filter(f => !f.isFavourite),
 						userFavouriteReviews: favouriteReviews.filter(f => f.isFavourite),
-						lastUsedReviews: [],
-					},));
+						lastUsedReviews: []
+					}));
 					return favouriteReviews;
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error,));
+					dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error));
 					return error;
 				});
 		},
-		getStudentGroups: (courseId: string, userId: string,) => {
+		getStudentGroups: (courseId: string, userId: string) => {
 			dispatch(groupLoadStartAction(userId));
 			return returnPromiseAfterDelay(loadingTimes.groups, { groups: studentGroups })
 				.then(json => {
@@ -775,12 +790,12 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return error;
 				});
 		},
-		enableManualChecking: (submissionId: number,) => {
+		enableManualChecking: (submissionId: number) => {
 			dispatch(submissionsEnableManualCheckingStartAction(submissionId));
-			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId, };
+			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId };
 			return returnPromiseAfterDelay(loadingTimes.enableManualChecking, Promise.resolve())
 				.catch(error => {
-					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
+					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error));
 					return error;
 				});
 		},
@@ -790,7 +805,8 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			return assignBotReview(submissionId, review)
 				.then(([review, deletedResponse]) => {
 					dispatch(reviewsAssignBotReviewSuccess(submissionId, review.id,
-						{ ...review, id: extra.reviewId++, author: user }));
+						{ ...review, id: extra.reviewId++, author: user }
+					));
 					return review;
 				})
 				.catch(err => {
@@ -798,17 +814,17 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return err;
 				});
 		},
-		setNextSubmissionButtonDisabled: mockFunc,
+		setNextSubmissionButtonDisabled: mockFunc
 	};
 };
 
 const Connected = connect(mapStateToProps, mapDispatchToProps)(withNavigate(InstructorReview));
 
 const Template: Story<PropsFromSlide & WithRouter> = (args: PropsFromSlide & WithRouter) => {
-	if(!reduxStore.getState().account.isAuthenticated) {
+	if (!reduxStore.getState().account.isAuthenticated) {
 		reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
 			submissions,
-			prohibitFurtherManualChecking: true,
+			prohibitFurtherManualChecking: true
 		}));
 		loadUserToRedux(user, courseId);
 	}
@@ -825,13 +841,13 @@ const Template: Story<PropsFromSlide & WithRouter> = (args: PropsFromSlide & Wit
 		</>);
 
 	function changeAPStatus(): void {
-		reduxStore.dispatch(antiplagiarimsStatusLoadSuccessAction(submissions[0].id, getNextAPStatus(),));
+		reduxStore.dispatch(antiplagiarimsStatusLoadSuccessAction(submissions[0].id, getNextAPStatus()));
 	}
 
 	function loadSubmissions(): void {
 		reduxStore.dispatch(submissionsLoadSuccessAction(student.id, courseId, slideId, {
 			submissions,
-			prohibitFurtherManualChecking: true,
+			prohibitFurtherManualChecking: true
 		}));
 	}
 };
@@ -853,26 +869,26 @@ const args: PropsFromSlide = {
 			isReview: true,
 			isNavigationVisible: false,
 			query: {
+				...getInstructorReviewFilterSearchParamsFromQuery(new URLSearchParams()),
 				slideId: null,
-				queueSlideId: null,
+				queueSlideId: undefined,
 				submissionId: 1,
 				isLti: false,
-				userId: student.id,
-				done: false,
-				group: null
-			},
+				userId: student.id
+			}
 		}
 	},
 	expectedOutput: null,
 	authorSolution: <BlocksWrapper>
 		<StaticCode
 			language={ Language.cSharp }
-			code={ 'void Main()\n{\n\tConsole.WriteLine("Coding is awesome");\n}' }/>
+			code={ 'void Main()\n{\n\tConsole.WriteLine("Coding is awesome");\n}' }
+		/>
 	</BlocksWrapper>,
 	formulation:
 		<BlocksWrapper>
 			<p>Вам надо сделать кое-что, сами гадайте что и как, но сделайте обязательно</p>
-		</BlocksWrapper>,
+		</BlocksWrapper>
 };
 
 export const Default = Template.bind({});
@@ -880,5 +896,5 @@ Default.args = args;
 
 export default {
 	title: 'Exercise/InstructorReview',
-	...skipLoki,
+	...skipLoki
 };

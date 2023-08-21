@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import classnames from "classnames";
-import { Modal, Tabs, Hint } from "@skbkontur/react-ui";
+import { Hint, Modal, Tabs } from "@skbkontur/react-ui";
 
 import {
 	AcceptedSolution,
@@ -10,13 +10,13 @@ import {
 import { ShortUserInfo } from "src/models/users";
 import StaticCode from "../StaticCode";
 import { AcceptedSolutionsApi } from "src/api/acceptedSolutions";
-
-import { Heart, HeartLite, Star, Star2 } from 'icons';
+import { HeartIcon } from '@skbkontur/icons/HeartIcon';
+import { StarIcon } from '@skbkontur/icons/StarIcon';
 
 import texts from "./AcceptedSolutions.texts";
 import styles from './AcceptedSolutions.less';
 
-interface AcceptedSolutionsProps {
+export interface AcceptedSolutionsProps {
 	courseId: string;
 	slideId: string;
 	user: ShortUserInfo;
@@ -46,7 +46,7 @@ interface State {
 
 const LikedAcceptedSolutionsCount = 30;
 
-class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, State> {
+export class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, State> {
 	constructor(props: AcceptedSolutionsProps) {
 		super(props);
 		this.state = {
@@ -87,7 +87,8 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 		}
 	}
 
-	updateStateWithData(acceptedSolutionsResponse: AcceptedSolutionsResponse,
+	updateStateWithData(
+		acceptedSolutionsResponse: AcceptedSolutionsResponse,
 		likedAcceptedSolutionsResponse: LikedAcceptedSolutionsResponse | null
 	) {
 		const { promotedSolutions, randomLikedSolutions, newestSolutions } = acceptedSolutionsResponse;
@@ -208,20 +209,29 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 	}
 
 	renderLikeButton(solution: _AcceptedSolution, asInstructor: boolean) {
-		const className = classnames(styles.button,
-			{ [styles.liked]: solution.likedByMe, [styles.disabled]: asInstructor });
+		const className = classnames(
+			styles.button,
+			{
+				[styles.liked]: solution.likedByMe,
+				[styles.disabled]: asInstructor
+			}
+		);
 
 		return (
-			<span className={ className } id={ solution.submissionId.toString() }
-				  onClick={ !asInstructor ? this.like : undefined }>
-				<Hint text={ asInstructor && solution.likesCount !== null
-					? texts.getDisabledLikesHint(solution.likesCount) : null }>
+			<span
+				className={ className } id={ solution.submissionId.toString() }
+				onClick={ !asInstructor ? this.like : undefined }
+			>
+				<Hint
+					text={ asInstructor && solution.likesCount !== null
+						? texts.getDisabledLikesHint(solution.likesCount) : null }
+				>
 					<span className={ styles.buttonContent }>
-						{ solution.likesCount } {
-						solution.likedByMe
-							? <Heart className={ styles.icon }/>
-							: <HeartLite className={ styles.icon }/>
-					}
+						{ solution.likesCount } { <HeartIcon
+						align={ 'baseline' }
+						weight={ solution.likedByMe ? 'solid' : 'regular' }
+						className={ styles.icon }
+					/> }
 					</span>
 				</Hint>
 			</span>
@@ -234,9 +244,11 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			<span className={ className } id={ solution.submissionId.toString() } onClick={ this.promote }>
 				<Hint text={ solution.promoted ? texts.getPromotedByText(solution.promotedBy!) : texts.promoteHint }>
 					<span className={ styles.buttonContent }>
-					{ solution.promoted
-						? <Star className={ styles.icon }/>
-						: <Star2 className={ styles.icon }/> }
+						 { <StarIcon
+							 align={ 'baseline' }
+							 weight={ solution.promoted ? 'solid' : 'regular' }
+							 className={ styles.icon }
+						 /> }
 					</span>
 				</Hint>
 			</span>
@@ -287,5 +299,3 @@ class AcceptedSolutionsModal extends React.Component<AcceptedSolutionsProps, Sta
 			.catch(error => error.showToast());
 	};
 }
-
-export { AcceptedSolutionsModal, AcceptedSolutionsProps };

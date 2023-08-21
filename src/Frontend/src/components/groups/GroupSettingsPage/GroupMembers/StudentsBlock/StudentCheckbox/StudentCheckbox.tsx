@@ -8,7 +8,7 @@ import { GroupStudentInfo } from "../../../../../../models/groups";
 import { AccountState } from "../../../../../../redux/account";
 import { SystemAccessType } from "../../../../../../consts/accessType";
 import { useMediaQuery } from "react-responsive";
-import { EditIcon } from "@skbkontur/react-ui/internal/icons/16px";
+import { SecurityKeyBIcon16Regular } from '@skbkontur/icons/SecurityKeyBIcon16Regular';
 
 interface Props {
 	studentInfo: GroupStudentInfo;
@@ -52,10 +52,10 @@ const StudentCheckbox: FC<Props> = ({
 						</span>
 					</div>
 					{ isPhone
-						? <span onClick={stopPropagationPreventDefault}>
+						? <span onClick={ stopPropagationPreventDefault }>
 							<Kebab>
 								<MenuItem
-									icon={ <EditIcon/> }
+									icon={ <SecurityKeyBIcon16Regular/> }
 									onClick={ changeStudentAccesses }
 									children={ texts.changeAccessesButton }
 								/>
@@ -71,7 +71,7 @@ const StudentCheckbox: FC<Props> = ({
 								className={ styles.changeAccessesButton }
 								size={ "small" }
 								use={ "link" }
-								onClick={ changeStudentAccesses }
+								onClick={ changeStudentAccessesPreventDefault }
 								children={ texts.changeAccessesButton.toLowerCase() }
 							/>
 						</div>
@@ -85,8 +85,12 @@ const StudentCheckbox: FC<Props> = ({
 		onCheck(user.id, checked);
 	}
 
-	function changeStudentAccesses(event: React.MouseEvent | React.SyntheticEvent) {
+	function changeStudentAccessesPreventDefault(event: React.MouseEvent | React.SyntheticEvent) {
 		stopPropagationPreventDefault(event);
+		changeStudentAccesses();
+	}
+
+	function changeStudentAccesses() {
 		onChangeStudentAccesses(studentInfo);
 	}
 

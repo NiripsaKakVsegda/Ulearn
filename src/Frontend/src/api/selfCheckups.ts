@@ -10,8 +10,10 @@ import {
 } from "../actions/slides.types";
 
 export const addOrUpdateSelfCheckup = (courseId: string, slideId: string, id: string, isChecked: boolean) =>
-	api.post(`course/${ courseId }/${ slideId }/checkups/${ id }`,
-		api.createRequestParams(isChecked.toString()));
+	api.post(
+		`course/${ courseId }/${ slideId }/checkups/${ id }`,
+		api.createRequestParams(isChecked.toString())
+	);
 
 
 //Redux

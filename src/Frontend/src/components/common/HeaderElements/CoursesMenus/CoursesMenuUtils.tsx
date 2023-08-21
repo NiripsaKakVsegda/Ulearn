@@ -3,12 +3,11 @@ import React from "react";
 import { MenuHeader, MenuItem, MenuSeparator } from "ui";
 import LinkComponent from "../../LinkComponent";
 
-import { adminCheckingQueuePath, coursePath, coursesPath } from "src/consts/routes";
+import { constructPathToReviewQueue, coursePath, coursesPath } from "src/consts/routes";
 
 import { CourseInfo } from "src/models/course";
 import { CourseAccessType, CourseRoleType, } from "src/consts/accessType";
 import { DeviceType } from "src/consts/deviceType";
-import { buildQuery } from "src/utils";
 
 const maxCoursesCount = 14;
 
@@ -45,7 +44,8 @@ export function getCourseMenuItems(
 				<MenuItem
 					href={ `/${ coursePath }/${ courseInfo.id }` }
 					key={ courseInfo.id }
-					component={ LinkComponent }>{ courseInfo.title }
+					component={ LinkComponent }
+				>{ courseInfo.title }
 				</MenuItem>
 		);
 	if(controllableCourseIds.length > controllableCourses.length || isSystemAdministrator) {
@@ -88,23 +88,31 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 			Группы
 		</MenuItem>,
 
-		<MenuItem href={ "/Analytics/CourseStatistics?courseId=" + courseId + "&max=200" } key="CourseStatistics"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ "/Analytics/CourseStatistics?courseId=" + courseId + "&max=200" } key="CourseStatistics"
+			component={ LinkComponent }
+		>
 			Ведомость курса
 		</MenuItem>,
 
-		<MenuItem href={ `/${ courseId }/google-sheet-tasks` } key="GoogleSheetTasks"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ `/${ courseId }/google-sheet-tasks` } key="GoogleSheetTasks"
+			component={ LinkComponent }
+		>
 			Ведомости в Google Sheets
 		</MenuItem>,
 
-		<MenuItem href={ "/Analytics/UnitSheet?courseId=" + courseId } key="UnitStatistics"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ "/Analytics/UnitSheet?courseId=" + courseId } key="UnitStatistics"
+			component={ LinkComponent }
+		>
 			Ведомость модуля
 		</MenuItem>,
 
-		<MenuItem href={ "/Admin/Certificates?courseId=" + courseId } key="Certificates"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ "/Admin/Certificates?courseId=" + courseId } key="Certificates"
+			component={ LinkComponent }
+		>
 			Сертификаты
 		</MenuItem>,
 	];
@@ -119,8 +127,10 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 
 	if(hasUsersMenuItem) {
 		items.push(
-			<MenuItem href={ "/Admin/Users?courseId=" + courseId + "&courseRole=Instructor" } key="Users"
-					  component={ LinkComponent }>
+			<MenuItem
+				href={ "/Admin/Users?courseId=" + courseId + "&courseRole=Instructor" } key="Users"
+				component={ LinkComponent }
+			>
 				Студенты и преподаватели
 			</MenuItem>);
 	}
@@ -128,23 +138,31 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 	if(hasCourseAdminMenuItems) {
 		if(isTempCourse) {
 			items.push(
-				<MenuItem href={ "/Admin/TempCourseDiagnostics?courseId=" + courseId } key="Diagnostics"
-						  component={ LinkComponent }>
+				<MenuItem
+					href={ "/Admin/TempCourseDiagnostics?courseId=" + courseId } key="Diagnostics"
+					component={ LinkComponent }
+				>
 					Диагностика
 				</MenuItem>,
-				<MenuItem href={ "/Admin/DownloadPackage?courseId=" + courseId } key="DownloadPackage"
-						  component={ LinkComponent }>
+				<MenuItem
+					href={ "/Admin/DownloadPackage?courseId=" + courseId } key="DownloadPackage"
+					component={ LinkComponent }
+				>
 					Скачать архив курса
 				</MenuItem>
 			);
 		} else {
 			items.push(
-				<MenuItem href={ "/Admin/Packages?courseId=" + courseId } key="Packages"
-						  component={ LinkComponent }>
+				<MenuItem
+					href={ "/Admin/Packages?courseId=" + courseId } key="Packages"
+					component={ LinkComponent }
+				>
 					Экспорт и импорт курса
 				</MenuItem>,
-				<MenuItem href={ "/Admin/Units?courseId=" + courseId } key="Units"
-						  component={ LinkComponent }>
+				<MenuItem
+					href={ "/Admin/Units?courseId=" + courseId } key="Units"
+					component={ LinkComponent }
+				>
 					Модули
 				</MenuItem>
 			);
@@ -154,13 +172,17 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 	items.push(
 		<MenuSeparator key="CourseMenuSeparator3"/>,
 
-		<MenuItem href={ "/Admin/Comments?courseId=" + courseId } key="Comments"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ "/Admin/Comments?courseId=" + courseId } key="Comments"
+			component={ LinkComponent }
+		>
 			Комментарии
 		</MenuItem>,
 
-		<MenuItem href={ adminCheckingQueuePath + buildQuery({ courseId }) } key="ManualCheckingQueue"
-				  component={ LinkComponent }>
+		<MenuItem
+			href={ constructPathToReviewQueue(courseId) } key="ManualCheckingQueue"
+			component={ LinkComponent }
+		>
 			Код-ревью и проверка тестов
 		</MenuItem>,
 	);
@@ -168,7 +190,8 @@ export function menuItems(courseId: string, role: CourseRoleType, accesses: Cour
 	return items;
 }
 
-export function sysAdminMenuItems(courseIds: string[],
+export function sysAdminMenuItems(
+	courseIds: string[],
 	courseById: { [courseId: string]: CourseInfo }
 ): React.ReactNode {
 	return [

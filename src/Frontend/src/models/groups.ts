@@ -1,6 +1,7 @@
 import { ShortUserInfo } from "./users";
 import { AbstractScoringGroupInfo } from "./course";
 import { ShortCourseAccess } from "./courseAccess";
+import { ShortGroupInfo } from "./comments";
 
 export interface GroupAsStudentInfo {
 	id: number;
@@ -140,4 +141,23 @@ export interface GroupsListParameters {
 export enum GroupType {
 	SingleGroup = "SingleGroup",
 	SuperGroup = "SuperGroup",
+}
+
+export interface GroupsByIdsResponse {
+	foundGroups: ShortGroupInfo[];
+	notFoundGroupsIds: number[];
+}
+
+export interface GroupsSearchResponse {
+	groups: ShortGroupInfo[];
+}
+
+export interface GroupsSearchParameters {
+	courseId: string;
+	includeArchived: boolean;
+	instructorId: string;
+	memberId: string;
+	query: string
+	offset: number;
+	count: number;
 }

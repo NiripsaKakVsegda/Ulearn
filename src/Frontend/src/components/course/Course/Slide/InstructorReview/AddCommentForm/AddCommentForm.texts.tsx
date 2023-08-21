@@ -1,5 +1,5 @@
+import { StarIcon16Regular } from '@skbkontur/icons/StarIcon16Regular';
 import React from "react";
-import { Star2 } from "icons";
 
 export default {
 	preview: 'Превью',
@@ -11,6 +11,9 @@ export default {
 	addToFavouriteButtonText: 'Добавить комментарий в Избранные',
 	noFavouriteCommentsText: (): React.ReactElement => (
 		<>
-			Чтобы добавить комментарий в Избранные,<br/> нажмите на <Star2/>
+			Чтобы добавить комментарий в Избранные,<br/> нажмите на <StarIcon16Regular
+			size={ 14 }
+			align={ 'baseline' }
+		/>
 		</>),
 };

@@ -1,7 +1,8 @@
 import React from "react";
 
 import { Link } from "react-router-dom";
-import { User, Warning } from "icons";
+import { People1Icon20Solid } from '@skbkontur/icons/People1Icon20Solid';
+import { WarningTriangleIcon20Solid } from '@skbkontur/icons/WarningTriangleIcon20Solid';
 import { Tooltip } from "ui";
 
 import { AccountState } from "src/redux/account";
@@ -17,7 +18,7 @@ interface Props {
 }
 
 function ProfileLink({ account, deviceType, className }: Props): React.ReactElement {
-	let icon = <User size={ 20 }/>;
+	let icon = <People1Icon20Solid/>;
 	const isProblem = account.accountProblems.length > 0;
 
 	if(isProblem) {
@@ -26,8 +27,9 @@ function ProfileLink({ account, deviceType, className }: Props): React.ReactElem
 				trigger={ deviceType === DeviceType.mobile ? 'closed' : "hover" }
 				closeButton={ true }
 				pos={ "bottom center" }
-				render={ renderTooltip }>
-				<Warning size={ 20 } color="#f77"/>
+				render={ renderTooltip }
+			>
+				<WarningTriangleIcon20Solid color="#f77"/>
 			</Tooltip>
 		);
 	}
@@ -38,9 +40,10 @@ function ProfileLink({ account, deviceType, className }: Props): React.ReactElem
 				{ icon }
 			</span>
 			{ deviceType !== DeviceType.mobile &&
-			<span className={ styles.username }>
-				{ account.visibleName || 'Профиль' }
-			</span> }
+				<span className={ styles.username }>
+					{ account.visibleName || 'Профиль' }
+				</span>
+			}
 		</Link>
 	);
 

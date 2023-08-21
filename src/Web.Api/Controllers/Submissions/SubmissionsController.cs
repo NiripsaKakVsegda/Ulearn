@@ -150,7 +150,7 @@ namespace Ulearn.Web.Api.Controllers.Submissions
 			await using (var transaction = await db.Database.BeginTransactionAsync())
 			{
 				await slideCheckingsRepo.LockManualChecking(checking, UserId);
-				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent);
+				await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent, UserId);
 				await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking);
 				await visitsRepo.UpdateScoreForVisit(courseId, slide, userId);
 

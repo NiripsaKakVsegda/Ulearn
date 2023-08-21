@@ -30,6 +30,7 @@ namespace Database.Repos.Groups
 			bool defaultProhibitFurtherReview = true,
 			bool isInviteLinkEnabled = true);
 
+		Task<List<SingleGroup>> SearchGroups(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false);
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
 		Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings settings);
 		Task<T> ModifyGroupAsync<T>(int groupId, GroupSettings newSettings) where T : GroupBase;
@@ -38,6 +39,8 @@ namespace Database.Repos.Groups
 		Task<GroupBase> ArchiveGroupAsync(int groupId, bool isArchived);
 		Task DeleteGroupAsync(int groupId);
 		Task<T> FindGroupByIdAsync<T>(int groupId) where T : GroupBase;
+		Task<bool> IsGroupExist<T>(int groupId) where T : GroupBase;
+		Task<bool> IsGroupExist(int groupId);
 		Task<GroupBase> FindGroupByIdAsync(int groupId);
 		Task<List<T>> FindGroupsByIdsAsync<T>(List<int> groupIds) where T : GroupBase;
 		Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false);
@@ -46,6 +49,7 @@ namespace Database.Repos.Groups
 		Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash);
 		Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false);
 		Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
+		Task<List<string>> GetMyGroupsUsersIdsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
 		Task EnableInviteLinkAsync(int groupId, bool isEnabled);
 		Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId);
 		Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId);
@@ -61,6 +65,7 @@ namespace Database.Repos.Groups
 		Task<List<string>> GetGroupsMembersAsUserIds(IEnumerable<int> groupIds);
 		Task<IEnumerable<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(IEnumerable<int> groupIds);
 		List<ApplicationUser> GetGroupsMembersAsUsers(IEnumerable<int> groupIds);
-		Task<bool> GetDefaultProhibitFutherReviewForUser(string courseId, string userId, string instructorId);
+		Task<bool> GetDefaultProhibitFurtherReviewForUser(string courseId, string userId, string instructorId);
+		Task<List<int>> GetGroupIdsByMembers(string[] userIds);
 	}
 }

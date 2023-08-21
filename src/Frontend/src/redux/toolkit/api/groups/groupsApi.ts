@@ -4,11 +4,15 @@ import {
 	CopyGroupResponse,
 	CreateGroupResponse,
 	GroupInfo,
+	GroupsByIdsResponse,
 	GroupsInfoResponse,
-	GroupsListParameters, GroupType, SuperGroupsListResponse
+	GroupsListParameters, GroupsSearchParameters, GroupsSearchResponse,
+	GroupType,
+	SuperGroupsListResponse
 } from "../../../../models/groups";
 import { fetchBaseQueryWithReauth } from "../../utils/baseQueryWithReauth";
 import { HttpMethods } from "../../../../consts/httpMethods";
+import { buildQuery } from "../../../../utils";
 
 export const groupsApi = createApi({
 	reducerPath: 'groupsApi',
@@ -23,6 +27,16 @@ export const groupsApi = createApi({
 				params: {
 					...params
 				}
+			})
+		}),
+		findGroupsByIds: build.query<GroupsByIdsResponse, { groupIds: number[] }>({
+			query: (params) => ({
+				url: `by-ids${ buildQuery(params) }`
+			})
+		}),
+		searchGroups: build.query<GroupsSearchResponse, Partial<GroupsSearchParameters>>({
+			query: (params) => ({
+				url: `search${ buildQuery(params) }`
 			})
 		}),
 

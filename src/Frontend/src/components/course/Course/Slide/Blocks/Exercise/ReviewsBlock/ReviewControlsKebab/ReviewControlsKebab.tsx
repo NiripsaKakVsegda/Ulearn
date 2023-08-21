@@ -1,10 +1,13 @@
+import { StarIcon16Regular } from "@skbkontur/icons/StarIcon16Regular";
+import { StarIcon16Solid } from "@skbkontur/icons/StarIcon16Solid";
+import { ToolPencilLineIcon16Regular } from "@skbkontur/icons/ToolPencilLineIcon16Regular";
+import { TrashCanIcon16Regular } from "@skbkontur/icons/TrashCanIcon16Regular";
 import React, { FC } from 'react';
+import { Kebab, MenuItem, MenuSeparator } from "ui";
 import { ShortUserInfo } from "../../../../../../../../models/users";
-import { DropdownMenu, MenuItem, MenuSeparator } from "ui";
-import styles from "./ReviewControlsKebab.less";
-import { Edit, MenuKebab, Star, Star2, Trash } from "icons";
-import texts from "./ReviewControlsKebab.texts";
 import { isInstructor, UserInfo } from "../../../../../../../../utils/courseRoles";
+import styles from "./reviewControlsKebab.less";
+import texts from "./ReviewControlsKebab.texts";
 
 interface Props {
 	user?: UserInfo;
@@ -28,19 +31,23 @@ const ReviewControlsKebab: FC<Props> = ({
 	isFavourite,
 	...actions
 }) => {
-	return <DropdownMenu
+	return <Kebab
 		className={ styles.kebabMenu }
-		caption={ <MenuKebab className={ styles.kebabMenuIcon } size={ 18 }/> }
+		size={ 'medium' }
 		positions={ ["left top"] }
-		menuWidth={ 216 }
 	>
 		{ (actions.onToggleReviewFavourite && !commentId) && [
-			<MenuItem onClick={ toggleReviewToFavourite } key={ 'toggleFavourite' }>
-				{ isFavourite
-					? <Star color={ '#F69C00' }/>
-					: <Star2/>
+			<MenuItem
+				onClick={ toggleReviewToFavourite }
+				key={ 'toggleFavourite' }
+				icon={ isFavourite
+					? <StarIcon16Solid color={ '#F69C00' }/>
+					: <StarIcon16Regular color={ '#000' }/>
 				}
-				{ ' ' + texts.getToggleFavouriteMarkup(isFavourite ?? false) }
+			>
+				<span className={ styles.toggleFavouritesText }>
+					{ texts.getToggleFavouriteMarkup(isFavourite ?? false) }
+				</span>
 			</MenuItem>,
 			<MenuSeparator key={ "separator" }/>
 		] }
@@ -50,22 +57,20 @@ const ReviewControlsKebab: FC<Props> = ({
 				data-id={ id }
 				data-commentid={ commentId }
 				data-text={ content }
-			>
-				<Edit/>
-				{ ' ' + texts.editButton }
-			</MenuItem>
+				icon={ <ToolPencilLineIcon16Regular/> }
+				children={ texts.editButton }
+			/>
 		}
 		{ (author.id === user?.id || user && isInstructor(user)) &&
 			<MenuItem
 				data-id={ id }
 				data-commentid={ commentId }
 				onClick={ deleteReviewOrComment }
-			>
-				<Trash/>
-				{ ' ' + texts.deleteButton }
-			</MenuItem>
+				icon={ <TrashCanIcon16Regular/> }
+				children={ texts.deleteButton }
+			/>
 		}
-	</DropdownMenu>;
+	</Kebab>;
 
 	function toggleReviewToFavourite(event: React.MouseEvent | React.SyntheticEvent): void {
 		if(!actions.onToggleReviewFavourite) {

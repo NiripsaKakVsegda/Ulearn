@@ -132,6 +132,7 @@ namespace ManualUtils
 			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
 			// await SetPercentByScore(serviceProvider);
 			// await ScoresUpdater.UpdateVisitsForExercises(serviceProvider, new DateTime(2021, 8, 15));
+			await SetManualSlideCheckingCheckedInfoByReviews(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
@@ -1059,6 +1060,43 @@ namespace ManualUtils
 
 				await db.SaveChangesAsync();
 			}
+		}
+
+		private static async Task SetManualSlideCheckingCheckedInfoByReviews(IServiceProvider serviceProvider)
+		{
+			using var scope = serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<UlearnDb>();
+			var usersRepo = scope.ServiceProvider.GetRequiredService<IUsersRepo>();
+
+			var botId = await usersRepo.GetUlearnBotUserId();
+			var exerciseManualCheckings = await db.ManualExerciseCheckings
+				.Include(c => c.Reviews)
+				.Where(c => c.IsChecked)
+				.ToListAsync();
+
+			foreach (var exerciseManualChecking in exerciseManualCheckings)
+			{
+				var lastReview = exerciseManualChecking.Reviews
+					.MaxBy(r => r.AddingTime);
+
+				exerciseManualChecking.CheckedTimestamp ??= lastReview?.AddingTime ??
+															exerciseManualChecking.LockedUntil ??
+															exerciseManualChecking.Timestamp;
+				exerciseManualChecking.CheckedById ??= (lastReview?.AuthorId == botId ? null : lastReview?.AuthorId) ??
+														exerciseManualChecking.LockedById;
+			}
+
+			var quizManualCheckings = await db.ManualQuizCheckings
+				.Where(c => c.IsChecked)
+				.ToListAsync();
+
+			foreach (var quizManualChecking in quizManualCheckings)
+			{
+				quizManualChecking.CheckedTimestamp ??= quizManualChecking.LockedUntil ?? quizManualChecking.Timestamp;
+				quizManualChecking.CheckedById ??= quizManualChecking.LockedById;
+			}
+
+			await db.SaveChangesAsync();
 		}
 
 		/*

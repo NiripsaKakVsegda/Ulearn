@@ -9,7 +9,7 @@ namespace Ulearn.Common.Api.Swagger
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
 			if (context.ApiDescription.ParameterDescriptions.Any())
-				operation.Responses.Add("400", new OpenApiResponse { Description = "Bad request. Invalid parameters in url or body" });
+				operation.Responses.TryAdd("400", new OpenApiResponse { Description = "Bad request. Invalid parameters in url or body" });
 		}
 	}
 }

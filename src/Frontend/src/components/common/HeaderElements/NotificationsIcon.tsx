@@ -1,6 +1,5 @@
+import { NotificationBellIcon20Solid } from '@skbkontur/icons/NotificationBellIcon20Solid';
 import React from "react";
-
-import { NotificationBell } from "icons";
 
 import styles from '../Header.less';
 
@@ -11,7 +10,7 @@ interface Props {
 function NotificationsIcon({ counter }: Props): React.ReactElement {
 	return (
 		<>
-			<NotificationBell size={ 20 }/>
+			<NotificationBellIcon20Solid size={ 20 }/>
 			{
 				counter > 0 &&
 				<span className={ styles.notificationsCounter }>

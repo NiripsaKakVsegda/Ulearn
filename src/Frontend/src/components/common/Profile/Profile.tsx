@@ -3,9 +3,6 @@ import { Link } from "ui";
 
 import { ShortUserInfo } from "../../../models/users";
 
-import styles from "./profile.less";
-import cn from "classnames";
-
 interface Props {
 	user: ShortUserInfo;
 	canViewProfiles?: boolean;
@@ -16,19 +13,19 @@ interface Props {
 const Profile: FC<Props> = ({ user, classname, canViewProfiles, showLastNameFirst }) => {
 	const profileUrl = `/Account/Profile?userId=${ user.id }`;
 	const name = showLastNameFirst
-		? GetNameWithSecondNameFirst(user)
+		? getNameWithLastNameFirst(user)
 		: user.visibleName;
 
 	return canViewProfiles
 		? <Link title={ user.id } href={ profileUrl } className={ classname }>
 			{ name }
 		</Link>
-		: <div title={ user.id } className={ cn(styles.name, classname) }>
+		: <span title={ user.id } className={ classname }>
 			{ name }
-		</div>;
+		</span>;
 };
 
-export const GetNameWithSecondNameFirst = (user: ShortUserInfo): string =>
+export const getNameWithLastNameFirst = (user: ShortUserInfo): string =>
 	user.lastName && user.firstName
 		? `${ user.lastName } ${ user.firstName }`
 		: user.visibleName;

@@ -16,10 +16,11 @@ import {
 import { ShortUserInfo } from "src/models/users";
 import { antiplagiarism, } from "src/consts/routes";
 import { buildQuery } from "src/utils";
-import { AntiPlagiarismStatusResponse, QueueItemType, ReviewQueueResponse, } from "src/models/instructor";
+import { AntiPlagiarismStatusResponse, ReviewQueueResponse, } from "src/models/instructor";
 import { DeadLinesResponse } from "src/models/deadLines";
 
-export function getAntiPlagiarismStatus(courseId: string,
+export function getAntiPlagiarismStatus(
+	courseId: string,
 	submissionId: number,
 ): Promise<AntiPlagiarismStatusResponse> {
 	const url = `${ antiplagiarism }/${ submissionId }` + buildQuery({ courseId });
@@ -39,7 +40,7 @@ export function prohibitFurtherManualChecking(
 
 export function getReviewQueue(
 	courseId: string,
-	groupsIds: string | 'all' | 'not-in-group' | undefined,
+	groupsIds: string | "all" | "not-in-group" | undefined,
 	slideId: string | undefined,
 	userIds: string[] | undefined,
 	done: boolean,
@@ -49,17 +50,7 @@ export function getReviewQueue(
 	return api.get(url);
 }
 
-export function lockSubmissionCheck(
-	courseId: string,
-	submissionId: number,
-	type: QueueItemType,
-): Promise<Response> {
-	const url = `review-queue/${ courseId }/${ submissionId }` + buildQuery({ type });
-	return api.post(url);
-}
-
 //REDUX
-
 const getStudentInfoRedux = (studentId: string,) => {
 	return (dispatch: Dispatch): Promise<string | ShortUserInfo> => {
 		dispatch(studentLoadStartAction(studentId,));
@@ -69,7 +60,7 @@ const getStudentInfoRedux = (studentId: string,) => {
 					dispatch(studentLoadSuccessAction(user));
 					return user;
 				} else {
-					throw new Error('User not found, or you don\'t have permission');
+					throw new Error("User not found, or you don't have permission");
 				}
 			})
 			.catch(error => {

@@ -1,0 +1,36 @@
+@import "/src/variables";
+
+.filters {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  min-width: 100%;
+  width: 500px;
+  max-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  font-family: @defaultFonts;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.filters li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buttonsWrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  @media (max-width: @minTabletWidth) {
+    justify-content: center;
+  }
+}

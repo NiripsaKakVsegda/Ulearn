@@ -8,6 +8,7 @@ import { RootState } from "src/models/reduxState";
 import { SlideType } from "src/models/slide";
 import { CourseRoleType } from "src/consts/accessType";
 import { SlideInfo } from "../../CourseUtils";
+import { getInstructorReviewFilterSearchParamsFromQuery } from "../../../../reviewQueue/utils/getFilterSearchParamsFromQuery";
 
 const courseId = "courseId";
 const slideId = "slideId";
@@ -19,7 +20,14 @@ const slideInfo: SlideInfo = {
 	isLti: false,
 	isReview: true,
 	isNavigationVisible: false,
-	query: { queueSlideId: null, slideId: null, submissionId: 1, isLti: false, userId: null, done: false, group: null },
+	query: {
+		...getInstructorReviewFilterSearchParamsFromQuery(),
+		queueSlideId: undefined,
+		slideId: null,
+		submissionId: 1,
+		isLti: false,
+		userId: null
+	},
 	deadLineInfo: null,
 };
 
@@ -57,27 +65,41 @@ AllHeaders.args = {
 		{ props: { ...reduxProps, scoreHeader: 0 }, header: "0 баллов" },
 		{ props: { ...reduxProps, isSkipped: true }, header: "Пропущено" },
 		{ props: { ...reduxProps, waitingForManualChecking: true }, header: "Ожидает ревью" },
-		{ props: { ...reduxProps, waitingForManualChecking: true, scoreHeader: 50 }, header: "Ожидает ревью и полный балл" },
+		{
+			props: { ...reduxProps, waitingForManualChecking: true, scoreHeader: 50 },
+			header: "Ожидает ревью и полный балл"
+		},
 		{ props: { ...reduxProps, prohibitFurtherManualChecking: true }, header: "Ревью запрещено" },
 		{
 			props: { ...reduxProps, prohibitFurtherManualChecking: true, scoreHeader: 50 },
 			header: "Ревью запрещено и полный балл"
 		},
 		{ props: { ...reduxProps, hasReviewedSubmissions: true }, header: "Прошел ревью, неполный балл" },
-		{ props: { ...reduxProps, hasReviewedSubmissions: true, scoreHeader: 50 }, header: "Прошел ревью, полный балл" },
+		{
+			props: { ...reduxProps, hasReviewedSubmissions: true, scoreHeader: 50 },
+			header: "Прошел ревью, полный балл"
+		},
 		//Instructor cases
 		{
 			props: { ...reduxProps, isSkipped: true, showStudentSubmissions: true },
 			header: "Пропущено (преподаватель)"
 		},
-		{ props: { ...reduxProps, scoreHeader: 50, showStudentSubmissions: true }, header: "Полный балл (преподаватель)" },
+		{
+			props: { ...reduxProps, scoreHeader: 50, showStudentSubmissions: true },
+			header: "Полный балл (преподаватель)"
+		},
 		{ props: { ...reduxProps, scoreHeader: 0, showStudentSubmissions: true }, header: "0 баллов (преподаватель)" },
 	]
 };
 
 function GetStore(reduxProps: ScoreHeaderPropsFromRedux) {
 	const {
-		scoreHeader, isSkipped, waitingForManualChecking, prohibitFurtherManualChecking, maxScore, hasReviewedSubmissions,
+		scoreHeader,
+		isSkipped,
+		waitingForManualChecking,
+		prohibitFurtherManualChecking,
+		maxScore,
+		hasReviewedSubmissions,
 		showStudentSubmissions
 	} = reduxProps;
 	const state: DeepPartial<RootState> = {

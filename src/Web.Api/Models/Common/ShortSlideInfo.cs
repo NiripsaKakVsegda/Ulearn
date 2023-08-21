@@ -31,6 +31,9 @@ namespace Ulearn.Web.Api.Models.Common
 		[DataMember]
 		[CanBeNull]
 		public string ScoringGroup { get; set; }
+		
+		[DataMember]
+		public bool RequiresReview { get; set; }
 
 		[DataMember]
 		public SlideType Type { get; set; }

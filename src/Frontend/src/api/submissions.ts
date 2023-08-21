@@ -50,10 +50,11 @@ import { ShortUserInfo } from "../models/users";
 export function submitCode(courseId: string, slideId: string, code: string,
 	language: Language
 ): Promise<RunSolutionResponse> {
-	const query = buildQuery({ language }) || '';
+	const query = buildQuery({ language }) || "";
 	return api.post<RunSolutionResponse>(
 		`slides/${ courseId }/${ slideId }/exercise/submit` + query,
-		api.createRequestParams({ solution: code }));
+		api.createRequestParams({ solution: code })
+	);
 }
 
 export function submitReviewScore(submissionId: number, percent: number
@@ -63,8 +64,10 @@ export function submitReviewScore(submissionId: number, percent: number
 }
 
 export function addReviewComment(reviewId: number, text: string): Promise<ReviewCommentResponse> {
-	return api.post(`${ reviews }/${ reviewId }/comments`,
-		api.createRequestParams({ text }));
+	return api.post(
+		`${ reviews }/${ reviewId }/comments`,
+		api.createRequestParams({ text })
+	);
 }
 
 export function deleteReviewComment(reviewId: number, commentId: number): Promise<Response> {
@@ -90,7 +93,8 @@ export function addReview(
 	const url = reviews + buildQuery({ submissionId });
 	return api.post<ReviewInfo>(
 		url,
-		api.createRequestParams({ text, startLine, startPosition, finishLine, finishPosition }));
+		api.createRequestParams({ text, startLine, startPosition, finishLine, finishPosition })
+	);
 }
 
 export function editReviewOrComment(
@@ -124,8 +128,14 @@ export function assignBotReview(submissionId: number, review: ReviewInfo): Promi
 	return Promise
 		.all(
 			[
-				addReview(submissionId, review.comment, review.startLine, review.startPosition, review.finishLine,
-					review.finishPosition),
+				addReview(
+					submissionId,
+					review.comment,
+					review.startLine,
+					review.startPosition,
+					review.finishLine,
+					review.finishPosition
+				),
 				deleteReview(submissionId, review.id)
 			]);
 }
@@ -255,7 +265,7 @@ const assignBotReviewRedux = (
 	return (dispatch: Dispatch): Promise<ReviewInfo> => {
 		dispatch(reviewsAssignBotReviewStart(submissionId, botReview.id));
 		return assignBotReview(submissionId, botReview)
-			.then(([review, deletedResponse]) => {
+			.then(([review]) => {
 				dispatch(reviewsAssignBotReviewSuccess(submissionId, botReview.id, review));
 				return review;
 			})
@@ -312,8 +322,12 @@ const getUserSubmissionsRedux = (userId: string, courseId: string, slideId: stri
 		return getUserSubmissions(userId, courseId, slideId)
 			.then(json => {
 				dispatch(submissionsLoadSuccessAction(userId, courseId, slideId, json));
-				dispatch(studentProhibitFurtherManualCheckingLoadAction(courseId, slideId, userId,
-					json.prohibitFurtherManualChecking));
+				dispatch(studentProhibitFurtherManualCheckingLoadAction(
+					courseId,
+					slideId,
+					userId,
+					json.prohibitFurtherManualChecking
+				));
 				return json.submissions;
 			})
 			.catch(error => {

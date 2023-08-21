@@ -50,6 +50,7 @@ import {
 } from "./InstructorReview.types";
 import texts from "./InstructorReview.texts";
 import styles from './InstructorReview.less';
+import { buildInstructorReviewFilterSearchQueryParams } from "../../../../reviewQueue/utils/buildFilterSearchQueryParams";
 
 
 class InstructorReview extends React.Component<Props, State> {
@@ -642,12 +643,12 @@ class InstructorReview extends React.Component<Props, State> {
 		navigate(
 			location.pathname + buildQuery({
 				submissionId: currentSubmission.id,
-				checkQueueItemId: currentSubmission.id,
 				userId: student.id,
 
-				queueSlideId: query.queueSlideId || undefined,
-				group: query.group || undefined,
-				done: query.done,
+				...buildInstructorReviewFilterSearchQueryParams({
+					...query,
+					slideId: query.queueSlideId
+				})
 			}));
 		enableManualChecking(currentSubmission.id);
 	};
@@ -760,12 +761,13 @@ class InstructorReview extends React.Component<Props, State> {
 							handler: () => {
 								navigate(constructPathToSlide(slideContext.courseId, slideContext.slideId)
 									+ buildQuery({
-										queueSlideId: slideContext.slideInfo.query.queueSlideId || undefined,
-										userId: slideContext.slideInfo.query.userId,
-										group: slideContext.slideInfo.query.group || undefined,
-										done: slideContext.slideInfo.query.done,
-										checkQueueItemId: errorResponse.submissionId,
 										submissionId: errorResponse.submissionId,
+										userId: slideContext.slideInfo.query.userId,
+
+										...buildInstructorReviewFilterSearchQueryParams({
+											...slideContext.slideInfo.query,
+											slideId: slideContext.slideInfo.query.queueSlideId
+										}),
 									}));
 							}
 						});

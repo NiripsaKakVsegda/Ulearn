@@ -1,9 +1,9 @@
-import React from "react";
-import NextUnit, { Props } from "./NextUnit";
-import { SlideType } from "src/models/slide";
 import type { Story } from "@storybook/react";
+import React from "react";
+import { SlideType } from "src/models/slide";
 import { mock } from "src/storiesUtils";
 import { disableViewportAnLoki } from "../../stroies.data";
+import NextUnit, { Props } from "./NextUnit";
 
 export default {
 	title: "NextModule",
@@ -31,6 +31,7 @@ const defaultProps: Props = {
 			quizMaxTriesCount: 2,
 			containsVideo: false, unitId: '123',
 			additionalContentInfo: { isAdditionalContent: false, publicationDate: null, },
+			requiresReview: false,
 		}],
 	}
 };

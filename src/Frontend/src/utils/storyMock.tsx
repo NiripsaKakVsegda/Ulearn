@@ -1,3 +1,5 @@
+import moment from "moment-timezone";
+
 export function returnPromiseAfterDelay<T>(ms: number,
 	result?: T,
 	callback?: () => void,
@@ -19,4 +21,11 @@ export function returnPromiseAfterDelay<T>(ms: number,
 
 export function mockFunc(): any {
 	return ({});
+}
+
+export function getMockFuncWithLogging(functionName?: string) {
+	return (...props: unknown[]): any => {
+		console.log(`${ moment().format("HH:mm:ss") }\t${ functionName }\tProps:`, props);
+		return ({});
+	};
 }

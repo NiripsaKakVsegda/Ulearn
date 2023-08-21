@@ -6,7 +6,10 @@ import texts from './CopyGroupModal.texts';
 import { coursesApi } from "../../../../redux/toolkit/api/coursesApi";
 import { groupsApi } from "../../../../redux/toolkit/api/groups/groupsApi";
 import { usersApi } from "../../../../redux/toolkit/api/usersApi";
-import { GroupInfo } from "../../../../models/groups";
+import { useGroupsSearch } from "../../../common/GroupsSearch/useGroupsSearch";
+import GroupsSearchCombobox from "../../../common/GroupsSearch/GroupsSearchCombobox";
+import { ShortGroupInfo } from "../../../../models/comments";
+import { CourseRoleType } from "../../../../consts/accessType";
 
 interface Props {
 	course: CourseInfo;
@@ -29,28 +32,23 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 		.sort((a, b) => a.title.localeCompare(b.title))
 		.map(course => [course, course.title]);
 	const [selectedCourse, setSelectedCourse] = useState<CourseInfo>();
-	
-	const [fetchGroups, { groups, isGroupsLoading }] = groupsApi.useLazyGetGroupsQuery({
-		selectFromResult: ({ data, isLoading }) => ({
-			groups: data?.groups || [],
-			isGroupsLoading: isLoading
-		})
-	});
-	const groupsItems = groups.map(group => [
-		group,
-		`${ group.name }: ${ texts.buildStudentsCountMessage(group.studentsCount) }`
-	]);
-	const [selectedGroup, setSelectedGroup] = useState<GroupInfo>();
 
-	const { instructorIds } = usersApi.useGetCourseInstructorsQuery({ courseId: course.id }, {
+	const searchGroups = useGroupsSearch(selectedCourse?.id);
+	const [selectedGroup, setSelectedGroup] = useState<ShortGroupInfo>();
+
+	const { instructorIds } = usersApi.useSearchUsersQuery({
+		courseId: course.id,
+		courseRole: CourseRoleType.instructor,
+		count: 100
+	}, {
 		selectFromResult: ({ data }) => ({
-			instructorIds: data?.map(instructor => instructor.user.id) || []
+			instructorIds: data?.users.map(instructor => instructor.user.id) || []
 		})
 	});
 
 	const [makeMeOwner, setMakeMeOwner] = useState(true);
 
-	const CourseSelect: FC = () =>
+	const renderCourseSelect = () =>
 		<Loader type="normal" active={ isCoursesLoading }>
 			<p className={ styles["course-info"] }>
 				{ texts.selectCourseHint }
@@ -66,28 +64,20 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 			</label>
 		</Loader>;
 
-	const GroupSelect: FC = () =>
-		<Loader type="normal" active={ isGroupsLoading }>
+	const renderGroupSelect = () =>
+		<div>
 			<p className={ styles["group-info"] }>
 				{ texts.selectGroupHint }
 			</p>
-			<label className={ styles["select-group"] }>
-				<Select<GroupInfo>
-					items={ groupsItems }
-					onValueChange={ setSelectedGroup }
-					width={ 200 }
-					placeholder={ texts.selectGroupPlaceholder }
-					value={ selectedGroup }
-					disabled={ !groups.length }
-				/>
-			</label>
-			{ selectedCourse && !isGroupsLoading && !groups.length &&
-				<p className={ styles["empty-group-info"] }>
-					<b>{ texts.buildNoGroupsMessage(selectedCourse?.title || '') }</b>
-				</p>
-			}
+			<GroupsSearchCombobox
+				searchGroups={ searchGroups }
+				group={ selectedGroup }
+				onSelectGroup={ setSelectedGroup }
+				width={ 200 }
+				disabled={ !selectedCourse?.id }
+			/>
 			{ canChangeOwner() && <ChangeOwner/> }
-		</Loader>;
+		</div>;
 
 	const ChangeOwner: FC = () =>
 		<div className={ styles["change-owner-block"] }>
@@ -108,8 +98,8 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 						<p className={ styles["common-info"] }>
 							{ texts.buildCopyGroupHint(course.title) }
 						</p>
-						<CourseSelect/>
-						<GroupSelect/>
+						{ renderCourseSelect() }
+						{ renderGroupSelect() }
 					</div>
 					<Button
 						use="primary"
@@ -128,7 +118,6 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 	function onCourseChange(course: CourseInfo) {
 		setSelectedCourse(course);
 		setSelectedGroup(undefined);
-		fetchGroups({ courseId: course.id });
 	}
 
 	function onSubmit(event: FormEvent<HTMLFormElement>) {

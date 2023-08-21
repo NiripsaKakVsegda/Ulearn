@@ -1,34 +1,39 @@
 @import "/src/components/course/Course/courseVariables";
 
 .tooltipNavigationHeader {
-  height: 36px;
+  height: 40px;
   border-bottom: 1px solid @whiteSmoke;
   margin: -16px -16px 12px;
-  padding: 6px 16px 8px;
+  padding: 8px 16px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 14px;
   line-height: 20px;
   color: @additionalColor;
 }
 
 .tooltipNavigationArrow {
-  color: @geinsboro;
-  font-size: 20px;
-  width: 23px;
-  height: 23px;
-  text-align: center;
-}
-
-.tooltipNavigationArrowActive {
-  color: @additionalColor;
-  cursor: pointer;
-}
-
-.tooltipNavigationArrowActive:active {
-  color: @dimgray;
-  background-color: @geinsboro;
+  box-sizing: content-box;
   border-radius: 50%;
+  padding: 2px;
+  color: @black;
+  opacity: .3;
+
+  &.tooltipNavigationArrowActive {
+    opacity: .6;
+    cursor: pointer;
+
+    &:hover{
+      opacity: .8;
+      background-color: @geinsboro;
+    }
+
+    &:active {
+      opacity: 1;
+      background-color: @geinsboro;
+    }
+  }
 }
 
 .reviewWrapper {

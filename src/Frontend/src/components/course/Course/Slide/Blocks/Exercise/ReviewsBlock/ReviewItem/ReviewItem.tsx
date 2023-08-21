@@ -4,7 +4,6 @@ import { isInstructor, UserInfo } from "../../../../../../../../utils/courseRole
 import { botId, botName } from "../../../../../../../../consts/common";
 import { ShortUserInfo } from "../../../../../../../../models/users";
 import { EditingReviewState } from "../ReviewsBlock.types";
-import { ArrowChevronLeft, ArrowChevronRight, Send3 } from "icons";
 import cn from "classnames";
 import { Button, Gapped, Hint, Textarea, ThemeContext } from "ui";
 import reviewPolicyChecker from "../../../../InstructorReview/reviewPolicyChecker";
@@ -15,6 +14,10 @@ import ReviewHeader from "../ReviewHeader/ReviewHeader";
 import ReviewContent from "../ReviewContent/ReviewContent";
 import texts from "./ReviewItem.texts";
 import styles from "./ReviewItem.less";
+import { ArrowCLeftIcon20Regular } from '@skbkontur/icons/ArrowCLeftIcon20Regular';
+import { ArrowCRightIcon20Regular } from '@skbkontur/icons/ArrowCRightIcon20Regular';
+import { SendPaperplaneIcon16Solid } from '@skbkontur/icons/SendPaperplaneIcon16Solid';
+
 
 interface Props {
 	review: InstructorReviewInfo;
@@ -75,7 +78,7 @@ const ReviewItem: FC<Props> = ({
 	const renderNavigationHeader = (): ReactNode => {
 		const { onNavigatePrevious, onNavigateNext } = actions;
 		return <div className={ styles.tooltipNavigationHeader }>
-			<ArrowChevronLeft
+			<ArrowCLeftIcon20Regular
 				className={ cn(
 					styles.tooltipNavigationArrow,
 					{ [styles.tooltipNavigationArrowActive]: !!onNavigatePrevious }
@@ -84,7 +87,7 @@ const ReviewItem: FC<Props> = ({
 				onClick={ onNavigatePrevious }
 			/>
 			{ `${ (reviewIndexInLine ?? 0) + 1 } / ${ totalReviewsInLine ?? 0 }` }
-			<ArrowChevronRight
+			<ArrowCRightIcon20Regular
 				className={ cn(
 					styles.tooltipNavigationArrow,
 					{ [styles.tooltipNavigationArrowActive]: !!onNavigateNext }
@@ -114,11 +117,13 @@ const ReviewItem: FC<Props> = ({
 						|| editingReview?.value.trim().length === 0
 						|| editingReview?.value.length > reviewPolicyChecker.maxReviewLength
 						|| initialContent === reviewPolicyChecker.removeWhiteSpaces(editingReview?.value) }
-					onClick={ actions.onSaveEditingReviewOrComment }>
+					onClick={ actions.onSaveEditingReviewOrComment }
+				>
 					{ texts.editing.save }
 				</Button>
 				<Button
-					onClick={ actions.onStopEditingComment }>
+					onClick={ actions.onStopEditingComment }
+				>
 					{ texts.editing.cancel }
 				</Button>
 			</Gapped>
@@ -148,7 +153,7 @@ const ReviewItem: FC<Props> = ({
 					className={ isCommentCanBeAdded ? styles.commentReplyButtonActive : styles.commentReplyButton }
 					onClick={ actions.onSendComment }
 				>
-					<Send3/>
+					<SendPaperplaneIcon16Solid/>
 				</button>
 			</ThemeContext.Provider>
 		);
@@ -215,7 +220,8 @@ const ReviewItem: FC<Props> = ({
 					{ isSelected && isOutdated &&
 						<Button
 							use={ "primary" }
-							onClick={ actions.onCopySelectedReviewTextToClipboard }>
+							onClick={ actions.onCopySelectedReviewTextToClipboard }
+						>
 							{ texts.copyButton }
 						</Button>
 					}
@@ -228,10 +234,14 @@ const ReviewItem: FC<Props> = ({
 						&& isInstructor(user)
 						&& <Gapped gap={ 8 }>
 							{ comments.length === 0 &&
-								<Hint pos={ "bottom center" }
-									  text={ texts.botReview.hintText }>
-									<Button use={ "primary" } onClick={ actions.onAssignBotComment }
-											disabled={ comments.length > 0 }>
+								<Hint
+									pos={ "bottom center" }
+									text={ texts.botReview.hintText }
+								>
+									<Button
+										use={ "primary" } onClick={ actions.onAssignBotComment }
+										disabled={ comments.length > 0 }
+									>
 										{ texts.botReview.assign }
 									</Button>
 								</Hint> }

@@ -1,7 +1,8 @@
 import { createApi } from "@reduxjs/toolkit/dist/query/react";
 import { users } from "../../../consts/routes";
-import { FoundUserResponse, UsersSearchResponse } from "../../../models/users";
+import { UsersByIdsResponse, UsersSearchParameters, UsersSearchResponse } from "../../../models/users";
 import { fetchBaseQueryWithReauth } from "../utils/baseQueryWithReauth";
+import { buildQuery } from "../../../utils";
 
 export const usersApi = createApi({
 	reducerPath: 'usersApi',
@@ -10,17 +11,16 @@ export const usersApi = createApi({
 	}),
 	refetchOnMountOrArgChange: true,
 	endpoints: (build) => ({
-		getCourseInstructors: build.query<FoundUserResponse[], { courseId: string, query?: string, count?: number }>({
-			query: ({ courseId, query, count }) => ({
+		searchUsers: build.query<UsersSearchResponse, Partial<UsersSearchParameters>>({
+			query: (params) => ({
 				url: '',
-				params: {
-					courseId,
-					courseRole: 'Instructor',
-					query,
-					count
-				}
-			}),
-			transformResponse: (response: UsersSearchResponse) => response.users,
+				params
+			})
+		}),
+		findUsersByIds: build.query<UsersByIdsResponse, { userIds: string[] }>({
+			query: (params) => ({
+				url: `by-ids${ buildQuery(params) }`
+			})
 		})
 	})
 });

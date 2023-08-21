@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-
-import { CommentLite } from "icons";
+import { CommentRectPlusIcon16Regular } from '@skbkontur/icons/CommentRectPlusIcon16Regular';
 import { Toast } from "ui";
 import Thread from "../Thread/Thread";
 import CommentSendForm from "../CommentSendForm/CommentSendForm";
@@ -99,21 +98,6 @@ class CommentsList extends Component<Props, State> {
 		};
 	}
 
-	componentDidMount(): void {
-		this.throttleScroll = throttle(this.handleScrollToBottom, 100);
-		window.addEventListener("scroll", this.throttleScroll);
-		window.addEventListener("hashchange", this.handleScrollToCommentByHashFormUrl);
-
-		this.handleScrollToCommentByHashFormUrl();
-	}
-
-	componentWillUnmount(): void {
-		if(this.throttleScroll) {
-			window.removeEventListener("scroll", this.throttleScroll);
-		}
-		window.removeEventListener("hashchange", this.handleScrollToCommentByHashFormUrl);
-	}
-
 	static getDerivedStateFromProps(props: Props, state: State): State | null {
 		const countDiff = props.commentsCount - state.previousCommentsCount;
 		if(Math.abs(countDiff) <= 1) {
@@ -129,6 +113,21 @@ class CommentsList extends Component<Props, State> {
 				commentsToRender: 0,
 			};
 		}
+	}
+
+	componentDidMount(): void {
+		this.throttleScroll = throttle(this.handleScrollToBottom, 100);
+		window.addEventListener("scroll", this.throttleScroll);
+		window.addEventListener("hashchange", this.handleScrollToCommentByHashFormUrl);
+
+		this.handleScrollToCommentByHashFormUrl();
+	}
+
+	componentWillUnmount(): void {
+		if(this.throttleScroll) {
+			window.removeEventListener("scroll", this.throttleScroll);
+		}
+		window.removeEventListener("hashchange", this.handleScrollToCommentByHashFormUrl);
 	}
 
 	renderPackOfComments(packSize: number): void {
@@ -189,15 +188,15 @@ class CommentsList extends Component<Props, State> {
 		return (
 			<div key={ key } ref={ this.commentsListRef }>
 				{ !user.id &&
-				<Stub hasThreads={ commentsToRender > 0 } courseId={ courseId } slideId={ slideId }/> }
+					<Stub hasThreads={ commentsToRender > 0 } courseId={ courseId } slideId={ slideId }/> }
 				{ (user.id && commentPolicy && !commentPolicy.areCommentsEnabled) && this.renderMessageIfCommentsDisabled() }
 				{ this.renderSendForm() }
 				{ this.renderThreads() }
 				{ (commentPolicy.areCommentsEnabled && user.id && commentsToRender > 7) &&
-				<button className={ styles.sendButton } onClick={ this.handleShowSendForm }>
-					<CommentLite color="#3072C4"/>
-					<span className={ styles.sendButtonText }> Оставить комментарий</span>
-				</button> }
+					<button className={ styles.sendButton } onClick={ this.handleShowSendForm }>
+						<CommentRectPlusIcon16Regular color="#3072C4"/>
+						<span className={ styles.sendButtonText }> Оставить комментарий</span>
+					</button> }
 			</div>
 		);
 	}
@@ -222,7 +221,8 @@ class CommentsList extends Component<Props, State> {
 				author={ user }
 				handleSubmit={ this.handleAddComment }
 				sending={ sending }
-				sendStatus={ status }/>
+				sendStatus={ status }
+			/>
 		);
 	}
 
@@ -279,7 +279,8 @@ class CommentsList extends Component<Props, State> {
 								mountOnEnter
 								unmountOnExit
 								classNames={ transitionStyles }
-								timeout={ duration }>
+								timeout={ duration }
+							>
 								<section className={ styles.thread } key={ comment.id } ref={ ref }>
 									<Thread
 										user={ user }
@@ -292,7 +293,8 @@ class CommentsList extends Component<Props, State> {
 										commentEditing={ commentEditing }
 										reply={ reply }
 										actions={ actions }
-										isSlideReady={ isSlideReady }/>
+										isSlideReady={ isSlideReady }
+									/>
 								</section>
 							</CSSTransition>);
 					}) }
@@ -480,7 +482,8 @@ class CommentsList extends Component<Props, State> {
 		}
 	};
 
-	sendData = (method: (commentId: number,
+	sendData = (method: (
+			commentId: number,
 			updatedFields?: Pick<Partial<Comment>, 'text' | 'isApproved' | 'isCorrectAnswer' | 'isPinnedToTop'>
 		) =>
 			Promise<unknown>, commentId: number,

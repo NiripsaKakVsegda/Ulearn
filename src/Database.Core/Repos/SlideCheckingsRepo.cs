@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Slides.Exercises;
-using Ulearn.Core.Extensions;
 
 namespace Database.Repos
 {
@@ -201,44 +200,62 @@ namespace Database.Repos
 
 		#endregion
 
-		public async Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		public async Task<IEnumerable<T>> GetCheckingQueueHistory<T>(ManualCheckingQueueFilterOptions options, DateTime? minCheckedTimestamp = null) where T : AbstractManualSlideChecking
 		{
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
-			query = query.OrderByDescending(c => c.Timestamp);
 
-			const int reserveForStartedOrDoubleCheckedReviews = 100;
-			if (options.Count > 0)
-				query = query.Take(options.Count + reserveForStartedOrDoubleCheckedReviews);
+			if (minCheckedTimestamp is { } minTimestampValue)
+				query = query
+					.Where(q => q.CheckedTimestamp.HasValue && q.CheckedTimestamp.Value >= minTimestampValue);
 
-			IEnumerable<T> enumerable = await query.ToListAsync();
-			// Метод RemoveWaitingManualCheckings удалил непосещенные преподавателем старые ManualChecking. Здесь отфильтровываются посещенные преподавателем.
-			enumerable = enumerable
-				.GroupBy(g => new { g.UserId, g.SlideId })
-				.Select(g => g.First())
-				.OrderByDescending(c => c.Timestamp);
+			query = options.DateSort is DateSort.Ascending
+				? query.OrderBy(c => c.CheckedTimestamp)
+				: query.OrderByDescending(c => c.CheckedTimestamp);
 
 			if (options.Count > 0)
-				enumerable = enumerable.Take(options.Count);
+				query = query.Take(options.Count);
 
-			return enumerable.ToList();
+			return await query.ToListAsync();
+		}
+
+		public async Task<IEnumerable<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		{
+			var query = GetManualCheckingQueueFilterQuery<T>(options);
+
+			var groupQuery = query
+				.GroupBy(c => new { c.UserId, c.SlideId })
+				.Select(g => new
+				{
+					LastTimeStamp = g.OrderByDescending(c => c.Timestamp).First().Timestamp,
+					LastEntry = g.OrderByDescending(c => c.Timestamp).First()
+				});
+
+			groupQuery = options.DateSort is DateSort.Ascending
+				? groupQuery.OrderBy(c => c.LastTimeStamp)
+				: groupQuery.OrderByDescending(c => c.LastTimeStamp);
+
+			if (options.Count > 0)
+				groupQuery = groupQuery.Take(options.Count);
+
+			return (await groupQuery.ToListAsync())
+				.Select(r => r.LastEntry);
 		}
 
 		public IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
 			var query = db.Set<T>()
-				.Include(c => c.User)
 				.Where(c => c.CourseId == options.CourseId);
-			if (options.OnlyChecked.HasValue)
-				query = options.OnlyChecked.Value ? query.Where(c => c.IsChecked) : query.Where(c => !c.IsChecked);
-			if (options.SlidesIds != null)
+
+			if (options.OnlyReviewed is { } onlyReviewed)
+				query = onlyReviewed ? query.Where(c => c.IsChecked) : query.Where(c => !c.IsChecked);
+
+			if (options.UserIds is not null)
+				query = options.IsUserIdsSupplement
+					? query.Where(c => !options.UserIds.Contains(c.UserId))
+					: query.Where(c => options.UserIds.Contains(c.UserId));
+
+			if (options.SlidesIds is not null)
 				query = query.Where(c => options.SlidesIds.Contains(c.SlideId));
-			if (options.UserIds != null)
-			{
-				if (options.IsUserIdsSupplement)
-					query = query.Where(c => !options.UserIds.Contains(c.UserId));
-				else
-					query = query.Where(c => options.UserIds.Contains(c.UserId));
-			}
 
 			return query;
 		}
@@ -261,6 +278,13 @@ namespace Database.Repos
 			return await db.Set<T>().FindAsync(id);
 		}
 
+		public async Task<AbstractManualSlideChecking> FindManualCheckingById(int id)
+		{
+			return (AbstractManualSlideChecking)
+					await db.ManualExerciseCheckings.FindAsync(id) ??
+					await db.ManualQuizCheckings.FindAsync(id);
+		}
+
 		public async Task<bool> IsProhibitedToSendExerciseToManualChecking(string courseId, Guid slideId, string userId)
 		{
 			return await GetSlideCheckingsByUser<ManualExerciseChecking>(courseId, slideId, userId)
@@ -274,18 +298,22 @@ namespace Database.Repos
 			await db.SaveChangesAsync();
 		}
 
-		public async Task MarkManualQuizCheckingAsChecked(ManualQuizChecking queueItem, int score)
+		public async Task MarkManualQuizCheckingAsChecked(ManualQuizChecking queueItem, int score, string checkedById)
 		{
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
+			queueItem.CheckedById = checkedById;
+			queueItem.CheckedTimestamp = DateTime.Now;
 			queueItem.Score = score;
 			await db.SaveChangesAsync();
 		}
 
-		public async Task MarkManualExerciseCheckingAsChecked(ManualExerciseChecking queueItem, int percent)
+		public async Task MarkManualExerciseCheckingAsChecked(ManualExerciseChecking queueItem, int percent, string checkedById)
 		{
 			queueItem.LockedUntil = null;
 			queueItem.IsChecked = true;
+			queueItem.CheckedById = checkedById;
+			queueItem.CheckedTimestamp = DateTime.Now;
 			queueItem.Percent = percent;
 			await db.SaveChangesAsync().ConfigureAwait(false);
 		}
@@ -300,17 +328,23 @@ namespace Database.Repos
 				.OrderBy(c => c.Submission.Timestamp)
 				.ThenBy(c => c.Timestamp);
 			int? percent = 0;
+			string checkedById = null;
+			DateTime? checkedTimestamp = null;
 			var changed = false;
 			foreach (var item in itemsForMark)
 			{
 				if (item.IsChecked)
 				{
 					percent = item.Percent;
+					checkedById = item.CheckedById;
+					checkedTimestamp = item.CheckedTimestamp;
 				}
 				else
 				{
 					item.LockedUntil = null;
 					item.IsChecked = true;
+					item.CheckedById = checkedById;
+					item.CheckedTimestamp = checkedTimestamp;
 					item.Percent = percent;
 					changed = true;
 				}
@@ -407,7 +441,7 @@ namespace Database.Repos
 			return AddExerciseCodeReview(null, checking, userId, startLine, startPosition, finishLine, finishPosition, comment, setAddingTime);
 		}
 
-		public Task<ExerciseCodeReview> AddExerciseCodeReview([CanBeNull] UserExerciseSubmission submission, string userId, int startLine, int startPosition, int finishLine, int finishPosition, string comment, bool setAddingTime = false)
+		public Task<ExerciseCodeReview> AddExerciseCodeReview(UserExerciseSubmission submission, string userId, int startLine, int startPosition, int finishLine, int finishPosition, string comment, bool setAddingTime = false)
 		{
 			return AddExerciseCodeReview(submission, null, userId, startLine, startPosition, finishLine, finishPosition, comment, setAddingTime);
 		}
@@ -559,7 +593,7 @@ namespace Database.Repos
 
 		public async Task<List<string>> GetLastUsedExerciseCodeReviewsTexts(string courseId, Guid slideId, string instructorId, int count, List<string> skipReviews = null)
 		{
-			IEnumerable<string> codeReviews = (await db.ExerciseCodeReviews
+			var codeReviews = (await db.ExerciseCodeReviews
 					.Where(c =>
 						c.CourseId == courseId
 						&& c.SlideId == slideId
@@ -629,8 +663,6 @@ namespace Database.Repos
 		{
 			return (await GetManualCheckingQueue<T>(options))
 				.Select(c => c.SlideId)
-				.Distinct()
-				.AsEnumerable()
 				.ToHashSet();
 		}
 	}

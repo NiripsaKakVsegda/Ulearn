@@ -15,24 +15,38 @@
   }
 }
 
-.title {
+.titleWrapper {
   font-family: @defaultFonts;
 
-  font-size: 18px;
-  line-height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+
   font-style: normal;
   font-weight: 600;
 
-  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (min-width: @navigationGrowthWidth) {
   .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .arrowIcon {
+    width: 14px;
+    height: 14px;
+  }
+
+  @media (min-width: @navigationGrowthWidth) {
     font-size: 20px;
     line-height: 28px;
+
+    .arrowIcon {
+      width: 16px;
+      height: 16px;
+    }
   }
 }

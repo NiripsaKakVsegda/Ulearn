@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
 using Ulearn.Core.Courses;
-using Z.EntityFramework.Plus;
 
 namespace Database.Repos.Groups
 {
@@ -48,6 +45,83 @@ namespace Database.Repos.Groups
 				defaultProhibitFurtherReview,
 				isInviteLinkEnabled
 			);
+		}
+
+		public Task<List<SingleGroup>> SearchGroups(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false)
+		{
+			var query = db.SingleGroups
+				.Where(g => !g.IsDeleted);
+
+			if (queryModel.CourseId is not null)
+				query = query
+					.Where(g => g.CourseId == queryModel.CourseId);
+
+			if (!queryModel.IncludeArchived)
+				query = query
+					.Where(g => !g.IsArchived);
+
+			if (queryModel.InstructorId is not null)
+			{
+				var accessesQuery = query
+					.GroupJoin(
+						db.GroupAccesses,
+						g => g.Id,
+						ga => ga.GroupId,
+						(group, accesses) => new { group, accesses }
+					)
+					.SelectMany(
+						e => e.accesses.DefaultIfEmpty(),
+						(e, access) => new { e.group, access }
+					);
+				accessesQuery = instructorIdExcluded
+					? accessesQuery
+						.Where(e =>
+							e.group.OwnerId != queryModel.InstructorId &&
+							(e.access.UserId != queryModel.InstructorId || !e.access.IsEnabled)
+						)
+					: accessesQuery
+						.Where(e =>
+							e.group.OwnerId == queryModel.InstructorId ||
+							(e.access.UserId == queryModel.InstructorId && e.access.IsEnabled)
+						);
+				query = accessesQuery.Select(e => e.group);
+			}
+
+			if (queryModel.MemberId is not null)
+				query = query
+					.GroupJoin(
+						db.GroupMembers,
+						g => g.Id,
+						gm => gm.GroupId,
+						(group, members) => new { group, members }
+					)
+					.SelectMany(
+						e => e.members,
+						(e, member) => new { e.group, member }
+					)
+					.Where(e => e.member.UserId == queryModel.MemberId)
+					.Select(e => e.group);
+
+			queryModel.Query = queryModel.Query?.ToLower();
+			if (!string.IsNullOrEmpty(queryModel.Query))
+				query = query
+					.Where(g => g.Name.ToLower().Contains(queryModel.Query));
+
+			query = query
+				.Distinct()
+				.OrderBy(g => g.IsArchived)
+				.ThenBy(g => g.Name);
+
+			if (queryModel.Offset > 0)
+				query = query
+					.Skip(queryModel.Offset);
+
+			if (queryModel.Count > 0)
+				query = query
+					.Take(queryModel.Count);
+
+			return query
+				.ToListAsync();
 		}
 
 		public async Task<GroupBase> CreateGroupAsync(string courseId,
@@ -197,7 +271,7 @@ namespace Database.Repos.Groups
 		{
 			return db.Set<T>().FirstOrDefaultAsync(g => g.Id == groupId && !g.IsDeleted);
 		}
-		
+
 		[ItemCanBeNull]
 		public Task<List<T>> FindGroupsByIdsAsync<T>(List<int> groupIds) where T : GroupBase
 		{
@@ -209,6 +283,18 @@ namespace Database.Repos.Groups
 		{
 			return FindGroupByIdAsync<GroupBase>(groupId);
 		}
+
+
+		public Task<bool> IsGroupExist<T>(int groupId) where T : GroupBase
+		{
+			return db.Set<T>().AnyAsync(g => g.Id == groupId && !g.IsDeleted);
+		}
+
+		public Task<bool> IsGroupExist(int groupId)
+		{
+			return IsGroupExist<GroupBase>(groupId);
+		}
+
 
 		[ItemCanBeNull]
 		public async Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false)
@@ -272,7 +358,30 @@ namespace Database.Repos.Groups
 			return groups.ToListAsync();
 		}
 
-		public async Task<bool> GetDefaultProhibitFutherReviewForUser(string courseId, string userId, string instructorId)
+		// Получение пользователей из групп в которых пользователь является владельцем либо преподавателем
+		public Task<List<string>> GetMyGroupsUsersIdsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false)
+		{
+			var groups = db.GroupAccesses
+				.Where(ga =>
+					ga.Group.CourseId == courseId &&
+					!ga.Group.IsDeleted &&
+					(ga.Group.OwnerId == userId || (ga.UserId == userId && ga.IsEnabled))
+				)
+				.Select(ga => ga.Group);
+
+			if (!includeArchived)
+				groups = groups.Where(g => !g.IsArchived);
+
+			var userIds = groups
+				.SelectMany(g => g.Members)
+				.Where(member => !member.User.IsDeleted)
+				.Select(member => member.UserId)
+				.Distinct();
+
+			return userIds.ToListAsync();
+		}
+
+		public async Task<bool> GetDefaultProhibitFurtherReviewForUser(string courseId, string userId, string instructorId)
 		{
 			var accessibleGroupsIds = new HashSet<int>((await GetMyGroupsFilterAccessibleToUser(courseId, instructorId)).Select(g => g.Id));
 			var userGroupsIdsWithDefaultProhibitFutherReview = db.GroupMembers
@@ -282,6 +391,17 @@ namespace Database.Repos.Groups
 				.Distinct()
 				.ToList();
 			return userGroupsIdsWithDefaultProhibitFutherReview.Any(g => accessibleGroupsIds.Contains(g));
+		}
+
+		public Task<List<int>> GetGroupIdsByMembers(string[] userIds)
+		{
+			return db.GroupMembers
+				.Where(m => userIds.Contains(m.UserId))
+				.Select(m => m.Group)
+				.Where(g => !g.IsDeleted)
+				.Select(g => g.Id)
+				.Distinct()
+				.ToListAsync();
 		}
 
 		public async Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId)

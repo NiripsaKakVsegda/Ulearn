@@ -1,4 +1,4 @@
-import { Delete } from "@skbkontur/react-icons";
+import { XIcon16Regular } from "@skbkontur/icons/XIcon16Regular";
 import React from "react";
 import { ReactCookieProps, withCookies } from "react-cookie";
 
@@ -7,15 +7,16 @@ import api from "src/api";
 import { NotificationBarResponse } from "src/models/notifications";
 
 import styles from './NotificationBar.less';
-import { AccountState } from "../../redux/account";
 
 const notificationBarCookieName = 'ulearn.notificationBar';
 
 function NotificationBar({
 	isSystemAdministrator,
 	cookies
-}: ReactCookieProps & { isSystemAdministrator: boolean; }): React.ReactElement<ReactCookieProps> | null {
-	if(!cookies) {
+}: ReactCookieProps & {
+	isSystemAdministrator: boolean;
+}): React.ReactElement<ReactCookieProps> | null {
+	if (!cookies) {
 		return null;
 	}
 
@@ -26,14 +27,14 @@ function NotificationBar({
 	const [state, setState] = React.useState(notificationBarState);
 	const [lastUpdateTime, setTime] = React.useState(new Date(0));
 
-	if(state.message === undefined && lastUpdateTime <= new Date()) {
+	if (state.message === undefined && lastUpdateTime <= new Date()) {
 		setTime(new Date(new Date().getTime() + 5 * 60_000));
 		api.notifications.getGlobalNotification()
 			.then(r => setState(r))
 			.catch(() => setState({ message: null, force: false }));
 	}
-	if(isSystemAdministrator) {
-		if(!state.message) {
+	if (isSystemAdministrator) {
+		if (!state.message) {
 			return null;
 		}
 
@@ -45,7 +46,7 @@ function NotificationBar({
 		);
 	}
 
-	if(!state.message || (cookies.get(notificationBarCookieName) && !state.force)) {
+	if (!state.message || (cookies.get(notificationBarCookieName) && !state.force)) {
 		return null;
 	}
 
@@ -53,12 +54,15 @@ function NotificationBar({
 		<div className={ state.overlap ? styles.overlap : styles.wrapper }>
 			{ state.message }
 			{ (!state.force && !state.overlap) &&
-				<Delete className={ styles.closeButton } onClick={ closeForThisDay }/> }
+			  <span className={ styles.closeButton } onClick={ closeForThisDay }>
+				  <XIcon16Regular/>
+				</span>
+			}
 		</div>
 	);
 
 	function closeForThisDay() {
-		if(!cookies) {
+		if (!cookies) {
 			return;
 		}
 		const date = new Date();

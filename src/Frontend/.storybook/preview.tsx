@@ -7,13 +7,12 @@ import theme from "src/uiTheme";
 import 'src/common.less';
 import 'moment/locale/ru';
 import "moment-timezone";
+import { ThemeContext } from "ui";
+import { reduxStore } from "src/storiesUtils";
 
 if(!$) {
 	console.error("jQuery isn't imported");
 }
-
-import { ThemeContext } from "ui";
-import { reduxStore } from "src/storiesUtils";
 
 const viewports = {
 	desktop: {
@@ -49,12 +48,12 @@ const viewports = {
 export const parameters = {
 	viewport: {
 		viewports: viewports,
-		defaultViewport: 'desktop',
+		layout: 'fullscreen'
 	},
 };
 
 export const decorators = [
-	(Story: Story) => (
+	(Story: Story) =>
 		<Provider store={ reduxStore }>
 			<ThemeContext.Provider value={ theme }>
 				<BrowserRouter>
@@ -62,5 +61,4 @@ export const decorators = [
 				</BrowserRouter>
 			</ThemeContext.Provider>
 		</Provider>
-	),
 ];

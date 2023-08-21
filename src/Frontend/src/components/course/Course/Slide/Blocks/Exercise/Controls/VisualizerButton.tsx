@@ -1,17 +1,17 @@
+import { TechPcLaptopIcon } from '@skbkontur/icons/TechPcLaptopIcon';
 import React from "react";
-import { ThemeContext } from "ui";
-import { PC, } from "icons";
 
-import ShowControlsTextContext from "./ShowControlsTextContext";
-import IControlWithText from "./IControlWithText";
+import defaultTheme from "src/uiTheme";
+import { ThemeContext } from "ui";
+
+import texts from "../Exercise.texts";
 
 import { Visualizer } from "../Visualizer/Visualizer";
 
-import defaultTheme from "src/uiTheme";
-
 import styles from './Controls.less';
+import IControlWithText from "./IControlWithText";
 
-import texts from "../Exercise.texts";
+import ShowControlsTextContext from "./ShowControlsTextContext";
 
 
 interface Props extends IControlWithText {
@@ -27,7 +27,7 @@ function VisualizerButton({
 	code,
 	className,
 	size,
-	onModalClose,
+	onModalClose
 }: Props): React.ReactElement {
 	const [isModalVisible, setModalVisible] = React.useState(false);
 
@@ -37,10 +37,8 @@ function VisualizerButton({
 				<ShowControlsTextContext.Consumer>
 				{
 					(showControlsTextContext) =>
-						<span onClick={ openModal }>
-							<span className={ styles.exerciseControlsIcon }>
-								<PC size={ size }/>
-							</span>
+						<span className={ styles.exerciseControlsGapped } onClick={ openModal }>
+							<TechPcLaptopIcon size={ size }/>
 							{ (showControlsTextContext || showControlsText) && texts.controls.visualizer.text }
 						</span>
 				}

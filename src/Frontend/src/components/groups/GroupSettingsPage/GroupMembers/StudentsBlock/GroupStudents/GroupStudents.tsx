@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useState } from 'react';
 import { AccountState } from "../../../../../../redux/account";
-import { GroupInfo, GroupStudentInfo } from "../../../../../../models/groups";
+import { GroupStudentInfo } from "../../../../../../models/groups";
 
 import styles from './groupStudents.less';
 import texts from './GroupStudents.texts';
 import { Checkbox } from "ui";
-import { GetNameWithSecondNameFirst } from "../../../../../common/Profile/Profile";
+import { getNameWithLastNameFirst } from "../../../../../common/Profile/Profile";
 import CopyStudentsModal from "../CopyStudentsModal/CopyStudentsModal";
 import ResetsLimitsModal from "../ResetLimitsModal/ResetsLimitsModal";
 import StudentActions from "../StudentActions/StudentActions";
@@ -13,6 +13,7 @@ import StudentCheckbox from "../StudentCheckbox/StudentCheckbox";
 import { ShortCourseInfo } from "../../../../../../models/course";
 import UserAccessesModal, { AccessesType } from "../../../../../common/UserAccessesModal/UserAccessesModal";
 import { CourseAccessType, SystemAccessType } from "../../../../../../consts/accessType";
+import { ShortGroupInfo } from "../../../../../../models/comments";
 
 interface Props {
 	courseTitle: string;
@@ -20,15 +21,10 @@ interface Props {
 	students: GroupStudentInfo[];
 
 	getCourses: () => { courses: ShortCourseInfo[], isCoursesLoading: boolean };
-	getCourseGroups: () => {
-		groups: GroupInfo[],
-		isGroupsLoading: boolean,
-		fetchGroups: (courseId: string) => void
-	},
 
 	onRemoveStudents: (studentIds: string[]) => void;
 	onResetLimits: (studentIds: string[]) => void;
-	onCopyStudents: (group: GroupInfo, studentIds: string[]) => void;
+	onCopyStudents: (group: ShortGroupInfo, studentIds: string[]) => void;
 
 	onGrantAccess: (userId: string, accessType: CourseAccessType) => void;
 	onRevokeAccess: (userId: string, accessType: CourseAccessType) => void;
@@ -92,7 +88,6 @@ const GroupStudents: FC<Props> = ({
 					checkedStudentIds={ checkedStudentIds }
 					onClose={ toggleCopyStudentsModal }
 					getCourses={ actions.getCourses }
-					getCourseGroups={ actions.getCourseGroups }
 					onCopyStudents={ actions.onCopyStudents }
 				/>
 			}
@@ -155,7 +150,7 @@ const GroupStudents: FC<Props> = ({
 	}
 
 	function compareByName(a: GroupStudentInfo, b: GroupStudentInfo) {
-		return GetNameWithSecondNameFirst(a.user).localeCompare(GetNameWithSecondNameFirst(b.user));
+		return getNameWithLastNameFirst(a.user).localeCompare(getNameWithLastNameFirst(b.user));
 	}
 };
 

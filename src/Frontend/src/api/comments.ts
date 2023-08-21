@@ -7,7 +7,8 @@ import { Comment, CommentPolicyResponse, SlideCommentsResponse, } from "src/mode
 import { Dispatch } from "redux";
 import {
 	commentAddedAction,
-	commentDeletedAction, commentLikeUpdatedAction,
+	commentDeletedAction,
+	commentLikeUpdatedAction,
 	commentsAction,
 	commentsPolicyAction,
 	commentUpdatedAction,
@@ -64,8 +65,9 @@ export function deleteComment(courseId: string, slideId: string, commentId: numb
 	};
 }
 
-export function updateComment(commentId: number,
-	updatedFields?: Pick<Partial<Comment>, 'text' | 'isApproved' | 'isCorrectAnswer' | 'isPinnedToTop'>
+export function updateComment(
+	commentId: number,
+	updatedFields?: Pick<Partial<Comment>, "text" | "isApproved" | "isCorrectAnswer" | "isPinnedToTop">
 )
 	: (dispatch: Dispatch) => Promise<CommentUpdatedAction> {
 	const url = constructPathToComment(commentId);

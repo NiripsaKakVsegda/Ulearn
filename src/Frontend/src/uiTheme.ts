@@ -1,4 +1,4 @@
-import { DEFAULT_THEME, ThemeFactory, } from "ui";
+import { DEFAULT_THEME, THEME_2022, ThemeFactory, } from "ui";
 
 const roundButtons = {
 	btnBorderRadiusLarge: '8px',
@@ -37,10 +37,42 @@ const reviewTooltip = {
 	popupBorderColor: '#F2F2F2'
 };
 
+const roundTooltipsSettings = {
+	tooltipBorderRadius: '8px',
+};
+
+const roundInputSettings = {
+	inputBorderRadiusSmall: '8px',
+	inputBorderRadiusMedium: '8px',
+	inputBorderRadiusLarge: '8px'
+};
+
+const roundHintSettings = {
+	hintBorderRadius: '8px',
+	hintPaddingX: '16px',
+	hintPaddingY: '8px'
+};
+
+const roundMenu = {
+	popupBorderRadius: '8px',
+	menuBorderRadius: '8px',
+	menuItemBorderRadius: '6px',
+	menuPaddingX: '4px',
+	menuPaddingY: '4px',
+}
+
+const roundInputsSettings = {
+	tokenInputBorderRadius: '8px',
+	tokenBorderRadius: '6px',
+	...roundMenu,
+	...roundInputSettings
+};
+
 export default ThemeFactory.create({
 	...roundButtons,
 	...roundSwitcher,
-	...roundModals
+	...roundModals,
+	...roundMenu
 }, DEFAULT_THEME);
 
 export const textareaHidden = ThemeFactory.create({
@@ -55,4 +87,20 @@ export const darkFlat = ThemeFactory.create({
 
 export const tooltipReview = ThemeFactory.create({
 	...reviewTooltip
+}, DEFAULT_THEME);
+
+export const roundTooltips = ThemeFactory.create({
+	...roundTooltipsSettings
+}, DEFAULT_THEME);
+
+export const roundInputs = ThemeFactory.create({
+	...roundInputsSettings
+}, DEFAULT_THEME);
+
+export const newThemeRoundDatePicker = ThemeFactory.create({
+	...roundInputSettings
+}, THEME_2022);
+
+export const roundHint = ThemeFactory.create({
+	...roundHintSettings
 }, DEFAULT_THEME);

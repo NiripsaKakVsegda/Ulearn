@@ -1,9 +1,10 @@
 import React, { FC } from 'react';
-import { Gapped, Kebab, MenuItem } from "ui";
-import { Delete, User } from "icons";
+import { Kebab, MenuItem } from "ui";
 import texts from "./TeacherKebab.texts";
 import { Mobile, NotMobile } from "../../../../../../utils/responsive";
 import { ShortUserInfo } from "../../../../../../models/users";
+import { XIcon16Regular } from '@skbkontur/icons/XIcon16Regular';
+import { JewelCrownIcon16Regular } from '@skbkontur/icons/JewelCrownIcon16Regular';
 
 interface Props {
 	teacher: ShortUserInfo;
@@ -17,23 +18,19 @@ const TeacherKebab: FC<Props> = ({ teacher, canChangeOwner, ...actions }) => {
 		<MenuItem
 			key={ "removeTeacher" }
 			onClick={ onRemoveTeacher }
-		>
-			<Gapped gap={ 5 }>
-				<Delete/>
-				{ texts.removeTeacher }
-			</Gapped>
-		</MenuItem>
-
+			icon={ <XIcon16Regular/> }
+			children={ texts.removeTeacher }
+		/>
 	];
 
 	if(canChangeOwner) {
 		menuItems.push(
-			<MenuItem key={ "changeOwner" } onClick={ onChangeOwner }>
-				<Gapped gap={ 5 }>
-					<User/>
-					{ texts.changeOwner }
-				</Gapped>
-			</MenuItem>
+			<MenuItem
+				key={ "changeOwner" }
+				onClick={ onChangeOwner }
+				icon={ <JewelCrownIcon16Regular/> }
+				children={ texts.changeOwner }
+			/>
 		);
 	}
 

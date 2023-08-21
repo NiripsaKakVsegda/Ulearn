@@ -1,13 +1,14 @@
-import React from 'react';
-
-import YouTube from 'react-youtube';
-import { Link, } from "ui";
-import { BlocksWrapper, Text, } from "src/components/course/Course/Slide/Blocks";
-import { ArrowChevronDown, ArrowChevronUp, } from "icons";
-import { BlockRenderContext } from "../../BlocksRenderer";
+import { ArrowCDownIcon16Regular } from '@skbkontur/icons/ArrowCDownIcon16Regular';
+import { ArrowCUpIcon16Regular } from '@skbkontur/icons/ArrowCUpIcon16Regular';
 
 import classNames from 'classnames';
+import React from 'react';
 import { Cookies, withCookies } from 'react-cookie';
+
+import YouTube from 'react-youtube';
+import { BlocksWrapper, Text } from "src/components/course/Course/Slide/Blocks";
+import { Link } from "ui";
+import { BlockRenderContext } from "../../BlocksRenderer";
 
 import styles from './Video.less';
 
@@ -45,27 +46,27 @@ class Video extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 
-		const { renderContext, } = props;
+		const { renderContext } = props;
 
 
 		this.state = {
 			showedAnnotation: renderContext.previous === undefined && renderContext.next === undefined,
 			removeBottomPaddings: !renderContext.hide &&
-				(renderContext.next !== undefined
-						? renderContext.next.type !== renderContext.type
-						: true
-				)
+								  (renderContext.next !== undefined
+										  ? renderContext.next.type !== renderContext.type
+										  : true
+								  )
 		};
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>) {
 		const { cookies, videoId } = this.props;
 
-		if(videoId !== prevProps.videoId) {
+		if (videoId !== prevProps.videoId) {
 			this.ytPlayer = null;
 		}
 
-		if(this.ytPlayer) {
+		if (this.ytPlayer) {
 			const newVideoRate = parseFloat(cookies.get(videoCookieName) || '1');
 
 			this.ytPlayer.setPlaybackRate(newVideoRate);
@@ -79,7 +80,7 @@ class Video extends React.Component<Props, State> {
 			containerClassName,
 			googleDocLink,
 			hide,
-			renderContext,
+			renderContext
 		} = this.props;
 		const params = new URLSearchParams(window.location.search);
 		const autoplay = renderContext.previous === undefined ? !!params.get('autoplay') : false;
@@ -91,8 +92,8 @@ class Video extends React.Component<Props, State> {
 			playerVars: {
 				autoplay: autoplay ? 1 : 0,
 				/* Disable related videos */
-				rel: 0,
-			},
+				rel: 0
+			}
 		};
 
 		return (
@@ -130,8 +131,8 @@ class Video extends React.Component<Props, State> {
 	};
 
 	renderAnnotation = () => {
-		const { showedAnnotation, removeBottomPaddings, } = this.state;
-		const { annotation, googleDocLink, hide, } = this.props;
+		const { showedAnnotation, removeBottomPaddings } = this.state;
+		const { annotation, googleDocLink, hide } = this.props;
 
 		return (
 			<BlocksWrapper
@@ -139,7 +140,8 @@ class Video extends React.Component<Props, State> {
 				withoutBottomPaddings={ removeBottomPaddings }
 				hide={ hide }
 				isBlock
-				className={ styles.withoutBottomMargins }>
+				className={ styles.withoutBottomMargins }
+			>
 				<Text disableAnchorsScrollHandlers disableTranslatingTex>
 					{
 						annotation
@@ -163,19 +165,20 @@ class Video extends React.Component<Props, State> {
 					Содержание видео
 					<span className={ styles.annotationArrow }>
 						{ showedAnnotation
-							? <ArrowChevronUp/>
-							: <ArrowChevronDown/> }
+							? <ArrowCUpIcon16Regular align={ 'baseline' }/>
+							: <ArrowCDownIcon16Regular align={ 'baseline' }/>
+						}
 					</span>
 				</h3>
 				{ showedAnnotation &&
-					<React.Fragment>
-						<p>{ annotation.text }</p>
-						{ this.renderAnnotationFragments(annotation) }
-						<p>
-							Ошибка в содержании? <Link target="_blank" href={ googleDocLink }>Предложите
-							исправление!</Link>
-						</p>
-					</React.Fragment>
+				  <React.Fragment>
+					  <p>{ annotation.text }</p>
+					  { this.renderAnnotationFragments(annotation) }
+					  <p>
+						  Ошибка в содержании? <Link target="_blank" href={ googleDocLink }>Предложите
+						  исправление!</Link>
+					  </p>
+				  </React.Fragment>
 				}
 			</React.Fragment>
 		);
@@ -202,14 +205,14 @@ class Video extends React.Component<Props, State> {
 
 	toggleAnnotation = () => {
 		this.setState({
-			showedAnnotation: !this.state.showedAnnotation,
+			showedAnnotation: !this.state.showedAnnotation
 		});
 	};
 
 	setVideoTime = (e: React.MouseEvent) => {
 		const element = e.currentTarget as HTMLElement;
 		const seconds = parseInt(element.dataset.tid || '-1');
-		if(seconds === -1) {
+		if (seconds === -1) {
 			console.error('[Youtube.Annotation] Time was not defined');
 			return;
 		}

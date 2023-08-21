@@ -1298,7 +1298,8 @@ namespace Database.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
+                        .HasColumnType("character varying(300)")
+                        .UseCollation("default");
 
                     b.Property<string>("OwnerId")
                         .IsRequired()
@@ -1544,6 +1545,12 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
+                    b.Property<string>("CheckedById")
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("CheckedTimestamp")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("CourseId")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1581,17 +1588,21 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CheckedById");
+
                     b.HasIndex("LockedById");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("CourseId", "SlideId");
-
-                    b.HasIndex("CourseId", "UserId");
-
                     b.HasIndex("CourseId", "SlideId", "Timestamp");
 
+                    b.HasIndex("CourseId", "IsChecked", "SlideId", "Timestamp");
+
                     b.HasIndex("CourseId", "SlideId", "UserId", "ProhibitFurtherManualCheckings");
+
+                    b.HasIndex("CourseId", "SlideId", "UserId", "Timestamp");
+
+                    b.HasIndex("CourseId", "IsChecked", "UserId", "SlideId", "Timestamp");
 
                     b.ToTable("ManualExerciseCheckings");
                 });
@@ -1600,6 +1611,12 @@ namespace Database.Migrations
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer");
+
+                    b.Property<string>("CheckedById")
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("CheckedTimestamp")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("CourseId")
                         .IsRequired()
@@ -1635,17 +1652,19 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CheckedById");
+
                     b.HasIndex("LockedById");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("CourseId", "SlideId");
-
-                    b.HasIndex("CourseId", "UserId");
-
                     b.HasIndex("CourseId", "SlideId", "Timestamp");
 
-                    b.HasIndex("CourseId", "SlideId", "UserId");
+                    b.HasIndex("CourseId", "IsChecked", "SlideId", "Timestamp");
+
+                    b.HasIndex("CourseId", "SlideId", "UserId", "Timestamp");
+
+                    b.HasIndex("CourseId", "IsChecked", "UserId", "SlideId", "Timestamp");
 
                     b.ToTable("ManualQuizCheckings");
                 });
@@ -3611,6 +3630,10 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.ManualExerciseChecking", b =>
                 {
+                    b.HasOne("Database.Models.ApplicationUser", "CheckedBy")
+                        .WithMany()
+                        .HasForeignKey("CheckedById");
+
                     b.HasOne("Database.Models.UserExerciseSubmission", "Submission")
                         .WithOne("ManualChecking")
                         .HasForeignKey("Database.Models.ManualExerciseChecking", "Id")
@@ -3627,6 +3650,8 @@ namespace Database.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("CheckedBy");
+
                     b.Navigation("LockedBy");
 
                     b.Navigation("Submission");
@@ -3636,6 +3661,10 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Models.ManualQuizChecking", b =>
                 {
+                    b.HasOne("Database.Models.ApplicationUser", "CheckedBy")
+                        .WithMany()
+                        .HasForeignKey("CheckedById");
+
                     b.HasOne("Database.Models.Quizzes.UserQuizSubmission", "Submission")
                         .WithOne("ManualChecking")
                         .HasForeignKey("Database.Models.ManualQuizChecking", "Id")
@@ -3651,6 +3680,8 @@ namespace Database.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CheckedBy");
 
                     b.Navigation("LockedBy");
 

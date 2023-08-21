@@ -36,7 +36,7 @@ const PreviewUnitPageFromAllCourseConnected: FC = () => {
 					f.flashcardType !== FlashcardType.UserFlashcard ||
 					(f as UserGeneratedFlashcard).isPublished
 				)
-		}))
+		}));
 
 	const flashcardSlideSlugsByUnitId = (courseInfo?.units ?? []).reduce(
 		(result, unitInfo) => {
@@ -60,7 +60,7 @@ const PreviewUnitPageFromAllCourseConnected: FC = () => {
 	);
 
 	function changeUnit(unitId: string) {
-		setSearchParams({ ...searchParams, unitId });
+		setSearchParams({ ...searchParams, unitId }, { replace: true });
 	}
 };
 

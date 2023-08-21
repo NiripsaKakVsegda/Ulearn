@@ -66,11 +66,17 @@ namespace Ulearn.Web.Api.Controllers.Slides
 				ApiUrl = urlHelper.Action("SlideInfo", "Slides", new { courseId = courseId, slideId = slide.Id }),
 				MaxScore = getSlideMaxScoreFunc(slide),
 				ScoringGroup = slide.ScoringGroup,
+				RequiresReview = slide switch
+				{
+					ExerciseSlide exerciseSlide => exerciseSlide.Scoring.RequireReview,
+					QuizSlide quizSlide => quizSlide.Scoring.ManualChecking,
+					_ => false
+				},
 				Type = GetSlideType(slide),
 				QuestionsCount = slide.Blocks.OfType<AbstractQuestionBlock>().Count(),
 				ContainsVideo = slide.Blocks.OfType<YoutubeBlock>().Any(),
 				GitEditLink = getGitEditLink(slide),
-				QuizMaxTriesCount = slide is QuizSlide quizSlide ? quizSlide.MaxTriesCount : 0,
+				QuizMaxTriesCount = (slide as QuizSlide)?.MaxTriesCount ?? 0,
 				AdditionalContentInfo = new AdditionalContent
 				{
 					IsAdditionalContent = slide.IsExtraContent,

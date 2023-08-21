@@ -4,7 +4,7 @@ import { constructPathToSlide } from "../../../../consts/routes";
 import { Link } from "react-router-dom";
 import getCardsPluralForm from "../../utils/getCardsPluralForm";
 import { Button } from "ui";
-import { LockClosed } from "icons";
+import { SecurityLockClosedIcon24Solid } from "@skbkontur/icons/SecurityLockClosedIcon24Solid";
 import { InfoByUnit } from "../../../../models/course";
 import styles from './courseCards.less';
 import texts from './CourseCards.texts';
@@ -48,7 +48,11 @@ const CourseCards: FC<Props> = ({ courseId, infoByUnits }) => {
 							{ texts.openUnitButton }
 						</Button> }
 				</div>
-				{ !infoByUnit.unlocked && <LockClosed className={ styles.unitCardLockerIcon } size={ 22 }/> }
+				{ !infoByUnit.unlocked &&
+					<span className={styles.lockIconWrapper}>
+						<SecurityLockClosedIcon24Solid/>
+					</span>
+				}
 			</Link>
 		);
 	};

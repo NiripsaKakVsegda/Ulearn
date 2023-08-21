@@ -1,6 +1,6 @@
 import api from "./index";
 import { Dispatch } from "redux";
-import { CourseInfo, CoursesListResponse, TempCourseErrorsResponse } from "src/models/course";
+import { CourseInfo, TempCourseErrorsResponse } from "src/models/course";
 import { courseUpdatedAction } from "src/actions/course";
 
 export function getCourses() {
@@ -21,8 +21,4 @@ export function getCourse(courseId: string): Promise<CourseInfo> {
 
 export function getCourseErrors(courseId: string): Promise<TempCourseErrorsResponse> {
 	return api.get(`temp-courses/${ courseId }/errors`);
-}
-
-export function getUserCourses(): Promise<CoursesListResponse> {
-	return api.get('courses?role=instructor');
 }

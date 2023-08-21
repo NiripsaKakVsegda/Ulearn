@@ -18,6 +18,12 @@ namespace Ulearn.Web.Api.Models.Common
 		public bool IsArchived { get; set; }
 
 		[DataMember]
+		public ShortUserInfo Owner { get; set; }
+
+		[DataMember]
+		public int MembersCount { get; set; }
+
+		[DataMember]
 		public string ApiUrl { get; set; }
 	}
 }

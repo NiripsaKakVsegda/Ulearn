@@ -12,6 +12,7 @@ using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
@@ -28,16 +29,18 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		private readonly IGroupAccessesRepo groupAccessesRepo;
 		private readonly IGroupMembersRepo groupMembersRepo;
 		private readonly INotificationsRepo notificationsRepo;
+		private readonly ICourseRolesRepo courseRolesRepo;
 
 		public GroupsController(ICourseStorage courseStorage, UlearnDb db,
 			IUsersRepo usersRepo,
-			IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo, IGroupMembersRepo groupMembersRepo, INotificationsRepo notificationsRepo)
+			IGroupsRepo groupsRepo, IGroupAccessesRepo groupAccessesRepo, IGroupMembersRepo groupMembersRepo, INotificationsRepo notificationsRepo, ICourseRolesRepo courseRolesRepo)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.groupsRepo = groupsRepo;
 			this.groupAccessesRepo = groupAccessesRepo;
 			this.groupMembersRepo = groupMembersRepo;
 			this.notificationsRepo = notificationsRepo;
+			this.courseRolesRepo = courseRolesRepo;
 		}
 
 		/// <summary>
@@ -104,6 +107,102 @@ namespace Ulearn.Web.Api.Controllers.Groups
 					Count = filteredGroups.Count,
 					TotalCount = groups.Count,
 				}
+			};
+		}
+
+		[HttpGet("search")]
+		public async Task<ActionResult<GroupsSearchResponse>> SearchGroups([FromQuery] GroupsSearchParameters parameters)
+		{
+			var isSysAdmin = await IsSystemAdministratorAsync();
+			if (parameters.CourseId is null && !isSysAdmin)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("Only system administrator can search groups in all courses"));
+
+			var isCourseAdmin = isSysAdmin || await courseRolesRepo.HasUserAccessToCourse(UserId, parameters.CourseId, CourseRoleType.CourseAdmin);
+			if (parameters.InstructorId is not null && !isCourseAdmin)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("Only course admins can search groups by instructor id"));
+
+			var isInstructor = isCourseAdmin || await courseRolesRepo.HasUserAccessToCourse(UserId, parameters.CourseId, CourseRoleType.Instructor);
+			if (!isInstructor)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor to search groups"));
+
+			if (!isCourseAdmin)
+				parameters.InstructorId = UserId;
+
+			var searchModel = new GroupsSearchQueryModel
+			{
+				CourseId = parameters.CourseId,
+				IncludeArchived = parameters.IncludeArchived,
+				InstructorId = parameters.InstructorId,
+				MemberId = parameters.MemberId,
+				Query = parameters.Query,
+				Offset = parameters.Offset,
+				Count = parameters.Count
+			};
+
+			var groups = new List<SingleGroup>();
+			if (isCourseAdmin && searchModel.InstructorId is null)
+			{
+				searchModel.InstructorId = UserId;
+				groups.AddRange(await groupsRepo.SearchGroups(searchModel));
+				searchModel.Count -= groups.Count;
+				if (searchModel.Count > 0)
+					groups.AddRange(await groupsRepo.SearchGroups(searchModel, true));
+			}
+			else
+			{
+				groups.AddRange(await groupsRepo.SearchGroups(searchModel));
+			}
+
+			return new GroupsSearchResponse
+			{
+				Groups = groups
+					.Select(BuildShortGroupInfo)
+					.ToList()
+			};
+		}
+
+		[HttpGet("by-ids")]
+		public async Task<ActionResult<GroupsByIdsResponse>> FindGroupsByIds([FromQuery] List<int> groupIds)
+		{
+			const int maxRequestUsersCount = 100;
+
+			var isCourseAdmin = await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.CourseAdmin);
+			var isInstructor = isCourseAdmin || await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.Instructor);
+			if (!isInstructor)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of any course"));
+
+			if (groupIds.Count > maxRequestUsersCount)
+				return BadRequest(new ErrorResponse($"You cannot request more than {maxRequestUsersCount} groups"));
+
+			var groupsQuery = db.SingleGroups
+				.Where(g => groupIds.Contains(g.Id) && !g.IsDeleted);
+			if (!isCourseAdmin)
+				groupsQuery = groupsQuery
+					.GroupJoin(
+						db.GroupAccesses,
+						g => g.Id,
+						ga => ga.GroupId,
+						(group, accesses) => new { group, accesses }
+					)
+					.SelectMany(
+						e => e.accesses.DefaultIfEmpty(),
+						(e, access) => new { e.group, access }
+					)
+					.Where(e => e.group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
+					.Select(e => e.group);
+
+			var groups = await groupsQuery
+				.Distinct()
+				.ToListAsync();
+
+			return new GroupsByIdsResponse
+			{
+				FoundGroups = groups
+					.Select(BuildShortGroupInfo)
+					.ToList(),
+				NotFoundGroupIds = groupIds
+					.Except(groups.Select(u => u.Id))
+					.ToList()
 			};
 		}
 

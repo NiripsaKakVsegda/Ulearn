@@ -4,11 +4,11 @@ import { LineRenderedReviews, Props } from "../ReviewsBlock.types";
 import styles from "./ReviewsBlockMobile.less";
 import { ThemeContext, Tooltip } from "ui";
 import { tooltipReview } from "../../../../../../../../uiTheme";
-import { CommentSolid } from "icons";
 import { InstructorReviewInfoWithAnchor } from "../../../../InstructorReview/InstructorReview.types";
 import { getDataFromReviewToCompareChanges } from "../../../../InstructorReview/utils";
 import { areReviewsSameLineCombined, reviewsComparerByStart } from "../../ExerciseUtils";
 import ReviewItem from "../ReviewItem/ReviewItem";
+import { CommentRectIcon20Solid } from '@skbkontur/icons/CommentRectIcon20Solid';
 
 const ReviewsBlockMobile: FC<Props> = (props) => {
 	const { reviews, selectedReviewId } = props;
@@ -135,7 +135,7 @@ const ReviewsBlockMobile: FC<Props> = (props) => {
 						data-id={ lineReviews.reviews[0].id }
 						onClick={ click }
 					>
-						<CommentSolid className={ styles.reviewIcon }/>
+						<CommentRectIcon20Solid className={ styles.reviewIcon }/>
 						{ lineReviews.reviews.length > 1 &&
 							<span className={ styles.reviewCount }>
 								{ lineReviews.reviews.length > 9 ? "9+" : lineReviews.reviews.length }
@@ -147,9 +147,7 @@ const ReviewsBlockMobile: FC<Props> = (props) => {
 		</li>;
 	};
 
-	return <ul className={
-		cn(styles.reviewsContainerMobile, className) }
-	>
+	return <ul className={ cn(styles.reviewsContainerMobile, className) }>
 		{ renderedReviews.map(renderLineReviews) }
 	</ul>;
 
@@ -189,7 +187,8 @@ const ReviewsBlockMobile: FC<Props> = (props) => {
 	function groupReviewsByLine(reviews: InstructorReviewInfoWithAnchor[]): LineRenderedReviews[] {
 		const result = [...reviews]
 			.sort(reviewsComparerByStart)
-			.reduce((result, review) => {
+			.reduce(
+				(result, review) => {
 					const current = result[review.startLine];
 					result[review.startLine] = current === undefined
 						? {

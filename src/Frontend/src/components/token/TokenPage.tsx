@@ -10,7 +10,6 @@ import { Button, Loader, Textarea, Toast, Toggle } from "ui";
 import { constructLinkWithReturnUrl, login } from "../../consts/routes";
 import texts from './TokenPage.texts';
 import styles from './tokenPage.less';
-import { EyeClosedIcon, EyeOpenedIcon } from "@skbkontur/react-ui/internal/icons/16px";
 
 interface PropsFromRedux {
 	account: AccountState,

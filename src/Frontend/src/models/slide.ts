@@ -12,6 +12,7 @@ interface ShortSlideInfo {
 	slug: string; // Человекочитаемый фрагмент url для слайда
 	maxScore: number;
 	scoringGroup: string | null;
+	requiresReview: boolean;
 	containsVideo: boolean;
 	type: SlideType;
 	apiUrl: string;

@@ -17,7 +17,7 @@ using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Controllers;
 
-[Route("/course-accesses/{courseId}")]
+[Route("/courses/{courseId}/accesses")]
 public class CourseAccessesController : BaseController
 {
 	private readonly ICoursesRepo coursesRepo;

@@ -2,7 +2,7 @@ import React from "react";
 import cn from "classnames";
 
 import { DropdownMenu, } from "ui";
-import { DocumentGroup } from "icons";
+import { DocsTextIcon20Solid } from '@skbkontur/icons/DocsTextIcon20Solid';
 
 import { isIconOnly, maxDropdownHeight, sysAdminMenuItems } from "./CoursesMenus/CoursesMenuUtils";
 
@@ -26,7 +26,7 @@ function SysAdminMenu({ controllableCourseIds, courses, deviceType, }: Props): R
 				<button className={ cn(styles.headerElement, styles.button) }>
 					{
 						isIconOnly(deviceType)
-							? <DocumentGroup className={ styles.icon }/>
+							? <DocsTextIcon20Solid className={ styles.icon }/>
 							: <>
 								Администрирование
 								<span className={ styles.caret }/>

@@ -1,11 +1,11 @@
+import { DocTextIcon16Regular } from "@skbkontur/icons/DocTextIcon16Regular";
+import cn from 'classnames';
 import React from "react";
 
-import { DocumentLite } from "icons";
-import IControlWithText from "./IControlWithText";
+import texts from "../Exercise.texts";
 
 import styles from './Controls.less';
-
-import texts from "../Exercise.texts";
+import IControlWithText from "./IControlWithText";
 import ShowControlsTextContext from "./ShowControlsTextContext";
 
 export interface Props extends IControlWithText {
@@ -17,16 +17,18 @@ export interface Props extends IControlWithText {
 function OutputButton({
 	showOutput,
 	onShowOutputButtonClicked,
-	showControlsText,
+	showControlsText
 }: Props): React.ReactElement {
 	return (
-		<span className={ styles.exerciseControls } onClick={ onShowOutputButtonClicked }>
-			<span className={ styles.exerciseControlsIcon }>
-				<DocumentLite/>
-			</span>
+		<span
+			className={ cn(styles.exerciseControls, styles.exerciseControlsGapped) }
+			onClick={ onShowOutputButtonClicked }
+		>
+			<DocTextIcon16Regular/>
 			<ShowControlsTextContext.Consumer>
 				{
-					(showControlsTextContext) => (showControlsTextContext || showControlsText) && (showOutput ? texts.controls.output.hide : texts.controls.output.show)
+					(showControlsTextContext) => (showControlsTextContext || showControlsText) &&
+												 (showOutput ? texts.controls.output.hide : texts.controls.output.show)
 				}
 			</ShowControlsTextContext.Consumer>
 		</span>

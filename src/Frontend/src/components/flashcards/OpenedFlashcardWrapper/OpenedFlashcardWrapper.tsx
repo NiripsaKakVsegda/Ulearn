@@ -1,11 +1,17 @@
-import React, { FC, PropsWithChildren, useEffect } from 'react';
+import React, { FC, PropsWithChildren, useEffect, useState } from 'react';
 import { ShortUserInfo } from "../../../models/users";
 import { DropdownMenu, Hint, MenuItem, Tooltip } from "ui";
-import { Info, Settings } from "icons";
-import { CrossIcon } from "@skbkontur/react-ui/internal/icons/CrossIcon";
 import { FlashcardModerationStatus } from "../../../models/flashcards";
 import styles from "./openedFlashcardWrapper.less";
 import texts from './OpenedFlashcardWrapper.texts';
+import { ToolPencilLineIcon16Regular } from "@skbkontur/icons/ToolPencilLineIcon16Regular";
+import { TrashCanIcon16Regular } from "@skbkontur/icons/TrashCanIcon16Regular";
+import { EyeOpenIcon16Regular } from "@skbkontur/icons/EyeOpenIcon16Regular";
+import { EyeOffIcon16Regular } from "@skbkontur/icons/EyeOffIcon16Regular";
+import { InfoSquareIcon20Regular } from '@skbkontur/icons/InfoSquareIcon20Regular';
+import { SettingsGearIcon20Regular } from '@skbkontur/icons/SettingsGearIcon20Regular';
+import { XIcon24Regular } from '@skbkontur/icons/XIcon24Regular';
+import cn from "classnames";
 import Profile from "../../common/Profile/Profile";
 
 export interface FlashcardMeta {
@@ -40,6 +46,9 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 		return () => document.removeEventListener('keyup', handleEscapeKey);
 	}, [props.onClose]);
 
+	const [dropdownMenuOpened, setDropdownMenuOpened] = useState(false);
+	const [flashcardMetaShown, setFlashcardMetaShown] = useState(false);
+
 	const renderFlashcardMeta = (): React.ReactNode => {
 		if(!meta) {
 			return null;
@@ -70,8 +79,7 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 					</span>
 				</div>
 			}
-			{
-				(meta.isPublished && !meta.moderationStatus) &&
+			{ (meta.isPublished && !meta.moderationStatus) &&
 				<div className={ styles.publishedInfo }>
 					{ texts.flashcardPublishedInfo }
 				</div>
@@ -88,8 +96,15 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 			pos={ 'bottom right' }
 			allowedPositions={ ['bottom right'] }
 			render={ renderFlashcardMeta }
+			onOpen={ handleMetaShown }
+			onClose={ handleMetaHidden }
 		>
-			<Info/>
+			<InfoSquareIcon20Regular
+				className={ cn(
+					styles.controlIcon,
+					{ [styles.controlIconActive]: flashcardMetaShown }
+				) }
+			/>
 		</Tooltip>;
 	};
 
@@ -100,71 +115,104 @@ const OpenedFlashcardWrapper: FC<PropsWithChildren<Props>> = (props) => {
 
 		return <DropdownMenu
 			positions={ ['bottom right'] }
-			caption={ <Settings/> }
+			onOpen={ handleDropdownOpened }
+			onClose={ handleDropdownClosed }
+			caption={
+				<SettingsGearIcon20Regular
+					className={ cn(
+						styles.controlIcon,
+						{ [styles.controlIconActive]: dropdownMenuOpened }
+					) }
+				/>
+			}
 		>
 			{ controls.onStartEditFlashcard &&
-				<MenuItem onClick={ controls.onStartEditFlashcard }>
-					{ texts.controls.edit }
-				</MenuItem>
+				<MenuItem
+					onClick={ controls.onStartEditFlashcard }
+					icon={ <ToolPencilLineIcon16Regular/> }
+					children={ texts.controls.edit }
+				/>
 			}
 			{ controls.onRemoveFlashcard &&
-				<MenuItem onClick={ controls.onRemoveFlashcard }>
-					{ texts.controls.remove }
-				</MenuItem>
+				<MenuItem
+					onClick={ controls.onRemoveFlashcard }
+					icon={ <TrashCanIcon16Regular/> }
+					children={ texts.controls.remove }
+				/>
 			}
 			{ controls.onApproveFlashcard &&
-				<MenuItem onClick={ controls.onApproveFlashcard }>
+				<MenuItem
+					onClick={ controls.onApproveFlashcard }
+					icon={ <EyeOpenIcon16Regular/> }
+					className={ styles.menuItemRelative }
+				>
 					<Hint
 						text={ texts.controls.publishHint }
 						pos={ "left" }
-						useWrapper={ true }
 					>
-						{ texts.controls.publish }
+						<span className={ styles.hintAnchor }/>
 					</Hint>
+					{ texts.controls.publish }
 				</MenuItem>
 			}
 			{ controls.onDeclineFlashcard &&
-				<MenuItem onClick={ controls.onDeclineFlashcard }>
-					{ texts.controls.decline }
-				</MenuItem>
+				<MenuItem
+					onClick={ controls.onDeclineFlashcard }
+					icon={ <EyeOffIcon16Regular/> }
+					children={ texts.controls.decline }
+				/>
 			}
 		</DropdownMenu>;
 	};
 
-	return (
-		<div className={ styles.wrapper }>
-			<div className={ styles.header }>
-				{ unitTitle &&
-					<h5 className={ styles.unitTitle }>
-						{ texts.buildUnitTitle(unitTitle) }
-					</h5>
+	return <div className={ styles.wrapper }>
+		<div className={ styles.header }>
+			{ unitTitle &&
+				<h5 className={ styles.unitTitle }>
+					{ texts.buildUnitTitle(unitTitle) }
+				</h5>
+			}
+			<div className={ styles.headerControlsWrapper }>
+				{ renderFlashcardMetaTooltip() }
+				{ renderFlashcardControls() }
+				{ ((meta || controls) && props.onClose) &&
+					<div className={ styles.verticalSplitter }/>
 				}
-				<div className={ styles.headerControlsWrapper }>
-					{ renderFlashcardMetaTooltip() }
-					{ renderFlashcardControls() }
-					{ ((meta || controls) && props.onClose) &&
-						<div className={ styles.verticalSplitter }/>
-					}
-					{ props.onClose &&
-						<button
-							className={ styles.closeButton }
-							onClick={ props.onClose }
-						>
-							<CrossIcon/>
-						</button>
-					}
-				</div>
-			</div>
-			<div className={ styles.contentWrapper }>
-				{ props.children }
+				{ props.onClose &&
+					<button
+						className={ styles.closeButton }
+						onClick={ props.onClose }
+					>
+						<XIcon24Regular className={ styles.controlIcon }/>
+					</button>
+				}
 			</div>
 		</div>
-	);
+		<div className={ styles.contentWrapper }>
+			{ props.children }
+		</div>
+	</div>;
 
 	function handleEscapeKey(e: KeyboardEvent) {
 		if(props.onClose && e.key === 'Escape') {
 			props.onClose();
 		}
+	}
+
+	function handleDropdownOpened() {
+		setDropdownMenuOpened(true);
+	}
+
+	function handleDropdownClosed() {
+		setDropdownMenuOpened(false);
+	}
+
+	function handleMetaShown() {
+		setFlashcardMetaShown(true);
+	}
+
+	function handleMetaHidden() {
+		setFlashcardMetaShown(false);
 	}
 };
 

@@ -1,13 +1,13 @@
+import { NavigateFunction } from "react-router/lib/hooks";
 import { buildQuery } from "src/utils";
 import { SlideInfo } from "../components/course/Course/CourseUtils";
-import { NavigateFunction } from "react-router/lib/hooks";
 
 export const coursePath = "course";
-export const adminCheckingQueuePath = "/admin/checkingQueue";
 export const coursesPath = "/course/courses";
 export const flashcards = "flashcards";
 export const userFlashcards = "user-flashcards";
-export const courseAccesses = "course-accesses";
+export const courses = "courses";
+export const accesses = "accesses";
 export const flashcardsPreview = "preview";
 export const commentsPath = "comments";
 export const exerciseStudentSubmissions = 'exercise/studentSubmissions';
@@ -16,6 +16,7 @@ export const antiplagiarism = 'antiplagiarism';
 export const antiPlagiarismDetailsRoute = '/AntiPlagiarism/Details';
 export const favouriteReviews = 'favourite-reviews';
 export const reviews = 'reviews';
+export const reviewQueue = 'review-queue';
 export const commentPoliciesPath = "comment-policies";
 export const analytics = "/analytics";
 export const courseStatistics = analytics + '/courseStatistics';
@@ -45,6 +46,11 @@ export const additionalContent = 'additional-content-publications';
 export const deadLines = 'dead-lines';
 export const superGroup = 'super-group';
 export const superGroups = 'super-groups';
+
+
+export function constructPathToReviewQueue(courseId: string) {
+	return `/${ courseId }/${ reviewQueue }`;
+}
 
 export function constructPathToSlide(courseId: string, slideId: string): string {
 	return constructPathToCourse(courseId) + `/${ slideId }`;

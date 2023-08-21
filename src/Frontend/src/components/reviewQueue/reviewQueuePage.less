@@ -1,0 +1,74 @@
+@import "/src/variables";
+
+.pageWrapper {
+  width: 100%;
+  background-color: @whiteSmoke;
+
+  min-height: calc(100vh - @headerHeight);
+  @supports (min-height: 100dvh) {
+    min-height: calc(100dvh - @headerHeight);
+  }
+
+  padding: 32px 16px;
+
+  @media (max-width: @maxPhoneWidth) {
+    padding: 16px 0;
+  }
+}
+
+.pageContentWrapper {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  font-family: @defaultFonts;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pageTitle {
+  font-size: 40px;
+  margin: 0 0 16px;
+  text-align: center;
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 20px;
+  }
+}
+
+.tabs {
+  margin-bottom: 24px;
+  text-align: center;
+
+  &, :hover, :focus, :active {
+    text-decoration: none;
+  }
+}
+
+.tab {
+  font-size: 18px;
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 14px;
+    padding: 8px 0 4px;
+  }
+}
+
+.filtersListWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notAllItemsLoadedInfo {
+  align-self: flex-start;
+  margin: 0 16px;
+  font-size: 16px;
+  color: @additionalColor;
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 14px;
+  }
+}

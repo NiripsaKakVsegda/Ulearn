@@ -1,9 +1,9 @@
+import { AttachLinkIcon16Regular } from '@skbkontur/icons/AttachLinkIcon16Regular';
 import React, { FC } from 'react';
-import { GroupInfo, GroupType } from "../../../../../../models/groups";
 import { Button, Input, Toast, Toggle } from "ui";
+import { GroupInfo, GroupType } from "../../../../../../models/groups";
 import styles from './inviteBlock.less';
 import texts from './InviteBlock.texts';
-import { Link } from "icons";
 
 interface Props {
 	group: GroupInfo;
@@ -19,9 +19,8 @@ const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 		<div className={ styles.inviteLink }>
 			<Button
 				use="link"
-				icon={ <Link/> }
+				icon={ <AttachLinkIcon16Regular/> }
 				onClick={ onCopyLink }
-				className={ styles.inviteLinkText }
 			>
 				{ texts.copyLink }
 			</Button>

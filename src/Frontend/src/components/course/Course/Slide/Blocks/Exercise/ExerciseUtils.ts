@@ -1,6 +1,7 @@
 import {
 	AutomaticExerciseCheckingResult,
-	AutomaticExerciseCheckingResult as CheckingResult, ReviewInfo,
+	AutomaticExerciseCheckingResult as CheckingResult,
+	ReviewInfo,
 	SolutionRunStatus,
 	SubmissionInfo
 } from "src/models/exercise";
@@ -10,18 +11,12 @@ import { ReduxData } from "src/redux";
 import { ReviewCompare } from "../../InstructorReview/InstructorReview.types";
 import 'codemirror/mode/clike/clike.js';
 import 'codemirror/mode/python/python.js';
-import 'codemirror/mode/python/python.js';
-import 'codemirror/mode/clike/clike.js';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/xml/xml.js';
-import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/css/css.js';
 import 'codemirror/mode/haskell/haskell.js';
-import 'codemirror/mode/clike/clike.js';
-import 'codemirror/mode/clike/clike.js';
 import 'codemirror/mode/sql/sql.js';
 import 'codemirror/mode/jsx/jsx.js';
-import 'codemirror/mode/xml/xml.js';
 
 enum SubmissionColor {
 	MaxResult = "MaxResult", // Студенту больше ничего не может сделать, ни сийчам ни в будущем
@@ -110,7 +105,9 @@ function getAllReviewsFromSubmission(submission: SubmissionInfo): ReviewInfo[] {
 	}
 
 	const manual = submission.manualChecking?.reviews || [];
-	const auto = submission.automaticChecking && submission.automaticChecking.reviews ? submission.automaticChecking.reviews : [];
+	const auto = submission.automaticChecking && submission.automaticChecking.reviews
+		? submission.automaticChecking.reviews
+		: [];
 	return manual.concat(auto);
 }
 
@@ -143,7 +140,8 @@ function getReviewsWithTextMarkers(
 		const { finishLine, finishPosition, startLine, startPosition } = review;
 		const textMarker = createTextMarker(finishLine, finishPosition, startLine, startPosition,
 			markerClassName,
-			exerciseCodeDoc);
+			exerciseCodeDoc
+		);
 
 		reviewsWithTextMarkers.push({
 			markers: [textMarker],
@@ -395,16 +393,14 @@ export const areReviewsSame = (
 		const review = newReviews[i];
 		const compareReview = oldReviews[i];
 
-		if(review.comments.length > compareReview.comments.length) {
-			return 'containsNewReviews';
-		}
-
 		if(review.startLine !== compareReview.startLine
 			|| review.comment !== compareReview.comment
 			|| review.id !== compareReview.id
 			|| review.anchor !== compareReview.anchor
 			|| review.instructor?.outdated !== compareReview.instructor?.outdated
-			|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite) {
+			|| review.instructor?.isFavourite !== compareReview.instructor?.isFavourite
+			|| review.comments.length !== compareReview.comments.length
+		) {
 			return 'containsChangedReviews';
 		}
 

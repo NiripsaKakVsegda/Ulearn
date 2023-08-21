@@ -1,11 +1,12 @@
 import React, { FC, useState } from 'react';
 import { Modal } from "@skbkontur/react-ui";
-import { Button, Checkbox, Gapped, Loader, Select } from "ui";
-import { GroupInfo } from "../../../../../../models/groups";
-import { groupsApi } from "../../../../../../redux/toolkit/api/groups/groupsApi";
+import { Button, Checkbox, Gapped } from "ui";
 import texts from './QuizResultsModal.texts';
 import styles from './QuizResultsModal.less';
 import { exportApi } from "../../../../../../redux/toolkit/api/exportApi";
+import { ShortGroupInfo } from "../../../../../../models/comments";
+import GroupsSearchCombobox from "../../../../../common/GroupsSearch/GroupsSearchCombobox";
+import { useGroupsSearch } from "../../../../../common/GroupsSearch/useGroupsSearch";
 
 interface Props {
 	courseId: string;
@@ -16,17 +17,9 @@ interface Props {
 }
 
 const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseModal }) => {
-	const { groups, isGroupsLoading } = groupsApi.useGetGroupsQuery({ courseId }, {
-		selectFromResult: ({ data, isLoading }) => ({
-			groups: data?.groups || [],
-			isGroupsLoading: isLoading
-		})
-	});
-	const groupsItems = groups.map(group => [
-		group,
-		`${ group.name }: ${ texts.buildStudentsCountMessage(group.studentsCount) }`
-	]);
-	const [selectedGroup, setSelectedGroup] = useState<GroupInfo>();
+	const searchGroups = useGroupsSearch(courseId);
+
+	const [selectedGroup, setSelectedGroup] = useState<ShortGroupInfo>();
 	const [emailChecked, setEmailChecked] = useState<boolean>(false);
 	const [genderChecked, setGenderChecked] = useState<boolean>(false);
 	const [vkChecked, setVkChecked] = useState<boolean>(false);
@@ -35,22 +28,16 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 	const [downloadQuiz, { isLoading: isDownloading }] = exportApi.useLazyDownloadQuizResultsQuery();
 
 	const renderSelectedGroupAction = () => {
-		if(!isGroupsLoading && groups.length === 0) {
-			return <p className={ styles.groupErrorInfo }>
-				<b>{ texts.noGroupsMessage }</b>
-			</p>;
-		}
-
-		if(selectedGroup && selectedGroup.studentsCount === 0) {
-			return <p className={ styles.groupErrorInfo }>
-				<b>{ texts.noStudentsMessage }</b>
-			</p>;
+		if(selectedGroup && selectedGroup.membersCount === 0) {
+			return <span className={ styles.groupErrorInfo }>
+				{ texts.noStudentsMessage }
+			</span>;
 		}
 
 		return <Button
 			use={ "link" }
 			onClick={ downloadResults }
-			disabled={ !selectedGroup || selectedGroup.studentsCount === 0 }
+			disabled={ !selectedGroup || selectedGroup.membersCount === 0 }
 			loading={ isDownloading }
 		>
 			{ texts.downloadResults }
@@ -74,26 +61,23 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 		</Gapped>;
 	};
 
-	const GroupSelect: FC = () =>
-		<Loader type="normal" active={ isGroupsLoading }>
+	const renderGroupSelect = () =>
+		<div>
 			<p className={ styles.groupInfo }>
 				{ texts.selectGroupHint }
 			</p>
-			<Gapped gap={ 10 }>
-				<label className={ styles.selectGroup }>
-					<Select<GroupInfo>
-						items={ groupsItems }
-						onValueChange={ onSelectGroup }
-						width={ 200 }
-						placeholder={ texts.selectGroupPlaceholder }
-						value={ selectedGroup }
-						disabled={ !groups.length }
-					/>
-				</label>
+			<div className={ styles.selectGroupWrapper }>
+				<GroupsSearchCombobox
+					searchGroups={ searchGroups }
+					group={ selectedGroup }
+					onSelectGroup={ setSelectedGroup }
+					width={ 'min(100%, 300px)' }
+					error={ selectedGroup?.membersCount === 0 }
+				/>
 				{ renderSelectedGroupAction() }
-			</Gapped>
+			</div>
 			{ selectedGroup && renderOptions() }
-		</Loader>;
+		</div>;
 
 	return (
 		<Modal onClose={ onCloseModal } width="100%">
@@ -105,7 +89,7 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 					<p className={ styles.commonInfo }>
 						{ texts.getResultsInfo }
 					</p>
-					<GroupSelect/>
+					{ renderGroupSelect() }
 				</div>
 			</Modal.Body>
 			<Modal.Footer>
@@ -119,12 +103,8 @@ const QuizResultsModal: FC<Props> = ({ courseId, slideId, slideTitle, onCloseMod
 		</Modal>
 	);
 
-	function onSelectGroup(group: GroupInfo) {
-		setSelectedGroup(group);
-	}
-
 	function downloadResults() {
-		if(!selectedGroup || !selectedGroup.studentsCount) {
+		if(!selectedGroup || !selectedGroup.membersCount) {
 			return;
 		}
 

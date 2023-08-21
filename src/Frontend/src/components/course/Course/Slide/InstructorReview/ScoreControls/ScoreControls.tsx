@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Gapped, Switcher, Toggle, } from "ui";
+import { Button, Gapped, Switcher, Toggle } from "ui";
 
 import styles from './ScoreControls.less';
 import texts from './ScoreControls.texts';
@@ -35,14 +35,14 @@ class ScoreControls extends React.Component<Props, State> {
 		super(props);
 		const {
 			score,
-			toggleChecked,
+			toggleChecked
 		} = this.props;
 
 		this.state = {
 			curScore: score,
 			scoreSaved: score !== null,
 			lastSubmittedScore: null,
-			toggleChecked: toggleChecked,
+			toggleChecked: toggleChecked
 		};
 	}
 
@@ -51,33 +51,33 @@ class ScoreControls extends React.Component<Props, State> {
 			score,
 			toggleChecked,
 			canChangeScore,
-			setNextSubmissionButtonDisabled,
+			setNextSubmissionButtonDisabled
 		} = this.props;
 
-		if(prevProps.score !== score) {
+		if (prevProps.score !== score) {
 			const scoreSaved = score !== null || !canChangeScore;
 			this.setState({
 				toggleChecked,
 				curScore: score,
 				scoreSaved: scoreSaved,
-				lastSubmittedScore: null,
+				lastSubmittedScore: null
 			});
 
-			if(scoreSaved) {
+			if (scoreSaved) {
 				setNextSubmissionButtonDisabled(false);
 			}
 		}
 
-		if(this.state.toggleChecked !== toggleChecked) {
+		if (this.state.toggleChecked !== toggleChecked) {
 			this.setState({
-				toggleChecked,
+				toggleChecked
 			});
 		}
 	}
 
 	componentWillUnmount(): void {
 		const {
-			setNextSubmissionButtonDisabled,
+			setNextSubmissionButtonDisabled
 		} = this.props;
 		setNextSubmissionButtonDisabled(false);
 	}
@@ -88,21 +88,21 @@ class ScoreControls extends React.Component<Props, State> {
 			exerciseTitle,
 			prevReviewScore,
 			canChangeScore,
-			date,
+			date
 		} = this.props;
 		const {
 			scoreSaved,
 			curScore,
-			toggleChecked,
+			toggleChecked
 		} = this.state;
 
 		return (
 			<Gapped gap={ 24 } vertical>
 				{ scoreSaved && curScore !== null
-					? this.renderControlsAfterSubmit(curScore, date, canChangeScore,)
+					? this.renderControlsAfterSubmit(curScore, date, canChangeScore)
 					: this.renderControls(scores, curScore, prevReviewScore)
 				}
-				{ canChangeScore && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle,) }
+				{ canChangeScore && this.renderKeepReviewingToggle(toggleChecked, exerciseTitle) }
 			</Gapped>
 		);
 	}
@@ -124,10 +124,10 @@ class ScoreControls extends React.Component<Props, State> {
 		);
 	};
 
-	renderControls = (scores: string[], score: number | null, prevReviewScore: number | null,): React.ReactElement => {
+	renderControls = (scores: string[], score: number | null, prevReviewScore: number | null): React.ReactElement => {
 		return (
 			<Gapped gap={ 24 } vertical={ false } className={ styles.controlsWrapper }>
-				{ this.renderSwitcherWithLastReviewMarker(scores, score, prevReviewScore,) }
+				{ this.renderSwitcherWithLastReviewMarker(scores, score, prevReviewScore) }
 				<Button
 					size={ 'medium' }
 					disabled={ score === null }
@@ -151,17 +151,17 @@ class ScoreControls extends React.Component<Props, State> {
 	};
 
 	renderSwitcherWithLastReviewMarker = (scores: string[], score: number | null,
-		prevReviewScore: number | null,
+		prevReviewScore: number | null
 	): React.ReactElement => {
-		if(prevReviewScore === null) {
+		if (prevReviewScore === null) {
 			return (
 				<Switcher
 					className={ styles.scoresLabel }
-					label={ texts.scoresText }
 					size={ "medium" }
 					value={ score?.toString() }
 					items={ scores }
-					onValueChange={ this.onValueChange }/>
+					onValueChange={ this.onValueChange }
+				/>
 			);
 		}
 		/*
@@ -171,11 +171,11 @@ class ScoreControls extends React.Component<Props, State> {
 			<span ref={ this.injectPrevReviewScore }>
 				<Switcher
 					className={ styles.scoresLabel }
-					label={ texts.scoresText }
 					size={ "medium" }
 					value={ score?.toString() }
 					items={ scores }
-					onValueChange={ this.onValueChange }/>
+					onValueChange={ this.onValueChange }
+				/>
 				</span>
 		);
 	};
@@ -187,16 +187,16 @@ class ScoreControls extends React.Component<Props, State> {
 	injectPrevReviewScore = (element: HTMLSpanElement): void => {
 		const {
 			scores = defaultScores,
-			prevReviewScore,
+			prevReviewScore
 		} = this.props;
 
-		if(prevReviewScore === null || !element?.children[0] || element.children.length > 1) { //[1]
+		if (prevReviewScore === null || !element?.children[0] || element.children.length > 1) { //[1]
 			return;
 		}
 
 		const index = scores.findIndex(s => s === prevReviewScore.toString());
 
-		if(index === -1) {
+		if (index === -1) {
 			return;
 		}
 
@@ -214,7 +214,7 @@ class ScoreControls extends React.Component<Props, State> {
 		lastReviewNode.style.left = `${ button.offsetLeft + (button.offsetWidth - lastReviewNode.offsetWidth) / 2 }px`;
 	};
 
-	renderKeepReviewingToggle(toggleChecked: boolean, exerciseTitle: string,): React.ReactElement {
+	renderKeepReviewingToggle(toggleChecked: boolean, exerciseTitle: string): React.ReactElement {
 		return (
 			<Toggle checked={ toggleChecked } captionPosition={ "right" } onValueChange={ this.onToggleValueChange }>
 				<span className={ styles.toggleLabel }>
@@ -226,13 +226,13 @@ class ScoreControls extends React.Component<Props, State> {
 
 	resetScore = (): void => {
 		this.setState({
-			scoreSaved: false,
+			scoreSaved: false
 		});
 	};
 
 	onValueChange = (score: string): void => {
 		const {
-			setNextSubmissionButtonDisabled,
+			setNextSubmissionButtonDisabled
 		} = this.props;
 		setNextSubmissionButtonDisabled(true);
 
@@ -240,71 +240,71 @@ class ScoreControls extends React.Component<Props, State> {
 
 		this.setToggleByScore(scoreAsNumber);
 		this.setState({
-			curScore: scoreAsNumber,
+			curScore: scoreAsNumber
 		});
 	};
 
 	onToggleValueChange = (value: boolean): void => {
 		const {
-			onToggleChange,
+			onToggleChange
 		} = this.props;
 
 		onToggleChange(value);
 		this.setState({
-			toggleChecked: value,
+			toggleChecked: value
 		});
 	};
 
 	onSubmitClick = (): void => {
 		const {
-			curScore,
+			curScore
 		} = this.state;
 		const {
-			onSubmit,
+			onSubmit
 		} = this.props;
-		if(curScore !== null) {
+		if (curScore !== null) {
 			onSubmit(curScore);
 		}
 		const {
-			setNextSubmissionButtonDisabled,
+			setNextSubmissionButtonDisabled
 		} = this.props;
 		setNextSubmissionButtonDisabled(false);
 		this.setState({
 			scoreSaved: true,
-			lastSubmittedScore: curScore,
+			lastSubmittedScore: curScore
 		});
 	};
 
 	setToggleByScore = (score: number): void => {
 		const {
-			toggleChecked,
+			toggleChecked
 		} = this.state;
 
-		if(toggleChecked && (score === 0 || score === 100)) {
+		if (toggleChecked && (score === 0 || score === 100)) {
 			this.onToggleValueChange(false);
-		} else if(!toggleChecked && (score !== 0 && score !== 100)) {
+		} else if (!toggleChecked && (score !== 0 && score !== 100)) {
 			this.onToggleValueChange(true);
 		}
 	};
 
 	onResetClick = (): void => {
 		const {
-			lastSubmittedScore,
+			lastSubmittedScore
 		} = this.state;
 		const {
-			setNextSubmissionButtonDisabled,
+			setNextSubmissionButtonDisabled
 		} = this.props;
 		setNextSubmissionButtonDisabled(false);
 
-		if(lastSubmittedScore) {
+		if (lastSubmittedScore) {
 			this.setToggleByScore(lastSubmittedScore);
 			this.setState({
-				scoreSaved: true,
+				scoreSaved: true
 			});
 		} else {
 			this.onToggleValueChange(true);
 			this.setState({
-				curScore: null,
+				curScore: null
 			});
 		}
 	};

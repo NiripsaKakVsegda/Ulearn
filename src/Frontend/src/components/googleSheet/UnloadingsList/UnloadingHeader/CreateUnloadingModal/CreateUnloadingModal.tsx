@@ -1,22 +1,21 @@
-import React, { Component } from 'react';
+import { TokenColors } from "@skbkontur/react-ui/cjs/components/Token/Token";
 import moment from "moment-timezone";
-
-import { Button, Gapped, Modal, Token, TokenInput, TokenProps } from 'ui';
-import { GoogleSheetApiInObject } from "../../UnloadingList";
+import React, { Component } from 'react';
+import { ShortGroupInfo } from "src/models/comments";
 
 import { GoogleSheetsCreateTaskParams } from "src/models/googleSheet";
-import { ShortGroupInfo } from "src/models/comments";
 import { GroupInfo } from "src/models/groups";
 
-import { TokenColors } from "@skbkontur/react-ui/cjs/components/Token/Token";
+import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
+
+import { Button, Gapped, Modal, Token, TokenInput, TokenProps } from 'ui';
 import {
 	isLinkMatchRegexp,
 	renderEditableFields,
 	renderRefreshPeriodSwitcher,
 	texts as baseTexts
 } from "../../../utils";
-
-import { convertDefaultTimezoneToLocal } from "src/utils/momentUtils";
+import { GoogleSheetApiInObject } from "../../UnloadingList";
 
 import styles from "./createUnloadingModal.less";
 import texts from "./CreateUnloadingModal.texts";
@@ -37,32 +36,32 @@ export interface State extends Partial<GoogleSheetsCreateTaskParams> {
 const tokenColors: { [id: number | string]: TokenColors } = {
 	0: {
 		idle: 'grayIdle',
-		active: 'grayActive',
+		active: 'grayActive'
 	},
 	1: {
 		idle: 'blueIdle',
-		active: 'blueActive',
+		active: 'blueActive'
 	},
 	2: {
 		idle: 'greenIdle',
-		active: 'greenActive',
+		active: 'greenActive'
 	},
 	3: {
 		idle: 'yellowIdle',
-		active: 'yellowActive',
+		active: 'yellowActive'
 	},
 	4: {
 		idle: 'redIdle',
-		active: 'redActive',
+		active: 'redActive'
 	},
 	5: {
 		idle: 'white',
-		active: 'black',
+		active: 'black'
 	},
 	default: {
 		idle: 'defaultIdle',
-		active: 'defaultActive',
-	},
+		active: 'defaultActive'
+	}
 };
 
 class CreateUnloadingModal extends Component<Props, State> {
@@ -82,14 +81,14 @@ class CreateUnloadingModal extends Component<Props, State> {
 			refreshTimeInMinutes: 60,
 			refreshEndDate: new Date(endDate.setMonth(endDate.getMonth() + 6)).toDateString(),
 			refreshStartDate: date.toDateString(),
-			isVisibleForStudents: false,
+			isVisibleForStudents: false
 		};
 	}
 
 	componentDidMount(): void {
 		const {
 			api,
-			courseId,
+			courseId
 		} = this.props;
 
 		api?.getAllCourseGroups(courseId)
@@ -98,43 +97,43 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 				this.setState({
 					groups: groups.reduce((pv, cv) => {
-						pv[cv.name] = { ...cv, courseId, };
+						pv[cv.name] = { ...cv, courseId };
 						return pv;
-					}, {} as { [groupName: string]: GroupInfo & { courseId: string; } }),
+					}, {} as { [groupName: string]: GroupInfo & { courseId: string; } })
 				});
 			});
 	}
 
 	sortGroups = (a: GroupInfo, b: GroupInfo): number => {
 		const {
-			userId,
+			userId
 		} = this.props;
 
-		if(userId) {
+		if (userId) {
 			const teachersInA = new Set([a.owner.id, ...a.accesses.map(item => item.user.id)]);
 			const isUserInA = teachersInA.has(userId);
 			const teachersInB = new Set([b.owner.id, ...b.accesses.map(item => item.user.id)]);
 			const isUserInB = teachersInB.has(userId);
 
-			if(teachersInA.size === 1 && isUserInA && teachersInB.size === 1 && isUserInB) {
+			if (teachersInA.size === 1 && isUserInA && teachersInB.size === 1 && isUserInB) {
 				return 0;
 			}
 
-			if(teachersInA.size === 1 && isUserInA) {
+			if (teachersInA.size === 1 && isUserInA) {
 				return -1;
 			}
 
-			if(teachersInB.size === 1 && isUserInB) {
+			if (teachersInB.size === 1 && isUserInB) {
 				return 1;
 			}
 
-			if(isUserInA && isUserInB) {
+			if (isUserInA && isUserInB) {
 				return 0;
 			}
-			if(isUserInA) {
+			if (isUserInA) {
 				return -1;
 			}
-			if(isUserInB) {
+			if (isUserInB) {
 				return 1;
 			}
 		}
@@ -144,7 +143,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 	render = (): React.ReactElement => {
 		const {
-			onCloseModal,
+			onCloseModal
 		} = this.props;
 
 		const modalWidth: number | undefined = window.innerWidth > 880 ? 880 : undefined;
@@ -166,7 +165,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 			isVisibleForStudents,
 			refreshStartDate,
 			refreshEndDate,
-			link,
+			link
 		} = this.state;
 
 		return (
@@ -188,7 +187,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 	}
 
 	renderGroupsSelection = (): React.ReactElement => {
-		const { selectedGroups, } = this.state;
+		const { selectedGroups } = this.state;
 
 		return <TokenInput
 			width={ '100%' }
@@ -205,7 +204,10 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 	renderItem = (group: ShortGroupInfo): string => (group.name);
 
-	valueToItem = (groupName: string): ShortGroupInfo => (this.state.groups[groupName]);
+	valueToItem = (groupName: string): ShortGroupInfo => ({
+		...this.state.groups[groupName],
+		membersCount: this.state.groups[groupName]?.studentsCount
+	});
 
 	renderToken = (group: ShortGroupInfo, tokenProps: Partial<TokenProps>): React.ReactElement => {
 		return (
@@ -222,7 +224,7 @@ class CreateUnloadingModal extends Component<Props, State> {
 	};
 
 	renderSubmitButton = (): React.ReactElement => {
-		const { link, loading, } = this.state;
+		const { link, loading } = this.state;
 
 		return (
 			<Button
@@ -230,22 +232,24 @@ class CreateUnloadingModal extends Component<Props, State> {
 				loading={ loading }
 				use={ 'primary' }
 				onClick={ this.onSubmit }
-				disabled={ this.anyFieldsIsEmpty() || !isLinkMatchRegexp(link) }>
+				disabled={ this.anyFieldsIsEmpty() || !isLinkMatchRegexp(link) }
+			>
 				{ baseTexts.button.create }
 			</Button>
 		);
 	};
 
 	getItems = (q: string): Promise<ShortGroupInfo[]> => {
-		const { groups, } = this.state;
+		const { groups } = this.state;
 
 		return Promise.resolve(
 			Object.values(groups)
 				.filter(
 					x => x.name.toLowerCase().includes(q.toLowerCase())
-						|| x.name.toString() === q,)
+						 || x.name.toString() === q)
 				.sort(this.sortGroups)
-				.slice(0, this.maxCountOfGroupsInDropdown),
+				.slice(0, this.maxCountOfGroupsInDropdown)
+				.map(g => ({ ...g, membersCount: g.studentsCount } as ShortGroupInfo))
 		);
 	};
 
@@ -257,27 +261,27 @@ class CreateUnloadingModal extends Component<Props, State> {
 			refreshTimeInMinutes,
 			spreadsheetId,
 			listId,
-			selectedGroups,
+			selectedGroups
 		} = this.state;
 
 		return isVisibleForStudents === undefined ||
-			selectedGroups.length == 0 ||
-			refreshStartDate === undefined ||
-			refreshEndDate === undefined ||
-			refreshTimeInMinutes === undefined ||
-			spreadsheetId === undefined &&
-			listId === undefined;
+			   selectedGroups.length == 0 ||
+			   refreshStartDate === undefined ||
+			   refreshEndDate === undefined ||
+			   refreshTimeInMinutes === undefined ||
+			   spreadsheetId === undefined &&
+			   listId === undefined;
 	};
 
 	changeVisibility = (): void => {
 		this.setState({
-			isVisibleForStudents: !this.state.isVisibleForStudents,
+			isVisibleForStudents: !this.state.isVisibleForStudents
 		});
 	};
 
 	changeRefreshInterval = (value: string): void => {
 		this.setState({
-			refreshTimeInMinutes: parseInt(value, 10),
+			refreshTimeInMinutes: parseInt(value, 10)
 		});
 	};
 
@@ -289,9 +293,9 @@ class CreateUnloadingModal extends Component<Props, State> {
 		this.setState({
 			refreshStartDate: date
 		});
-		if(curMoment.diff(refreshEndDate) > 0) {
+		if (curMoment.diff(refreshEndDate) > 0) {
 			this.setState({
-				refreshEndDate: date,
+				refreshEndDate: date
 			});
 		}
 	};
@@ -309,12 +313,12 @@ class CreateUnloadingModal extends Component<Props, State> {
 		this.setState({
 			link: value,
 			spreadsheetId,
-			listId: listId ? parseInt(listId) : undefined,
+			listId: listId ? parseInt(listId) : undefined
 		});
 	};
 
 	onSubmit = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
-		const { onCloseModal, } = this.props;
+		const { onCloseModal } = this.props;
 		const {
 			listId,
 			spreadsheetId,
@@ -322,20 +326,20 @@ class CreateUnloadingModal extends Component<Props, State> {
 			refreshTimeInMinutes,
 			selectedGroups,
 			refreshEndDate,
-			refreshStartDate,
+			refreshStartDate
 		} = this.state;
 		const {
 			api,
-			courseId,
+			courseId
 		} = this.props;
 
 		e.preventDefault();
 
-		if(listId === undefined || spreadsheetId === undefined || refreshTimeInMinutes === undefined) {
+		if (listId === undefined || spreadsheetId === undefined || refreshTimeInMinutes === undefined) {
 			return;
 		}
 
-		this.setState({ loading: true, });
+		this.setState({ loading: true });
 		try {
 			await api?.createTask({
 				courseId,
@@ -348,14 +352,14 @@ class CreateUnloadingModal extends Component<Props, State> {
 
 				refreshEndDate,
 				refreshStartDate,
-				refreshTimeInMinutes,
+				refreshTimeInMinutes
 			});
 
 			onCloseModal();
 		} catch (e) {
 			console.error(e);
 		} finally {
-			this.setState({ loading: false, });
+			this.setState({ loading: false });
 		}
 	};
 }

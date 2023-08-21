@@ -1,15 +1,16 @@
-import React from "react";
+import { CheckAIcon16Solid } from '@skbkontur/icons/CheckAIcon16Solid';
+import { TrashCanIcon16Regular } from '@skbkontur/icons/TrashCanIcon16Regular';
+import { XIcon16Solid } from '@skbkontur/icons/XIcon16Solid';
 import moment from "moment/moment";
-
-import { Delete, Ok } from "icons";
-import { Gapped, Kebab, MenuItem } from "ui";
+import React from "react";
 import { Link } from 'react-router-dom';
 
 import { GoogleSheetsExportTaskResponse } from "src/models/googleSheet";
-import { GoogleSheetApiInObject } from "../UnloadingList";
 import { Mobile, NotMobile } from "src/utils/responsive";
+import { Gapped, Kebab, MenuItem } from "ui";
 
 import { texts as baseTexts } from "../../utils";
+import { GoogleSheetApiInObject } from "../UnloadingList";
 
 import styles from "./unloadingListItem.less";
 import texts from "./UnloadingListItem.texts";
@@ -20,16 +21,20 @@ interface Props extends GoogleSheetApiInObject {
 	courseId: string;
 }
 
-function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement | null {
+function UnloadingListItem({ task, api, courseId }: Props): React.ReactElement | null {
 	return (
 		<div className={ styles.wrapper }>
 			<div className={ styles.contentWrapper }>
-				<Link className={ styles.linkToTasksPage }
-					  to={ `/${ courseId }/google-sheet-tasks/${ task.id }` }/>
+				<Link
+					className={ styles.linkToTasksPage }
+					to={ `/${ courseId }/google-sheet-tasks/${ task.id }` }
+				/>
 				<div className={ styles.contentBlock }>
 					<header className={ styles.content }>
-						<Link to={ `/${ courseId }/google-sheet-tasks/${ task.id }` }
-							  className={ styles.groupLink }>
+						<Link
+							to={ `/${ courseId }/google-sheet-tasks/${ task.id }` }
+							className={ styles.groupLink }
+						>
 							<h3 className={ styles.groupName }>
 								{ task.groups.map(g => g.name).join(', ') }
 							</h3>
@@ -45,10 +50,13 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 						{ renderSetting(
 							task.isVisibleForStudents,
 							texts.isVisibleForStudents,
-							texts.isInvisibleForStudents) }
-						{ renderSetting(moment().diff(moment(task.refreshEndDate)) <= 0,
+							texts.isInvisibleForStudents
+						) }
+						{ renderSetting(
+							moment().diff(moment(task.refreshEndDate)) <= 0,
 							texts.unloadingActive,
-							texts.unloadingInactive) }
+							texts.unloadingInactive
+						) }
 					</div>
 				</div>
 			</div>
@@ -56,12 +64,17 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 		</div>
 	);
 
-	function renderSetting(enabled: boolean, textIfEnabled: string, textIfDisabled: string,) {
+	function renderSetting(enabled: boolean, textIfEnabled: string, textIfDisabled: string) {
 		return (
 			<div className={ enabled ? styles.settingsOn : styles.settingsOff }>
 				<Gapped gap={ 5 }>
-					{ enabled ? <Ok/> : <Delete/> }
-					{ enabled ? textIfEnabled : textIfDisabled }
+					{ enabled ?
+						<CheckAIcon16Solid size={ 14 }/> :
+						<XIcon16Solid size={ 14 }/> }
+					{ enabled ?
+						textIfEnabled :
+						textIfDisabled
+					}
 				</Gapped>
 			</div>
 		);
@@ -69,11 +82,13 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 
 	function renderActions() {
 		const menuItems = [
-			<MenuItem data-tid={ task.id.toString() } onClick={ deleteTask } key={ "delete" }>
-				<Gapped gap={ 5 }>
-					<Delete/>
-					Удалить
-				</Gapped>
+			<MenuItem
+				key={ "delete" }
+				data-tid={ task.id.toString() }
+				onClick={ deleteTask }
+				icon={ <TrashCanIcon16Regular/> }
+			>
+				Удалить
 			</MenuItem>
 		];
 
@@ -94,11 +109,11 @@ function UnloadingListItem({ task, api, courseId, }: Props): React.ReactElement 
 	}
 
 	function deleteTask(event: React.SyntheticEvent<HTMLElement>) {
-		if(!event.currentTarget) {
+		if (!event.currentTarget) {
 			return;
 		}
 		const stringId = event.currentTarget.dataset['tid'];
-		if(!stringId) {
+		if (!stringId) {
 			return;
 		}
 		const id = parseInt(stringId);

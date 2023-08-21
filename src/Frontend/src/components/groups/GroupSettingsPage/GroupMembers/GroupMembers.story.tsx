@@ -1,11 +1,12 @@
 import React from "react";
+import { SystemAccessType } from "../../../../consts/accessType";
+import { GroupInfo } from "../../../../models/groups";
+import { AccountState } from "../../../../redux/account";
+import { getMockedGroup } from '../../../../storiesUtils';
+import { ViewportWrapper } from "../../../course/Navigation/stroies.data";
 import GroupMembers from "./GroupMembers";
 
 import "./groupMembers.less";
-import { ViewportWrapper } from "../../../course/Navigation/stroies.data";
-import { GroupInfo } from "../../../../models/groups";
-import { AccountState } from "../../../../redux/account";
-import { SystemAccessType } from "../../../../consts/accessType";
 
 export default {
 	title: "Settings/GroupMembers",
@@ -42,7 +43,7 @@ function getAccount(): AccountState {
 }
 
 function getGroup(): GroupInfo {
-	return {
+	return getMockedGroup({
 		id: 17,
 		name: "asdfasdfasdfasdf",
 		isArchived: false,
@@ -63,5 +64,5 @@ function getGroup(): GroupInfo {
 		accesses: [],
 		apiUrl: "/groups/17",
 		areYouStudent: false,
-	};
+	});
 }

@@ -1,32 +1,30 @@
-﻿import UnloadingSettings, { Props } from './UnloadingSettings';
-import { Story } from "@storybook/react";
+﻿import { Story } from "@storybook/react";
 import React from "react";
-import { Route, RouteComponentProps, Router } from "react-router-dom";
-import { createMemoryHistory } from 'history';
-import { MatchParams } from "src/models/router";
-import { apiMocked, getMockedTask, } from "../storyUtils";
+import { Route, Router } from "react-router-dom";
 import {
 	getMockedShortUser,
 	shortGroupExample,
 	shortGroupWithLongNameExample,
-	shortGroupWithLongNameExample2,
+	shortGroupWithLongNameExample2
 } from "../../../storiesUtils";
-import { returnPromiseAfterDelay } from "../../../utils/storyMock";
+import { mockFunc, returnPromiseAfterDelay } from "../../../utils/storyMock";
+import { apiMocked, getMockedTask } from "../storyUtils";
+import UnloadingSettings, { Props } from './UnloadingSettings';
 
 export default {
-	title: 'GoogleSheet/Settings',
+	title: 'GoogleSheet/Settings'
 };
 
-const ListTemplate: Story<{ items: { props: Omit<Props, keyof RouteComponentProps<MatchParams>>, header: string, }[] }>
+const ListTemplate: Story<{ items: { props: Props, header: string, }[] }>
 	= ({ items }) => {
 	return <>
 		{ items.map((item) =>
 			<>
 				<p>{ item.header }</p>
-				<Router history={ createMemoryHistory({ initialEntries: ['/basicprogramming/google-sheet-tasks/0'] }) }>
+				<Router location={ item.props.location } navigator={ {} as any }>
 					<Route
 						path={ "/:courseId/google-sheet-tasks/:taskId" }
-						render={ (props) => <UnloadingSettings { ...props } { ...item.props } /> }
+						element={ <UnloadingSettings { ...item.props }/> }
 					/>
 				</Router>
 			</>
@@ -42,8 +40,14 @@ Default.args = {
 			props: {
 				courseTitle: 'Course',
 				api: apiMocked,
+				location: window.location,
+				navigate: mockFunc,
+				params: {
+					courseId: 'courseId',
+					taskId: 'taskId'
+				}
 			},
-			header: 'Default',
+			header: 'Default'
 		}
 	]
 };
@@ -62,13 +66,19 @@ ManyGroups.args = {
 							groups: [
 								shortGroupExample,
 								shortGroupWithLongNameExample,
-								shortGroupWithLongNameExample2,
+								shortGroupWithLongNameExample2
 							]
 						}));
-					},
+					}
 				},
+				location: window.location,
+				navigate: mockFunc,
+				params: {
+					courseId: 'courseId',
+					taskId: 'taskId'
+				}
 			},
-			header: 'Default',
+			header: 'Default'
 		}
 	]
 };
@@ -87,10 +97,16 @@ LongNameAuthor.args = {
 							authorInfo: getMockedShortUser(
 								{ visibleName: 'Абдулай Шахид АА\'ль Фахид Сараха Фуум Джик Бек Алым Агы' })
 						}));
-					},
+					}
 				},
+				location: window.location,
+				navigate: mockFunc,
+				params: {
+					courseId: 'courseId',
+					taskId: 'taskId'
+				}
 			},
-			header: 'Default',
+			header: 'Default'
 		}
 	]
 };

@@ -16,7 +16,7 @@ import SysAdminMenu from "./HeaderElements/SysAdminMenu";
 import MyCoursesMenu from "./HeaderElements/CoursesMenus/MyCoursesMenu";
 import CourseMenu from "./HeaderElements/CoursesMenus/CourseMenu";
 import MobileCourseMenu from "./HeaderElements/CoursesMenus/MobileCourseMenu";
-import { Menu as MenuIcon } from 'icons';
+import { UiMenuBars3HIcon20Regular } from '@skbkontur/icons/UiMenuBars3HIcon20Regular';
 
 import { CourseAccessType, CourseRoleType } from "src/consts/accessType";
 import { AccountState } from "src/redux/account";
@@ -161,7 +161,7 @@ class Header extends Component<Props, State> {
 		return (
 			isIconOnly(deviceType) &&
 			<button className={ cn(styles.headerElement, styles.button) } onClick={ toggleNavigation }>
-				<MenuIcon size={ 22 }/>
+				<UiMenuBars3HIcon20Regular/>
 			</button>
 		);
 	}

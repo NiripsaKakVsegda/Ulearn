@@ -56,6 +56,9 @@ namespace Database
 			modelBuilder.Entity<FavouriteReview>()
 				.Property(u => u.Text)
 				.UseCollation("default");
+			modelBuilder.Entity<GroupBase>()
+				.Property(u => u.Name)
+				.UseCollation("default");
 			// По Names будет осуществляться поиск по регулярном выражению. Такой поиск работает только с deterministic collation
 			modelBuilder.Entity<ApplicationUser>()
 				.Property(u => u.Names)

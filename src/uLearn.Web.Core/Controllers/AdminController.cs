@@ -626,8 +626,9 @@ public class AdminController : Controller
 		if (slideId.HasValue)
 			filterOptions.SlidesIds = new List<Guid> { slideId.Value };
 
-		filterOptions.OnlyChecked = done;
+		filterOptions.OnlyReviewed = done;
 		filterOptions.Count = maxShownQueueSize + 1;
+		filterOptions.DateSort = DateSort.Descending;
 		var checkings = await GetMergedCheckingQueue(filterOptions);
 
 		if (!checkings.Any() && !string.IsNullOrEmpty(message))
@@ -687,7 +688,7 @@ public class AdminController : Controller
 		var usedSlidesIds = await GetMergedCheckingQueueSlideIds(filterOptions);
 
 		filterOptions = await GetManualCheckingFilterOptionsByGroup(course.Id, groupsIds);
-		filterOptions.OnlyChecked = null;
+		filterOptions.OnlyReviewed = null;
 		var allCheckingsSlidesIds = await GetMergedCheckingQueueSlideIds(filterOptions);
 		// +1 to prevent first slide in course to be AFTER emptySlideMock below
 		// GetOrDefault will return 0 for mock slide, so if slide indexed with 0 it can lead to bad ordering below
@@ -761,11 +762,8 @@ public class AdminController : Controller
 			checking.CourseId,
 			SlideId = checking.SlideId.ToString(),
 			UserId = checking.UserId,
-			CheckQueueItemId = checking.Id,
 			SubmissionId = checking.Id,
-			Group = joinedGroupsIds,
-			QueueSlideId = queueSlideId,
-			Done = recheck,
+			reviewed = recheck.ToString().ToLower()
 		});
 	}
 
@@ -778,6 +776,7 @@ public class AdminController : Controller
 			if (filterOptions.UserIds == null)
 				groupsIds = new List<string> { "all" };
 			filterOptions.SlidesIds = new List<Guid> { slideId };
+			filterOptions.DateSort = DateSort.Descending;
 			var checkings = (await slideCheckingsRepo.GetManualCheckingQueue<T>(filterOptions)).ToList();
 
 			/* First of all try to find checking with Id < previousCheckingId (early) */

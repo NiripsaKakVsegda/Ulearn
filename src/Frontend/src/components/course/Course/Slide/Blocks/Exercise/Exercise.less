@@ -100,7 +100,7 @@
 
 .copyCodeButton {
   position: absolute;
-  right: 16px;
+  right: 8px;
   top: 16px;
   z-index: 6;
   transform: translateX(-50%);
@@ -122,8 +122,8 @@
 
 .visualizerButton {
   .copyCodeButtonSingleLine;
-  top: 17px;
-  right: 50px;
+  top: 16px;
+  right: 36px;
 }
 
 .lastLinesFading:after {
@@ -169,11 +169,6 @@
 }
 
 :global {
-  //removing border from line gutters
-  .CodeMirror-gutters {
-    border: unset;
-  }
-
   //next 2 classes are overriding styles for autocompletion in code mirror to default. Darcula is theme we're using, its adding background color and coloring text.
   ul.CodeMirror-hints.darcula {
     background-color: @white !important;

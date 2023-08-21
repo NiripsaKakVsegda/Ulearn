@@ -379,7 +379,7 @@ public class QuizController : Controller
 				totalScore += score;
 			}
 
-			await slideCheckingsRepo.MarkManualQuizCheckingAsChecked(checking, totalScore).ConfigureAwait(false);
+			await slideCheckingsRepo.MarkManualQuizCheckingAsChecked(checking, totalScore, User.GetUserId()).ConfigureAwait(false);
 
 			await visitsRepo.UpdateScoreForVisit(checking.CourseId, slide, checking.UserId).ConfigureAwait(false);
 

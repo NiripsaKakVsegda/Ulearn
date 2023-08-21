@@ -1,74 +1,104 @@
 import React from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import Course from 'src/components/course/Course/Course.redux';
+import UnloadingSettings from "src/components/googleSheet/UnloadingSettings";
+import UnloadingList from "src/components/googleSheet/UnloadingsList";
+import ReviewQueuePage from "src/components/reviewQueue/ReviewQueuePageConnected";
 
 import AnyPage from "src/pages/AnyPage";
-import GroupListPage from "./pages/course/groups/GroupsListPage/GroupListPage";
-import GroupSettingsPage from "./pages/course/groups/GroupsSettingsPage/GroupSettingsPage";
-import Course from 'src/components/course/Course/Course.redux';
-import UnloadingList from "src/components/googleSheet/UnloadingsList";
-import UnloadingSettings from "src/components/googleSheet/UnloadingSettings";
-import JoinGroup from "./components/groups/JoinGroup/JoinGroup.page";
+import { AccountState } from "src/redux/account";
 
 import { getQueryStringParameter } from "src/utils";
-import { AccountState } from "src/redux/account";
+import JoinGroup from "./components/groups/JoinGroup/JoinGroup.page";
 import TokenPage from "./components/token/TokenPage";
+import GroupListPage from "./pages/course/groups/GroupsListPage/GroupListPage";
+import GroupSettingsPage from "./pages/course/groups/GroupsSettingsPage/GroupSettingsPage";
 
 interface Props {
 	account: AccountState;
 }
 
+interface RouteProps {
+	key: React.Key,
+	path: string;
+	element: JSX.Element;
+}
+
 function Router({ account }: Props): React.ReactElement {
-	let routes = [
-		<Route key={ 'groups' }
-			   path="/Admin/Groups"
-			   element={ <RedirectLegacyPage to={ "/:courseId/groups" }/> }
-		/>,
-		<Route key={ 'course' }
-			   path="/course/:courseId/:slideSlugOrAction/*"
-			   element={ <Course/> }
-		/>,
-		<Route key={ 'token' }
-			   path="/token"
-			   element={ <TokenPage/> }
-		/>,
+	const routes: RouteProps[] = [
+		{
+			key: 'groups',
+			path: '/Admin/Groups',
+			element: <RedirectLegacyPage to={ "/:courseId/groups" }/>
+		},
+		{
+			key: 'course',
+			path: '/course/:courseId/:slideSlugOrAction/*',
+			element: <Course/>
+		},
+		{
+			key: 'token',
+			path: '/token',
+			element: <TokenPage/>
+		}
 	];
 
 	if(account.accountLoaded) {
 		if(account.isAuthenticated) {
-			routes = [
-				...routes,
-				<Route key={ 'groupsList' }
-					   path={ "/groups/:hash" }
-					   element={ <JoinGroup/> }
-				/>,
-				<Route key={ 'groupsList' }
-					   path={ "/:courseId/groups/" }
-					   element={ <GroupListPage/> }
-				/>,
-				<Route key={ 'groupPage' }
-					   path={ "/:courseId/groups/:groupId/" }
-					   element={ <GroupSettingsPage/> }
-				/>,
-				<Route key={ 'groupPageSettings' }
-					   path={ "/:courseId/groups/:groupId/:groupPage" }
-					   element={ <GroupSettingsPage/> }
-				/>,
-				<Route key={ 'googleSheetList' }
-					   path={ "/:courseId/google-sheet-tasks/" }
-					   element={ <UnloadingList/> }
-				/>,
-				<Route key={ 'googleSheetPage' }
-					   path={ "/:courseId/google-sheet-tasks/:taskId" }
-					   element={ <UnloadingSettings/> }
-				/>,
-			];
+			routes.push(
+				{
+					key: 'groupsList',
+					path: '/groups/:hash',
+					element: <JoinGroup/>
+				},
+				{
+					key: 'groupsList',
+					path: '/:courseId/groups/',
+					element: <GroupListPage/>
+				},
+				{
+					key: 'groupPage',
+					path: '/:courseId/groups/:groupId/',
+					element: <GroupSettingsPage/>
+				},
+				{
+					key: 'groupPageSettings',
+					path: '/:courseId/groups/:groupId/:groupPage',
+					element: <GroupSettingsPage/>
+				},
+				{
+					key: 'googleSheetList',
+					path: '/:courseId/google-sheet-tasks/',
+					element: <UnloadingList/>
+				},
+				{
+					key: 'googleSheetPage',
+					path: '/:courseId/google-sheet-tasks/:taskId',
+					element: <UnloadingSettings/>
+				},
+				{
+					key: 'reviewQueuePage',
+					path: '/:courseId/review-queue',
+					element: <ReviewQueuePage/>
+				},
+			);
 		}
-		routes.push(<Route key={ 'anyPage' } path={ "*" } element={ <AnyPage/> }/>);
+		routes.push({
+			key: 'anyPage',
+			path: '*',
+			element: <AnyPage/>
+		});
 	}
 
 	return (
 		<Routes>
-			{ routes }
+			{ routes.map(props =>
+				<Route
+					key={ props.key }
+					path={ props.path }
+					element={ props.element }
+				/>
+			) }
 		</Routes>
 	);
 }

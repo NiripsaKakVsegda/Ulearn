@@ -1,11 +1,14 @@
+import { AttachPinIcon16Solid } from "@skbkontur/icons/AttachPinIcon16Solid";
+import { CheckCircleIcon16Solid } from "@skbkontur/icons/CheckCircleIcon16Solid";
+import { EyeOffIcon16Solid } from '@skbkontur/icons/EyeOffIcon16Solid';
+import { People3Icon16Solid } from '@skbkontur/icons/People3Icon16Solid';
 import React from "react";
 import { Link } from "react-router-dom";
-import { EyeClosed, Ok, Pin, People } from "icons";
-import { TooltipMenu, MenuItem } from "ui";
 
 import { constructPathToGroup } from "src/consts/routes";
 
 import { Comment, ShortGroupInfo } from "src/models/comments";
+import { MenuItem, TooltipMenu } from "ui";
 
 import styles from "./Marks.less";
 
@@ -29,7 +32,7 @@ export default function Marks({ courseId, comment, authorGroups }: MarksProps): 
 
 const HiddenMark = () => (
 	<div className={ `${ styles.mark } ${ styles.approvedComment }` }>
-		<EyeClosed size={ 15 }/>
+		<EyeOffIcon16Solid/>
 		<span className={ `${ styles.text } ${ styles.visibleOnDesktopAndTablet }` }>
 			Скрыт
 		</span>
@@ -38,7 +41,7 @@ const HiddenMark = () => (
 
 const CorrectAnswerMark = () => (
 	<div className={ `${ styles.mark } ${ styles.correctAnswer }` }>
-		<Ok size={ 15 }/>
+		<CheckCircleIcon16Solid/>
 		<span className={ `${ styles.text } ${ styles.visibleOnDesktopAndTablet }` }>
 			Правильный&nbsp;ответ
 		</span>
@@ -47,7 +50,7 @@ const CorrectAnswerMark = () => (
 
 const PinnedToTopMark = () => (
 	<div className={ `${ styles.mark } ${ styles.pinnedToTop }` }>
-		<Pin size={ 15 }/>
+		<AttachPinIcon16Solid/>
 		<span className={ `${ styles.text } ${ styles.visibleOnDesktopAndTablet }` }>
 			Закреплен
 		</span>
@@ -59,7 +62,7 @@ interface GroupProps {
 	groups: ShortGroupInfo[];
 }
 
-export function GroupMark({ courseId, groups, }: GroupProps): React.ReactElement {
+export function GroupMark({ courseId, groups }: GroupProps): React.ReactElement {
 	const groupsNumber = groups.length;
 
 	return (
@@ -68,11 +71,16 @@ export function GroupMark({ courseId, groups, }: GroupProps): React.ReactElement
 				<div className={ styles.groupList }>
 					{ groupsNumber < 3 ?
 						groups.map(group =>
-							<div key={ group.id }
-								 className={ `${ styles.mark } ${ styles.group } ${ group.isArchived && styles.archiveGroup }` }>
-								<People size={ 15 }/>
-								<Link to={ constructPathToGroup(courseId, group.id) }
-									  className={ `${ styles.text } ${ styles.groupName }` }>
+							<div
+								key={ group.id }
+								className={ `${ styles.mark } ${ styles.group } ${ group.isArchived &&
+																				   styles.archiveGroup }` }
+							>
+								<People3Icon16Solid/>
+								<Link
+									to={ constructPathToGroup(courseId, group.id) }
+									className={ `${ styles.text } ${ styles.groupName }` }
+								>
 									{ group.name }
 								</Link>
 							</div>) :
@@ -86,32 +94,35 @@ export function GroupMark({ courseId, groups, }: GroupProps): React.ReactElement
 	);
 }
 
-const GroupsMenu = ({ courseId, groups, }: GroupProps) => (
+const GroupsMenu = ({ courseId, groups }: GroupProps) => (
 	<TooltipMenu
 		menuWidth="150px"
 		positions={ ["bottom right"] }
 		caption={
 			<div className={ styles.groupMarkOnPhone }>
-				<People color="#fff" size={ 15 }/>
+				<People3Icon16Solid color="#fff" size={ 15 }/>
 				<span className={ `${ styles.text } ${ styles.visibleOnDesktopAndTablet }` }>
 					Группы
 				</span>
-			</div> }>
+			</div> }
+	>
 		<>
 			{ groups.map(group => !group.isArchived &&
-				<MenuItem
-					key={ group.id }>
-					<Link to={ constructPathToGroup(courseId, group.id) }>
-						{ group.name }
-					</Link>
-				</MenuItem>) }
+								  <MenuItem
+									  key={ group.id }
+								  >
+									  <Link to={ constructPathToGroup(courseId, group.id) }>
+										  { group.name }
+									  </Link>
+								  </MenuItem>) }
 			{ groups.map(group => group.isArchived &&
-				<MenuItem
-					key={ group.id }>
-					<Link to={ constructPathToGroup(courseId, group.id) }>
-						{ group.name }
-					</Link>
-				</MenuItem>) }
+								  <MenuItem
+									  key={ group.id }
+								  >
+									  <Link to={ constructPathToGroup(courseId, group.id) }>
+										  { group.name }
+									  </Link>
+								  </MenuItem>) }
 		</>
 	</TooltipMenu>
 );

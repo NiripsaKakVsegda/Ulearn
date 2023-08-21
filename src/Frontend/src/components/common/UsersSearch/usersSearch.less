@@ -1,0 +1,34 @@
+@import '/src/variables';
+
+.userItem {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  white-space: nowrap;
+  align-items: center;
+
+  .user {
+    display: flex;
+    align-items: center;
+  }
+
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .additionalInfo {
+    color: @additionalColor;
+
+    &.additionalInfoHover {
+      color: @lightGrey
+    }
+  }
+}
+
+.tokenInput label {
+  margin: 0;
+  @media (max-width: @maxPhoneWidth) {
+    flex-direction: column;
+  }
+}

@@ -36,10 +36,13 @@ export function buildQuery(
 		.map(key => {
 				if(Array.isArray(params[key])) {
 					const array = (params[key] as []).map(encodeURIComponent);
+					if (array.length === 0)
+						return undefined;
 					return (convert ? convert(esc(key)) : esc(key)) + '=' + array.join('&' + key + '=');
 				}
 				return (convert ? convert(esc(key)) : esc(key)) + '=' + esc(params[key] as string);
 			}
 		)
+		.filter(s => !!s)
 		.join('&');
 }

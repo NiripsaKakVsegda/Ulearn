@@ -1,14 +1,14 @@
 import { createApi } from "@reduxjs/toolkit/dist/query/react";
 import { fetchBaseQueryWithReauth } from "../utils/baseQueryWithReauth";
-import { courseAccesses } from "../../../consts/routes";
 import { CourseAccess } from "../../../models/courseAccess";
 import { CourseAccessType } from "../../../consts/accessType";
 import { HttpMethods } from "../../../consts/httpMethods";
+import { accesses, courses } from "../../../consts/routes";
 
 export const courseAccessesApi = createApi({
 	reducerPath: 'courseAccessesApi',
 	baseQuery: fetchBaseQueryWithReauth({
-		baseUrl: courseAccesses
+		baseUrl: courses
 	}),
 	refetchOnMountOrArgChange: true,
 	endpoints: (build) => ({
@@ -21,7 +21,7 @@ export const courseAccessesApi = createApi({
 				comment: string
 			}>({
 			query: ({ courseId, ...body }) => ({
-				url: `${ courseId }`,
+				url: `${ courseId }/${ accesses }`,
 				method: HttpMethods.POST,
 				body: body
 			})
@@ -35,7 +35,7 @@ export const courseAccessesApi = createApi({
 				comment: string
 			}>({
 			query: ({ courseId, ...body }) => ({
-				url: `${ courseId }`,
+				url: `${ courseId }/${ accesses }`,
 				method: HttpMethods.DELETE,
 				body: body
 			})

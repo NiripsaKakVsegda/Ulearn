@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { Gapped, Link } from "ui";
-import { ArrowChevronDown } from "icons";
-import { SelfCheckup } from "src/models/slide";
+import { ArrowCDownIcon16Regular } from "@skbkontur/icons/ArrowCDownIcon16Regular";
 import cn from "classnames";
+import React, { useState } from "react";
+import { SelfCheckup } from "src/models/slide";
+import { Gapped, Link } from "ui";
+import { BlockProps } from "../../BlocksRenderer";
 import styles from "./SelfChecking.less";
 import texts from "./SelfChecking.texts";
-import { BlockProps } from "../../BlocksRenderer";
 
 export interface RenderedSelfCheckup extends Omit<SelfCheckup, 'content'> {
 	content: string | React.ReactElement,
@@ -21,22 +21,25 @@ export interface SelfCheckingContainerProps {
 	sections: SelfCheckingSection[];
 }
 
-function SelfCheckingContainer({ sections, className, }: SelfCheckingContainerProps & Partial<BlockProps>) {
+function SelfCheckingContainer({ sections, className }: SelfCheckingContainerProps & Partial<BlockProps>) {
 	const isCompleted = sections.every(c => c.isCompleted);
 	const [isCollapsed, setCollapsed] = useState(isCompleted);
 
-	if(sections.length === 0) {
+	if (sections.length === 0) {
 		return null;
 	}
 
-	if(isCollapsed) {
+	if (isCollapsed) {
 		return (
 			<div className={ cn(styles.wrapper, styles.collapsed, styles.completed, className) }>
 				<h3>{ texts.checkups.self.title } </h3>
 				<Link className={ styles.collapseLinkText } onClick={ show }>
 					<Gapped gap={ 4 }>
 						{ texts.checkups.collapseText }
-						<ArrowChevronDown size={ 14 }/>
+						<ArrowCDownIcon16Regular
+							size={ 14 }
+							align={ 'baseline' }
+						/>
 					</Gapped>
 
 				</Link>

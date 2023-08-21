@@ -1,9 +1,6 @@
-﻿import React from "react";
+﻿import { WarningTriangleIcon16Solid } from '@skbkontur/icons/WarningTriangleIcon16Solid';
 import cn from "classnames";
-import { Warning } from "@skbkontur/react-icons";
-
-import texts from "./ExerciseOutput.texts";
-import styles from "./ExerciseOutput.less";
+import React from "react";
 import {
 	AutomaticExerciseCheckingProcessStatus as ProcessStatus,
 	AutomaticExerciseCheckingResult as CheckingResult,
@@ -11,6 +8,9 @@ import {
 	SolutionRunStatus
 } from "src/models/exercise";
 import { SubmissionColor } from "../ExerciseUtils";
+import styles from "./ExerciseOutput.less";
+
+import texts from "./ExerciseOutput.texts";
 
 enum OutputType {
 	CompilationError = "CompilationError",
@@ -24,7 +24,7 @@ const submissionColorToStyle: EnumDictionary<SubmissionColor, string> = {
 	[SubmissionColor.WrongAnswer]: styles.wrongAnswerOutput,
 	[SubmissionColor.NeedImprovements]: styles.needImprovementsOutput,
 	[SubmissionColor.MaxResult]: styles.maxResultOutput,
-	[SubmissionColor.Message]: styles.output,
+	[SubmissionColor.Message]: styles.output
 };
 
 const outputTypeToHeader: EnumDictionary<OutputType, string> = {
@@ -32,23 +32,24 @@ const outputTypeToHeader: EnumDictionary<OutputType, string> = {
 	[OutputType.WrongAnswer]: texts.headers.wrongAnswer,
 	[OutputType.ServerError]: texts.headers.serverError,
 	[OutputType.ServerMessage]: texts.headers.serverMessage,
-	[OutputType.Success]: texts.headers.output,
+	[OutputType.Success]: texts.headers.output
 };
 
 type OutputTypeAndBody = { outputType: OutputType, body?: string | null };
 
-function HasOutput(message: string | null | undefined,
+function HasOutput(
+	message: string | null | undefined,
 	automaticChecking: ExerciseAutomaticCheckingResponse | null | undefined,
 	expectedOutput: string
 ): boolean {
-	if(message) {
+	if (message) {
 		return true;
 	}
-	if(!automaticChecking) {
+	if (!automaticChecking) {
 		return false;
 	}
 	return !!automaticChecking.output
-		|| (automaticChecking.result === CheckingResult.WrongAnswer && !!expectedOutput);
+		   || (automaticChecking.result === CheckingResult.WrongAnswer && !!expectedOutput);
 }
 
 interface OutputTypeProps {
@@ -62,63 +63,14 @@ interface OutputTypeProps {
 }
 
 class ExerciseOutput extends React.Component<OutputTypeProps> {
-	render(): React.ReactNode {
-		const { expectedOutput, submissionColor, withoutMargin, } = this.props;
-		const { outputType, body } = this.getOutputTypeAndBody();
-		const style = submissionColorToStyle[submissionColor];
-		const header = outputTypeToHeader[outputType];
-		const showIcon = outputType !== OutputType.Success;
-		const isWrongAnswer = outputType === OutputType.WrongAnswer;
-		const isSimpleTextOutput = !expectedOutput || !isWrongAnswer;
-
-		return (
-			<div className={ cn(style, { [styles.outputWithMargin]: !withoutMargin }) }>
-				<span className={ styles.outputHeader }>
-					{ <React.Fragment>
-						{ showIcon
-							? <Warning className={ styles.outputIcon }/>
-							: null }
-						{ header }
-					</React.Fragment>
-					} 
-				</span>
-				{ isSimpleTextOutput
-					? ExerciseOutput.renderSimpleTextOutput(body ?? "")
-					: ExerciseOutput.renderOutputLines(body ?? "", expectedOutput ?? "")
-				}
-			</div>
-		);
-	}
-
-	getOutputTypeAndBody(): OutputTypeAndBody {
-		const { solutionRunStatus, message, automaticChecking, withoutLogs, } = this.props;
-		switch (solutionRunStatus) {
-			case SolutionRunStatus.CompilationError:
-				return { outputType: OutputType.CompilationError, body: message };
-			case SolutionRunStatus.SubmissionCheckingTimeout:
-			case SolutionRunStatus.Ignored:
-				return { outputType: OutputType.ServerMessage, body: message };
-			case SolutionRunStatus.InternalServerError:
-				return { outputType: OutputType.ServerError, body: message };
-			case SolutionRunStatus.Success:
-				if(automaticChecking) {
-					return ExerciseOutput.getOutputTypeAndBodyFromAutomaticChecking(automaticChecking, withoutLogs);
-				} else {
-					console.error(
-						new Error(`automaticChecking is null when solutionRunStatuses is ${ solutionRunStatus }`));
-					return { outputType: OutputType.Success, body: message };
-				}
-			default:
-				console.error(new Error(`solutionRunStatus has unknown value ${ solutionRunStatus }`));
-				return { outputType: OutputType.ServerMessage, body: message };
-		}
-	}
-
-	static getOutputTypeAndBodyFromAutomaticChecking(automaticChecking: ExerciseAutomaticCheckingResponse,
-		withoutLogs: boolean
+	static getOutputTypeAndBodyFromAutomaticChecking(
+		automaticChecking: ExerciseAutomaticCheckingResponse,
+		withoutLogs?: boolean
 	): OutputTypeAndBody {
 		let outputType: OutputType;
-		const checkerLogs = !withoutLogs && automaticChecking.checkerLogs ? `\n\nЛоги (для админов курса): \n${ automaticChecking.checkerLogs }` : "";
+		const checkerLogs = !withoutLogs && automaticChecking.checkerLogs
+			? `\n\nЛоги (для админов курса): \n${ automaticChecking.checkerLogs }`
+			: "";
 		const output = automaticChecking.output + checkerLogs;
 		switch (automaticChecking.processStatus) {
 			case ProcessStatus.Done:
@@ -206,8 +158,10 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 				</thead>
 				<tbody>
 				{ lines.map(({ actual, expected }, i) =>
-					<tr key={ i }
-						className={ actual === expected ? styles.outputMatchColor : styles.outputNotMatchColor }>
+					<tr
+						key={ i }
+						className={ actual === expected ? styles.outputMatchColor : styles.outputNotMatchColor }
+					>
 						<td><span>{ i + 1 }</span></td>
 						<td><span>{ actual }</span></td>
 						<td><span>{ expected }</span></td>
@@ -216,6 +170,55 @@ class ExerciseOutput extends React.Component<OutputTypeProps> {
 				</tbody>
 			</table>
 		);
+	}
+
+	render(): React.ReactNode {
+		const { expectedOutput, submissionColor, withoutMargin } = this.props;
+		const { outputType, body } = this.getOutputTypeAndBody();
+		const style = submissionColorToStyle[submissionColor];
+		const header = outputTypeToHeader[outputType];
+		const showIcon = outputType !== OutputType.Success;
+		const isWrongAnswer = outputType === OutputType.WrongAnswer;
+		const isSimpleTextOutput = !expectedOutput || !isWrongAnswer;
+
+		return (
+			<div className={ cn(style, { [styles.outputWithMargin]: !withoutMargin }) }>
+				<span className={ styles.outputHeader }>
+					{ showIcon &&
+					  <WarningTriangleIcon16Solid align={ 'baseline' }/>
+					}
+					{ header }
+				</span>
+				{ isSimpleTextOutput
+					? ExerciseOutput.renderSimpleTextOutput(body ?? "")
+					: ExerciseOutput.renderOutputLines(body ?? "", expectedOutput ?? "")
+				}
+			</div>
+		);
+	}
+
+	getOutputTypeAndBody(): OutputTypeAndBody {
+		const { solutionRunStatus, message, automaticChecking, withoutLogs } = this.props;
+		switch (solutionRunStatus) {
+			case SolutionRunStatus.CompilationError:
+				return { outputType: OutputType.CompilationError, body: message };
+			case SolutionRunStatus.SubmissionCheckingTimeout:
+			case SolutionRunStatus.Ignored:
+				return { outputType: OutputType.ServerMessage, body: message };
+			case SolutionRunStatus.InternalServerError:
+				return { outputType: OutputType.ServerError, body: message };
+			case SolutionRunStatus.Success:
+				if (automaticChecking) {
+					return ExerciseOutput.getOutputTypeAndBodyFromAutomaticChecking(automaticChecking, withoutLogs);
+				} else {
+					console.error(
+						new Error(`automaticChecking is null when solutionRunStatuses is ${ solutionRunStatus }`));
+					return { outputType: OutputType.Success, body: message };
+				}
+			default:
+				console.error(new Error(`solutionRunStatus has unknown value ${ solutionRunStatus }`));
+				return { outputType: OutputType.ServerMessage, body: message };
+		}
 	}
 }
 

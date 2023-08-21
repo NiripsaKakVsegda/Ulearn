@@ -17,6 +17,8 @@ import { getDataIfLoaded } from "src/redux";
 import { DeadLineInfo } from "src/models/deadLines";
 import { DeadLineSchedule, getDeadLineForSlide } from "src/utils/deadLinesUtils";
 import { isTimeArrived } from "src/utils/momentUtils";
+import { InstructorReviewFilterSearchParams } from "../../reviewQueue/RevoewQueue.types";
+import { getInstructorReviewFilterSearchParamsFromQuery } from "../../reviewQueue/utils/getFilterSearchParamsFromQuery";
 
 
 export interface SlideInfo {
@@ -336,21 +338,24 @@ export function getSlideNavigationInfoBySlideId(
 	return undefined;
 }
 
-export interface UlearnQueryParams {
+export interface UlearnQueryParams extends Omit<InstructorReviewFilterSearchParams, 'slideId'> {
 	slideId: string | null;
-	queueSlideId: string | null;
 	isLti: boolean;
 	submissionId: number | null;
 	userId: string | null;
-	group: string | null;
-	done: boolean;
+	queueSlideId?: string;
 }
 
 export function parseKnownQueryParams(query: string): UlearnQueryParams {
 	const queryInLowerCase = new URLSearchParams(query.toLowerCase());
 	const submissionId = queryInLowerCase.get('submissionid');
 
+	const reviewQueueSearchParams = getInstructorReviewFilterSearchParamsFromQuery(queryInLowerCase);
+
 	return {
+		...reviewQueueSearchParams,
+		queueSlideId: reviewQueueSearchParams.slideId,
+
 		//slide id for lti slide
 		slideId: queryInLowerCase.get('slideid'),
 		isLti: queryInLowerCase.get('islti') === 'true',
@@ -358,11 +363,6 @@ export function parseKnownQueryParams(query: string): UlearnQueryParams {
 		submissionId: submissionId ? parseInt(submissionId) : null,
 		//review parameter
 		userId: queryInLowerCase.get('userid'),
-
-		//review checking queue parameters below
-		group: queryInLowerCase.get('group'),
-		queueSlideId: queryInLowerCase.get('queueslideid'),
-		done: queryInLowerCase.get('done') === 'true',
 	};
 }
 

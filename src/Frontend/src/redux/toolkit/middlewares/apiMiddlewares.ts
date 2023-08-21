@@ -7,6 +7,7 @@ import { exportApi } from "../api/exportApi";
 import { userFlashcardsApi } from "../api/userFlashcardsApi";
 import { flashcardsApi } from "../api/flashcardsApi";
 import { courseAccessesApi } from "../api/courseAccessesApi";
+import { reviewQueueApi } from "../api/reviewQueueApi";
 
 export default [
 	groupsApi.middleware,
@@ -19,4 +20,5 @@ export default [
 	userFlashcardsApi.middleware,
 	flashcardsApi.middleware,
 	courseAccessesApi.middleware,
+	reviewQueueApi.middleware,
 ];

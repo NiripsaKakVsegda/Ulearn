@@ -32,16 +32,18 @@
   display: flex;
   position: relative;
   text-align: center;
+
+  line-height: 20px;
+  @media (max-width: @minTabletWidth) {
+    line-height: 14px;
+  }
 }
 
 .reviewIcon {
   color: @accentColor;
-  font-size: 12px;
-  line-height: 14px;
-
-  @media (min-width: @minTabletWidth) {
-    font-size: 18px;
-    line-height: 20px;
+  @media (max-width: @minTabletWidth) {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -51,15 +53,16 @@
   right: 0;
   left: 0;
   bottom: 0;
+  top: 0;
   z-index: 1;
 
   user-select: none;
 
-  line-height: 14px;
   font-size: 7px;
+  line-height: 12px;
 
   @media (min-width: @minTabletWidth) {
     font-size: 10px;
-    line-height: 20px;
+    line-height: 18px;
   }
 }

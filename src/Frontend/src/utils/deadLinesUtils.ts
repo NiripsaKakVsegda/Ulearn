@@ -7,6 +7,7 @@ export function isDeadLineOverlappedByAnother(deadLine: DeadLineInfo, deadLines:
 
 	return currentDeadLine.current?.id !== deadLine.id;
 }
+
 export function getDeadLineForSlide(
 	deadLines: DeadLineInfo[],
 	slideScoringGroupId: string | null,
@@ -62,7 +63,7 @@ export function getDeadLine(deadLines: DeadLineInfo[], curMoment = moment()): De
 
 	if(inactiveDeadLines.length > 0) {
 		const maxScoreAmongInActive = Math.max(...inactiveDeadLines.map(d => d.scorePercent));
-		next = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive)!;
+		next = inactiveDeadLines.find(d => d.scorePercent == maxScoreAmongInActive);
 		if(next) {
 			next = { ...next, date: momentToServerFormat(next.date) };
 		}
@@ -72,6 +73,6 @@ export function getDeadLine(deadLines: DeadLineInfo[], curMoment = moment()): De
 
 	return {
 		current: isCurrentOverlapped ? null : current,
-		next: next,
+		next: next ?? null,
 	};
 }

@@ -1,59 +1,67 @@
+import { CheckAIcon16Solid } from '@skbkontur/icons/CheckAIcon16Solid';
+import { MinusIcon16Solid } from '@skbkontur/icons/MinusIcon16Solid';
+import { PlusIcon16Solid } from '@skbkontur/icons/PlusIcon16Solid';
+import { WarningTriangleIcon16Solid } from '@skbkontur/icons/WarningTriangleIcon16Solid';
+import { ValidationWrapper } from "@skbkontur/react-ui-validations";
 import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
 import api, { RequestError } from "src/api";
+import defaultStyles from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/groupSettingsHeader.less";
+import defaultTexts from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/GroupSettingsHeader.texts";
 
-import { Add, Ok, Remove, Warning } from "icons";
-import Page from "src/pages";
-import { Button, Input, Link, Loader, Modal, Toast, } from "ui";
-
-import { clone } from "src/utils/jsonExtensions";
-import { withNavigate } from "src/utils/router";
-
-import { GroupInfo, GroupsListParameters, SuperGroupsListResponse } from "src/models/groups";
 import {
+	GroupInfo,
+	GroupScoringGroupsResponse,
+	GroupsListParameters,
+	SuperGroupsListResponse
+} from "src/models/groups";
+import { WithNavigate } from "src/models/router";
+import {
+	StudentBelongsToOtherGroup,
 	SuperGroupItemActions,
 	SuperGroupSheetExtractionResult,
-	StudentBelongsToOtherGroup,
 	UpdateGroupsRequestParameters,
 	ValidatingResult,
 	ValidationType
 } from "src/models/superGroup";
-import { WithNavigate } from "src/models/router";
+import Page from "src/pages";
+
+import { clone } from "src/utils/jsonExtensions";
+import { withNavigate } from "src/utils/router";
+import { Button, Input, Link, Loader, Modal, Toast } from "ui";
+import { RootState } from "../../../../redux/reducers";
+import { superGroupsApi } from "../../../../redux/toolkit/api/groups/groupsApi";
+import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
+import { AppDispatch } from "../../../../setupStore";
+import InviteBlock from "../GroupMembers/StudentsBlock/InviteBlock/InviteBlock";
+import SettingsType from "../SettingsType";
+import styles from "./SuperGroup.less";
 
 import texts from "./SuperGroup.texts";
-import defaultTexts from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/GroupSettingsHeader.texts";
-import defaultStyles from "src/components/groups/GroupSettingsPage/GroupSettingsHeader/groupSettingsHeader.less";
-import styles from "./SuperGroup.less";
-import SettingsType from "../SettingsType";
 import UpdateSubGroupsSettings from "./UpdateSubGroupsSettings";
-import InviteBlock from "../GroupMembers/StudentsBlock/InviteBlock/InviteBlock";
-import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
-import { RootState } from "../../../../redux/reducers";
-import { AppDispatch } from "../../../../setupStore";
-import { superGroupsApi } from "../../../../redux/toolkit/api/groups/groupsApi";
-import { connect } from "react-redux";
-import { ValidationWrapper } from "@skbkontur/react-ui-validations";
 
 interface SuperGroupProps extends WithNavigate {
 	groupInfo: GroupInfo;
 
-	updateSuperGroupsState: (params: Partial<GroupsListParameters>,
+	updateSuperGroupsState: (
+		params: Partial<GroupsListParameters>,
 		recipe: (draft: SuperGroupsListResponse) => void
 	) => void;
 
 	updateSuperGroup?: typeof api.superGroups.updateSuperGroup;
 	extractGoogleSheet?: typeof api.superGroups.extractFromTable;
-	saveGroupSettings?: typeof api.groups.saveGroupSettings;
-	saveScoresSettings?: typeof api.groups.saveScoresSettings;
+	saveGroupSettings?: (groupId: number, groupSettings: Partial<GroupInfo>) => Promise<GroupInfo>;
+	saveScoresSettings?: (groupId: number, checkedScoresSettingsIds: string[]) => Promise<Response>;
 	resortSuperGroupStudents?: typeof api.superGroups.resortSuperGroupStudents;
-	getGroupScores?: typeof api.groups.getGroupScores;
-	getGroup?: typeof api.groups.getGroup;
+	getGroupScores?: (groupId: number) => Promise<GroupScoringGroupsResponse>;
+	getGroup?: (groupId: number) => Promise<GroupInfo>;
 	deleteGroup?: typeof api.groups.deleteGroup;
 }
 
 const SettingsToTitle = {
 	[SettingsType.settings]: 'Настройки',
 	[SettingsType.additional]: 'Отложенная публикация',
-	[SettingsType.deadlines]: 'Дедлайны',
+	[SettingsType.deadlines]: 'Дедлайны'
 };
 
 function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
@@ -64,7 +72,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		updateSuperGroup = api.superGroups.updateSuperGroup,
 		resortSuperGroupStudents = api.superGroups.resortSuperGroupStudents,
 		deleteGroup = api.groups.deleteGroup,
-		updateSuperGroupsState,
+		updateSuperGroupsState
 	} = props;
 	const { name } = groupInfo;
 	const [tableLink, setTableLink] = useState(groupInfo.distributionTableLink || "");
@@ -89,7 +97,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		: null;
 	const neededActionsCount = neededActions ? neededActions.length : -1;
 
-	if(tableLink && !isLoading && !extractionResult && !error) {
+	if (tableLink && !isLoading && !extractionResult && !error) {
 		_extractGoogleSheet();
 	}
 
@@ -105,7 +113,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	);
 
 	function onToggleInviteLink(isEnabled: boolean) {
-		if(!groupInfo) {
+		if (!groupInfo) {
 			return;
 		}
 		saveSettings({
@@ -135,8 +143,10 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		navigate(-1);
 	}
 
-	function getDateValidationResult(): { message: string } | null {
-		if(tableLink === '' || tableLink === null) {
+	function getDateValidationResult(): {
+		message: string
+	} | null {
+		if (tableLink === '' || tableLink === null) {
 			return { message: "Поле не может быть пустым" };
 		}
 		return null;
@@ -148,19 +158,21 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 				<p>{ texts.instruction }</p>
 				<div className={ defaultStyles.inline }>
 					<ValidationWrapper validationInfo={ getDateValidationResult() }>
-						<Input className={ defaultStyles.distributionLinkBlockInput }
-							   placeholder={ texts.linkPlaceholder }
-							   width={ "30%" }
-							   value={ tableLink }
-							   onValueChange={ setTableLink }
-							   error={ tableLink === '' || tableLink === null }
+						<Input
+							className={ defaultStyles.distributionLinkBlockInput }
+							placeholder={ texts.linkPlaceholder }
+							width={ "30%" }
+							value={ tableLink }
+							onValueChange={ setTableLink }
+							error={ tableLink === "" || tableLink === null }
 						/>
 					</ValidationWrapper>
 					<Button
 						use={ "default" }
 						error={ !!error }
 						disabled={ tableLink === '' || tableLink === null }
-						onClick={ _extractGoogleSheet }>
+						onClick={ _extractGoogleSheet }
+					>
 						{ texts.extractSpreadsheetButton }
 					</Button>
 					{ error && <span className={ styles.requestErrorText }>{ error }</span> }
@@ -170,8 +182,8 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function renderExtractionResult(extractionResult: SuperGroupSheetExtractionResult) {
-		if(!groups || Object.keys(groups).length === 0) {
-			if(extractionResult.validatingResults.length === 0) {
+		if (!groups || Object.keys(groups).length === 0) {
+			if (extractionResult.validatingResults.length === 0) {
 				return (
 					<p>
 						{ texts.noGroupsText }
@@ -192,9 +204,9 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 				{ renderValidatingResults(extractionResult.validatingResults) }
 				{
 					neededActions && neededActionsCount > 0 && <>
-						<p>{ texts.buildSubmitButtonHint(neededActions) }</p>
-						{ renderUpdateGroupsButton() }
-					</>
+									  <p>{ texts.buildSubmitButtonHint(neededActions) }</p>
+									  { renderUpdateGroupsButton() }
+								  </>
 				}
 				{
 					neededActions && neededActionsCount === 0 &&
@@ -214,13 +226,13 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 				let icon = null;
 				switch (status) {
 					case SuperGroupItemActions.ShouldBeCreated:
-						icon = <Add className={ styles.groupToCreate }/>;
+						icon = <PlusIcon16Solid size={ 14 } className={ styles.groupToCreate }/>;
 						break;
 					case SuperGroupItemActions.ShouldBeDeleted:
-						icon = <Remove className={ styles.groupToDelete }/>;
+						icon = <MinusIcon16Solid size={ 14 } className={ styles.groupToDelete }/>;
 						break;
 					case null:
-						icon = <Ok className={ styles.createdGroup }/>;
+						icon = <CheckAIcon16Solid size={ 14 } className={ styles.createdGroup }/>;
 						break;
 				}
 				return (<p key={ groupName }>{ icon } { content }</p>);
@@ -229,14 +241,14 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 
 	function _deleteGroup(event: React.MouseEvent<HTMLButtonElement>) {
 		const parent = event.currentTarget.parentElement;
-		if(!parent) {
+		if (!parent) {
 			console.error("Parent element of this button wasn't found!");
 			return;
 		}
 		const id = parseInt(parent.dataset.tid || '');
 		const groupName = parent.dataset.groupName || '';
 
-		if(!id || !extractionResult) {
+		if (!id || !extractionResult) {
 			console.error("Couldn't parse id and/or group name from the button data");
 			return;
 		}
@@ -268,7 +280,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			const { title, content } = getValidatingInfo(validatingResult);
 			return (
 				<div key={ index } className={ defaultStyles.errorBlock }>
-					<h4><Warning className={ styles.validatingWarning }/> { title }</h4>
+					<h4><WarningTriangleIcon16Solid className={ styles.validatingWarning }/> { title }</h4>
 					{ content && content }
 				</div>
 			);
@@ -298,7 +310,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 								}) }
 						</ul>
 						<p>{ texts.validating.sameNameHint }</p>
-					</>,
+					</>
 				};
 			case ValidationType.studentBelongsToOtherGroup: {
 				const neededNoActions = (!neededActions || neededActionsCount === 0);
@@ -309,32 +321,34 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 							{ Object
 								.entries(validationResult.neededMoves)
 								.map(([studentName, moveInfo]) => {
-									const text = texts.validating.buildStudentBelongsToOtherGroup(studentName,
-										moveInfo);
+									const text = texts.validating.buildStudentBelongsToOtherGroup(
+										studentName,
+										moveInfo
+									);
 									return <li key={ studentName }>{ text }</li>;
 								}) }
 						</ul>
 						{ neededNoActions &&
-							<>
-								<p>{ texts.validating.studentBelongsToOtherGroupHint }</p>
-								<Button onClick={ resortStudentsButtonClick }>
-									{ texts.validating.studentBelongsToOtherGroupButtonText }
-								</Button>
-							</>
+						  <>
+							  <p>{ texts.validating.studentBelongsToOtherGroupHint }</p>
+							  <Button onClick={ resortStudentsButtonClick }>
+								  { texts.validating.studentBelongsToOtherGroupButtonText }
+							  </Button>
+						  </>
 						}
-					</>,
+					</>
 				};
 			}
 		}
 	}
 
 	function resortStudentsButtonClick() {
-		if(!extractionResult) {
+		if (!extractionResult) {
 			return;
 		}
 		const belongsToOtherGroup = extractionResult.validatingResults
 			.find(v => v.type === ValidationType.studentBelongsToOtherGroup) as StudentBelongsToOtherGroup;
-		if(!belongsToOtherGroup) {
+		if (!belongsToOtherGroup) {
 			return;
 		}
 
@@ -380,13 +394,13 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 					// @ts-ignore
 					settingsTab && <Modal onClose={ closeSettingsModal }>
-						<Modal.Header>
-							{ SettingsToTitle[settingsTab] }
-						</Modal.Header>
-						{/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/ }
-						{/*@ts-ignore*/ }
-						{ renderSettingsModalContent(settingsTab) }
-					</Modal>
+									<Modal.Header>
+										{ SettingsToTitle[settingsTab] }
+									</Modal.Header>
+									{/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/ }
+									{/*@ts-ignore*/ }
+									{ renderSettingsModalContent(settingsTab) }
+								</Modal>
 				}
 			</>
 		);
@@ -397,7 +411,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function renderSettingsModalContent(type: SettingsType) {
-		if(!groups) {
+		if (!groups) {
 			return;
 		}
 		switch (type) {
@@ -422,7 +436,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function onSettingsModalChange(value?: string) {
-		if(!value) {
+		if (!value) {
 			setSettingsSettingsTab(undefined);
 		}
 
@@ -430,12 +444,12 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	async function onUpdateGroupsButtonClick() {
-		if(!neededActionsAsDictionary || !extractionResult) {
+		if (!neededActionsAsDictionary || !extractionResult) {
 			return;
 		}
 
 		const updates = await updateSuperGroup(groupInfo.id, {
-			groupsToUpdate: neededActionsAsDictionary,
+			groupsToUpdate: neededActionsAsDictionary
 		});
 
 		Toast.push(texts.afterSubmitSuccessToastText);
@@ -443,7 +457,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		const afterUpdates = clone(extractionResult);
 		for (const update of Object.values(updates)) {
 			//group exists === created
-			if(update.groupId) {
+			if (update.groupId) {
 				const group = afterUpdates.groups[update.groupName];
 				group.groupId = update.groupId;
 				group.neededAction = null;
@@ -459,7 +473,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	function mapExtractionToAction(extractionResult: SuperGroupSheetExtractionResult) {
 		const groupsToUpdate: UpdateGroupsRequestParameters['groupsToUpdate'] = {};
 		for (const [groupId, superGroupItem] of Object.entries(extractionResult.groups)) {
-			if(superGroupItem.neededAction) {
+			if (superGroupItem.neededAction) {
 				groupsToUpdate[groupId] = superGroupItem.neededAction;
 			}
 		}
@@ -471,7 +485,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			const index = draft.superGroups.findIndex(source => source.id === groupInfo.id);
 			draft.superGroups[index] = {
 				...draft.superGroups[index],
-				distributionTableLink: tableLink,
+				distributionTableLink: tableLink
 			};
 		});
 		setLoading(true);
@@ -494,7 +508,7 @@ const mapStateToProps = (state: RootState) => ({});
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
 	updateSuperGroupsState: (params: Partial<GroupsListParameters>, recipe: (draft: SuperGroupsListResponse) => void) =>
-		dispatch(superGroupsApi.util.updateQueryData('getGroups', params, recipe)),
+		dispatch(superGroupsApi.util.updateQueryData('getGroups', params, recipe))
 });
 
 const connected = connect(mapStateToProps, mapDispatchToProps)(SuperGroupPage);

@@ -1,7 +1,16 @@
 @import "/src/variables.less";
 
-.action-buttons {
+.actionButtons {
   margin: 0 0 5px 30px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.removeButton:not(.disabled) {
+  span, svg {
+    color: @negativeColor !important; //To override kontur ui default button color
+  }
 }
 
 .action {
@@ -11,24 +20,8 @@
   text-align: center;
 }
 
-.button-copy {
-  color: @linkColor;
-}
-
-.button-delete {
-  color: @negativeColor;
-}
-
-.buttonResetLimits {
-  color: @linkColor;
-}
-
-.action-text {
+.buttonText {
   @media (max-width: @maxPhoneWidth) {
     display: none;
-  }
-
-  &:hover {
-    text-decoration: underline;
   }
 }

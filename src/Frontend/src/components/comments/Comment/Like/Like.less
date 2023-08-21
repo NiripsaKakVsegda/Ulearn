@@ -1,37 +1,33 @@
 @import "/src/variables.less";
 
-.wrapper {
-  display: flex;
-  align-items: baseline;
-  padding: 2px 5px 3px 4px;
-  color: @disabledColor;
-  cursor: default;
-}
-
-.hover {
-    cursor: pointer;
-    border-radius: 3px;
-
-  &:hover {
-    background-color: rgba(0,0,0,.04);
-  }
-}
-
-.isLiked {
-  color: @likeColor;
-}
-
-.action {
-  display: flex;
-  align-items: baseline;
+.button {
   border: 0;
-  background: transparent;
-  padding: 0;
+  background: none;
   outline: none;
-  cursor: inherit;
-}
 
-.count {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  color: @disabledColor;
+  border-radius: 8px;
+  cursor: default;
   font-size: 14px;
-  margin-left: 3px;
+
+  &:not(.disabled) {
+    cursor: pointer;
+    color: @additionalColor;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, .06);
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, .08);
+    }
+  }
+
+  &.liked {
+    color: @likeColor;
+  }
 }

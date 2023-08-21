@@ -8,6 +8,7 @@
 
   display: flex;
   justify-content: space-between;
+  align-items: center;
 
   font-size: 14px;
   font-family: @defaultFonts;
@@ -36,8 +37,10 @@
   background: @lightBlue;
 }
 
-.closeButton:hover {
+.closeButton {
   cursor: pointer;
+  line-height: 16px;
+  font-size: 16px;
 }
 
 @media (min-width: @minTabletWidth) {

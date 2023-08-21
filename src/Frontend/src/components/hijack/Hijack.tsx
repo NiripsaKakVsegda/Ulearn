@@ -1,13 +1,13 @@
+import { ArrowUiAuthLogoutIcon20Regular } from "@skbkontur/icons/ArrowUiAuthLogoutIcon20Regular";
+
+import { Tooltip } from "@skbkontur/react-ui";
 import React from "react";
-import { Dispatch } from "redux";
-import api from "src/api";
+import { ReactCookieProps, withCookies } from 'react-cookie';
 import { connect } from "react-redux";
-import { withCookies, ReactCookieProps } from 'react-cookie';
+import { Dispatch } from "redux";
 
-import { Gapped, Tooltip } from "@skbkontur/react-ui";
-import { Logout, } from "@skbkontur/react-icons";
-
-import { userProgressHijackAction, } from "src/actions/account";
+import { userProgressHijackAction } from "src/actions/account";
+import api from "src/api";
 import { RootState } from "src/models/reduxState";
 
 import styles from './Hijack.less';
@@ -21,28 +21,26 @@ interface Props extends ReactCookieProps {
 	isHijacked: boolean,
 }
 
-function Hijack({ allCookies, name, setHijack, isHijacked, }: Props) {
+function Hijack({ allCookies, name, setHijack, isHijacked }: Props) {
 	let isCookieContainsHijack = false;
 	for (const cookie in allCookies) {
-		if(cookie.endsWith(hijackCookieName)) {
+		if (cookie.endsWith(hijackCookieName)) {
 			isCookieContainsHijack = true;
 		}
 	}
 
-	if(isHijacked !== isCookieContainsHijack) {
+	if (isHijacked !== isCookieContainsHijack) {
 		setHijack(isCookieContainsHijack);
 	}
 
 	return (
 		<React.Fragment>
 			{ isHijacked &&
-				<div className={ styles.wrapper } onClick={ returnHijak }>
-					<Tooltip trigger="hover&focus" pos={ 'bottom center' } render={ renderTooltip }>
-						<Gapped gap={ 5 }>
-							<Logout size={ 20 }/>
-						</Gapped>
-					</Tooltip>
-				</div>
+			  <div className={ styles.wrapper } onClick={ returnHijak }>
+				  <Tooltip trigger="hover&focus" pos={ 'bottom center' } render={ renderTooltip }>
+					  <ArrowUiAuthLogoutIcon20Regular/>
+				  </Tooltip>
+			  </div>
 			}
 		</React.Fragment>
 	);
@@ -56,7 +54,7 @@ function Hijack({ allCookies, name, setHijack, isHijacked, }: Props) {
 	function returnHijak() {
 		api.fetchFromWeb(hijackReturnControllerPath, { method: 'POST' })
 			.then(r => {
-				if(r.redirected) {
+				if (r.redirected) {
 					window.location.href = r.url;// reloading page to url in response location
 				}
 			});
@@ -65,12 +63,12 @@ function Hijack({ allCookies, name, setHijack, isHijacked, }: Props) {
 
 const mapStateToProps = (state: RootState) => {
 	return {
-		isHijacked: state.account.isHijacked,
+		isHijacked: state.account.isHijacked
 	};
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-	setHijack: (isHijacked: boolean) => dispatch(userProgressHijackAction(isHijacked)),
+	setHijack: (isHijacked: boolean) => dispatch(userProgressHijackAction(isHijacked))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(withCookies(Hijack));

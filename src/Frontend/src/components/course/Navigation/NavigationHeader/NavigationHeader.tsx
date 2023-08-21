@@ -1,18 +1,18 @@
-import React from "react";
+import { ArrowCLeftIcon16Regular } from "@skbkontur/icons/ArrowCLeftIcon16Regular";
 import cn from "classnames";
-
-import { Link } from 'ui';
-import { ArrowChevron2Left } from "icons";
-import ProgressBar from "../ProgressBar";
-import ProgressBarCircle from "../ProgressBar/ProgressBarCircle";
+import React from "react";
+import { DeviceType } from "src/consts/deviceType";
+import { courseStatistics, WithNavigate } from "src/consts/routes";
+import { GroupAsStudentInfo } from "src/models/groups";
 
 import { buildQuery } from "src/utils";
 import { withNavigate } from "src/utils/router";
 
+import { Link } from 'ui';
+import ProgressBar from "../ProgressBar";
+import ProgressBarCircle from "../ProgressBar/ProgressBarCircle";
+
 import { Progress, UnitProgress } from '../types';
-import { GroupAsStudentInfo } from "src/models/groups";
-import { DeviceType } from "src/consts/deviceType";
-import { courseStatistics, WithNavigate } from "src/consts/routes";
 
 import styles from './NavigationHeader.less';
 
@@ -45,11 +45,13 @@ function NavigationHeader({
 	createRef,
 	isInsideCourse,
 	deviceType,
-	navigate,
+	navigate
 }: Props): React.ReactElement {
 	return (
-		<header ref={ createRef }
-				className={ cn(styles.root, styles.sticky, className) }>
+		<header
+			ref={ createRef }
+			className={ cn(styles.root, styles.sticky, className) }
+		>
 			{ isInsideCourse
 				? <h1 className={ styles.courseTitle } title={ title }>{ title }</h1>
 				: renderReturnToCourseNavigationLink()
@@ -79,8 +81,12 @@ function NavigationHeader({
 		return (
 			<nav className={ styles.returnToCourseLink }>
 				<Link
-					icon={ <ArrowChevron2Left className={ styles.returnToCourseLinkIcon }/> }
-					onClick={ returnToCourseNavigationClicked }>
+					icon={ <ArrowCLeftIcon16Regular
+						size={ 12 }
+						className={ styles.returnToCourseLinkIcon }
+					/> }
+					onClick={ returnToCourseNavigationClicked }
+				>
 					<span className={ styles.returnToCourseLinkText }>{ title }</span>
 				</Link>
 			</nav>
@@ -91,26 +97,30 @@ function NavigationHeader({
 		const groupsLinks = [];
 
 		for (let i = 0; i < groupsAsStudent.length; i++) {
-			const { id, courseId, name, } = groupsAsStudent[i];
+			const { id, courseId, name } = groupsAsStudent[i];
 			const courseIdInLowerCase = courseId.toLowerCase();
 
 			groupsLinks.push(
 				<Link
 					key={ id }
 					onClick={ preventReload }
-					href={ courseStatistics + buildQuery({ courseId: courseIdInLowerCase, group: id }) }>
+					href={ courseStatistics + buildQuery({ courseId: courseIdInLowerCase, group: id }) }
+				>
 					{ name }
 				</Link>
 			);
 
-			if(i < groupsAsStudent.length - 1) {
+			if (i < groupsAsStudent.length - 1) {
 				groupsLinks.push(', ');
 			}
 		}
 
-		return <p className={ cn(
-			styles.linkToGroupsStatementsWrapper,
-			{ [styles.insideModule]: !isInsideCourse }) }>Ведомость { groupsLinks }</p>;
+		return <p
+			className={ cn(
+				styles.linkToGroupsStatementsWrapper,
+				{ [styles.insideModule]: !isInsideCourse }
+			) }
+		>Ведомость { groupsLinks }</p>;
 	}
 
 	function preventReload(e: React.MouseEvent<HTMLAnchorElement>) {
@@ -132,7 +142,7 @@ function NavigationHeader({
 	}
 
 	function renderUnitProgress(unitProgress: UnitProgress) {
-		if(unitProgress.inProgress > 0 || unitProgress.current > 0) {
+		if (unitProgress.inProgress > 0 || unitProgress.current > 0) {
 			return (
 				<span className={ styles.circleProgressBarWrapper }>
 					<ProgressBarCircle

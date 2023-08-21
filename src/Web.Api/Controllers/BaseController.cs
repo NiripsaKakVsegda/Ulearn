@@ -104,7 +104,7 @@ namespace Ulearn.Web.Api.Controllers
 			};
 		}
 
-		protected ShortGroupInfo BuildShortGroupInfo(GroupBase g)
+		protected ShortGroupInfo BuildShortGroupInfo(SingleGroup g)
 		{
 			return new ShortGroupInfo
 			{
@@ -112,7 +112,9 @@ namespace Ulearn.Web.Api.Controllers
 				Name = g.Name,
 				CourseId = g.CourseId,
 				IsArchived = g.IsArchived,
-				ApiUrl = Url.Action(new UrlActionContext { Action = nameof(GroupController.Group), Controller = "Group", Values = new { groupId = g.Id } })
+				ApiUrl = Url.Action(new UrlActionContext { Action = nameof(GroupController.Group), Controller = "Group", Values = new { groupId = g.Id } }),
+				Owner = BuildShortUserInfo(g.Owner),
+				MembersCount = g.Members.Count
 			};
 		}
 
@@ -174,7 +176,7 @@ namespace Ulearn.Web.Api.Controllers
 				return hasManualChecking ? slide.MaxScore : GetMaxScoreWithoutManualChecking(slide);
 			return enabledManualCheckingForUser ? slide.MaxScore : GetMaxScoreWithoutManualChecking(slide);
 		}
-		
+
 		private static int GetMaxScoreForGuest(Slide slide)
 		{
 			var isExerciseOrQuiz = slide is ExerciseSlide || slide is QuizSlide;

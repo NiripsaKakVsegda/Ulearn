@@ -1,13 +1,15 @@
+import { ArrowShapeDRadiusDownRightIcon16Light } from '@skbkontur/icons/ArrowShapeDRadiusDownRightIcon16Light';
+import { DocsTextIcon16Light } from '@skbkontur/icons/DocsTextIcon16Light';
+import { ToolPencilLineIcon16Light } from '@skbkontur/icons/ToolPencilLineIcon16Light';
 import React from "react";
-import { Button, } from "ui";
 import { Link } from 'react-router-dom';
-import { ArrowCorner1, Edit, DocumentLite } from "icons";
 
-import { CourseAccessType, } from "src/consts/accessType";
-import { SlideType, } from "src/models/slide";
+import { CourseAccessType } from "src/consts/accessType";
 import { Comment } from "src/models/comments";
+import { SlideType } from "src/models/slide";
+import { UserInfo } from "src/utils/courseRoles";
+import { Button } from "ui";
 import { ActionsType } from "../../CommentsList/CommentsList";
-import { UserInfo, } from "src/utils/courseRoles";
 
 import styles from "./CommentActions.less";
 
@@ -19,13 +21,10 @@ interface ActionButtonProps {
 	children: React.ReactNode;
 }
 
-const ActionButton = ({ onClick, icon, children }: ActionButtonProps) => (
-	<div className={ styles.action }>
-		<Button use="link" onClick={ onClick } icon={ icon }>
-			{ children }
-		</Button>
-	</div>
-);
+const ActionButton = ({ onClick, icon, children }: ActionButtonProps) =>
+	<Button use="link" onClick={ onClick } icon={ icon }>
+		{ children }
+	</Button>;
 
 interface ActionLinkProps {
 	icon: React.ReactElement;
@@ -34,13 +33,10 @@ interface ActionLinkProps {
 	children: React.ReactNode;
 }
 
-const ActionLink = ({ url, icon, children }: ActionLinkProps) => (
-	<div className={ styles.action }>
-		<Link to={ url }>
-			{ icon }{ children }
-		</Link>
-	</div>
-);
+const ActionLink = ({ url, icon, children }: ActionLinkProps) =>
+	<Link to={ url } className={styles.linkAsButtonLink}>
+		<span className={styles.icon}>{ icon }</span>{ children }
+	</Link>;
 
 interface Props {
 	url: string;
@@ -65,39 +61,42 @@ export default function CommentActions(props: Props): React.ReactElement | null 
 
 	const commentActions: React.ReactElement[] = [];
 
-	if(canReply && hasReplyAction) {
+	if (canReply && hasReplyAction) {
 		commentActions.push(
 			<ActionButton
 				key="Ответить"
 				onClick={ handleShowReplyFormClick }
-				icon={ <ArrowCorner1/> }>
+				icon={ <ArrowShapeDRadiusDownRightIcon16Light/> }
+			>
 				Ответить
 			</ActionButton>);
 	}
 
-	if(user.id === comment.author.id || canModerateComments(user, CourseAccessType.editPinAndRemoveComments)) {
+	if (user.id === comment.author.id || canModerateComments(user, CourseAccessType.editPinAndRemoveComments)) {
 		commentActions.push(
 			<div className={ styles.visibleOnDesktopAndTablet } key="Редактировать">
 				<ActionButton
 					onClick={ handleShowEditFormClick }
-					icon={ <Edit/> }>
+					icon={ <ToolPencilLineIcon16Light/> }
+				>
 					Редактировать
 				</ActionButton>
 			</div>);
 	}
 
-	if(slideType === SlideType.Exercise && canModerateComments(user, CourseAccessType.viewAllStudentsSubmissions)) {
+	if (slideType === SlideType.Exercise && canModerateComments(user, CourseAccessType.viewAllStudentsSubmissions)) {
 		commentActions.push(
 			<div className={ styles.visibleOnDesktopAndTablet } key="Решения">
 				<ActionLink
 					url={ url }
-					icon={ <DocumentLite/> }>
+					icon={ <DocsTextIcon16Light/> }
+				>
 					Посмотреть решения
 				</ActionLink>
 			</div>);
 	}
 
-	if(commentActions.length === 0) {
+	if (commentActions.length === 0) {
 		return null;
 	}
 

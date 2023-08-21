@@ -16,7 +16,11 @@
   position: absolute;
   right: calc((@phoneSlidePadding - 14px) / 2);
 
-  font-size: 14px;
+  .eyeClosedIcon {
+    width: 14px;
+    height: 14px;
+  }
+
   color: @orange;
 }
 
@@ -59,7 +63,11 @@
   }
 
   .eyeClosedWrapper {
-    font-size: 16px;
+    .eyeClosedIcon {
+      width: 16px;
+      height: 16px;
+    }
+
     right: calc((@phoneSlidePadding - 16px) / 2);
   }
 
@@ -71,7 +79,11 @@
 
 @media (min-width: @minLaptopWidth) {
   .eyeClosedWrapper {
-    font-size: 20px;
+    .eyeClosedIcon {
+      width: 20px;
+      height: 20px;
+    }
+
     right: calc((@laptopSlidePadding - 20px) / 2);
   }
 
@@ -95,7 +107,11 @@
 
 @media (min-width: @minDesktopWidth) {
   .eyeClosedWrapper {
-    font-size: 22px;
+    .eyeClosedIcon {
+      width: 22px;
+      height: 22px;
+    }
+
     right: calc((@desktopSlidePadding - 22px) / 2);
   }
 

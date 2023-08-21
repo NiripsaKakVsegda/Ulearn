@@ -1,9 +1,8 @@
+import { CheckAIcon16Solid } from "@skbkontur/icons/CheckAIcon16Solid";
+import cn from "classnames";
 import React from "react";
 
-import { Ok } from "icons";
-
 import styles from "./ProgressBar.less";
-import cn from "classnames";
 
 interface Props {
 	successValue: number;
@@ -26,20 +25,26 @@ function ProgressBarCircle({
 }: Props): React.ReactElement {
 	const radius = big ? 10 : 8;
 
-	if(successValue >= 1) {
+	if (successValue >= 1) {
 		return (
 			<span className={ cn(styles.circleFull, { [styles.big]: big }) }>
-				<Ok/>
+				<CheckAIcon16Solid
+					className={styles.checkIcon}
+				/>
 			</span>
 		);
 	}
 
 	return (
-		<svg className={ cn(styles.circleSvgWrapper, { [styles.big]: big }) }
-			 viewBox={ `0 0 ${ radius * 2 } ${ radius * 2 }` }>
-			<circle cx={ radius } cy={ radius }
-					r={ radius / 2 - 0.5 }//-0.5 to prevent appearing of small gray line at the edge of circle
-					className={ cn(styles.circleProgressCircle, { [styles.active]: active }, { [styles.big]: big }) }/>
+		<svg
+			className={ cn(styles.circleSvgWrapper, { [styles.big]: big }) }
+			viewBox={ `0 0 ${ radius * 2 } ${ radius * 2 }` }
+		>
+			<circle
+				cx={ radius } cy={ radius }
+				r={ radius / 2 - 0.5 }//-0.5 to prevent appearing of small gray line at the edge of circle
+				className={ cn(styles.circleProgressCircle, { [styles.active]: active }, { [styles.big]: big }) }
+			/>
 			{ renderParts(successValue, inProgressValue) }
 		</svg>
 	);
@@ -47,7 +52,7 @@ function ProgressBarCircle({
 	function renderParts(successValue: number, inProgressValue: number) {
 		const renderedParts = [];
 		let curStartAngle = startAngle;
-		if(successValue) {
+		if (successValue) {
 			renderedParts.push(
 				<path
 					key={ 'success' }
@@ -57,13 +62,14 @@ function ProgressBarCircle({
 			);
 			curStartAngle += fillDirection * successValue * 360;
 		}
-		if(inProgressValue) {
+		if (inProgressValue) {
 			renderedParts.push(
 				<path
 					key={ 'inProgress' }
 					className={ cn(styles.circleProgressValue, { [styles.big]: big }, styles.inProgress) }
 					d={ makeSectorPath(radius, radius, radius / 2, curStartAngle, inProgressValue * 360,
-						fillDirection) }
+						fillDirection
+					) }
 				/>
 			);
 		}
@@ -75,10 +81,10 @@ function ProgressBarCircle({
 
 //this functions has been copied from https://github.com/tigrr/circle-progress/tree/1ecb3cef5c675b3c9bc1ec6fea56cb89ffe5553a
 function makeSectorPath(cx: number, cy: number, r: number, startAngle: number, angle: number, clockwise: number) {
-	if(angle > 0 && angle < 0.3) {
+	if (angle > 0 && angle < 0.3) {
 		// Tiny angles smaller than ~0.3° can produce weird-looking paths
 		angle = 0;
-	} else if(angle > 359.999) {
+	} else if (angle > 359.999) {
 		// If progress is full, notch it back a little, so the path doesn't become 0-length
 		angle = 359.999;
 	}
@@ -93,9 +99,9 @@ function makeSectorPath(cx: number, cy: number, r: number, startAngle: number, a
 	return ["M", x1, y1, "A", r, r, 0, +(angle > 180), +clockwise, x2, y2].join(' ');
 }
 
-const polarToCartesian = (r: number, angle: number,) => ({
+const polarToCartesian = (r: number, angle: number) => ({
 	x: r * Math.cos(angle * Math.PI / 180),
-	y: r * Math.sin(angle * Math.PI / 180),
+	y: r * Math.sin(angle * Math.PI / 180)
 });
 
 export default ProgressBarCircle;

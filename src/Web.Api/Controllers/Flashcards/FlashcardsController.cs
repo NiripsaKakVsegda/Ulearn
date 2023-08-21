@@ -24,7 +24,7 @@ using Web.Api.Configuration;
 
 namespace Ulearn.Web.Api.Controllers.Flashcards
 {
-	[Route("/courses")]
+	[Route("/courses/{courseId}")]
 	public class FlashcardsController : BaseFlashcardController
 	{
 		private readonly IUserGeneratedFlashcardsRepo userFlashcardsRepo;
@@ -62,7 +62,7 @@ namespace Ulearn.Web.Api.Controllers.Flashcards
 		/// </summary>
 		/// <param name="course"></param>
 		/// <returns></returns>
-		[HttpGet("{courseId}/flashcards-by-units")]
+		[HttpGet("flashcards-by-units")]
 		public async Task<ActionResult<FlashcardResponseByUnits>> Flashcards([FromRoute] Course course)
 		{
 			var isModerator = await CanUserModerateFlashcards(course.Id);
@@ -237,7 +237,7 @@ namespace Ulearn.Web.Api.Controllers.Flashcards
 		/// </summary>
 		///
 		[Authorize]
-		[HttpPut("{courseId}/flashcards/{flashcardId}/status")]
+		[HttpPut("flashcards/{flashcardId}/status")]
 		[ProducesResponseType((int)HttpStatusCode.NoContent)]
 		public async Task<IActionResult> Status([FromRoute] Course course, [FromRoute] string flashcardId, [FromBody] Rate rate)
 		{

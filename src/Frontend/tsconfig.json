@@ -61,9 +61,6 @@
       //src is default alias, all others should be copied from webpack.config.base.ts
       "ui": [
         "node_modules/@skbkontur/react-ui"
-      ],
-      "icons": [
-        "node_modules/@skbkontur/react-icons"
       ]
     },
     /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */

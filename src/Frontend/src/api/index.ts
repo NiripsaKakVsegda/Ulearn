@@ -13,17 +13,16 @@ import * as instructor from "./instructor";
 import * as favouriteReviews from "./favouriteReviews";
 import * as googleSheet from "./googleSheet";
 import * as deadLines from "./deadLines";
-import * as additionalContent from "./additionalContent";
 import * as selfCheckups from "./selfCheckups";
 import * as superGroups from "./superGroups";
 import * as signalR from "@microsoft/signalr";
-import config from 'src/proxyConfig';
+import config from "src/proxyConfig";
 import { store } from "../setupStore";
 import { RootState } from "../redux/reducers";
 import { refreshToken } from "../redux/toolkit/slices/authSlice";
 
 const API_JWT_TOKEN_UPDATED = "API_JWT_TOKEN_UPDATED";
-let apiJwtToken = '';
+let apiJwtToken = "";
 let refreshApiJwtTokenPromise: Promise<string | ErrorWithResponse> | undefined = undefined;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let serverErrorHandler = (error?: string): void => {
@@ -42,43 +41,27 @@ function refreshApiJwtToken(): Promise<string | ErrorWithResponse> {
 	return store.dispatch(refreshToken()).unwrap()
 		.then(token => {
 			if(!token) {
-				return Promise.reject('Error!');
+				return Promise.reject("Error!");
 			}
-			apiJwtToken = (store.getState() as RootState).auth.token || '';
+			apiJwtToken = (
+				store.getState() as RootState
+			).auth.token || "";
 			return Promise.resolve(API_JWT_TOKEN_UPDATED);
 		});
-	// if (apiJwtToken == '')
-	// return fetch(config.api.endpoint + "account/token", { credentials: "include", method: "POST" })
-	// 	.then(response => {
-	// 		if(response.status !== 200) {
-	// 			const error = new ErrorWithResponse((response.statusText || response.status) as string);
-	// 			error.response = response;
-	// 			return Promise.reject(error);
-	// 		}
-	//
-	// 		return response.json() as Promise<{ token: string }>;
-	// 	})
-	// 	.then(json => {
-	// 		const token = json.token;
-	// 		if(!token) {
-	// 			return Promise.reject(
-	// 				new Error('Can\'t get token from API: /account/token returned bad json: ' + JSON.stringify(json)));
-	// 		}
-	// 		apiJwtToken = token;
-	// 		return Promise.resolve(API_JWT_TOKEN_UPDATED);
-	// 	});
 }
 
 function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Promise<T> {
-	if(!isRetry && (refreshApiJwtTokenPromise !== undefined || apiJwtToken === '')) {
+	if(!isRetry && (
+		refreshApiJwtTokenPromise !== undefined || apiJwtToken === ""
+	)) {
 		if(refreshApiJwtTokenPromise === undefined) {
 			refreshApiJwtTokenPromise = refreshApiJwtToken();
 		}
 		return refreshApiJwtTokenPromise
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			.catch(_ => ({}))
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			.then(_ => {
+			.catch(() => (
+				{}
+			))
+			.then(() => {
 				// catch + then = finally, but real finally does not return its result
 				refreshApiJwtTokenPromise = undefined;
 				return request(url, options, true);
@@ -87,7 +70,7 @@ function request<T>(url: string, options?: RequestInit, isRetry?: boolean): Prom
 	options = options || {};
 	options.credentials = options.credentials || "include";
 	options.headers = new Headers(options.headers || {});
-	options.headers.set('Authorization', "Bearer " + apiJwtToken);
+	options.headers.set("Authorization", "Bearer " + apiJwtToken);
 
 	return fetch(config.api.endpoint + url, options)
 		.catch((error) => {
@@ -204,19 +187,23 @@ export class RequestError extends Error {
 
 function createSignalRConnection(url: string, loggingLevel = signalR.LogLevel.None): signalR.HubConnection {
 	return new signalR.HubConnectionBuilder()
-		.withUrl(config.api.endpoint + url,
+		.withUrl(
+			config.api.endpoint + url,
 			{
 				accessTokenFactory: () => {
 					return apiJwtToken;
 				},
 				transport: signalR.HttpTransportType.WebSockets
-			})
+			}
+		)
 		.configureLogging(loggingLevel)
 		.build();
 }
 
 function fetchFromWeb(url: string, init?: RequestInit) {
-	return fetch((config.web?.endpoint || '') + url, init);
+	return fetch((
+		config.web?.endpoint || ""
+	) + url, init);
 }
 
 const api = {
@@ -248,7 +235,6 @@ const api = {
 	favouriteReviews,
 	googleSheet,
 	deadLines,
-	additionalContent,
 	selfCheckups,
 	superGroups,
 };

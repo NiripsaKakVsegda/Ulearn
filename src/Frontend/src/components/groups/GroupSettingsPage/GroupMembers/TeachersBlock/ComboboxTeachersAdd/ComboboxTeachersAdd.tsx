@@ -1,10 +1,10 @@
 import React, { FC } from 'react';
-import { ComboBox } from "ui";
 import { GroupAccessesInfo } from "../../../../../../models/groups";
 import { ShortUserInfo } from "../../../../../../models/users";
 import Avatar from "../../../../../common/Avatar/Avatar";
 import styles from './comboboxTeachersAdd.less';
 import texts from './ComboboxTeachersAdd.texts';
+import UsersSearchCombobox from "../../../../../common/UsersSearch/UsersSearchCombobox";
 
 interface Props {
 	ownerId: string;
@@ -30,18 +30,23 @@ const ComboboxTeachersAdd: FC<Props> = ({ ownerId, teachers, getInstructors, onA
 	return (
 		<label className={ styles["teacher-search"] }>
 			<p>{ texts.addTeacherSearch }</p>
-			<ComboBox
-				size="small"
-				width="100%"
-				getItems={ getItems }
-				renderItem={ renderUser }
-				renderValue={ renderUser }
-				renderNotFound={ renderNotFound }
-				onValueChange={ onAddTeacher }
+			<UsersSearchCombobox
+				searchUsers={ getItems }
+				onSelectUser={ addTeacher }
+				size={ 'small' }
+				width={ '100%' }
 				placeholder={ texts.searchPlaceHolder }
+				notFoundMessage={ texts.notFound }
+				clearInputAfterSelect
 			/>
 		</label>
 	);
+
+	function addTeacher(user?: ShortUserInfo) {
+		if(user) {
+			onAddTeacher(user);
+		}
+	}
 
 	function getItems(query: string): Promise<ShortUserInfo[]> {
 		return getInstructors(query)

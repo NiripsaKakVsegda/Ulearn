@@ -1,7 +1,7 @@
 import React, { createRef, RefObject } from 'react';
 
 import { Controlled, } from "react-codemirror2";
-import { Checkbox, FLAT_THEME_8PX_OLD, Select, ThemeContext, Toast, Tooltip, } from "ui";
+import { FLAT_THEME_8PX_OLD, Select, ThemeContext, Toast, Tooltip, } from "ui";
 import ReviewsBlock from "./ReviewsBlock/ReviewsBlock";
 import { CongratsModal } from "./CongratsModal/CongratsModal";
 import { ExerciseOutput, HasOutput } from "./ExerciseOutput/ExerciseOutput";
@@ -10,7 +10,7 @@ import Controls from "./Controls/Controls";
 import LoginForContinue from "src/components/notificationModal/LoginForContinue";
 import { AcceptedSolutionsModal } from "./AcceptedSolutions/AcceptedSolutions";
 import CourseLoader from "../../../CourseLoader";
-import { Info } from 'icons';
+import { InfoSquareIcon16Regular } from '@skbkontur/icons/InfoSquareIcon16Regular';
 
 import { darkFlat } from "src/uiTheme";
 
@@ -39,8 +39,6 @@ import {
 import { getDataFromReviewToCompareChanges, getReviewAnchorTop } from "../../InstructorReview/utils";
 import checker from "../../InstructorReview/reviewPolicyChecker";
 import { clone } from "src/utils/jsonExtensions";
-import ExerciseSelfChecking from "../SelfChecking/ExerciseSelfChecking";
-import CheckupsIdsSwapper from "../SelfChecking/CheckupsIdsToCheckupsSwapper.redux";
 
 import { Language, } from "src/consts/languages";
 import { DeviceType } from "src/consts/deviceType";
@@ -188,6 +186,38 @@ class Exercise extends React.Component<Props, State> {
 		};
 	}
 
+	get codeMirrorOptions(): EditorConfiguration {
+		const { isAuthenticated, } = this.props;
+		const { isEditable, language } = this.state;
+
+		return {
+			mode: loadLanguageStyles(language),
+			lineNumbers: true,
+			scrollbarStyle: 'null',
+			lineWrapping: true,
+			theme: isEditable ? this.editThemeName : this.defaultThemeName,
+			readOnly: !isEditable || !isAuthenticated,
+			matchBrackets: true,
+			tabSize: 4,
+			indentUnit: 4,
+			indentWithTabs: true,
+			extraKeys: {
+				ctrlSpace: "autocomplete",
+				".": function (cm: Editor) {
+					setTimeout(function () {
+						const cursorPosition = cm.getCursor();
+						const char = cm.getLine(cursorPosition.line).substr(Math.max(cursorPosition.ch - 1, 0), 1);
+
+						if(char === '.') {
+							cm.execCommand("autocomplete");
+						}
+					}, 100);
+					return CodeMirror.Pass;
+				}
+			},
+		};
+	}
+
 	componentDidMount(): void {
 		const { forceInitialCode, } = this.props;
 		this.overrideCodeMirrorAutocomplete();
@@ -304,7 +334,8 @@ class Exercise extends React.Component<Props, State> {
 			const hasOutput = HasOutput(
 				lastCheckingResponse?.message,
 				lastCheckingResponse.submission?.automaticChecking,
-				expectedOutput);
+				expectedOutput
+			);
 			if(hasOutput) {
 				this.setState({
 					showOutput: true,
@@ -328,7 +359,8 @@ class Exercise extends React.Component<Props, State> {
 
 			if(submission && JSON.stringify(newReviewsCompare) !== JSON.stringify(reviewsCompare)) { // Отличаться должны только в случае изменения комментериев
 				this.setCurrentSubmission(submission,
-					() => this.highlightReview(selectedReviewId), selectedReviewId); //Сохраняем выделение выбранного ревью
+					() => this.highlightReview(selectedReviewId), selectedReviewId
+				); //Сохраняем выделение выбранного ревью
 			}
 		}
 	}
@@ -361,7 +393,8 @@ class Exercise extends React.Component<Props, State> {
 				slideId || slideContext.slideId,
 				value || this.state.value,
 				moment().format(),
-				language || this.state.language);
+				language || this.state.language
+			);
 		}
 	};
 
@@ -398,38 +431,6 @@ class Exercise extends React.Component<Props, State> {
 		);
 	}
 
-	get codeMirrorOptions(): EditorConfiguration {
-		const { isAuthenticated, } = this.props;
-		const { isEditable, language } = this.state;
-
-		return {
-			mode: loadLanguageStyles(language),
-			lineNumbers: true,
-			scrollbarStyle: 'null',
-			lineWrapping: true,
-			theme: isEditable ? this.editThemeName : this.defaultThemeName,
-			readOnly: !isEditable || !isAuthenticated,
-			matchBrackets: true,
-			tabSize: 4,
-			indentUnit: 4,
-			indentWithTabs: true,
-			extraKeys: {
-				ctrlSpace: "autocomplete",
-				".": function (cm: Editor) {
-					setTimeout(function () {
-						const cursorPosition = cm.getCursor();
-						const char = cm.getLine(cursorPosition.line).substr(Math.max(cursorPosition.ch - 1, 0), 1);
-
-						if(char === '.') {
-							cm.execCommand("autocomplete");
-						}
-					}, 100);
-					return CodeMirror.Pass;
-				}
-			},
-		};
-	}
-
 	renderControlledCodeMirror = (opts: EditorConfiguration, submissions: SubmissionInfo[]): React.ReactNode => {
 		const {
 			expectedOutput,
@@ -460,7 +461,8 @@ class Exercise extends React.Component<Props, State> {
 			automaticChecking?.result,
 			hasSuccessSubmission(submissions), selectedSubmissionIsLast, selectedSubmissionIsLastSuccess,
 			slideProgress.waitingForManualChecking,
-			slideProgress.prohibitFurtherManualChecking, slideProgress.isSkipped, isMaxScore);
+			slideProgress.prohibitFurtherManualChecking, slideProgress.isSkipped, isMaxScore
+		);
 
 		const wrapperClassName = classNames(
 			styles.exercise,
@@ -474,9 +476,12 @@ class Exercise extends React.Component<Props, State> {
 
 		const hasOutput = currentSubmission
 			&& HasOutput(visibleCheckingResponse?.message, currentSubmission.automaticChecking,
-				expectedOutput);
-		const isSafeShowAcceptedSolutions = isAcceptedSolutionsWillNotDiscardScore(submissions,
-			slideProgress.isSkipped);
+				expectedOutput
+			);
+		const isSafeShowAcceptedSolutions = isAcceptedSolutionsWillNotDiscardScore(
+			submissions,
+			slideProgress.isSkipped
+		);
 		const outputMessage = visibleCheckingResponse?.message || visibleCheckingResponse?.submission?.automaticChecking?.output;
 
 		const lastSuccessfulSubmission = getLastSuccessSubmission(submissions);
@@ -489,7 +494,8 @@ class Exercise extends React.Component<Props, State> {
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageSelect() }
 				{ languages.length > 1 && (submissions.length > 0 || isEditable) && this.renderLanguageLaunchInfoTooltip() }
 				{ !isEditable && this.renderHeader(submissionColor, selectedSubmissionIsLast,
-					selectedSubmissionIsLastSuccess) }
+					selectedSubmissionIsLastSuccess
+				) }
 				{ modalData && this.renderModal(modalData) }
 				<div className={ wrapperClassName } onClick={ this.openModalForUnauthenticatedUser }>
 					<Controlled
@@ -558,7 +564,8 @@ class Exercise extends React.Component<Props, State> {
 						{ this.isVisualizerEnabled() &&
 							<Controls.VisualizerButton
 								code={ value }
-								onModalClose={ this.copyCodeFromVisualizer }/>
+								onModalClose={ this.copyCodeFromVisualizer }
+							/>
 						}
 					</Controls.ButtonsContainer>
 					{ attemptsStatistics && <Controls.StatisticsHint attemptsStatistics={ attemptsStatistics }/> }
@@ -631,11 +638,13 @@ class Exercise extends React.Component<Props, State> {
 		const { waitingForManualChecking } = this.props.slideProgress;
 
 		const lastSuccessSubmission = getLastSuccessSubmission(submissions);
-		const items = [[this.newTry.id, texts.submissions.newTry], ...submissions.map((submission) => {
-			const caption = texts.submissions
-				.getSubmissionCaption(submission, lastSuccessSubmission === submission, waitingForManualChecking);
-			return [submission.id, caption];
-		})];
+		const items = [
+			[this.newTry.id, texts.submissions.newTry], ...submissions.map((submission) => {
+				const caption = texts.submissions
+					.getSubmissionCaption(submission, lastSuccessSubmission === submission, waitingForManualChecking);
+				return [submission.id, caption];
+			})
+		];
 
 		return (
 			<div className={ styles.select }>
@@ -693,7 +702,7 @@ class Exercise extends React.Component<Props, State> {
 					<span className={ styles.launchInfoHelpIcon }>
 						{ (deviceType !== DeviceType.mobile && deviceType !== DeviceType.tablet)
 							? texts.compilationText
-							: <Info/> }
+							: <InfoSquareIcon16Regular/> }
 					</span>
 				</Tooltip>
 			</ThemeContext.Provider>

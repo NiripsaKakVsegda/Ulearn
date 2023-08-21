@@ -1,11 +1,11 @@
 import React from "react";
+import { getMockedGroup, getMockedUser } from "../../../../storiesUtils";
 import GroupsListItem from "./GroupsListItem";
 
 import "./groupsListItem.less";
-import { getMockedUser } from "../../../../storiesUtils";
 
 export default {
-	title: "Group/GroupsListItem",
+	title: "Group/GroupsListItem"
 };
 const mock = () => ({});
 
@@ -20,7 +20,7 @@ export const Default = (): React.ReactNode =>
 Default.storyName = "default";
 
 function getGroup() {
-	return {
+	return getMockedGroup({
 		id: 17,
 		name: "asdfasdfasdfasdf",
 		isArchived: false,
@@ -30,7 +30,7 @@ function getGroup() {
 			firstName: 'para',
 			lastName: 'deeva',
 			login: undefined,
-			email: undefined,
+			email: undefined
 		}),
 		inviteHash: "b7638c37-62c6-49a9-898c-38788169987c",
 		isInviteLinkEnabled: true,
@@ -41,6 +41,6 @@ function getGroup() {
 		studentsCount: 0,
 		accesses: [],
 		apiUrl: "/groups/17",
-		areYouStudent: false,
-	};
+		areYouStudent: false
+	});
 }

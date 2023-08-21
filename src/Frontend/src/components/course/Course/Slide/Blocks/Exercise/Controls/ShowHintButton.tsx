@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import { LightbulbIcon16Regular } from "@skbkontur/icons/LightbulbIcon16Regular";
+import { LightbulbOnIcon16Regular } from "@skbkontur/icons/LightbulbOnIcon16Regular";
 
 import cn from "classnames";
+import React, { useState } from "react";
+import defaultTheme, { darkFlat } from "src/uiTheme";
 
 import { ThemeContext, Tooltip, TooltipTrigger } from "ui";
-import { Lightbulb } from "icons";
-import IControlWithText from "./IControlWithText";
-import defaultTheme, { darkFlat, } from "src/uiTheme";
-
-import ShowControlsTextContext from "./ShowControlsTextContext";
-
-import styles from './Controls.less';
 
 import texts from "../Exercise.texts";
+
+import styles from './Controls.less';
+import IControlWithText from "./IControlWithText";
+
+import ShowControlsTextContext from "./ShowControlsTextContext";
 
 export interface Props extends IControlWithText {
 	renderedHints: string[],
@@ -27,10 +28,10 @@ function ShowHintButton({
 	onAllHintsShowed,
 	showControlsText,
 	subTooltipTrigger = "hover&focus",
-	mainTooltipTrigger,
+	mainTooltipTrigger
 }: Props): React.ReactElement {
 	const [{ showedHintsCount, isTooltipOpened }, setState] = useState(
-		{ showedHintsCount: showedHintsCountOnStart ? showedHintsCountOnStart : 1, isTooltipOpened: false, });
+		{ showedHintsCount: showedHintsCountOnStart ? showedHintsCountOnStart : 1, isTooltipOpened: false });
 	const hintPosition = "bottom left";
 
 	return (
@@ -39,8 +40,7 @@ function ShowHintButton({
 					<ShowControlsTextContext.Consumer>
 					{
 						(showControlsTextContext) =>
-							<>
-							<span className={ styles.exerciseControlsIcon }>
+							<span className={ styles.exerciseControlsGapped }>
 								<Tooltip
 									disableAnimations={ !showControlsTextContext && !showControlsText }
 									onCloseRequest={ closeTooltip }
@@ -49,11 +49,10 @@ function ShowHintButton({
 									trigger={ mainTooltipTrigger || (isTooltipOpened ? "opened" : "closed") }
 									render={ renderHints }
 								>
-									<Lightbulb/>
+									<LightbulbIcon16Regular/>
 								</Tooltip>
-							</span>
 								{ (showControlsTextContext || showControlsText) && texts.controls.hints.text }
-							</>
+							</span>
 					}
 				</ShowControlsTextContext.Consumer>
 			</span>
@@ -62,7 +61,7 @@ function ShowHintButton({
 
 	function showTooltip() {
 		setState({ showedHintsCount, isTooltipOpened: true });
-		if(showedHintsCount >= renderedHints.length) {
+		if (showedHintsCount >= renderedHints.length) {
 			onAllHintsShowed();
 		}
 	}
@@ -80,7 +79,9 @@ function ShowHintButton({
 				{ renderedHints.slice(0, showedHintsCount)
 					.map((h, i) =>
 						<li key={ i }>
-							<span className={ styles.hintBulb }><Lightbulb/></span>
+							<span className={ styles.hintBulb }>
+								<LightbulbOnIcon16Regular align={ 'baseline' }/>
+							</span>
 							<span dangerouslySetInnerHTML={ { __html: h } }/>
 						</li>
 					) }
@@ -103,7 +104,7 @@ function ShowHintButton({
 	function showHint(e: React.MouseEvent) {
 		e.stopPropagation();
 		setState({ showedHintsCount: Math.min(showedHintsCount + 1, renderedHints.length), isTooltipOpened });
-		if(showedHintsCount + 1 >= renderedHints.length) {
+		if (showedHintsCount + 1 >= renderedHints.length) {
 			onAllHintsShowed();
 		}
 	}

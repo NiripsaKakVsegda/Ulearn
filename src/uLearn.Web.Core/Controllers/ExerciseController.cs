@@ -255,7 +255,7 @@ public class ExerciseController : Controller
 				return Json(new ScoreExerciseOperationResult { Status = "error", Redirect = errorUrl + $"Неверное количество процентов: {percent}" });
 
 			checking.ProhibitFurtherManualCheckings = prohibitFurtherReview;
-			await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent).ConfigureAwait(false);
+			await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, percent, User.GetUserId()).ConfigureAwait(false);
 			await slideCheckingsRepo.MarkManualExerciseCheckingAsCheckedBeforeThis(checking).ConfigureAwait(false);
 			if (prohibitFurtherReview)
 				await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(checking.CourseId, checking.UserId, checking.SlideId).ConfigureAwait(false);
@@ -314,7 +314,15 @@ public class ExerciseController : Controller
 					});
 		}
 
-		/* TODO: check if 0 <= exerciseScore <= 100 */
+		if (exercisePercent is < 0 or > 100)
+		{
+			return Json(
+				new SimpleScoreExerciseResult
+				{
+					Status = "error",
+					Error = "invalid_score",
+				});
+		}
 
 		await slideCheckingsRepo.RemoveWaitingManualCheckings<ManualExerciseChecking>(courseId, slideId, userId).ConfigureAwait(false);
 		ManualExerciseChecking checking;
@@ -327,7 +335,7 @@ public class ExerciseController : Controller
 			return new ForbidResult();
 
 		await slideCheckingsRepo.LockManualChecking(checking, User.GetUserId()).ConfigureAwait(false);
-		await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, exercisePercent).ConfigureAwait(false);
+		await slideCheckingsRepo.MarkManualExerciseCheckingAsChecked(checking, exercisePercent, User.GetUserId()).ConfigureAwait(false);
 		/* 100%-score sets ProhibitFurtherChecking to true */
 		if (exercisePercent == 100)
 			await slideCheckingsRepo.ProhibitFurtherExerciseManualChecking(checking.CourseId, checking.UserId, checking.SlideId).ConfigureAwait(false);
@@ -604,7 +612,7 @@ public class ExerciseController : Controller
 	{
 		if (string.IsNullOrEmpty(courseId) || string.IsNullOrEmpty(slideId.ToString()) || string.IsNullOrEmpty(fileName))
 			return BadRequest();
-		
+
 		log.Warn("StudentZip request {courseId} {slideId}");
 		var isInstructor = User.HasAccessFor(courseId, CourseRoleType.Instructor);
 		var course = courseStorage.GetCourse(courseId);

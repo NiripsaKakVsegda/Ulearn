@@ -23,8 +23,8 @@ namespace Ulearn.Web.Api.Models.Common
 		[DataMember]
 		public DateTime? NextUnitPublishTime { get; set; }
 
-		[DataMember][NotNull]
-		public ScoringSettingsModel Scoring { get; set; }
+		[DataMember] [NotNull]
+		public ScoringSettingsModel Scoring { get; set; } = null!;
 
 		[DataMember]
 		public bool ContainsFlashcards { get; set; }

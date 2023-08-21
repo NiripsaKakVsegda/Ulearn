@@ -1,4 +1,8 @@
+import type { Story } from "@storybook/react";
 import React from "react";
+import { DeviceType } from '../../../consts/deviceType';
+import { SlideType } from "../../../models/slide";
+import { mockFunc } from '../../../utils/storyMock';
 import Navigation, { Props } from "./Navigation";
 import {
 	defaultNavigationProps,
@@ -8,8 +12,6 @@ import {
 	getModuleNavigationProps,
 	ViewportChangeHandlerRedux
 } from "./stroies.data";
-import type { Story } from "@storybook/react";
-import { SlideType } from "../../../models/slide";
 
 export default {
 	title: "Navigation",
@@ -67,10 +69,17 @@ const args: Props = {
 				scoringGroup: null,
 				apiUrl: '',
 				hide: false,
+				requiresReview: false
 			},
 		],
 		additionalScores: [],
 	},
+	deviceType: DeviceType.desktop,
+	isStudentMode: false,
+	navigationOpened: false,
+	onCourseClick: mockFunc,
+	returnInUnit: mockFunc,
+	toggleNavigation: mockFunc
 };
 ModuleNavigation.args = args;
 

@@ -21,7 +21,7 @@ export function logout(): Promise<void | LogoutInfo> {
 			if(json.logout) {
 				removeFromCache(exerciseSolutions);
 				setBlockCache(true);
-				store.dispatch(clearToken)
+				store.dispatch(clearToken);
 				redirectToMainPage();
 			}
 		});
@@ -58,7 +58,7 @@ export const redux = {
 };
 
 function redirectToMainPage() {
-	const parser = document.createElement('a');
+	const parser = document.createElement("a");
 	parser.href = window.location.href;
 	window.location.href = parser.protocol + "//" + parser.host;
 }

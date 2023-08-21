@@ -191,9 +191,9 @@ public static class ControllerUtils
 		filterOptions.SlidesIds = new List<Guid> { slide.Id };
 
 		if (slide is ExerciseSlide)
-			return (await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(filterOptions)).Count;
+			return (await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(filterOptions)).Count();
 		if (slide is QuizSlide)
-			return (await slideCheckingsRepo.GetManualCheckingQueue<ManualQuizChecking>(filterOptions)).Count;
+			return (await slideCheckingsRepo.GetManualCheckingQueue<ManualQuizChecking>(filterOptions)).Count();
 
 		throw new ArgumentException("Slide should be quiz or exercise", nameof(slide));
 	}

@@ -19,9 +19,7 @@ import { botId, botName } from "src/consts/common";
 import { Story } from "@storybook/react";
 import { ViewportWrapper } from "../components/course/Navigation/stroies.data";
 import { Language } from "../consts/languages";
-import {
-	CheckupsBuilder,
-} from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
+import { CheckupsBuilder, } from "../components/course/Course/Slide/Blocks/SelfChecking/SelfChecking.stories.base";
 import { clone } from "../utils/jsonExtensions";
 import { refreshToken } from "../redux/toolkit/slices/authSlice";
 
@@ -169,28 +167,29 @@ export const getMockedUser = (user?: Partial<UserInfo>): UserInfo => {
 };
 
 export const getMockedGroup = (group?: Partial<GroupInfo>): GroupInfo => {
-	const owner = group?.owner || getMockedUser();
 	return {
-		name: group?.name || 'Group Name-08',
-		id: group?.id || 1,
-		apiUrl: group?.apiUrl || '/ulearn/api/group',
-		accesses: group?.accesses || [],
-		areYouStudent: group?.areYouStudent || false,
-		canStudentsSeeGroupProgress: group?.canStudentsSeeGroupProgress || false,
-		createTime: group?.createTime || new Date().toDateString(),
-		defaultProhibitFurtherReview: group?.defaultProhibitFurtherReview || false,
-		inviteHash: group?.inviteHash || '/hash-invite/1234-5678-abcd',
-		isArchived: group?.isArchived || false,
-		isInviteLinkEnabled: group?.isInviteLinkEnabled || false,
-		isManualCheckingEnabled: group?.isManualCheckingEnabled || false,
-		isManualCheckingEnabledForOldSolutions: group?.isManualCheckingEnabledForOldSolutions || false,
-		studentsCount: group?.studentsCount || 10,
-		owner,
-		ownerId: owner.id,
+		id: 1,
+		name: 'Group Name-08',
+		apiUrl: '/ulearn/api/group',
+		accesses: [],
+		areYouStudent: false,
+		canStudentsSeeGroupProgress: false,
+		createTime: new Date().toDateString(),
+		defaultProhibitFurtherReview: false,
+		inviteHash: '/hash-invite/1234-5678-abcd',
+		isArchived: false,
+		isInviteLinkEnabled: false,
+		isManualCheckingEnabled: false,
+		isManualCheckingEnabledForOldSolutions: false,
+		studentsCount: 10,
+		owner: getMockedUser(),
 		groupType: GroupType.SingleGroup,
-		courseId: group?.courseId || 'basicprogramming',
-		superGroupId: group?.superGroupId || null,
-		isDeleted: group?.isDeleted || false,
+		courseId: 'basicprogramming',
+		courseTitle: 'Основы программирования',
+		superGroupId: null,
+		superGroupName: null,
+		distributionTableLink: null,
+		...group
 	};
 };
 
@@ -201,6 +200,8 @@ export const getMockedShortGroup = (group?: Partial<ShortGroupInfo>): ShortGroup
 		apiUrl: group?.apiUrl || '/ulearn/api/group',
 		courseId: 'basicprogramming',
 		isArchived: group?.isArchived || false,
+		owner: getMockedUser({ id: 'owner', firstName: 'Олег', lastName: 'Олегов', visibleName: 'Олег Олегов' }),
+		membersCount: 20
 	};
 };
 
@@ -262,8 +263,10 @@ export const getMockedAutomaticChecking = (checking?: Partial<ExerciseAutomaticC
 	return {
 		checkerLogs: checking?.checkerLogs ?? 'Some Admin logs',
 		output: checking?.output ?? 'Output',
-		reviews: checking?.reviews ?? [getMockedReviewInfo(
-			{ author: { id: botId, firstName: botName, lastName: botName, visibleName: botName, avatarUrl: null } })],
+		reviews: checking?.reviews ?? [
+			getMockedReviewInfo(
+				{ author: { id: botId, firstName: botName, lastName: botName, visibleName: botName, avatarUrl: null } })
+		],
 		processStatus: checking?.processStatus ?? AutomaticExerciseCheckingProcessStatus.Done,
 		result: checking?.result ?? AutomaticExerciseCheckingResult.RightAnswer,
 	};
@@ -364,3 +367,9 @@ export class SubmissionInfoBuilder {
 		return this;
 	};
 }
+
+export const fullscreenLayout = {
+	parameters: {
+		layout: 'fullscreen',
+	},
+};

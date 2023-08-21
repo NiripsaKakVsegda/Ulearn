@@ -1,17 +1,17 @@
+import { EyeOffIcon16Regular } from "@skbkontur/icons/EyeOffIcon16Regular";
 import React from "react";
+
+import { Link } from "react-router-dom";
+import { constructPathToFlashcardsPreview } from "src/consts/routes";
 
 import { SlideType } from "src/models/slide";
 import { isCourseAdmin, UserRoles } from "src/utils/courseRoles";
-import { constructPathToFlashcardsPreview } from "src/consts/routes";
 import { SlideInfo } from "../../CourseUtils";
 
-import { Link } from "react-router-dom";
-import { EyeClosed, } from "icons";
+import styles from "../SlideHeader/SlideHeader.less";
 import { ScoreHeader } from "./ScoreHeader";
 
 import texts from './SlideHeader.texts';
-
-import styles from "../SlideHeader/SlideHeader.less";
 
 interface SlideHeaderProps {
 	slideInfo: SlideInfo;
@@ -21,21 +21,22 @@ interface SlideHeaderProps {
 }
 
 const SlideHeader: React.FC<SlideHeaderProps> = (props) => {
-	const { slideInfo, userRoles, openUnitId, } = props;
-	const { courseId, slideType, navigationInfo, } = slideInfo;
+	const { slideInfo, userRoles, openUnitId } = props;
+	const { courseId, slideType, navigationInfo } = slideInfo;
 
-	if(navigationInfo?.current.hide) {
+	if (navigationInfo?.current.hide) {
 		return <HiddenSlideHeader/>;
 	}
 
-	if(slideType === SlideType.Exercise || slideType === SlideType.Quiz) {
+	if (slideType === SlideType.Exercise || slideType === SlideType.Quiz) {
 		return <ScoreHeader slideInfo={ slideInfo }/>;
 	}
 
-	if((slideType === SlideType.Flashcards || slideType === SlideType.CourseFlashcards) && isCourseAdmin(
+	if ((slideType === SlideType.Flashcards || slideType === SlideType.CourseFlashcards) && isCourseAdmin(
 		userRoles)) {
 		return <FlashcardsSlideHeader
-			pathToFlashcardsSlide={ constructPathToFlashcardsPreview(courseId, openUnitId) }/>;
+			pathToFlashcardsSlide={ constructPathToFlashcardsPreview(courseId, openUnitId) }
+		/>;
 	}
 
 	return null;
@@ -46,7 +47,7 @@ const HiddenSlideHeader: React.FC = () => {
 		<div className={ styles.hiddenHeader }>
 			<span className={ styles.hiddenHeaderText }>
 				<span className={ styles.hiddenSlideEye }>
-					<EyeClosed/>
+					<EyeOffIcon16Regular align={ 'baseline' }/>
 				</span>
 				{ texts.hiddenSlideText }
 			</span>

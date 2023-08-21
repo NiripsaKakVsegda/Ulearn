@@ -1,4 +1,3 @@
-import React from "react";
 import getPluralForm from "src/utils/getPluralForm";
 
 const texts = {
@@ -14,7 +13,7 @@ const texts = {
 	buildNextReviewText: (count: number): string =>
 		count > 0
 			? `${ getPluralForm(count, 'Осталась', 'Осталось', 'Осталось') } ${ count } ${ getPluralForm(count,
-				'работа', 'работ', 'работ') }`
+				'работа', 'работы', 'работ') }`
 			: 'Поздравляем, очередь пуста! Работ для проверки нет',
 };
 

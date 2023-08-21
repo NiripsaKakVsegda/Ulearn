@@ -3,7 +3,6 @@ import styles from "./studentsBlock.less";
 import InviteBlock from "./InviteBlock/InviteBlock";
 import GroupStudents from "./GroupStudents/GroupStudents";
 import { Loader, Toast } from "ui";
-import { groupsApi } from "../../../../../redux/toolkit/api/groups/groupsApi";
 import { GroupInfo } from "../../../../../models/groups";
 import { AccountState } from "../../../../../redux/account";
 import texts from "./StudentsBlock.texts";
@@ -14,6 +13,7 @@ import { groupSettingsApi } from "../../../../../redux/toolkit/api/groups/groupS
 import { courseAccessesApi } from "../../../../../redux/toolkit/api/courseAccessesApi";
 import { CourseAccessType } from "../../../../../consts/accessType";
 import { useAppDispatch } from "../../../../../redux/toolkit/hooks/useAppDispatch";
+import { ShortGroupInfo } from "../../../../../models/comments";
 
 interface Props {
 	account: AccountState;
@@ -25,13 +25,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 		selectFromResult: ({ data, isLoading }) => ({
 			students: data?.students || [],
 			isStudentsLoading: isLoading
-		})
-	});
-
-	const [fetchGroupsQuery, { groups, isGroupsLoading }] = groupsApi.useLazyGetGroupsQuery({
-		selectFromResult: ({ data, isLoading }) => ({
-			groups: data?.groups || [],
-			isGroupsLoading: isLoading
 		})
 	});
 
@@ -60,7 +53,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 						students={ students }
 						courseTitle={ group.courseTitle }
 						getCourses={ getCourses }
-						getCourseGroups={ getCourseGroups }
 						onRemoveStudents={ onRemoveStudents }
 						onResetLimits={ onResetLimits }
 						onCopyStudents={ onCopyStudents }
@@ -79,14 +71,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 				isCoursesLoading: isLoading
 			})
 		});
-	}
-
-	function getCourseGroups() {
-		return { groups, isGroupsLoading, fetchGroups };
-	}
-
-	function fetchGroups(courseId: string) {
-		return fetchGroupsQuery({ courseId });
 	}
 
 	function onToggleInviteLink(isEnabled: boolean) {
@@ -108,7 +92,7 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 			});
 	}
 
-	function onCopyStudents(group: GroupInfo, studentIds: string[]) {
+	function onCopyStudents(group: ShortGroupInfo, studentIds: string[]) {
 		copyStudents({ groupId: group.id, studentIds }).unwrap()
 			.then(() => {
 				Toast.push(texts.buildCopyStudentsToast(group.name));

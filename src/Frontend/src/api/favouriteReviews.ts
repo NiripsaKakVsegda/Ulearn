@@ -4,16 +4,15 @@ import { favouriteReviews } from "../consts/routes";
 import { buildQuery } from "../utils";
 import api from "./index";
 import {
+	favouriteReviewsAddFailAction,
 	favouriteReviewsAddStartAction,
 	favouriteReviewsAddSuccessAction,
-	favouriteReviewsAddFailAction,
-
-	favouriteReviewsLoadStartAction,
-	favouriteReviewsLoadSuccessAction,
-	favouriteReviewsLoadFailAction,
+	favouriteReviewsDeleteFailAction,
 	favouriteReviewsDeleteStartAction,
 	favouriteReviewsDeleteSuccessAction,
-	favouriteReviewsDeleteFailAction,
+	favouriteReviewsLoadFailAction,
+	favouriteReviewsLoadStartAction,
+	favouriteReviewsLoadSuccessAction,
 } from "../actions/favouriteReviews";
 
 export function getFavouriteReviews(courseId: string, slideId: string,): Promise<FavouriteReviewResponse> {

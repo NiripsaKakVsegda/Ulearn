@@ -1,0 +1,221 @@
+@import '/src/variables';
+
+@animationDuration: 400ms;
+
+.submissionsGroup {
+  width: 100%;
+  background-color: @white;
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 16px 0;
+}
+
+.groupHeader {
+  display: flex;
+  width: 100%;
+  padding: 8px 32px;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+
+  transition: padding-bottom ease @animationDuration;
+
+  &.opened {
+    padding-bottom: 16px;
+  }
+
+  &.noClose {
+    cursor: initial;
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    padding: 8px 12px;
+  }
+}
+
+.groupOpenCloseInfoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  @media (max-width: @maxPhoneWidth) {
+    gap: 8px;
+  }
+}
+
+.groupInfo {
+  display: flex;
+  align-items: center;
+  gap: 0 16px;
+
+  @media (max-width: @maxPhoneWidth) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.groupTitle {
+  font-size: 20px;
+  font-weight: 600;
+
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 16px;
+  }
+}
+
+.solutionsCount {
+  font-size: 16px;
+  white-space: nowrap;
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 12px;
+  }
+}
+
+.checkAllButton {
+  font-size: 16px;
+  line-height: 22px;
+  white-space: nowrap;
+  color: @white;
+  background: @buttonBackground;
+  padding: 9px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px @buttonBackground;
+
+  &:hover {
+    color: @white;
+    text-decoration: none;
+    background: @buttonBackgroundHover;
+    box-shadow: 0 0 0 1px @buttonBackgroundHover;
+  }
+
+  &:focus {
+    color: @white;
+    text-decoration: none;
+  }
+
+  &:active {
+    color: @white;
+    text-decoration: none;
+    background: @buttonBackgroundActive;
+    box-shadow: 0 0 0 1px @buttonBackgroundActive;
+
+    > * {
+      display: inline-block;
+      transform: translateY(1px);
+    }
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 14px;
+    line-height: 20px;
+    padding: 6px 12px;
+  }
+}
+
+.reviewQueueList {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height @animationDuration ease;
+}
+
+.reviewQueueItemLink {
+  color: @black;
+
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 32px;
+  font-size: 16px;
+  line-height: 22px;
+  cursor: pointer;
+
+  &:hover, &:focus {
+    color: initial;
+    text-decoration: initial;
+    background-color: @lightGrey;
+  }
+
+  &:active {
+    color: initial;
+    text-decoration: initial;
+    background-color: @greySmoke;
+  }
+
+  &.locked {
+    background-color: @lightYellow;
+
+    &:hover, &:focus {
+      background-color: #FFEBA4;
+    }
+
+    &:active {
+      background-color: #ffe599;
+    }
+  }
+
+  .infoIcon {
+    position: absolute;
+    left: 10px;
+    bottom: auto;
+    top: auto;
+    line-height: 14px;
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    padding: 8px 12px;
+  }
+
+  .user {
+    width: 35%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .slide {
+    width: 35%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .timestamp {
+    width: 30%;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: @additionalColor;
+  }
+
+  &.noStudent {
+    .user {
+      display: none;
+    }
+
+    .slide {
+      width: 60%;
+    }
+
+    .timestamp {
+      width: 40%;
+    }
+  }
+
+  &.noSlide {
+    .user {
+      width: 60%;
+    }
+
+    .slide {
+      display: none;
+    }
+
+    .timestamp {
+      width: 40%;
+    }
+  }
+}

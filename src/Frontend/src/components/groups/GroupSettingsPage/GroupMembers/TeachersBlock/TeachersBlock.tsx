@@ -7,10 +7,11 @@ import { AccountState } from "../../../../../redux/account";
 import { Loader } from "ui";
 import Teacher from "./Teacher/Teacher";
 import TeacherKebab from "./TeacherKebab/TeacherKebab";
-import { usersApi } from "../../../../../redux/toolkit/api/usersApi";
 import { ShortUserInfo } from "../../../../../models/users";
 import { groupAccessesApi } from "../../../../../redux/toolkit/api/groups/groupAccessesApi";
 import { groupSettingsApi } from "../../../../../redux/toolkit/api/groups/groupSettingsApi";
+import { useUsersSearch } from "../../../../common/UsersSearch/useUsersSearch";
+import { CourseRoleType } from "../../../../../consts/accessType";
 
 interface Props {
 	account: AccountState;
@@ -27,7 +28,10 @@ const TeachersBlock: FC<Props> = ({ account, group, courseId, className }) => {
 		})
 	});
 
-	const [getInstructorsQuery] = usersApi.useLazyGetCourseInstructorsQuery();
+	const searchInstructors = useUsersSearch({
+		courseId,
+		courseRole: CourseRoleType.instructor
+	});
 
 	const [addTeacher] = groupAccessesApi.useAddGroupAccessMutation();
 	const [changeGroupOwner] = groupSettingsApi.useChangeGroupOwnerMutation();
@@ -66,18 +70,11 @@ const TeachersBlock: FC<Props> = ({ account, group, courseId, className }) => {
 			<ComboboxTeachersAdd
 				ownerId={ group.owner.id }
 				teachers={ teachers }
-				getInstructors={ getInstructors }
+				getInstructors={ searchInstructors }
 				onAddTeacher={ onAddTeacher }
 			/>
 		</Loader>
 	);
-
-	function getInstructors(query: string) {
-		return getInstructorsQuery({ courseId, query }).unwrap()
-			.then(users => users
-				.map(item => item.user)
-			);
-	}
 
 	function onAddTeacher(user: ShortUserInfo) {
 		addTeacher({ groupId: group.id, user });

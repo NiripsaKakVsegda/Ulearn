@@ -4,13 +4,17 @@ import { GroupStudentInfo } from "../../../../../models/groups";
 import moment from "moment-timezone";
 import { Button, DatePicker, DropdownMenu, Gapped, Hint, Input, Kebab, MenuItem, Select } from "ui";
 import texts from "./DeadLines.texts";
-import { ArrowChevronDown, Copy, Delete, Undo, Warning } from "icons";
 import styles from "./deadLine.less";
 import { ValidationWrapper } from "@skbkontur/react-ui-validations";
 import { isDateValid, isTimeValid } from "../../GroupAdditionalContent/utils";
 import { Markup, newDeadLineId, SlideMarkup, StateDeadLineInfo } from "../GroupDeadLines.types";
 import ChooseStudentsModal from "../ChooseStudentsModal/ChooseStudentsModal";
 import { AccountState } from "../../../../../redux/account";
+import { ArrowCDownIcon16Regular } from '@skbkontur/icons/ArrowCDownIcon16Regular';
+import { CopyIcon16Regular } from '@skbkontur/icons/CopyIcon16Regular';
+import { TrashCanIcon16Regular } from '@skbkontur/icons/TrashCanIcon16Regular';
+import { ArrowDUturnLeftDownIcon16Regular } from '@skbkontur/icons/ArrowDUturnLeftDownIcon16Regular';
+import { WarningTriangleIcon16Solid } from '@skbkontur/icons/WarningTriangleIcon16Solid';
 
 const gmtOffsetInHours = moment().utcOffset() / 60;
 const gmtOffsetInHoursAsString = `GMT${ gmtOffsetInHours >= 0 ? '+' : '' }${ gmtOffsetInHours }`;
@@ -69,19 +73,23 @@ const DeadLine: FC<Props> = ({
 
 	const renderOverlappedHint = (): JSX.Element =>
 		<Hint text={ texts.overlapConflict }>
-			<Warning size={ 16 } className={ styles.conflictHint }/>
+			<WarningTriangleIcon16Solid className={ styles.conflictHint }/>
 		</Hint>;
 
 	const renderDropDownMenu = (): JSX.Element =>
 		<DropdownMenu caption={ <Kebab size={ 'medium' }/> }>
 			{ !isNew &&
-				<MenuItem disabled={ !savePending } onClick={ onCancelChanges } icon={ <Undo/> }>
+				<MenuItem
+					disabled={ !savePending }
+					onClick={ onCancelChanges }
+					icon={ <ArrowDUturnLeftDownIcon16Regular/> }
+				>
 					{ texts.cancelChanges }
 				</MenuItem>
 			}
 			<MenuItem
 				onClick={ onDeleteDeadLine }
-				icon={ <Delete className={ styles.deleteButtonText }/> }
+				icon={ <TrashCanIcon16Regular/> }
 			>
 				{ texts.deleteDeadLine }
 			</MenuItem>
@@ -89,7 +97,7 @@ const DeadLine: FC<Props> = ({
 				<MenuItem
 					disabled={ isNewDeadLineCreated }
 					onClick={ onCopyDeadLineForNextUnit }
-					icon={ <Copy/> }
+					icon={ <CopyIcon16Regular/> }
 				>
 					<Hint text={ isNewDeadLineCreated && texts.saveBeforeAdding }>
 						{ texts.copyDeadLineForNextUnit }
@@ -151,16 +159,21 @@ const DeadLine: FC<Props> = ({
 				/>
 			</span>
 			<span>
-				<Button onClick={ toggleStudentsModal }>
-					{
-						deadLine.userIds && deadLine.userIds.length > 0
-							? texts.buildSelectedStudentsCountTitle(deadLine.userIds.length)
-							: texts.allStudentsSelected
-					}
-					<ArrowChevronDown
-						className={ styles.iconInButtonAsSelectIcon }
-						color={ '#a6a6a6' }
-					/>
+				<Button onClick={ toggleStudentsModal } className={ styles.selectPaddings }>
+					<span className={ styles.selectStudentsButton }>
+						<span className={ styles.selectedStudentsInfo }>
+							{
+								deadLine.userIds && deadLine.userIds.length > 0
+									? texts.buildSelectedStudentsCountTitle(deadLine.userIds.length)
+									: texts.allStudentsSelected
+							}
+						</span>
+						<ArrowCDownIcon16Regular
+							color={ '#a6a6a6' }
+							size={ 12 }
+							align={ 'baseline' }
+						/>
+					</span>
 				</Button>
 			</span>
 			<span>

@@ -7,30 +7,27 @@
   flex: 0 0 auto;
   text-align: center;
   font-size: 14px;
-  margin-left: 10px;
-  border-radius: 3px;
+  line-height: 20px;
+  border-radius: 8px;
   cursor: default;
-}
-
-.correctAnswer,
-.pinnedToTop {
-  padding: 2px 6px 2px;
-  color: #fff;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border: 1px solid @disabledColor;
 }
 
 .correctAnswer {
+  color: #fff;
   background: @green;
 }
 
 .pinnedToTop {
+  color: #fff;
   background: @blue;
 }
 
 .approvedComment {
-  padding: 1px 6px 1px;
-  background-color: @lightGrey;
-  border: 1px solid @disabledColor;
   color: @dimgray;
+  background: @lightGrey;
 }
 
 .groupList {
@@ -39,13 +36,14 @@
   overflow-x: hidden;
   max-width: 600px;
   white-space: nowrap;
-  }
+  gap: 4px;
+  margin-left: 4px;
+}
 
 .group {
   display: block;
   min-width: 0;
   max-width: 170px;
-  padding: 1px 6px;
   border: 1px solid @accentColor;
   color: @accentColor;
   overflow: hidden;
@@ -72,8 +70,8 @@
   background-color: @accentColor;
   color: #fff;
   padding: 2px 6px;
-  margin-left: 10px;
-  border-radius: 3px;
+  border-radius: 8px;
+  border: 1px solid @accentColor;
 }
 
 .groupMarkOnPhone:hover {

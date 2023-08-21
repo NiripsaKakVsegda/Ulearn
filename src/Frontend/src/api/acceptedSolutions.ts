@@ -5,7 +5,10 @@ import { acceptedSolutions } from "../consts/routes";
 
 export interface AcceptedSolutionsApi {
 	getAcceptedSolutions: (courseId: string, slideId: string) => Promise<AcceptedSolutionsResponse>,
-	getLikedAcceptedSolutions: (courseId: string, slideId: string, offset: number,
+	getLikedAcceptedSolutions: (
+		courseId: string,
+		slideId: string,
+		offset: number,
 		count: number
 	) => Promise<LikedAcceptedSolutionsResponse>,
 	likeAcceptedSolution: (solutionId: number) => Promise<Response>,
@@ -16,30 +19,33 @@ export interface AcceptedSolutionsApi {
 
 export function getAcceptedSolutions(courseId: string, slideId: string): Promise<AcceptedSolutionsResponse> {
 	const query = buildQuery({ courseId, slideId });
-	return api.get(`${acceptedSolutions}` + query);
+	return api.get(`${ acceptedSolutions }` + query);
 }
 
-export function getLikedAcceptedSolutions(courseId: string, slideId: string, offset: number,
+export function getLikedAcceptedSolutions(
+	courseId: string,
+	slideId: string,
+	offset: number,
 	count: number
 ): Promise<LikedAcceptedSolutionsResponse> {
 	const query = buildQuery({ courseId, slideId, offset, count });
-	return api.get(`${acceptedSolutions}/liked` + query);
+	return api.get(`${ acceptedSolutions }/liked` + query);
 }
 
 export function likeAcceptedSolution(solutionId: number): Promise<Response> {
-	return api.put(`${acceptedSolutions}/like?solutionId=${ solutionId }`);
+	return api.put(`${ acceptedSolutions }/like?solutionId=${ solutionId }`);
 }
 
 export function dislikeAcceptedSolution(solutionId: number): Promise<Response> {
-	return api.delete(`${acceptedSolutions}/like?solutionId=${ solutionId }`);
+	return api.delete(`${ acceptedSolutions }/like?solutionId=${ solutionId }`);
 }
 
 export function promoteAcceptedSolution(solutionId: number): Promise<Response> {
 	const query = buildQuery({ solutionId });
-	return api.put(`${acceptedSolutions}/promote` + query);
+	return api.put(`${ acceptedSolutions }/promote` + query);
 }
 
 export function unpromoteAcceptedSolution(solutionId: number): Promise<Response> {
 	const query = buildQuery({ solutionId });
-	return api.delete(`${acceptedSolutions}/promote` + query);
+	return api.delete(`${ acceptedSolutions }/promote` + query);
 }

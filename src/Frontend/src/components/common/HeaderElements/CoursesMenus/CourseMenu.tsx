@@ -4,7 +4,7 @@ import cn from "classnames";
 import { isIconOnly, maxDropdownHeight, menuItems } from "./CoursesMenuUtils";
 
 import { DropdownMenu } from "ui";
-import { DocumentSolid } from "icons";
+import { DocTextIcon20Solid } from '@skbkontur/icons/DocTextIcon20Solid';
 
 import { CourseAccessType, CourseRoleType } from "src/consts/accessType";
 import { CourseState } from "src/redux/course";
@@ -32,7 +32,7 @@ function CourseMenu({ courseId, role, accesses, courses, deviceType, }: Props): 
 			caption={
 				<button className={ cn(styles.headerElement, styles.button) }>
 					{ isIconOnly(deviceType)
-						? <DocumentSolid className={ styles.icon }/>
+						? <DocTextIcon20Solid className={ styles.icon }/>
 						: <>
 							<span title={ course.title }>
 								{ course.title }

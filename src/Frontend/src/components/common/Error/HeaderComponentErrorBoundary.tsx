@@ -1,13 +1,10 @@
 import React, { Component, ErrorInfo } from "react";
-
-import { Warning } from "icons";
+import { WarningTriangleIcon20Solid } from '@skbkontur/icons/WarningTriangleIcon20Solid';
 import { Toast } from "ui";
 import { HasReactChild } from "src/consts/common";
 
 import * as Sentry from "@sentry/react";
 import cn from "classnames";
-
-import styles from './style.less';
 
 interface Props extends HasReactChild {
 	className?: string;
@@ -34,9 +31,11 @@ class HeaderComponentErrorBoundary extends Component<Props, State> {
 
 		if(error) {
 			return (
-				<div className={ cn(className || '') }
-					 onClick={ this.showSentryReportDialog }>
-					<Warning color="#f77" size={ 20 }/>
+				<div
+					className={ cn(className || '') }
+					onClick={ this.showSentryReportDialog }
+				>
+					<WarningTriangleIcon20Solid color="#f77"/>
 				</div>
 			);
 		}

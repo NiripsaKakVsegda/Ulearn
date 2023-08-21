@@ -1,6 +1,6 @@
 import React from "react";
 import { Hint } from "ui";
-import { Ok } from "icons";
+import { CheckAIcon16Solid } from '@skbkontur/icons/CheckAIcon16Solid';
 
 import styles from "./Passed.less";
 import { Gender } from "src/models/users";
@@ -16,7 +16,7 @@ export default function Passed({ isPassed, gender }: Props): React.ReactElement 
 	}
 	return <div className={ `${ styles.wrapper }` }>
 		<Hint text={ (gender === Gender.Female ? "Решила" : "Решил") + " задачу" }>
-			<Ok size={ 15 }/>
+			<CheckAIcon16Solid/>
 		</Hint>
 	</div>;
 }

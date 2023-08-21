@@ -39,14 +39,26 @@ namespace Database.Models
 
 	public class AbstractManualSlideChecking : AbstractSlideChecking
 	{
+		[CanBeNull]
 		public DateTime? LockedUntil { get; set; }
 
 		[StringLength(64)]
+		[CanBeNull]
 		public string LockedById { get; set; }
 
+		[CanBeNull]
 		public virtual ApplicationUser LockedBy { get; set; }
 
 		public bool IsChecked { get; set; }
+
+		[CanBeNull]
+		public string CheckedById { get; set; }
+		
+		[CanBeNull]
+		public virtual ApplicationUser CheckedBy { get; set; }
+		
+		[CanBeNull]
+		public DateTime? CheckedTimestamp { get; set; }
 
 		public bool IsLocked => LockedUntil.HasValue && LockedUntil.Value > DateTime.Now;
 
@@ -108,13 +120,13 @@ namespace Database.Models
 
 		[CanBeNull]
 		public virtual TextBlob Output { get; set; }
-		
+
 		[CanBeNull]
 		public virtual TextBlob DebugLogs { get; set; }
 
 		[StringLength(40)]
 		public string OutputHash { get; set; }
-		
+
 		[StringLength(40)]
 		public string DebugLogsHash { get; set; }
 
@@ -142,10 +154,11 @@ namespace Database.Models
 
 	/* Manual Exercise Checking is Code Review */
 
-	[Index(nameof(CourseId), nameof(SlideId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId), nameof(Timestamp))]
 	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId), nameof(ProhibitFurtherManualCheckings))]
 	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
-	[Index(nameof(CourseId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(IsChecked), nameof(UserId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(IsChecked), nameof(SlideId), nameof(Timestamp))]
 	public class ManualExerciseChecking : AbstractManualSlideChecking
 	{
 		[Key]
@@ -194,10 +207,10 @@ namespace Database.Models
 		public bool IgnoreInAttemptsCount { get; set; }
 	}
 
-	[Index(nameof(CourseId), nameof(SlideId))]
-	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(SlideId), nameof(UserId), nameof(Timestamp))]
 	[Index(nameof(CourseId), nameof(SlideId), nameof(Timestamp))]
-	[Index(nameof(CourseId), nameof(UserId))]
+	[Index(nameof(CourseId), nameof(IsChecked), nameof(UserId), nameof(SlideId), nameof(Timestamp))]
+	[Index(nameof(CourseId), nameof(IsChecked), nameof(SlideId), nameof(Timestamp))]
 	public class ManualQuizChecking : AbstractManualSlideChecking
 	{
 		/* This field is not identity and is not database-generated because EF generates Id as foreign key to UserQuizSubmission.Id */

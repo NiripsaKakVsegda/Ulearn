@@ -68,15 +68,8 @@ public class UserGeneratedFlashcardsRepo : IUserGeneratedFlashcardsRepo
 			Question = question,
 			Answer = answer,
 			LastUpdateTimestamp = DateTime.Now,
-			ModerationStatus = FlashcardModerationStatus.New
+			ModerationStatus = approved ? FlashcardModerationStatus.Approved : FlashcardModerationStatus.New
 		};
-
-		if (approved)
-		{
-			flashcard.ModerationStatus = FlashcardModerationStatus.Approved;
-			flashcard.ModeratorId = ownerId;
-			flashcard.ModerationTimestamp = DateTime.Now;
-		}
 
 		db.UserGeneratedFlashcards.Add(flashcard);
 		await db.SaveChangesAsync().ConfigureAwait(false);

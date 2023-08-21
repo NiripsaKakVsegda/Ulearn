@@ -1,8 +1,11 @@
 import React, { FC } from 'react';
 import styles from "./studentActions.less";
 import texts from "./StudentActions.texts";
-import { Gapped } from "ui";
-import { Copy, Trash, UserSettings } from "icons";
+import { Button } from "ui";
+import { CopyIcon16Regular } from '@skbkontur/icons/CopyIcon16Regular';
+import { People1GearIcon16Regular } from '@skbkontur/icons/People1GearIcon16Regular';
+import { TrashCanIcon16Regular } from '@skbkontur/icons/TrashCanIcon16Regular';
+import cn from "classnames";
 
 interface Props {
 	noStudentsChecked: boolean;
@@ -12,43 +15,36 @@ interface Props {
 }
 
 const StudentActions: FC<Props> = ({ noStudentsChecked, onCopyStudents, onResetLimits, onDeleteStudents }) => {
-	const addClassIfChecked = (className: string): string =>
-		(noStudentsChecked ? [styles.action] : [styles.action, className]).join(' ');
-
-	return (
-		<div className={ styles["action-buttons"] }>
-			<button
-				className={ addClassIfChecked(styles['button-copy']) }
-				disabled={ noStudentsChecked }
-				onClick={ onCopyStudents }
-			>
-				<Gapped gap={ 3 }>
-					<Copy/>
-					<span className={ styles["action-text"] }>{ texts.copyToGroup }</span>
-				</Gapped>
-			</button>
-			<button
-				className={ addClassIfChecked(styles.buttonResetLimits) }
-				disabled={ noStudentsChecked }
-				onClick={ onResetLimits }
-			>
-				<Gapped gap={ 3 }>
-					<UserSettings/>
-					<span className={ styles["action-text"] }>{ texts.resetLimits }</span>
-				</Gapped>
-			</button>
-			<button
-				className={ addClassIfChecked(styles["button-delete"]) }
-				disabled={ noStudentsChecked }
-				onClick={ onDeleteStudents }
-			>
-				<Gapped gap={ 3 }>
-					<Trash/>
-					<span className={ styles["action-text"] }>{ texts.removeStudents }</span>
-				</Gapped>
-			</button>
-		</div>
-	);
+	return <div className={ styles.actionButtons }>
+		<Button
+			use={ 'link' }
+			disabled={ noStudentsChecked }
+			onClick={ onCopyStudents }
+			icon={ <CopyIcon16Regular/> }
+		>
+			<span className={ styles.buttonText }>{ texts.copyToGroup }</span>
+		</Button>
+		<Button
+			use={ 'link' }
+			disabled={ noStudentsChecked }
+			onClick={ onResetLimits }
+			icon={ <People1GearIcon16Regular/> }
+		>
+			<span className={ styles.buttonText }>{ texts.resetLimits }</span>
+		</Button>
+		<Button
+			use={ 'link' }
+			className={ cn(
+				styles.removeButton,
+				{ [styles.disabled]: noStudentsChecked }
+			) }
+			disabled={ noStudentsChecked }
+			onClick={ onDeleteStudents }
+			icon={ <TrashCanIcon16Regular/> }
+		>
+			<span className={ styles.buttonText }>{ texts.removeStudents }</span>
+		</Button>
+	</div>;
 };
 
 export default StudentActions;

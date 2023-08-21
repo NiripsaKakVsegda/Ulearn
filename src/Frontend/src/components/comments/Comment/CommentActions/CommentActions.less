@@ -1,13 +1,25 @@
 @import "../../commonStyles.less";
 
-.action {
-  margin-right: 20px;
-}
-
 .actions {
   display: flex;
+  gap: 20px;
   justify-content: flex-start;
   align-items: baseline;
-  margin-top: -5px;
-  cursor: pointer;
+  margin-top: -4px;
+}
+
+.linkAsButtonLink {
+  color: #1874cf;
+
+  &:hover, &:focus {
+    color: #1874cf;
+  }
+
+  &:active {
+    color: #1260ae;
+  }
+
+  .icon {
+    margin-right: 4px;
+  }
 }

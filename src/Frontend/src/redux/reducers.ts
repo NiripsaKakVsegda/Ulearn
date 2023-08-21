@@ -22,6 +22,7 @@ import { exportApi } from "./toolkit/api/exportApi";
 import { userFlashcardsApi } from "./toolkit/api/userFlashcardsApi";
 import { flashcardsApi } from "./toolkit/api/flashcardsApi";
 import { courseAccessesApi } from "./toolkit/api/courseAccessesApi";
+import { reviewQueueApi } from "./toolkit/api/reviewQueueApi";
 
 export const rootReducer = combineReducers({
 	account: accountReducer,
@@ -48,6 +49,7 @@ export const rootReducer = combineReducers({
 	[userFlashcardsApi.reducerPath]: userFlashcardsApi.reducer,
 	[flashcardsApi.reducerPath]: flashcardsApi.reducer,
 	[courseAccessesApi.reducerPath]: courseAccessesApi.reducer,
+	[reviewQueueApi.reducerPath]: reviewQueueApi.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>

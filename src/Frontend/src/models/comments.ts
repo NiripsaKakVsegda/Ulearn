@@ -19,6 +19,8 @@ export interface ShortGroupInfo {
 	name: string;
 	isArchived: boolean;
 	apiUrl: string;
+	owner: ShortUserInfo;
+	membersCount: number;
 }
 
 export interface Comment {
@@ -35,7 +37,7 @@ export interface Comment {
 	likesCount: number;
 	replies: Comment[];
 	parentCommentId?: number;
-	isPassed: boolean
+	isPassed: boolean;
 }
 
 export interface CommentPolicy {

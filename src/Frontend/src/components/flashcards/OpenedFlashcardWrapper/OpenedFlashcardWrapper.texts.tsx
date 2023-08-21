@@ -1,7 +1,6 @@
 import { getMoment } from "../../../utils/momentUtils";
 import { FlashcardModerationStatus } from "../../../models/flashcards";
 import styles from './openedFlashcardWrapper.less';
-import { Edit, EyeClosed, EyeOpened, Trash } from "icons";
 import React from "react";
 
 export default {
@@ -42,10 +41,10 @@ export default {
 		}
 	},
 	controls: {
-		edit: <span><Edit/> Редактировать</span>,
-		remove: <span><Trash/> Удалить</span>,
-		publish: <span><EyeOpened/> Начать публикацию</span>,
-		decline: <span><EyeClosed/> Отклонить</span>,
+		edit: 'Редактировать',
+		remove: 'Удалить',
+		publish: 'Начать публикацию',
+		decline: 'Отклонить',
 		publishHint: 'Вы сможете отредактировать карточку перед публикацией'
 	}
 };

@@ -5550,3 +5550,7 @@ label {
 	border-radius: 50px;
 	border-color: unset;
 }
+
+svg {
+	outline: none;
+}

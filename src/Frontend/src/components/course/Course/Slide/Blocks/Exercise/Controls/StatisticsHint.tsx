@@ -1,16 +1,16 @@
-import React from "react";
+import { DataChartBarsAIcon16Solid } from "@skbkontur/icons/DataChartBarsAIcon16Solid";
 import classNames from "classnames";
+import React from "react";
+import { AttemptsStatistics } from "src/models/exercise";
 
 import { Tooltip, TooltipTrigger } from "ui";
-import ShowControlsTextContext from "./ShowControlsTextContext";
 
-import IControlWithText from "./IControlWithText";
-import { AttemptsStatistics } from "src/models/exercise";
+import texts from "../Exercise.texts";
 
 import styles from './Controls.less';
 
-import texts from "../Exercise.texts";
-import { Statistic } from "@skbkontur/react-icons";
+import IControlWithText from "./IControlWithText";
+import ShowControlsTextContext from "./ShowControlsTextContext";
 
 
 export interface Props extends IControlWithText {
@@ -26,7 +26,7 @@ function StatisticsHint({
 	const {
 		attemptedUsersCount,
 		usersWithRightAnswerCount,
-		lastSuccessAttemptDate,
+		lastSuccessAttemptDate
 	} = attemptsStatistics;
 	const statisticsClassName = classNames(styles.exerciseControls, styles.statistics);
 
@@ -40,12 +40,12 @@ function StatisticsHint({
 						pos={ "bottom right" }
 						closeButton={ false }
 						trigger={ tooltipTrigger }
-						render={ renderTooltipContent }>
+						render={ renderTooltipContent }
+					>
 						{ (showControlsTextContext || showControlsText)
 							? texts.controls.statistics.buildShortText(usersWithRightAnswerCount)
-							: <span className={ styles.exerciseControlsIcon }>
-							<Statistic/>
-						</span> }
+							: <DataChartBarsAIcon16Solid/>
+						}
 					</Tooltip>
 			}
 			</ShowControlsTextContext.Consumer>
@@ -56,7 +56,8 @@ function StatisticsHint({
 		return (
 			<span>
 				{ texts.controls.statistics.buildStatistics(attemptedUsersCount,
-					usersWithRightAnswerCount, lastSuccessAttemptDate) }
+					usersWithRightAnswerCount, lastSuccessAttemptDate
+				) }
 			</span>);
 	}
 }

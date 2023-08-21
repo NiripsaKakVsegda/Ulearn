@@ -7,6 +7,7 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
@@ -145,15 +146,70 @@ namespace Ulearn.Web.Api.Controllers.Users
 				return BuildShortUserInfo(currentUser, true, true);
 
 			var user = await usersRepo.FindUserById(userId);
-			
-			if(user == null)
+
+			if (user == null)
 				return StatusCode((int)HttpStatusCode.NotFound, $"No user with id {userId} found");
-			
+
 			var isSystemAdministrator = usersRepo.IsSystemAdministrator(currentUser);
 
-			return isSystemAdministrator 
-				? BuildShortUserInfo(user, true, true) 
+			return isSystemAdministrator
+				? BuildShortUserInfo(user, true, true)
 				: BuildShortUserInfo(user, true);
+		}
+
+		[HttpGet("by-ids")]
+		public async Task<ActionResult<UsersByIdsResponse>> FindUsersByIds([FromQuery] List<string> userIds)
+		{
+			const int maxRequestUsersCount = 100;
+
+			var isCourseAdmin = await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.CourseAdmin);
+			var isInstructor = isCourseAdmin || await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.Instructor);
+			if (!isInstructor)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of any course"));
+
+			if (userIds.Count > maxRequestUsersCount)
+				return BadRequest(new ErrorResponse($"You cannot request more than {maxRequestUsersCount} users"));
+
+			var usersQuery = db.Users
+				.Where(u => userIds.Contains(u.Id) && !u.IsDeleted);
+			if (!isCourseAdmin)
+				usersQuery = usersQuery
+					.GroupJoin(
+						db.GroupMembers,
+						u => u.Id,
+						member => member.UserId,
+						(user, members) => new { user, members }
+					)
+					.SelectMany(
+						e => e.members,
+						(e, member) => new { e.user, member.Group }
+					)
+					.GroupJoin(
+						db.GroupAccesses,
+						e => e.Group.Id,
+						ga => ga.GroupId,
+						(e, accesses) => new { e.user, e.Group, accesses }
+					)
+					.SelectMany(
+						e => e.accesses.DefaultIfEmpty(),
+						(e, access) => new { e.user, e.Group, access }
+					)
+					.Where(e => e.Group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
+					.Select(e => e.user);
+
+			var users = await usersQuery
+				.Distinct()
+				.ToListAsync();
+
+			return new UsersByIdsResponse
+			{
+				FoundUsers = users
+					.Select(u => BuildShortUserInfo(u))
+					.ToList(),
+				NotFoundUserIds = userIds
+					.Except(users.Select(u => u.Id))
+					.ToList()
+			};
 		}
 	}
 }

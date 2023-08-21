@@ -1,3 +1,5 @@
+import { CourseRoleType, LmsRoleType } from "../consts/accessType";
+
 export enum Gender {
 	Male = 'male',
 	Female = 'female',
@@ -12,6 +14,11 @@ export interface ShortUserInfo {
 	visibleName: string;
 	avatarUrl: string | null;
 	gender?: Gender;
+}
+
+export interface UsersByIdsResponse {
+	foundUsers: ShortUserInfo[];
+	notFoundUserIds: string[];
 }
 
 export interface UsersSearchResponse {
@@ -29,4 +36,14 @@ export enum SearchField {
 	Name,
 	Email,
 	SocialLogin,
+}
+
+export interface UsersSearchParameters {
+	userId: string;
+	query: string;
+	courseId: string;
+	courseRole: CourseRoleType;
+	lmsRole: LmsRoleType;
+	offset: number;
+	count: number;
 }

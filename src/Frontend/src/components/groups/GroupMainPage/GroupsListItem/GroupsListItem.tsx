@@ -1,16 +1,19 @@
+import { ArchiveBoxIcon16Solid } from '@skbkontur/icons/ArchiveBoxIcon16Solid';
+import { ArchiveBoxOpenDocsIcon16Regular } from '@skbkontur/icons/ArchiveBoxOpenDocsIcon16Regular';
+import { CheckAIcon16Solid } from '@skbkontur/icons/CheckAIcon16Solid';
+import { TrashCanIcon16Regular } from '@skbkontur/icons/TrashCanIcon16Regular';
+import { XIcon16Solid } from '@skbkontur/icons/XIcon16Solid';
+import cn from "classnames";
 import React, { FC } from "react";
 import { Link } from 'react-router-dom';
 
-import { ArchivePack, ArchiveUnpack, Delete, Ok } from "icons";
-import { Gapped, Kebab, MenuItem } from "ui";
+import { GroupInfo as GroupInfoType, GroupType } from "src/models/groups";
 
 import { Mobile, NotMobile } from "src/utils/responsive";
-
-import { GroupInfo as GroupInfoType, GroupType } from "src/models/groups";
+import { Gapped, Kebab, MenuItem } from "ui";
 
 import styles from "./groupsListItem.less";
 import texts from './GroupsListItem.texts';
-import cn from "classnames";
 
 
 interface Props {
@@ -56,30 +59,34 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 		);
 	};
 
-	const renderSetting = (enabled: boolean | undefined,
+	const renderSetting = (
+		enabled: boolean | undefined,
 		textProvider: (enabled: boolean | undefined) => string
 	): JSX.Element =>
 		<div className={ enabled ? styles["settings-on"] : styles["settings-off"] }>
 			<Gapped gap={ 5 }>
-				{ enabled ? <Ok/> : <Delete/> }
+				{ enabled
+					? <CheckAIcon16Solid size={ 14 }/>
+					: <XIcon16Solid size={ 14 }/>
+				}
 				{ textProvider(enabled) }
 			</Gapped>
 		</div>;
 
 	const renderActions = (): JSX.Element => {
 		const menuItems = [
-			<MenuItem onClick={ () => toggleArchived(group) } key="toggleArchived">
-				<Gapped gap={ 5 }>
-					<ArchiveUnpack/>
-					{ texts.getToggleArchiveButtonText(group.isArchived) }
-				</Gapped>
-			</MenuItem>,
-			<MenuItem onClick={ () => deleteGroup(group) } key="delete">
-				<Gapped gap={ 5 }>
-					<Delete/>
-					{ texts.deleteGroupButtonText }
-				</Gapped>
-			</MenuItem>
+			<MenuItem
+				key="toggleArchived"
+				onClick={ () => toggleArchived(group) }
+				icon={ <ArchiveBoxOpenDocsIcon16Regular/> }
+				children={ texts.getToggleArchiveButtonText(group.isArchived) }
+			/>,
+			<MenuItem
+				key="delete"
+				onClick={ () => deleteGroup(group) }
+				icon={ <TrashCanIcon16Regular/> }
+				children={ texts.deleteGroupButtonText }
+			/>
 		];
 
 		return (
@@ -113,7 +120,7 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 						>
 							<h3 className={ styles["group-name"] }>
 								{ group.name }
-								{ isSubGroup && group.isArchived && <> <ArchivePack size={ 16 }/> </> }
+								{ isSubGroup && group.isArchived && <> <ArchiveBoxIcon16Solid/> </> }
 								{ !isSubGroup && group.superGroupName && <> («{ group.superGroupName }»)</> }
 							</h3>
 						</Link>

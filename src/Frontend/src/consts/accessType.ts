@@ -5,6 +5,10 @@ export enum CourseRoleType {
 	tester = 'tester',
 }
 
+export enum LmsRoleType {
+	SysAdmin = 'sysAdmin'
+}
+
 export enum SystemAccessType {
 	viewAllProfiles = 'viewAllProfiles',
 	viewAllGroupMembers = 'viewAllGroupMembers',

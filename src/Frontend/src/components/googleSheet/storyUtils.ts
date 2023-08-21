@@ -1,4 +1,3 @@
-import api from "src/api";
 import {
 	GoogleSheetsCreateTaskParams,
 	GoogleSheetsExportTaskResponse,
@@ -7,16 +6,6 @@ import {
 import { returnPromiseAfterDelay } from "src/utils/storyMock";
 import { getMockedGroup, getMockedShortGroup, getMockedUser } from "../../storiesUtils";
 import { GoogleSheetApi } from "./UnloadingsList/UnloadingList";
-
-export const apiWithRealServer: GoogleSheetApi = {
-	getAllCourseGroups: api.groups.getCourseGroups,
-	getAllCourseTasks: api.googleSheet.getAllCourseTasks,
-	createTask: api.googleSheet.addNewTask,
-	updateTask: api.googleSheet.updateCourseTask,
-	deleteTask: api.googleSheet.deleteTask,
-	exportTaskNow: api.googleSheet.exportTaskNow,
-	getTaskById: api.googleSheet.getTaskById,
-};
 
 export const apiMocked: GoogleSheetApi = {
 	createTask: (params: GoogleSheetsCreateTaskParams) => returnPromiseAfterDelay(100, {

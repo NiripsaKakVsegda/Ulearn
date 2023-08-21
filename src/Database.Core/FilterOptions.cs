@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Database
 {
@@ -10,25 +11,26 @@ namespace Database
 		/* If true, search only users which ids IS NOT in UsersIds*/
 		public bool IsUserIdsSupplement { get; set; }
 
+		[CanBeNull]
 		public List<string> UserIds { get; set; }
 	}
 
 	public class ManualCheckingQueueFilterOptions : AbstractFilterOptionByCourseAndUsers
 	{
-		public ManualCheckingQueueFilterOptions()
-		{
-			OnlyChecked = false;
+		[CanBeNull]
+		public List<Guid> SlidesIds { get; set; }
 
-			From = DateTime.MinValue;
-			To = DateTime.MaxValue;
-		}
+		[CanBeNull]
+		public bool? OnlyReviewed { get; set; } = false;
 
-		public IEnumerable<Guid> SlidesIds { get; set; }
-		public bool? OnlyChecked { get; set; }
+		public DateSort DateSort = DateSort.Ascending;
 		public int Count { get; set; }
+	}
 
-		public DateTime From { get; set; }
-		public DateTime To { get; set; }
+	public enum DateSort
+	{
+		Ascending,
+		Descending
 	}
 
 	public class VisitsFilterOptions : AbstractFilterOptionByCourseAndUsers
