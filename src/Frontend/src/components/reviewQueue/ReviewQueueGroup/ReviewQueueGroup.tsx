@@ -1,18 +1,19 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { ReviewQueueItem } from "../../../models/instructor";
-import texts from './ReviewQueueGroup.texts';
-import styles from './reviewQueueGroup.less';
-import { Hint, Link, ThemeContext } from "ui";
-import cn from "classnames";
-import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
-import moment from "moment-timezone";
-import { momentFromServerToLocal } from "../../../utils/momentUtils";
-import { roundHint } from "../../../uiTheme";
-import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
-import { MaxWidths, useMaxWidth } from "../../../hooks/useMaxWidth";
 import { ArrowCDownIcon20Regular } from "@skbkontur/icons/ArrowCDownIcon20Regular";
 import { ArrowCUpIcon20Regular } from '@skbkontur/icons/ArrowCUpIcon20Regular';
 import { People1LockIcon16Solid } from "@skbkontur/icons/People1LockIcon16Solid";
+import cn from "classnames";
+import moment from "moment-timezone";
+import React, { FC, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Hint, ThemeContext } from "ui";
+import { MaxWidths, useMaxWidth } from "../../../hooks/useMaxWidth";
+import { ReviewQueueItem } from "../../../models/instructor";
+import { roundHint } from "../../../uiTheme";
+import { momentFromServerToLocal } from "../../../utils/momentUtils";
+import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
+import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
+import styles from './reviewQueueGroup.less';
+import texts from './ReviewQueueGroup.texts';
 
 interface Props {
 	reviewQueueItems: ReviewQueueItem[];
@@ -73,7 +74,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 			</div>
 			<Link
 				className={ styles.checkAllButton }
-				href={ props.buildLinkToInstructorReview(props.reviewQueueItems[0]) }
+				to={ props.buildLinkToInstructorReview(props.reviewQueueItems[0]) }
 			>
 				<span>{ texts.checkAllButton }</span>
 			</Link>
@@ -91,7 +92,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 		>
 			<li>
 				<Link
-					href={ props.buildLinkToInstructorReview(item) }
+					to={ props.buildLinkToInstructorReview(item) }
 					className={ cn(
 						styles.reviewQueueItemLink,
 						{ [styles.noStudent]: props.noStudent },

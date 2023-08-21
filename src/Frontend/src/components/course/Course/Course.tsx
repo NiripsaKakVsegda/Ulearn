@@ -309,7 +309,7 @@ class Course extends Component<CourseProps, State> {
 			return;
 		}
 
-		if (courseInfo !== prevProps.courseInfo && !flashcardsStatisticsByUnits && !flashcardsLoading) {
+		if ((!flashcardsStatisticsByUnits || courseInfo !== prevProps.courseInfo) && !flashcardsLoading) {
 			loadFlashcards(courseId);
 		}
 

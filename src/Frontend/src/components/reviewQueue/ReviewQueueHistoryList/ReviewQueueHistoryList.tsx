@@ -1,12 +1,12 @@
 import React, { FC } from 'react';
+import { Link } from "react-router-dom";
 import { ReviewQueueItem, ShortReviewInfo } from "../../../models/instructor";
+import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
 import { CourseSlidesInfo } from "../RevoewQueue.types";
+import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
 import { getSlideTitlesByIds } from "../utils/getSlideTitlesByIds";
 import styles from './reviewQueueHistoryList.less';
 import texts from './ReviewQueueHistoryList.texts';
-import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
-import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
-import { Link } from "ui";
 
 interface Props {
 	reviewQueueItems: ReviewQueueItem[];
@@ -40,7 +40,7 @@ const ReviewQueueHistoryList: FC<Props> = (props) => {
 		return <li className={ styles.reviewQueueItem } key={ item.submissionId }>
 			<Link
 				className={ styles.submissionLink }
-				href={ props.buildLinkToInstructorReview(item) }
+				to={ props.buildLinkToInstructorReview(item) }
 			>
 				<div className={ styles.userSlideWrapper }>
 					<span className={ styles.user }>
