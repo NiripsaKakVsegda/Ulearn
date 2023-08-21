@@ -20,7 +20,7 @@ export function buildReviewQueueFilterParameters(
 				.map(s => s.id)
 		: undefined;
 
-	const minTimestamp = filter.reviewed && filter.timeSpan
+	const minTimestamp = filter.reviewed
 		? getTimestampFromTimespan(filter.timeSpan)
 		: undefined;
 

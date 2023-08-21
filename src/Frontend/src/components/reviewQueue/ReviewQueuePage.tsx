@@ -23,9 +23,11 @@ interface Props {
 	loading?: boolean;
 
 	filter: ReviewQueueFilterState;
+	grouping: Grouping;
 	courseSlidesInfo: CourseSlidesInfo;
 	userId: string;
 
+	onChangeGrouping: (grouping: Grouping) => void;
 	onUpdateFilter: (newValues: ReviewQueueFilterState) => void;
 
 	getStudents: (query: string) => Promise<ShortUserInfo[]>;
@@ -35,7 +37,6 @@ interface Props {
 }
 
 const ReviewQueuePage: FC<Props> = (props) => {
-	const [grouping, setGrouping] = useState(Grouping.NoGrouping);
 	const [showComments, setShowComments] = useState(false);
 
 	return <div className={ styles.pageWrapper }>
@@ -62,8 +63,8 @@ const ReviewQueuePage: FC<Props> = (props) => {
 			</Tabs>
 			<div className={ styles.filtersListWrapper }>
 				<ReviewQueueFilters
-					grouping={ props.filter.reviewed ? undefined : grouping }
-					onChangeGrouping={ props.filter.reviewed ? undefined : setGrouping }
+					grouping={ props.filter.reviewed ? undefined : props.grouping }
+					onChangeGrouping={ props.filter.reviewed ? undefined : props.onChangeGrouping }
 					showComments={ props.filter.reviewed ? showComments : undefined }
 					onChangeShowComments={ props.filter.reviewed ? setShowComments : undefined }
 					filter={ props.filter }
@@ -72,21 +73,21 @@ const ReviewQueuePage: FC<Props> = (props) => {
 					getStudents={ props.getStudents }
 					getGroups={ props.getGroups }
 				/>
-				{ props.filter.reviewed
-					? <ReviewQueueHistoryList
-						reviewQueueItems={ props.reviewQueueItems }
-						courseSlidesInfo={ props.courseSlidesInfo }
-						showComments={ showComments }
-						buildLinkToInstructorReview={ buildLinkToInstructorReview }
-					/>
-					: <ReviewQueueList
-						reviewQueueItems={ props.reviewQueueItems }
-						courseSlidesInfo={ props.courseSlidesInfo }
-						userId={ props.userId }
-						grouping={ grouping }
-						buildLinkToInstructorReview={ buildLinkToInstructorReview }
-					/>
-				}
+				{ (props.reviewQueueItems.length > 0 || !props.loading) && (props.filter.reviewed
+						? <ReviewQueueHistoryList
+							reviewQueueItems={ props.reviewQueueItems }
+							courseSlidesInfo={ props.courseSlidesInfo }
+							showComments={ showComments }
+							buildLinkToInstructorReview={ buildLinkToInstructorReview }
+						/>
+						: <ReviewQueueList
+							reviewQueueItems={ props.reviewQueueItems }
+							courseSlidesInfo={ props.courseSlidesInfo }
+							userId={ props.userId }
+							grouping={ props.grouping }
+							buildLinkToInstructorReview={ buildLinkToInstructorReview }
+						/>
+				) }
 				{ props.notAllItemsLoaded &&
 					<div className={ styles.notAllItemsLoadedInfo }>
 						{ texts.buildNotAllItemsLoadedInfo(props.reviewQueueItems.length) }
@@ -107,8 +108,8 @@ const ReviewQueuePage: FC<Props> = (props) => {
 	function buildLinkToInstructorReview(item: ReviewQueueItem, groupingItemId?: string) {
 		return props.buildLinkToInstructorReview(item, {
 			...props.filter,
-			grouping: grouping,
-			groupingItemId: grouping === Grouping.NoGrouping ? undefined : groupingItemId
+			grouping: props.grouping,
+			groupingItemId: props.grouping === Grouping.NoGrouping ? undefined : groupingItemId
 		});
 	}
 };

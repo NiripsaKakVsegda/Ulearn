@@ -33,9 +33,9 @@ const ReviewQueueHistoryList: FC<Props> = (props) => {
 		</li>;
 
 	const renderReviewQueueItem = (item: ReviewQueueItem) => {
-		if(!item.checkedBy || !item.checkedTimestamp || item.score === undefined) {
-			return;
-		}
+		const checkedByUser = item.checkedBy ?? item.lockedBy;
+		const checkedTimestamp = item.checkedTimestamp ?? item.lockedUntil ?? item.timestamp;
+		//TODO для поддрежки legacy без нужной информации, удалить после обновления базы данных
 
 		return <li className={ styles.reviewQueueItem } key={ item.submissionId }>
 			<Link
@@ -43,19 +43,21 @@ const ReviewQueueHistoryList: FC<Props> = (props) => {
 				href={ props.buildLinkToInstructorReview(item) }
 			>
 				<div className={ styles.userSlideWrapper }>
-						<span className={ styles.user }>
-							{ getNameWithLastNameFirst(item.user) }
-						</span>
+					<span className={ styles.user }>
+						{ getNameWithLastNameFirst(item.user) }
+					</span>
 					<span className={ styles.slide }>
-							{ slideTitlesByIds[item.slideId] }
-						</span>
+						{ slideTitlesByIds[item.slideId] }
+					</span>
 				</div>
 				<span className={ styles.score }>
-						{ texts.getScoringInfo(item.score, item.maxScore) }
+						{ texts.getScoringInfo(item.score ?? 0, item.maxScore) }
 					</span>
 				<div className={ styles.reviewerTimestampWrapper }>
-					<span>{ getNameWithLastNameFirst(item.checkedBy) }</span>
-					<span className={ styles.timestamp }>{ getReviewQueueTimestamp(item.checkedTimestamp) }</span>
+					{ checkedByUser &&
+						<span>{ getNameWithLastNameFirst(checkedByUser) }</span>
+					}
+					<span className={ styles.timestamp }>{ getReviewQueueTimestamp(checkedTimestamp) }</span>
 				</div>
 			</Link>
 			{ props.showComments && !!item.reviews?.length &&

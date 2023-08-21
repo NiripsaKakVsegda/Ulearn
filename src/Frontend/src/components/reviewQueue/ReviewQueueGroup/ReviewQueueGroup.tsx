@@ -120,7 +120,11 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 					className={ styles.reviewQueueList }
 					ref={ listRef }
 					style={ {
-						maxHeight: props.alwaysOpened || isOpened ? listItemsHeight : 0
+						maxHeight: props.alwaysOpened
+							? 'initial'
+							: isOpened
+								? listItemsHeight
+								: 0
 					} }
 				>
 					{ props.reviewQueueItems.map(renderReviewQueueItem) }

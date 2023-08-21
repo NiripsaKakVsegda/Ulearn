@@ -200,9 +200,15 @@ namespace Database.Repos
 
 		#endregion
 
-		public async Task<IEnumerable<T>> GetCheckingQueueHistory<T>(ManualCheckingQueueFilterOptions options, DateTime? minCheckedTimestamp = null) where T : AbstractManualSlideChecking
+		public async Task<IEnumerable<T>> GetCheckingQueueHistory<T>(
+			ManualCheckingQueueFilterOptions options,
+			DateTime? minCheckedTimestamp = null,
+			bool includeExerciseSolutionsAndReviews = false
+		) where T : AbstractManualSlideChecking
 		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options);
+			var query = (IQueryable<T>)GetManualCheckingQueueFilterQuery<T>(options)
+				.Include(c => c.LockedBy)
+				.Include(c => c.CheckedBy);
 
 			if (minCheckedTimestamp is { } minTimestampValue)
 				query = query
@@ -215,12 +221,21 @@ namespace Database.Repos
 			if (options.Count > 0)
 				query = query.Take(options.Count);
 
-			return await query.ToListAsync();
+			if (includeExerciseSolutionsAndReviews && query is IQueryable<ManualExerciseChecking> exerciseCheckingsQuery)
+				query = (IQueryable<T>)exerciseCheckingsQuery
+					.Include(c => c.Submission.SolutionCode)
+					.Include(c => c.Submission.Reviews)
+					.ThenInclude(r => r.Author);
+
+			return await query
+				.ToListAsync();
 		}
 
 		public async Task<IEnumerable<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options);
+			var query = (IQueryable<T>)GetManualCheckingQueueFilterQuery<T>(options)
+				.Include(c => c.LockedBy)
+				.Include(c => c.CheckedBy);
 
 			var groupQuery = query
 				.GroupBy(c => new { c.UserId, c.SlideId })

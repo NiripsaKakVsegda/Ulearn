@@ -1074,6 +1074,10 @@ namespace ManualUtils
 				.Where(c => c.IsChecked)
 				.ToListAsync();
 
+			var totalCount = exerciseManualCheckings.Count;
+			var processedCount = 0;
+			Console.WriteLine($@"ManualExerciseCheckings. Total Count: {totalCount}");
+
 			foreach (var exerciseManualChecking in exerciseManualCheckings)
 			{
 				var lastReview = exerciseManualChecking.Reviews
@@ -1084,17 +1088,31 @@ namespace ManualUtils
 															exerciseManualChecking.Timestamp;
 				exerciseManualChecking.CheckedById ??= (lastReview?.AuthorId == botId ? null : lastReview?.AuthorId) ??
 														exerciseManualChecking.LockedById;
+
+				if (++processedCount % 100 == 0)
+					Console.WriteLine($@"ManualExerciseCheckings. Processed: {processedCount}/{totalCount}");
 			}
+
+			Console.WriteLine($@"ManualExerciseCheckings. Processed: {processedCount}");
 
 			var quizManualCheckings = await db.ManualQuizCheckings
 				.Where(c => c.IsChecked)
 				.ToListAsync();
 
+			totalCount = quizManualCheckings.Count;
+			processedCount = 0;
+			Console.WriteLine($@"ManualQuizCheckings. Total Count: {totalCount}");
+
 			foreach (var quizManualChecking in quizManualCheckings)
 			{
 				quizManualChecking.CheckedTimestamp ??= quizManualChecking.LockedUntil ?? quizManualChecking.Timestamp;
 				quizManualChecking.CheckedById ??= quizManualChecking.LockedById;
+
+				if (++processedCount % 100 == 0)
+					Console.WriteLine($@"ManualQuizCheckings. Processed: {processedCount}/{totalCount}");
 			}
+
+			Console.WriteLine($@"ManualQuizCheckings. Processed: {processedCount}");
 
 			await db.SaveChangesAsync();
 		}
@@ -1124,13 +1142,13 @@ namespace ManualUtils
 			}
 			return result;
 		}
-		
+
 		private class ExtendedUserInfo : ShortUserInfo
 		{
 			public string VkUrl;
 			public string Telegram;
 		}
-		
+
 		private string GetVk(UlearnDb db, ApplicationUser user)
 		{
 			var vkLogin = db.UserLogins.FirstOrDefault(l => l.LoginProvider == "ВКонтакте" && l.UserId == user.Id);

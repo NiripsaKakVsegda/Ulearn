@@ -10,13 +10,14 @@ import {
 
 export default function getFilterSearchParamsFromQuery(
 	params?: URLSearchParams,
-	course?: CourseInfo
+	course?: CourseInfo,
+	defaultFilter?: ReviewQueueFilterSearchParams
 ): ReviewQueueFilterSearchParams {
 	const lowerCaseParams = params
 		? searchParamsToLowerCase(params)
 		: new URLSearchParams();
 
-	const filter: ReviewQueueFilterSearchParams = { ...defaultFilterState };
+	const filter = defaultFilter ?? { ...defaultFilterState };
 
 	const reviewed = lowerCaseParams.get('reviewed');
 	if(reviewed === 'true') {
@@ -48,9 +49,9 @@ export default function getFilterSearchParamsFromQuery(
 
 	if(filter.reviewed) {
 		const timeSpan = lowerCaseParams.get('timespan') as HistoryTimeSpan;
-		filter.timeSpan = timeSpan && Object.values(HistoryTimeSpan).includes(timeSpan)
-			? timeSpan
-			: HistoryTimeSpan.Day;
+		if(timeSpan && Object.values(HistoryTimeSpan).includes(timeSpan)) {
+			filter.timeSpan = timeSpan;
+		}
 	}
 
 	const studentsFilter = lowerCaseParams.get('studentsfilter') as StudentsFilter;

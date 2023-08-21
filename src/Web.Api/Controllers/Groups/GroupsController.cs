@@ -193,6 +193,8 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 			var groups = await groupsQuery
 				.Distinct()
+				.Include(g => g.Owner)
+				.Include(g => g.Members)
 				.ToListAsync();
 
 			return new GroupsByIdsResponse

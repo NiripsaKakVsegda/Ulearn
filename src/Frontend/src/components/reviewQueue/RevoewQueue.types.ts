@@ -25,11 +25,10 @@ export const defaultFilterState: ReviewQueueFilterSearchParams = {
 export interface ReviewQueueFilterSearchParams {
 	reviewed: boolean;
 	sort: DateSort;
+	timeSpan: HistoryTimeSpan;
 
 	unitId?: string;
 	slideId?: string;
-
-	timeSpan?: HistoryTimeSpan;
 
 	studentsFilter: StudentsFilter;
 	studentIds?: string[];

@@ -8,7 +8,7 @@ import { groupsApi } from "../../../redux/toolkit/api/groups/groupsApi";
 import getFilterSearchParamsFromQuery from "./getFilterSearchParamsFromQuery";
 import buildFilterSearchQueryParams from "./buildFilterSearchQueryParams";
 
-export default function useReviewQueueFilterFromQuery(course?: CourseInfo, loadStudentsAndGroupsInfo?: boolean):
+export default function useReviewQueueFilterFromQuery(course?: CourseInfo, defaultFilter?: ReviewQueueFilterState):
 	[filter: ReviewQueueFilterState | undefined, updateFilter: (filter: ReviewQueueFilterState) => void] {
 
 	const [findUsersByIdsQuery] = usersApi.useLazyFindUsersByIdsQuery();
@@ -31,16 +31,17 @@ export default function useReviewQueueFilterFromQuery(course?: CourseInfo, loadS
 	}, [course]);
 
 	async function getFilterFromQuery(params: URLSearchParams, course: CourseInfo): Promise<ReviewQueueFilterState> {
-		const filter = getFilterSearchParamsFromQuery(params, course) as ReviewQueueFilterState;
+		const filter = getFilterSearchParamsFromQuery(
+			params,
+			course,
+			defaultFilter
+		) as ReviewQueueFilterState;
 
 		if(filter.studentsFilter === StudentsFilter.StudentIds) {
-			let studentIds = filter.studentIds ?? [];
-			let students = undefined;
-
-			if(loadStudentsAndGroupsInfo) {
-				students = (await findUsersByIdsQuery({ userIds: studentIds }).unwrap()).foundUsers;
-				studentIds = students.map(s => s.id);
-			}
+			const students = filter.studentIds
+				? (await findUsersByIdsQuery({ userIds: filter.studentIds }).unwrap()).foundUsers
+				: [];
+			const studentIds = students.map(s => s.id);
 
 			return {
 				...filter,
@@ -50,13 +51,10 @@ export default function useReviewQueueFilterFromQuery(course?: CourseInfo, loadS
 		}
 
 		if(filter.studentsFilter === StudentsFilter.GroupIds) {
-			let groupIds = filter.groupIds ?? [];
-			let groups = undefined;
-
-			if(loadStudentsAndGroupsInfo) {
-				groups = (await findGroupsByIdsQuery({ groupIds }).unwrap()).foundGroups;
-				groupIds = groups.map(g => g.id);
-			}
+			const groups = filter.groupIds
+				? (await findGroupsByIdsQuery({ groupIds: filter.groupIds }).unwrap()).foundGroups
+				: [];
+			const groupIds = groups.map(g => g.id);
 
 			return {
 				...filter,

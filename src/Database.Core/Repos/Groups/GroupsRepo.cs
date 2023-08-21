@@ -121,6 +121,8 @@ namespace Database.Repos.Groups
 					.Take(queryModel.Count);
 
 			return query
+				.Include(g => g.Owner)
+				.Include(g => g.Members)
 				.ToListAsync();
 		}
 

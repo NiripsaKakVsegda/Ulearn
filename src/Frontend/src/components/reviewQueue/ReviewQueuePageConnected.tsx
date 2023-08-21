@@ -1,9 +1,16 @@
-import React, { FC, useEffect, useMemo } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import ReviewQueuePage from "./ReviewQueuePage";
 import { useAppSelector } from "../../redux/toolkit/hooks/useAppSelector";
 import CourseLoader from "../course/Course/CourseLoader";
 import Error404 from "../common/Error/Error404";
-import { CourseSlidesInfo, InstructorReviewFilterSearchParams, SlideInfo, UnitSlidesInfo } from "./RevoewQueue.types";
+import {
+	CourseSlidesInfo,
+	defaultFilterState,
+	Grouping,
+	InstructorReviewFilterSearchParams,
+	SlideInfo,
+	UnitSlidesInfo
+} from "./RevoewQueue.types";
 import { CourseInfo } from "../../models/course";
 import { changeCurrentCourseAction, loadCourse } from "../../actions/course";
 import { useAppDispatch } from "../../redux/toolkit/hooks/useAppDispatch";
@@ -18,6 +25,12 @@ import { buildQuery } from "../../utils";
 import { buildInstructorReviewFilterSearchQueryParams } from "./utils/buildFilterSearchQueryParams";
 import { useGroupsSearch } from "../common/GroupsSearch/useGroupsSearch";
 import { useUsersSearch } from "../common/UsersSearch/useUsersSearch";
+import {
+	getFilterFromLocalStorage,
+	isFilterUpdated,
+	ReviewQueueFilterLocalStorage,
+	updateLocalStorageFilter
+} from "./utils/localStorageManager";
 
 const itemsToLoadCount = 500;
 
@@ -48,13 +61,36 @@ const ReviewQueuePageConnected: FC = () => {
 
 	const isInstructor = isInstructorFromAccount(account, courseId);
 
-	const [filter, updateFilter] = useReviewQueueFilterFromQuery(course, true);
+	const filterLocalStorage = getFilterFromLocalStorage();
+	const defaultFilter = {
+		...defaultFilterState,
+		...filterLocalStorage
+	};
+	const [filter, updateFilter] = useReviewQueueFilterFromQuery(course, defaultFilter);
 	const filterParameters = useMemo(
 		() => filter && course
 			? buildReviewQueueFilterParameters(filter, course, itemsToLoadCount)
 			: { courseId },
 		[filter, course]
 	);
+
+	const [grouping, setGrouping] = useState(filterLocalStorage.grouping ?? Grouping.NoGrouping);
+
+	useEffect(() => {
+		if(!filter) {
+			return;
+		}
+		const updated: Partial<ReviewQueueFilterLocalStorage> = {};
+		updated.sort = filter.sort;
+		if(filter.reviewed) {
+			updated.timeSpan = filter.timeSpan;
+		} else {
+			updated.grouping = grouping;
+		}
+		if(isFilterUpdated(updated)) {
+			updateLocalStorageFilter(updated);
+		}
+	}, [filter, grouping]);
 
 	const { reviewQueueItems, isLoading } = reviewQueueApi.useGetReviewQueueQuery(
 		filterParameters,
@@ -99,8 +135,10 @@ const ReviewQueuePageConnected: FC = () => {
 			notAllItemsLoaded={ items.length === itemsToLoadCount }
 			loading={ isLoading || isHistoryLoading }
 			filter={ filter }
+			grouping={ grouping }
 			courseSlidesInfo={ courseSlidesInfo }
 			userId={ account.id }
+			onChangeGrouping={ setGrouping }
 			onUpdateFilter={ updateFilter }
 			getStudents={ searchStudents }
 			getGroups={ searchGroups }

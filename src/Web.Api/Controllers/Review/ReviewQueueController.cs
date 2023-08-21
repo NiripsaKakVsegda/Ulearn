@@ -245,11 +245,11 @@ namespace Ulearn.Web.Api.Controllers.Review
 
 		private async Task<List<AbstractManualSlideChecking>> GetMergedCheckingQueue(ManualCheckingQueueFilterOptions filterOptions, bool isHistory = false, DateTime? minTimestamp = null)
 		{
-			var exercises = filterOptions.OnlyReviewed ?? false
-				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualExerciseChecking>(filterOptions, minTimestamp)
+			var exercises = isHistory
+				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualExerciseChecking>(filterOptions, minTimestamp, true)
 				: await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(filterOptions);
 
-			var quizzes = filterOptions.OnlyReviewed ?? false
+			var quizzes = isHistory
 				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualQuizChecking>(filterOptions, minTimestamp)
 				: await slideCheckingsRepo.GetManualCheckingQueue<ManualQuizChecking>(filterOptions);
 
