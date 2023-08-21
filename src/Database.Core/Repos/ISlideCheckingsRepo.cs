@@ -26,13 +26,13 @@ namespace Database.Repos
 		Task<int> GetUserScoreForQuizSlide(string courseId, Guid slideId, string userId, int maxAutomaticScorePercent = 100);
 		List<(Guid SlideId, int Percent)> GetPassedManualExerciseCheckingsAndPercents(Course course, string userId, IEnumerable<Guid> visibleUnits);
 
-		Task<IEnumerable<T>> GetCheckingQueueHistory<T>(
+		Task<List<T>> GetCheckingQueueHistory<T>(
 			ManualCheckingQueueFilterOptions options,
 			[CanBeNull] DateTime? minCheckedTimestamp = null,
 			bool includeExerciseSolutionsAndReviews = false
 		) where T : AbstractManualSlideChecking;
 
-		Task<IEnumerable<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
+		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<int> GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeTimestamp);
 		Task<AbstractManualSlideChecking> FindManualCheckingById(int id);

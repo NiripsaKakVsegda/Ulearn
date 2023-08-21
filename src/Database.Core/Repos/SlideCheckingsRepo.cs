@@ -200,15 +200,13 @@ namespace Database.Repos
 
 		#endregion
 
-		public async Task<IEnumerable<T>> GetCheckingQueueHistory<T>(
+		public Task<List<T>> GetCheckingQueueHistory<T>(
 			ManualCheckingQueueFilterOptions options,
 			DateTime? minCheckedTimestamp = null,
 			bool includeExerciseSolutionsAndReviews = false
 		) where T : AbstractManualSlideChecking
 		{
-			var query = (IQueryable<T>)GetManualCheckingQueueFilterQuery<T>(options)
-				.Include(c => c.LockedBy)
-				.Include(c => c.CheckedBy);
+			var query = GetManualCheckingQueueFilterQuery<T>(options);
 
 			if (minCheckedTimestamp is { } minTimestampValue)
 				query = query
@@ -227,33 +225,40 @@ namespace Database.Repos
 					.Include(c => c.Submission.Reviews)
 					.ThenInclude(r => r.Author);
 
-			return await query
+			return query
+				.Include(c => c.User)
+				.Include(c => c.LockedBy)
+				.Include(c => c.CheckedBy)
 				.ToListAsync();
 		}
 
-		public async Task<IEnumerable<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		public Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
 		{
-			var query = (IQueryable<T>)GetManualCheckingQueueFilterQuery<T>(options)
-				.Include(c => c.LockedBy)
-				.Include(c => c.CheckedBy);
+			var query = GetManualCheckingQueueFilterQuery<T>(options)
+				.Join(
+					db.Set<T>()
+						.GroupBy(c => new {c.UserId, c.SlideId})
+						.Select(g => g
+							.Select(c => c.Id)
+							.Max()
+						),
+					c => c.Id,
+					id => id,
+					(c, _) => c
+				);
 
-			var groupQuery = query
-				.GroupBy(c => new { c.UserId, c.SlideId })
-				.Select(g => new
-				{
-					LastTimeStamp = g.OrderByDescending(c => c.Timestamp).First().Timestamp,
-					LastEntry = g.OrderByDescending(c => c.Timestamp).First()
-				});
-
-			groupQuery = options.DateSort is DateSort.Ascending
-				? groupQuery.OrderBy(c => c.LastTimeStamp)
-				: groupQuery.OrderByDescending(c => c.LastTimeStamp);
+			query = options.DateSort is DateSort.Ascending
+				? query.OrderBy(c => c.Timestamp)
+				: query.OrderByDescending(c => c.Timestamp);
 
 			if (options.Count > 0)
-				groupQuery = groupQuery.Take(options.Count);
+				query = query.Take(options.Count);
 
-			return (await groupQuery.ToListAsync())
-				.Select(r => r.LastEntry);
+			return query
+				.Include(c => c.User)
+				.Include(c => c.LockedBy)
+				.Include(c => c.CheckedBy)
+				.ToListAsync();
 		}
 
 		public IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
