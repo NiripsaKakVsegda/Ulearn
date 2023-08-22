@@ -3,15 +3,7 @@ import ReviewQueuePage from "./ReviewQueuePage";
 import { useAppSelector } from "../../redux/toolkit/hooks/useAppSelector";
 import CourseLoader from "../course/Course/CourseLoader";
 import Error404 from "../common/Error/Error404";
-import {
-	CourseSlidesInfo,
-	defaultFilterState,
-	Grouping,
-	InstructorReviewFilterSearchParams,
-	SlideInfo,
-	UnitSlidesInfo
-} from "./RevoewQueue.types";
-import { CourseInfo } from "../../models/course";
+import { defaultFilterState, Grouping, InstructorReviewFilterSearchParams } from "./RevoewQueue.types";
 import { changeCurrentCourseAction, loadCourse } from "../../actions/course";
 import { useAppDispatch } from "../../redux/toolkit/hooks/useAppDispatch";
 import { reviewQueueApi } from "../../redux/toolkit/api/reviewQueueApi";
@@ -31,6 +23,7 @@ import {
 	ReviewQueueFilterLocalStorage,
 	updateLocalStorageFilter
 } from "./utils/localStorageManager";
+import buildCourseSlidesInfo from "./utils/buildCourseSlidesInfo";
 
 const itemsToLoadCount = 500;
 
@@ -155,30 +148,6 @@ const ReviewQueuePageConnected: FC = () => {
 			userId: item.user.id,
 			...buildInstructorReviewFilterSearchQueryParams(filter)
 		});
-	}
-
-	function buildCourseSlidesInfo(course: CourseInfo): CourseSlidesInfo {
-		const units: UnitSlidesInfo[] = [];
-		for (const unit of course.units) {
-			const slides: SlideInfo[] = [];
-			for (const slide of unit.slides) {
-				if(slide.requiresReview) {
-					slides.push({
-						id: slide.id,
-						title: slide.title
-					});
-				}
-			}
-
-			if(slides.length) {
-				units.push({
-					id: unit.id,
-					title: unit.title,
-					slides: slides,
-				});
-			}
-		}
-		return { units };
 	}
 };
 

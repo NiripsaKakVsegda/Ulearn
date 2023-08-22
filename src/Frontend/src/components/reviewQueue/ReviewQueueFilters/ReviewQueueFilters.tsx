@@ -1,12 +1,9 @@
-import { QuestionCircleIcon20Solid } from "@skbkontur/icons/QuestionCircleIcon20Solid";
 import React, { FC, useState } from 'react';
-import { Button, Select, ThemeContext, Toggle, Tooltip } from "ui";
+import { Button, Select, Toggle } from "ui";
 import { MaxWidths, useMaxWidth } from "../../../hooks/useMaxWidth";
 import { ShortGroupInfo } from "../../../models/comments";
-import { DateSort, StudentsFilter } from "../../../models/instructor";
+import { DateSort } from "../../../models/instructor";
 import { ShortUserInfo } from "../../../models/users";
-import { roundTooltips } from "../../../uiTheme";
-import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
 import FiltersModal from "../FiltersModal/FiltersModal";
 import {
 	CourseSlidesInfo,
@@ -15,6 +12,7 @@ import {
 	ReviewQueueFilterState,
 	ReviewQueueModalFilterState
 } from "../RevoewQueue.types";
+import ReviewQueueFiltersTooltip from "../ReviewQueueFiltersTooltip/ReviewQueueFiltersTooltip";
 import styles from './reviewQueueFilters.less';
 import texts from './ReviewQueueFilters.texts';
 
@@ -46,7 +44,7 @@ const ReviewQueueFilters: FC<Props> = (props) => {
 
 	const groupingItems = [
 		Select.static(() => <div className={ styles.defaultCursor }>
-			<Select.Item children={ texts.filtersTooltip.grouping }/>
+			<Select.Item children={ texts.grouping }/>
 		</div>),
 		Select.SEP,
 		...Object.values(Grouping).map(value => [value, texts.groupingValues[value]])
@@ -54,92 +52,11 @@ const ReviewQueueFilters: FC<Props> = (props) => {
 
 	const sortItems = [
 		Select.static(() => <div className={ styles.defaultCursor }>
-			<Select.Item children={ texts.filtersTooltip.sort }/>
+			<Select.Item children={ texts.sort }/>
 		</div>),
 		Select.SEP,
 		...Object.values(DateSort).map(value => [value, texts.sortValues[value]])
 	];
-
-	const renderStudentsFilterInfo = (): React.ReactNode => {
-		switch (filter.studentsFilter) {
-			case StudentsFilter.All:
-				return <span>{ texts.filtersTooltip.allStudents }</span>;
-			case StudentsFilter.MyGroups:
-				return <span>{ texts.filtersTooltip.myGroups }</span>;
-			case StudentsFilter.StudentIds:
-				return filter.students?.length
-					? <ul className={ styles.groupsStudentsList }>
-						{ filter.students.map((student) =>
-							<li key={ student.id }>
-								{ getNameWithLastNameFirst(student) }
-							</li>
-						) }
-					</ul>
-					: <span>{ texts.filtersTooltip.noStudentsSelected }</span>;
-			case StudentsFilter.GroupIds:
-				return filter.groups?.length
-					? <ul className={ styles.groupsStudentsList }>
-						{ filter.groups?.map(({ id, name }) =>
-							<li key={ id }>
-								{ name }
-							</li>
-						) }
-					</ul>
-					: <span>{ texts.filtersTooltip.noGroupsSelected }</span>;
-		}
-	};
-
-	const renderFiltersTooltip = (): React.ReactNode => {
-		const unit = filter.unitId
-			? props.courseSlidesInfo.units.find(u => u.id === filter.unitId)
-			: undefined;
-		const slide = unit && filter.slideId
-			? unit.slides.find(s => s.id === filter.slideId)
-			: undefined;
-
-		return <ul className={ styles.filtersInfoList }>
-			{ (!filter.reviewed && !!props.grouping) &&
-				<li>
-					<span>{ texts.filtersTooltip.grouping }</span>
-					<span>{ texts.groupingValues[props.grouping].toLowerCase() }</span>
-				</li>
-			}
-			<li>
-				<span>{ texts.filtersTooltip.sort }</span>
-				<span>{ texts.sortValues[filter.sort].toLowerCase() }</span>
-			</li>
-			<li>
-				<span>{ texts.filtersTooltip.unit }</span>
-				<span>{ unit
-					? unit.title
-					: texts.filtersTooltip.allUnits
-				}</span>
-			</li>
-			{ !!filter.unitId &&
-				<li>
-					<span>{ texts.filtersTooltip.slide }</span>
-					<span>{ slide
-						? slide.title
-						: texts.filtersTooltip.allSlides
-					}</span>
-				</li>
-			}
-			<li>
-                <span>
-                    { filter.studentsFilter === StudentsFilter.All || filter.studentsFilter === StudentsFilter.StudentIds
-						? texts.filtersTooltip.students
-						: texts.filtersTooltip.groups
-					}
-                </span>
-				{ renderStudentsFilterInfo() }
-			</li>
-			{ (!!props.grouping && props.grouping !== Grouping.NoGrouping) &&
-				<li className={ styles.filtersTooltipAdditionalInfo }>
-					{ texts.filtersTooltip.groupingHint[props.grouping] }
-				</li>
-			}
-		</ul>;
-	};
 
 	return (
 		<div className={ styles.wrapper }>
@@ -174,20 +91,14 @@ const ReviewQueueFilters: FC<Props> = (props) => {
 				/>
 
 				{ !isPhone &&
-					<ThemeContext.Provider value={ roundTooltips }>
-						<Tooltip
-							render={ renderFiltersTooltip }
-							pos={ "bottom right" }
-							allowedPositions={ ["bottom right", "bottom left", "bottom center"] }
-							trigger={ "hover" }
-						>
-							<QuestionCircleIcon20Solid
-								align={ "center" }
-								cursor={ "pointer" }
-								color={"#808080"}
-							/>
-						</Tooltip>
-					</ThemeContext.Provider>
+					<ReviewQueueFiltersTooltip
+						filter={ filter }
+						courseSlidesInfo={ props.courseSlidesInfo }
+						grouping={ props.grouping }
+						showGroupingInfo
+						size={ 20 }
+						pos={ 'bottom right' }
+					/>
 				}
 			</div>
 			{ filter.reviewed &&

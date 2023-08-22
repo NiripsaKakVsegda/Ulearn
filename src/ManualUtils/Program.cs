@@ -1078,14 +1078,21 @@ namespace ManualUtils
 			var processedCount = 0;
 			Console.WriteLine($@"ManualExerciseCheckings. Total Count: {totalCount}");
 
-			for (var slice = 0; slice < totalCount; slice += sliceSize)
+			var lastProcessedId = -1;
+			while (true)
 			{
+				var minId = lastProcessedId;
 				var exerciseManualCheckings = await db.ManualExerciseCheckings
 					.Include(c => c.Reviews)
-					.Where(c => c.IsChecked)
-					.Skip(slice * sliceSize)
+					.Where(c => c.IsChecked && c.Id > minId)
+					.OrderBy(c => c.Id)
 					.Take(sliceSize)
 					.ToListAsync();
+
+				if (exerciseManualCheckings.Count == 0)
+					break;
+
+				lastProcessedId = exerciseManualCheckings[^1].Id;
 
 				foreach (var exerciseManualChecking in exerciseManualCheckings)
 				{
@@ -1114,13 +1121,20 @@ namespace ManualUtils
 			processedCount = 0;
 			Console.WriteLine($@"ManualQuizCheckings. Total Count: {totalCount}");
 
-			for (var slice = 0; slice < totalCount; slice += sliceSize)
+			lastProcessedId = -1;
+			while (true)
 			{
+				var minId = lastProcessedId;
 				var quizManualCheckings = await db.ManualQuizCheckings
-					.Where(c => c.IsChecked)
-					.Skip(slice * sliceSize)
+					.Where(c => c.IsChecked && c.Id > minId)
+					.OrderBy(c => c.Id)
 					.Take(sliceSize)
 					.ToListAsync();
+
+				if (quizManualCheckings.Count == 0)
+					break;
+
+				lastProcessedId = quizManualCheckings[^1].Id;
 
 				foreach (var quizManualChecking in quizManualCheckings)
 				{

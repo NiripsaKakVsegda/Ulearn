@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import ReviewNavigationButtons from "./ReviewNavigationButtons";
 import { SlideInfo } from "./CourseUtils";
 import { useAppSelector } from "../../../redux/toolkit/hooks/useAppSelector";
@@ -9,8 +9,18 @@ import { useAppDispatch } from "../../../redux/toolkit/hooks/useAppDispatch";
 import { ShortUserInfo } from "../../../models/users";
 import moment from "moment-timezone";
 import { momentFromServerToLocal, momentToServerFormat } from "../../../utils/momentUtils";
-import { InstructorReviewFilterSearchParams } from "../../reviewQueue/RevoewQueue.types";
-import { ShortReviewQueueItem } from "../../../models/instructor";
+import {
+	Grouping,
+	InstructorReviewFilterSearchParams,
+	ReviewQueueFilterState
+} from "../../reviewQueue/RevoewQueue.types";
+import { ShortReviewQueueItem, StudentsFilter } from "../../../models/instructor";
+import { constructPathToReviewQueue, constructPathToSlide } from "../../../consts/routes";
+import { buildQuery } from "../../../utils";
+import buildFilterSearchQueryParams, { buildInstructorReviewFilterSearchQueryParams } from "../../reviewQueue/utils/buildFilterSearchQueryParams";
+import buildCourseSlidesInfo from "../../reviewQueue/utils/buildCourseSlidesInfo";
+import { usersApi } from "../../../redux/toolkit/api/usersApi";
+import { groupsApi } from "../../../redux/toolkit/api/groups/groupsApi";
 
 
 interface Props {
@@ -33,27 +43,48 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 	const isInstructor = isInstructorFromAccount(account, courseId);
 
-	const searchParams: InstructorReviewFilterSearchParams = {
+	const [searchParams, setSearchParams] = useState<InstructorReviewFilterSearchParams>({
 		...slideInfo.query,
 		slideId: slideInfo.query.queueSlideId
-	};
-	const filter = useMemo(
-		() =>
-			buildInstructorReviewQueueMetaFilterParameters(searchParams, course, itemsToLoadCount),
+	});
+	useEffect(() => {
+		const updatedParams = {
+			...slideInfo.query,
+			slideId: slideInfo.query.queueSlideId
+		};
+		if(areParamsEqual(searchParams, updatedParams)) {
+			return;
+		}
+		setSearchParams(updatedParams);
+	}, [slideInfo]);
+
+	const [filter, setFilter] = useState<ReviewQueueFilterState>();
+	useEffect(() => {
+		buildFilterState(searchParams)
+			.then(f => setFilter(f));
+	}, [searchParams]);
+
+	const filterParameters = useMemo(
+		() => buildInstructorReviewQueueMetaFilterParameters(searchParams, course, itemsToLoadCount),
 		[searchParams, course]
+	);
+
+	const courseSlidesInfo = useMemo(
+		() => buildCourseSlidesInfo(course),
+		[course]
 	);
 
 	const {
 		reviewQueueItems,
 		isLoading,
 		refetch
-	} = reviewQueueApi.useGetReviewQueueMetaQuery(filter, {
+	} = reviewQueueApi.useGetReviewQueueMetaQuery(filterParameters, {
 		selectFromResult: ({ data, isLoading, isFetching }) => ({
 				reviewQueueItems: data?.checkings,
 				isLoading: isLoading || isFetching
 			}
 		),
-		skip: !isInstructor
+		skip: !isInstructor,
 	});
 
 	useEffect(() => {
@@ -62,13 +93,14 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 		}
 	}, [currentSubmissionId]);
 
+	const [findUsersByIdsQuery] = usersApi.useLazyFindUsersByIdsQuery();
+	const [findGroupsByIdsQuery] = groupsApi.useLazyFindGroupsByIdsQuery();
+
 	const items = reviewQueueItems ?? [];
 	const totalItemsCount = items.length;
 
 	const currentItemIndex = items
 		.findIndex(item => item.submissionId === currentSubmissionId);
-	const currentItem = currentItemIndex === -1 ? undefined : items[currentItemIndex];
-	const isLocked = !currentItem || isItemLocked(currentItem);
 
 	const itemsToCheckCount = items
 		.filter(item => item.submissionId !== currentSubmissionId && !isItemLocked(item, account.id))
@@ -91,19 +123,34 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 	const [lockSubmissionMutation] = reviewQueueApi.useLockSubmissionMutation();
 
+	const nextReviewItemLink = nextItem
+		? constructPathToSlide(courseId, nextItem.slideId)
+		+ buildQuery({
+			submissionId: nextItem.submissionId,
+			userId: nextItem.userId,
+
+			...buildInstructorReviewFilterSearchQueryParams(searchParams)
+		})
+		: undefined;
+
+	const reviewQueueLink = constructPathToReviewQueue(courseId) +
+		buildQuery(buildFilterSearchQueryParams(searchParams));
+
 	return <ReviewNavigationButtons
 		courseId={ courseId }
-		filterSearchParams={ searchParams }
+
+		filter={ filter ?? searchParams }
+		courseSlidesInfo={ courseSlidesInfo }
+		grouping={ searchParams.grouping }
+		groupingItemId={ searchParams.groupingItemId }
 
 		itemsToCheckCount={ itemsToCheckCount }
 		currentSubmissionId={ currentSubmissionId }
-		currentLocked={ isLocked }
 
-		nextSubmissionId={ nextItem?.submissionId }
-		nextSlideId={ nextItem?.slideId }
-		nextUserId={ nextItem?.userId }
+		nextReviewItemLink={ nextReviewItemLink }
+		reviewQueueLink={ reviewQueueLink }
 
-		loading={ isLoading }
+		loading={ isLoading || !filter }
 		disabled={ disabled }
 		notAllLoaded={ items.length === itemsToLoadCount }
 
@@ -119,7 +166,7 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 				dispatch(reviewQueueApi.util.updateQueryData(
 					queryToUpdate,
-					filter,
+					filterParameters,
 					draft => {
 						const toLock = draft.checkings.find(item => item.submissionId === submissionId);
 						if(toLock) {
@@ -137,6 +184,84 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 		return notByUserId
 			? locked && item.lockedById !== notByUserId
 			: locked;
+	}
+
+	function areParamsEqual(p1: InstructorReviewFilterSearchParams, p2: InstructorReviewFilterSearchParams) {
+		if(
+			p1.unitId !== p2.unitId ||
+			p1.slideId !== p2.slideId ||
+			p1.studentsFilter !== p2.studentsFilter ||
+			p1.grouping !== p2.grouping ||
+			p1.groupingItemId !== p2.groupingItemId
+		) {
+			return false;
+		}
+
+		if(p1.studentsFilter === StudentsFilter.MyGroups || p1.studentsFilter === StudentsFilter.All) {
+			return true;
+		}
+
+		const ids1 = p1.studentsFilter === StudentsFilter.StudentIds
+			? p1.studentIds ?? []
+			: p1.groupIds ?? [];
+
+		const ids2 = p2.studentsFilter === StudentsFilter.StudentIds
+			? p2.studentIds ?? []
+			: p2.groupIds ?? [];
+
+		if(ids1.length !== ids2.length) {
+			return false;
+		}
+
+		for (let i = 0; i < ids1.length; i++) {
+			if(ids1[i] !== ids2[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	async function buildFilterState(params: InstructorReviewFilterSearchParams): Promise<ReviewQueueFilterState> {
+		if(params.grouping === Grouping.GroupStudents && params.groupingItemId) {
+			const students =
+				(await findUsersByIdsQuery({ userIds: [params.groupingItemId] }).unwrap()).foundUsers;
+			const studentIds = students.map(s => s.id);
+
+			return {
+				...params,
+				studentIds,
+				students
+			};
+		}
+
+		if(params.studentsFilter === StudentsFilter.StudentIds) {
+			const students = params.studentIds?.length
+				? (await findUsersByIdsQuery({ userIds: params.studentIds }).unwrap()).foundUsers
+				: [];
+			const studentIds = students.map(s => s.id);
+
+			return {
+				...params,
+				studentIds,
+				students
+			};
+		}
+
+		if(params.studentsFilter === StudentsFilter.GroupIds) {
+			const groups = params.groupIds?.length
+				? (await findGroupsByIdsQuery({ groupIds: params.groupIds }).unwrap()).foundGroups
+				: [];
+			const groupIds = groups.map(g => g.id);
+
+			return {
+				...params,
+				groupIds,
+				groups
+			};
+		}
+
+		return params;
 	}
 };
 

@@ -17,6 +17,7 @@ using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Core.Courses.Slides.Exercises;
+using Ulearn.Core.Courses.Slides.Quizzes;
 using Ulearn.Core.Extensions;
 using Ulearn.Web.Api.Models.Parameters.Review;
 using Ulearn.Web.Api.Models.Responses.Review;
@@ -189,11 +190,18 @@ namespace Ulearn.Web.Api.Controllers.Review
 					: await GetValidUserIds(parameters.StudentIds.Distinct().ToList(), isCourseAdmin);
 			}
 
-			var courseSlideIds = course.GetSlides(true, null)
+			var reviewSlideIds = course.GetSlides(true, null)
+				.Where(s => s switch
+				{
+					ExerciseSlide exerciseSlide => exerciseSlide.Scoring.RequireReview,
+					QuizSlide quizSlide => quizSlide.Scoring.ManualChecking,
+					_ => false
+				})
 				.Select(s => s.Id);
+
 			parameters.SlideIds = parameters.SlideIds is null
-				? courseSlideIds.ToList()
-				: courseSlideIds.Intersect(parameters.SlideIds).ToList();
+				? reviewSlideIds.ToList()
+				: reviewSlideIds.Intersect(parameters.SlideIds).ToList();
 		}
 
 		private Task<List<int>> GetValidGroupIds(ICollection<int> groupIds, bool isCourseAdmin)

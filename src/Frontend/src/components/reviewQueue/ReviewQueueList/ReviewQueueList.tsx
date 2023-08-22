@@ -18,6 +18,7 @@ interface Props {
 	courseSlidesInfo: CourseSlidesInfo;
 	userId: string;
 	grouping: Grouping;
+	notAllLoaded?: boolean;
 
 	buildLinkToInstructorReview: (item: ReviewQueueItem, groupingItemId: string) => string;
 }
@@ -55,6 +56,7 @@ const ReviewQueueList: FC<Props> = (props) => {
 				slideTitlesByIds={ slideTitlesByIds }
 				userId={ props.userId }
 				title={ group.title }
+				notAllLoaded={ props.notAllLoaded }
 				alwaysOpened={ props.grouping === Grouping.NoGrouping }
 				noStudent={ props.grouping === Grouping.GroupStudents }
 				noSlide={ props.grouping === Grouping.GroupExercises }

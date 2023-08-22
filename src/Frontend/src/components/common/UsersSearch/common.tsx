@@ -16,26 +16,32 @@ export function renderUserItem(user: ShortUserInfo, state: MenuItemState, inputW
 				<Avatar user={ user } size={ 'small' }/>
 				<span className={ styles.name }>{ getNameWithLastNameFirst(user) }</span>
 			</span>
-			<span className={ cn(
-				styles.additionalInfo,
-				{ [styles.additionalInfoHover]: state === "hover" }
-			) }>
-				{ user.login }
-			</span>
+		{ user.login &&
+			<span
+				className={ cn(
+					styles.additionalInfo,
+					{ [styles.additionalInfoHover]: state === "hover" }
+				) }
+			>
+					{ user.login }
+				</span>
+		}
 		</span>;
 }
 
 export function renderUserValue(user: ShortUserInfo, selected = false) {
 	return <span className={ styles.userItem }>
 		<span className={ styles.name }>{ getNameWithLastNameFirst(user) }</span>
-		<span
-			className={ cn(
-				styles.additionalInfo,
-				{ [styles.additionalInfoHover]: selected }
-			) }
-		>
-			{ user.login }
-		</span>
+		{ user.login &&
+			<span
+				className={ cn(
+					styles.additionalInfo,
+					{ [styles.additionalInfoHover]: selected }
+				) }
+			>
+				{ user.login }
+			</span>
+		}
 	</span>;
 }
 

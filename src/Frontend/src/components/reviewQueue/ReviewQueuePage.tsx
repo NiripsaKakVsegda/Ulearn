@@ -85,6 +85,7 @@ const ReviewQueuePage: FC<Props> = (props) => {
 							courseSlidesInfo={ props.courseSlidesInfo }
 							userId={ props.userId }
 							grouping={ props.grouping }
+							notAllLoaded={ props.notAllItemsLoaded }
 							buildLinkToInstructorReview={ buildLinkToInstructorReview }
 						/>
 				) }

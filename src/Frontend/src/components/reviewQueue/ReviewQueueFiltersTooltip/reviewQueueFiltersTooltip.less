@@ -1,0 +1,51 @@
+@import "/src/variables";
+
+.filtersInfoList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  font-size: 14px;
+  line-height: 1.2;
+  width: 290px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+
+    & > span:last-child {
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    font-size: 12px;
+  }
+}
+
+.filtersTooltipAdditionalInfo {
+  color: @additionalColor;
+}
+
+.groupsStudentsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

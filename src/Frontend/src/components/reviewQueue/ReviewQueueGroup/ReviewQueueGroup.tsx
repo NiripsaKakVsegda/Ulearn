@@ -19,6 +19,7 @@ interface Props {
 	reviewQueueItems: ReviewQueueItem[];
 	slideTitlesByIds: Record<string, string>;
 	userId: string;
+	notAllLoaded?: boolean;
 	title?: string;
 	noStudent?: boolean;
 	noSlide?: boolean;
@@ -46,7 +47,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 	const isPhone = useMaxWidth(MaxWidths.Phone);
 
 	const renderHeader = () => {
-		const solutionsCount = texts.getSubmissionsCountInfo(props.reviewQueueItems.length);
+		const solutionsCount = texts.getSubmissionsCountInfo(props.reviewQueueItems.length, props.notAllLoaded);
 
 		return <div
 			className={ cn(
