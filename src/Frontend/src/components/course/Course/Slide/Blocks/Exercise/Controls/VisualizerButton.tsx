@@ -1,4 +1,4 @@
-import { TechPcLaptopIcon } from '@skbkontur/icons/TechPcLaptopIcon';
+import { DevBugIcon } from '@skbkontur/icons/DevBugIcon';
 import React from "react";
 
 import defaultTheme from "src/uiTheme";
@@ -38,7 +38,7 @@ function VisualizerButton({
 				{
 					(showControlsTextContext) =>
 						<span className={ styles.exerciseControlsGapped } onClick={ openModal }>
-							<TechPcLaptopIcon size={ size }/>
+							<DevBugIcon size={ size }/>
 							{ (showControlsTextContext || showControlsText) && texts.controls.visualizer.text }
 						</span>
 				}

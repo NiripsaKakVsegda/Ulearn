@@ -5,6 +5,7 @@ import { EyeOffIcon16Regular } from "@skbkontur/icons/EyeOffIcon16Regular";
 import { MediaUiRectPlayIcon16Regular } from "@skbkontur/icons/MediaUiRectPlayIcon16Regular";
 import { QuestionCircleIcon16Regular } from "@skbkontur/icons/QuestionCircleIcon16Regular";
 import { TimeClockIcon16Regular } from "@skbkontur/icons/TimeClockIcon16Regular";
+import { UiWindowNewDownRightIcon16Regular } from "@skbkontur/icons/UiWindowNewDownRightIcon16Regular";
 
 import classnames from 'classnames';
 import React from "react";
@@ -152,8 +153,9 @@ function NavigationItem({
 				}
 				return <DocTextIcon16Regular align={ 'baseline' }/>;
 			case SlideType.Quiz:
-			case SlideType.Flashcards:
 				return <QuestionCircleIcon16Regular align={ 'baseline' }/>;
+			case SlideType.Flashcards:
+				return <UiWindowNewDownRightIcon16Regular align={ 'baseline' }/>;
 		}
 	}
 
