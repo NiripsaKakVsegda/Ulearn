@@ -29,10 +29,14 @@ namespace Database.Repos
 		Task<List<T>> GetCheckingQueueHistory<T>(
 			ManualCheckingQueueFilterOptions options,
 			[CanBeNull] DateTime? minCheckedTimestamp = null,
-			bool includeExerciseSolutionsAndReviews = false
+			bool includeVirtualFields = false
 		) where T : AbstractManualSlideChecking;
 
-		Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
+		Task<List<T>> GetManualCheckingQueue<T>(
+			ManualCheckingQueueFilterOptions options,
+			bool includeVirtualFields = false
+		) where T : AbstractManualSlideChecking;
+
 		IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking;
 		Task<int> GetQuizManualCheckingCount(string courseId, Guid slideId, string userId, DateTime? beforeTimestamp);
 		Task<AbstractManualSlideChecking> FindManualCheckingById(int id);

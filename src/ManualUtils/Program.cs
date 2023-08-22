@@ -1069,47 +1069,69 @@ namespace ManualUtils
 			var usersRepo = scope.ServiceProvider.GetRequiredService<IUsersRepo>();
 
 			var botId = await usersRepo.GetUlearnBotUserId();
-			var exerciseManualCheckings = await db.ManualExerciseCheckings
-				.Include(c => c.Reviews)
-				.Where(c => c.IsChecked)
-				.ToListAsync();
 
-			var totalCount = exerciseManualCheckings.Count;
+			const int sliceSize = 1000;
+			var totalCount = await db.ManualExerciseCheckings
+				.Where(c => c.IsChecked)
+				.CountAsync();
+
 			var processedCount = 0;
 			Console.WriteLine($@"ManualExerciseCheckings. Total Count: {totalCount}");
 
-			foreach (var exerciseManualChecking in exerciseManualCheckings)
+			for (var slice = 0; slice < totalCount; slice += sliceSize)
 			{
-				var lastReview = exerciseManualChecking.Reviews
-					.MaxBy(r => r.AddingTime);
+				var exerciseManualCheckings = await db.ManualExerciseCheckings
+					.Include(c => c.Reviews)
+					.Where(c => c.IsChecked)
+					.Skip(slice * sliceSize)
+					.Take(sliceSize)
+					.ToListAsync();
 
-				exerciseManualChecking.CheckedTimestamp ??= lastReview?.AddingTime ??
-															exerciseManualChecking.LockedUntil ??
-															exerciseManualChecking.Timestamp;
-				exerciseManualChecking.CheckedById ??= (lastReview?.AuthorId == botId ? null : lastReview?.AuthorId) ??
-														exerciseManualChecking.LockedById;
+				foreach (var exerciseManualChecking in exerciseManualCheckings)
+				{
+					var lastReview = exerciseManualChecking.Reviews
+						.MaxBy(r => r.AddingTime);
 
-				if (++processedCount % 100 == 0)
-					Console.WriteLine($@"ManualExerciseCheckings. Processed: {processedCount}/{totalCount}");
+					exerciseManualChecking.CheckedTimestamp ??= lastReview?.AddingTime ??
+																exerciseManualChecking.LockedUntil ??
+																exerciseManualChecking.Timestamp;
+					exerciseManualChecking.CheckedById ??= (lastReview?.AuthorId == botId ? null : lastReview?.AuthorId) ??
+															exerciseManualChecking.LockedById;
+
+					if (++processedCount % 100 == 0)
+						Console.WriteLine($@"ManualExerciseCheckings. Processed: {processedCount}/{totalCount}");
+				}
+
+				await db.SaveChangesAsync();
 			}
 
 			Console.WriteLine($@"ManualExerciseCheckings. Processed: {processedCount}");
 
-			var quizManualCheckings = await db.ManualQuizCheckings
-				.Where(c => c.IsChecked)
-				.ToListAsync();
 
-			totalCount = quizManualCheckings.Count;
+			totalCount = await db.ManualQuizCheckings
+				.Where(c => c.IsChecked)
+				.CountAsync();
 			processedCount = 0;
 			Console.WriteLine($@"ManualQuizCheckings. Total Count: {totalCount}");
 
-			foreach (var quizManualChecking in quizManualCheckings)
+			for (var slice = 0; slice < totalCount; slice += sliceSize)
 			{
-				quizManualChecking.CheckedTimestamp ??= quizManualChecking.LockedUntil ?? quizManualChecking.Timestamp;
-				quizManualChecking.CheckedById ??= quizManualChecking.LockedById;
+				var quizManualCheckings = await db.ManualQuizCheckings
+					.Where(c => c.IsChecked)
+					.Skip(slice * sliceSize)
+					.Take(sliceSize)
+					.ToListAsync();
 
-				if (++processedCount % 100 == 0)
-					Console.WriteLine($@"ManualQuizCheckings. Processed: {processedCount}/{totalCount}");
+				foreach (var quizManualChecking in quizManualCheckings)
+				{
+					quizManualChecking.CheckedTimestamp ??= quizManualChecking.LockedUntil ?? quizManualChecking.Timestamp;
+					quizManualChecking.CheckedById ??= quizManualChecking.LockedById;
+
+					if (++processedCount % 100 == 0)
+						Console.WriteLine($@"ManualQuizCheckings. Processed: {processedCount}/{totalCount}");
+				}
+
+				await db.SaveChangesAsync();
 			}
 
 			Console.WriteLine($@"ManualQuizCheckings. Processed: {processedCount}");

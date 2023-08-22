@@ -61,35 +61,18 @@ namespace Ulearn.Web.Api.Controllers.Review
 			if (!hasAccess)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least course instructor"));
 
-			if (parameters.StudentsFilter is StudentsFilter.All && !isCourseAdmin)
-				parameters.StudentsFilter = StudentsFilter.MyGroups;
-
-			if (parameters.StudentsFilter is StudentsFilter.GroupIds)
-			{
-				parameters.GroupIds = parameters.GroupIds is null
-					? new List<int>()
-					: await GetValidGroupIds(parameters.GroupIds.Distinct().ToList(), isCourseAdmin);
-			}
-
-			if (parameters.StudentsFilter is StudentsFilter.StudentIds)
-			{
-				parameters.StudentIds = parameters.StudentIds is null
-					? new List<string>()
-					: await GetValidUserIds(parameters.StudentIds.Distinct().ToList(), isCourseAdmin);
-			}
+			await ValidateFilter(parameters, isCourseAdmin, course);
 
 			var filterOptions = await BuildQueryFilterOptions(parameters, false);
-			var checkings = await GetMergedCheckingQueue(filterOptions);
+			var checkings = await GetMergedCheckingQueue(filterOptions, includeFields: true);
 
 			return new ReviewQueueResponse
 			{
 				Checkings = checkings
 					.Select(checking => BuildReviewQueueItem(checking, course))
-					.Where(c => c is not null)
 					.ToList()
 			};
 		}
-
 
 		[HttpGet("history")]
 		public async Task<ActionResult<ReviewQueueResponse>> GetReviewQueueHistory(
@@ -105,25 +88,15 @@ namespace Ulearn.Web.Api.Controllers.Review
 			if (!hasAccess)
 				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least course instructor"));
 
-			if (parameters.StudentsFilter is StudentsFilter.All && !isCourseAdmin)
-				parameters.StudentsFilter = StudentsFilter.MyGroups;
-
-			if (parameters.StudentsFilter is StudentsFilter.GroupIds)
-			{
-				parameters.GroupIds = parameters.GroupIds is null
-					? new List<int>()
-					: await GetValidGroupIds(parameters.GroupIds.Distinct().ToList(), isCourseAdmin);
-			}
-
-			if (parameters.StudentsFilter is StudentsFilter.StudentIds)
-			{
-				parameters.StudentIds = parameters.StudentIds is null
-					? new List<string>()
-					: await GetValidUserIds(parameters.StudentIds.Distinct().ToList(), isCourseAdmin);
-			}
+			await ValidateFilter(parameters, isCourseAdmin, course);
 
 			var filterOptions = await BuildQueryFilterOptions(parameters, true);
-			var checkings = await GetMergedCheckingQueue(filterOptions, true, parameters.MinCheckedTimestamp);
+			var checkings = await GetMergedCheckingQueue(
+				filterOptions,
+				true,
+				parameters.MinCheckedTimestamp,
+				true
+			);
 
 			var exercises = checkings.OfType<ManualExerciseChecking>().ToList();
 			var reviews = exercises.Count > 0
@@ -138,7 +111,45 @@ namespace Ulearn.Web.Api.Controllers.Review
 						course,
 						reviews?.GetOrDefault(checking.Id, null)
 					))
-					.Where(c => c is not null)
+					.ToList()
+			};
+		}
+
+		[HttpGet("meta")]
+		public async Task<ActionResult<ReviewQueueMetaResponse>> GetReviewQueueMeta(
+			[FromQuery] ReviewQueueMetaFilterParameters parameters
+		)
+		{
+			var course = courseStorage.FindCourse(parameters.CourseId);
+			if (course is null)
+				return NotFound(new ErrorResponse($"Course with id {parameters.CourseId} not found"));
+
+			var isCourseAdmin = await courseRolesRepo.HasUserAccessToCourse(UserId, parameters.CourseId, CourseRoleType.CourseAdmin);
+			var hasAccess = isCourseAdmin || await courseRolesRepo.HasUserAccessToCourse(UserId, parameters.CourseId, CourseRoleType.Instructor);
+			if (!hasAccess)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least course instructor"));
+
+			await ValidateFilter(parameters, isCourseAdmin, course);
+
+			var filterOptions = await BuildQueryFilterOptions(parameters, parameters.IsHistory);
+			var checkings = await GetMergedCheckingQueue(
+				filterOptions,
+				parameters.IsHistory,
+				parameters.MinCheckedTimestamp
+			);
+
+			return new ReviewQueueMetaResponse
+			{
+				Checkings = checkings
+					.Select(checking => new ShortReviewQueueItem
+						{
+							SubmissionId = checking.Id,
+							SlideId = checking.SlideId,
+							UserId = checking.UserId,
+							LockedById = checking.LockedById,
+							LockedUntil = checking.LockedUntil
+						}
+					)
 					.ToList()
 			};
 		}
@@ -157,6 +168,32 @@ namespace Ulearn.Web.Api.Controllers.Review
 
 			await slideCheckingsRepo.LockManualChecking(checking, UserId);
 			return Ok(new SuccessResponseWithMessage($"Submission with id {submissionId} locked by you for 30 minutes"));
+		}
+
+		private async Task ValidateFilter(ReviewQueueFilterParameters parameters, bool isCourseAdmin, ICourse course)
+		{
+			if (parameters.StudentsFilter is StudentsFilter.All && !isCourseAdmin)
+				parameters.StudentsFilter = StudentsFilter.MyGroups;
+
+			if (parameters.StudentsFilter is StudentsFilter.GroupIds)
+			{
+				parameters.GroupIds = parameters.GroupIds is null
+					? new List<int>()
+					: await GetValidGroupIds(parameters.GroupIds.Distinct().ToList(), isCourseAdmin);
+			}
+
+			if (parameters.StudentsFilter is StudentsFilter.StudentIds)
+			{
+				parameters.StudentIds = parameters.StudentIds is null
+					? new List<string>()
+					: await GetValidUserIds(parameters.StudentIds.Distinct().ToList(), isCourseAdmin);
+			}
+
+			var courseSlideIds = course.GetSlides(true, null)
+				.Select(s => s.Id);
+			parameters.SlideIds = parameters.SlideIds is null
+				? courseSlideIds.ToList()
+				: courseSlideIds.Intersect(parameters.SlideIds).ToList();
 		}
 
 		private Task<List<int>> GetValidGroupIds(ICollection<int> groupIds, bool isCourseAdmin)
@@ -241,15 +278,20 @@ namespace Ulearn.Web.Api.Controllers.Review
 			};
 		}
 
-		private async Task<List<AbstractManualSlideChecking>> GetMergedCheckingQueue(ManualCheckingQueueFilterOptions filterOptions, bool isHistory = false, DateTime? minTimestamp = null)
+		private async Task<List<AbstractManualSlideChecking>> GetMergedCheckingQueue(
+			ManualCheckingQueueFilterOptions filterOptions,
+			bool isHistory = false,
+			DateTime? minTimestamp = null,
+			bool includeFields = false
+		)
 		{
 			var exercises = isHistory
-				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualExerciseChecking>(filterOptions, minTimestamp, true)
-				: await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(filterOptions);
+				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualExerciseChecking>(filterOptions, minTimestamp, includeFields)
+				: await slideCheckingsRepo.GetManualCheckingQueue<ManualExerciseChecking>(filterOptions, includeFields);
 
 			var quizzes = isHistory
-				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualQuizChecking>(filterOptions, minTimestamp)
-				: await slideCheckingsRepo.GetManualCheckingQueue<ManualQuizChecking>(filterOptions);
+				? await slideCheckingsRepo.GetCheckingQueueHistory<ManualQuizChecking>(filterOptions, minTimestamp, includeFields)
+				: await slideCheckingsRepo.GetManualCheckingQueue<ManualQuizChecking>(filterOptions, includeFields);
 
 			var result = exercises
 				.Cast<AbstractManualSlideChecking>()
@@ -303,10 +345,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 			[CanBeNull] List<ShortReviewInfo> reviews = null
 		)
 		{
-			var slide = course.FindSlideByIdNotSafe(checking.SlideId);
-			if (slide is null)
-				return null;
-
+			var slide = course.GetSlideByIdNotSafe(checking.SlideId);
 			var maxScore = (slide as ExerciseSlide)?.Scoring.ScoreWithCodeReview ?? slide.MaxScore;
 			var score = checking is ManualQuizChecking quizChecking
 				? quizChecking.Score

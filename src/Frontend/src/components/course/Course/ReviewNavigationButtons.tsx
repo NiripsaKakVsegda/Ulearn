@@ -21,8 +21,9 @@ interface Props {
 	nextSlideId?: string;
 	nextUserId?: string;
 
-	loading: boolean;
-	disabled: boolean;
+	loading?: boolean;
+	disabled?: boolean;
+	notAllLoaded?: boolean;
 
 	lockSubmission: (submissionId: number) => void;
 }
@@ -78,7 +79,7 @@ const ReviewNavigationButtons: FC<Props> = (props) => {
 			/>
 		}
 		<span className={ styles.reviewQueueNumberLabel }>
-			{ texts.buildNextReviewText(props.itemsToCheckCount) }
+			{ texts.buildNextReviewText(props.itemsToCheckCount, props.notAllLoaded) }
 		</span>
 	</div>;
 };

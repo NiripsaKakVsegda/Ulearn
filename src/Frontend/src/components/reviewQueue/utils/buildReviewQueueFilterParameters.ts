@@ -1,6 +1,7 @@
 import {
 	ReviewQueueFilterParameters,
 	ReviewQueueHistoryFilterParameters,
+	ReviewQueueMetaFilterParameters,
 	StudentsFilter
 } from "../../../models/instructor";
 import { CourseInfo } from "../../../models/course";
@@ -36,13 +37,13 @@ export function buildReviewQueueFilterParameters(
 	};
 }
 
-export function buildInstructorReviewQueueFilterParameters(
+export function buildInstructorReviewQueueMetaFilterParameters(
 	filter: InstructorReviewFilterSearchParams,
 	courseInfo: CourseInfo,
 	count = 500
-):
-	ReviewQueueFilterParameters | ReviewQueueHistoryFilterParameters {
-	const parameters = buildReviewQueueFilterParameters(filter, courseInfo, count);
+): ReviewQueueMetaFilterParameters {
+	const parameters = buildReviewQueueFilterParameters(filter, courseInfo, count) as ReviewQueueMetaFilterParameters;
+	parameters.history = filter.reviewed;
 
 	if(filter.grouping === Grouping.GroupStudents && filter.groupingItemId) {
 		parameters.studentsFilter = StudentsFilter.StudentIds;

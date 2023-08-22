@@ -45,6 +45,16 @@ public class ReviewQueueHistoryFilterParameters : ReviewQueueFilterParameters
 	public DateTime? MinCheckedTimestamp { get; set; }
 }
 
+public class ReviewQueueMetaFilterParameters : ReviewQueueFilterParameters
+{
+	[FromQuery(Name = "history")]
+	public bool IsHistory { get; set; }
+
+	[FromQuery(Name = "minTimestamp")]
+	[CanBeNull]
+	public DateTime? MinCheckedTimestamp { get; set; }
+}
+
 public enum StudentsFilter
 {
 	All,

@@ -4,6 +4,8 @@ import { reviewQueue } from "../../../consts/routes";
 import {
 	ReviewQueueFilterParameters,
 	ReviewQueueHistoryFilterParameters,
+	ReviewQueueMetaFilterParameters,
+	ReviewQueueMetaResponse,
 	ReviewQueueResponse
 } from "../../../models/instructor";
 import { buildQuery } from "../../../utils";
@@ -22,6 +24,11 @@ export const reviewQueueApi = createApi({
 		getReviewQueueHistory: build.query<ReviewQueueResponse, ReviewQueueHistoryFilterParameters>({
 			query: (params) => ({
 				url: `${ reviewQueue }/history${ buildQuery({ ...params }) }`
+			})
+		}),
+		getReviewQueueMeta: build.query<ReviewQueueMetaResponse, ReviewQueueMetaFilterParameters>({
+			query: (params) => ({
+				url: `${ reviewQueue }/meta${ buildQuery({ ...params }) }`
 			})
 		}),
 		lockSubmission: build.mutation<Response, { submissionId: number }>({

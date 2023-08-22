@@ -2,7 +2,7 @@ import React, { FC, useEffect, useMemo } from "react";
 import ReviewNavigationButtons from "./ReviewNavigationButtons";
 import { SlideInfo } from "./CourseUtils";
 import { useAppSelector } from "../../../redux/toolkit/hooks/useAppSelector";
-import { buildInstructorReviewQueueFilterParameters } from "../../reviewQueue/utils/buildReviewQueueFilterParameters";
+import { buildInstructorReviewQueueMetaFilterParameters } from "../../reviewQueue/utils/buildReviewQueueFilterParameters";
 import { isInstructorFromAccount } from "../../../utils/courseRoles";
 import { reviewQueueApi } from "../../../redux/toolkit/api/reviewQueueApi";
 import { useAppDispatch } from "../../../redux/toolkit/hooks/useAppDispatch";
@@ -10,12 +10,14 @@ import { ShortUserInfo } from "../../../models/users";
 import moment from "moment-timezone";
 import { momentFromServerToLocal, momentToServerFormat } from "../../../utils/momentUtils";
 import { InstructorReviewFilterSearchParams } from "../../reviewQueue/RevoewQueue.types";
-import { ReviewQueueItem } from "../../../models/instructor";
+import { ShortReviewQueueItem } from "../../../models/instructor";
 
 
 interface Props {
 	slideInfo: SlideInfo;
 }
+
+const itemsToLoadCount = 500;
 
 const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 	const courseId = slideInfo.courseId;
@@ -37,7 +39,7 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 	};
 	const filter = useMemo(
 		() =>
-			buildInstructorReviewQueueFilterParameters(searchParams, course),
+			buildInstructorReviewQueueMetaFilterParameters(searchParams, course, itemsToLoadCount),
 		[searchParams, course]
 	);
 
@@ -45,36 +47,22 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 		reviewQueueItems,
 		isLoading,
 		refetch
-	} = reviewQueueApi.useGetReviewQueueQuery(filter, {
-		selectFromResult: ({ data, isFetching }) => ({
-			reviewQueueItems: data?.checkings,
-			isLoading: isFetching
-		}),
-		skip: !isInstructor || isReviewed
-	});
-
-
-	const {
-		reviewQueueItemsHistory,
-		isHistoryLoading,
-		refetch: refetchHistory
-	} = reviewQueueApi.useGetReviewQueueHistoryQuery(filter, {
-		selectFromResult: ({ data, isFetching }) => ({
-			reviewQueueItemsHistory: data?.checkings,
-			isHistoryLoading: isFetching
-		}),
-		skip: !isInstructor || !isReviewed
+	} = reviewQueueApi.useGetReviewQueueMetaQuery(filter, {
+		selectFromResult: ({ data, isLoading, isFetching }) => ({
+				reviewQueueItems: data?.checkings,
+				isLoading: isLoading || isFetching
+			}
+		),
+		skip: !isInstructor
 	});
 
 	useEffect(() => {
-		if(isReviewed && !isHistoryLoading && !!reviewQueueItemsHistory) {
-			refetchHistory();
-		} else if(!isLoading && !!reviewQueueItems) {
+		if(reviewQueueItems && !isLoading) {
 			refetch();
 		}
 	}, [currentSubmissionId]);
 
-	const items = (isReviewed ? reviewQueueItemsHistory : reviewQueueItems) ?? [];
+	const items = reviewQueueItems ?? [];
 	const totalItemsCount = items.length;
 
 	const currentItemIndex = items
@@ -113,10 +101,11 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 		nextSubmissionId={ nextItem?.submissionId }
 		nextSlideId={ nextItem?.slideId }
-		nextUserId={ nextItem?.user.id }
+		nextUserId={ nextItem?.userId }
 
-		loading={ isLoading || isHistoryLoading }
+		loading={ isLoading }
 		disabled={ disabled }
+		notAllLoaded={ items.length === itemsToLoadCount }
 
 		lockSubmission={ lockSubmission }
 	/>;
@@ -124,7 +113,6 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 	function lockSubmission(submissionId: number) {
 		lockSubmissionMutation({ submissionId })
 			.then(() => {
-				console.log('locked', submissionId);
 				const queryToUpdate = isReviewed
 					? 'getReviewQueue'
 					: 'getReviewQueueHistory';
@@ -143,11 +131,11 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 			});
 	}
 
-	function isItemLocked(item: ReviewQueueItem, notByUserId?: string) {
-		const locked = !!item?.lockedBy && !!item.lockedUntil &&
+	function isItemLocked(item: ShortReviewQueueItem, notByUserId?: string) {
+		const locked = !!item?.lockedById && !!item.lockedUntil &&
 			moment().isBefore(momentFromServerToLocal(item.lockedUntil));
 		return notByUserId
-			? locked && item.lockedBy?.id !== notByUserId
+			? locked && item.lockedById !== notByUserId
 			: locked;
 	}
 };

@@ -43,6 +43,10 @@ export interface ReviewQueueFilterParameters {
 export interface ReviewQueueHistoryFilterParameters extends ReviewQueueFilterParameters {
 	minTimestamp?: string;
 }
+export interface ReviewQueueMetaFilterParameters extends ReviewQueueFilterParameters {
+	history?: boolean;
+	minTimestamp?: string;
+}
 
 export enum StudentsFilter {
 	All = 'all',
@@ -73,6 +77,18 @@ export interface ReviewQueueItem {
 	checkedTimestamp?: string;
 	checkedBy?: ShortUserInfo;
 	reviews?: ShortReviewInfo[];
+}
+
+export interface ReviewQueueMetaResponse {
+	checkings: ShortReviewQueueItem[];
+}
+
+export interface ShortReviewQueueItem {
+	submissionId: number;
+	slideId: string;
+	userId: string;
+	lockedById?: string;
+	lockedUntil?: string;
 }
 
 export interface ShortReviewInfo {

@@ -10,11 +10,17 @@ const texts = {
 
 	nextReviewLinkText: 'Следующее решение',
 	returnToCheckingQueuePage: 'Вернуться',
-	buildNextReviewText: (count: number): string =>
-		count > 0
-			? `${ getPluralForm(count, 'Осталась', 'Осталось', 'Осталось') } ${ count } ${ getPluralForm(count,
-				'работа', 'работы', 'работ') }`
-			: 'Поздравляем, очередь пуста! Работ для проверки нет',
+	buildNextReviewText: (count: number, notAllLoaded = false): string => {
+		if(count <= 0) {
+			return 'Поздравляем, очередь пуста! Работ для проверки нет';
+		}
+		if(notAllLoaded) {
+			return `Осталось ${ count }+ работ`;
+		}
+
+		return `${ getPluralForm(count, 'Осталась', 'Осталось', 'Осталось') } 
+			${ count } ${ getPluralForm(count, 'работа', 'работы', 'работ') }`;
+	},
 };
 
 export default texts;

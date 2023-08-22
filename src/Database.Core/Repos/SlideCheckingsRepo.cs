@@ -203,7 +203,7 @@ namespace Database.Repos
 		public Task<List<T>> GetCheckingQueueHistory<T>(
 			ManualCheckingQueueFilterOptions options,
 			DateTime? minCheckedTimestamp = null,
-			bool includeExerciseSolutionsAndReviews = false
+			bool includeVirtualFields = false
 		) where T : AbstractManualSlideChecking
 		{
 			var query = GetManualCheckingQueueFilterQuery<T>(options);
@@ -219,25 +219,32 @@ namespace Database.Repos
 			if (options.Count > 0)
 				query = query.Take(options.Count);
 
-			if (includeExerciseSolutionsAndReviews && query is IQueryable<ManualExerciseChecking> exerciseCheckingsQuery)
-				query = (IQueryable<T>)exerciseCheckingsQuery
-					.Include(c => c.Submission.SolutionCode)
-					.Include(c => c.Submission.Reviews)
-					.ThenInclude(r => r.Author);
+			if (includeVirtualFields)
+			{
+				if (query is IQueryable<ManualExerciseChecking> exerciseCheckingsQuery)
+					query = (IQueryable<T>)exerciseCheckingsQuery
+						.Include(c => c.Submission.SolutionCode)
+						.Include(c => c.Submission.Reviews)
+						.ThenInclude(r => r.Author);
 
-			return query
-				.Include(c => c.User)
-				.Include(c => c.LockedBy)
-				.Include(c => c.CheckedBy)
-				.ToListAsync();
+				query = query
+					.Include(c => c.User)
+					.Include(c => c.LockedBy)
+					.Include(c => c.CheckedBy);
+			}
+
+			return query.ToListAsync();
 		}
 
-		public Task<List<T>> GetManualCheckingQueue<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking
+		public Task<List<T>> GetManualCheckingQueue<T>(
+			ManualCheckingQueueFilterOptions options,
+			bool includeVirtualFields = false
+		) where T : AbstractManualSlideChecking
 		{
 			var query = GetManualCheckingQueueFilterQuery<T>(options)
 				.Join(
 					db.Set<T>()
-						.GroupBy(c => new {c.UserId, c.SlideId})
+						.GroupBy(c => new { c.UserId, c.SlideId })
 						.Select(g => g
 							.Select(c => c.Id)
 							.Max()
@@ -254,11 +261,15 @@ namespace Database.Repos
 			if (options.Count > 0)
 				query = query.Take(options.Count);
 
-			return query
-				.Include(c => c.User)
-				.Include(c => c.LockedBy)
-				.Include(c => c.CheckedBy)
-				.ToListAsync();
+			if (includeVirtualFields)
+			{
+				query = query
+					.Include(c => c.User)
+					.Include(c => c.LockedBy)
+					.Include(c => c.CheckedBy);
+			}
+
+			return query.ToListAsync();
 		}
 
 		public IQueryable<T> GetManualCheckingQueueFilterQuery<T>(ManualCheckingQueueFilterOptions options) where T : AbstractManualSlideChecking

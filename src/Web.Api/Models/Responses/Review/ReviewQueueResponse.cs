@@ -17,14 +17,21 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	}
 
 	[DataContract]
+	public class ReviewQueueMetaResponse : SuccessResponse
+	{
+		[DataMember]
+		public List<ShortReviewQueueItem> Checkings { get; set; }
+	}
+
+	[DataContract]
 	public class ReviewQueueItem
 	{
 		[DataMember]
 		public QueueItemType Type { get; set; }
-		
+
 		[DataMember]
 		public int SubmissionId { get; set; }
-		
+
 		[DataMember]
 		public Guid SlideId { get; set; }
 
@@ -33,7 +40,7 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 
 		[DataMember]
 		public DateTime Timestamp { get; set; }
-		
+
 		[DataMember]
 		[CanBeNull]
 		public int? Score { get; set; }
@@ -61,7 +68,7 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 		[CanBeNull]
 		public List<ShortReviewInfo> Reviews { get; set; }
 	}
-	
+
 	public class ShortReviewInfo
 	{
 		[DataMember]
@@ -81,5 +88,26 @@ namespace Ulearn.Web.Api.Models.Responses.Review
 	{
 		Exercise,
 		Quiz,
+	}
+
+	[DataContract]
+	public class ShortReviewQueueItem
+	{
+		[DataMember]
+		public int SubmissionId { get; set; }
+
+		[DataMember]
+		public Guid SlideId { get; set; }
+
+		[DataMember]
+		public string UserId { get; set; }
+
+		[DataMember]
+		[CanBeNull]
+		public string LockedById { get; set; }
+
+		[DataMember]
+		[CanBeNull]
+		public DateTime? LockedUntil { get; set; }
 	}
 }
