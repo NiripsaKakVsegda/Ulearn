@@ -84,11 +84,8 @@ namespace Ulearn.Web.Api.Controllers.Review
 			return new ReviewQueueResponse
 			{
 				Checkings = checkings
-					.Select(checking => BuildReviewQueueItem(
-						course,
-						checking,
-						null
-					))
+					.Select(checking => BuildReviewQueueItem(checking, course))
+					.Where(c => c is not null)
 					.ToList()
 			};
 		}
@@ -137,10 +134,11 @@ namespace Ulearn.Web.Api.Controllers.Review
 			{
 				Checkings = checkings
 					.Select(checking => BuildReviewQueueItem(
-						course,
 						checking,
+						course,
 						reviews?.GetOrDefault(checking.Id, null)
 					))
+					.Where(c => c is not null)
 					.ToList()
 			};
 		}
@@ -300,18 +298,22 @@ namespace Ulearn.Web.Api.Controllers.Review
 		}
 
 		private static ReviewQueueItem BuildReviewQueueItem(
-			ICourse course,
 			AbstractManualSlideChecking checking,
-			[CanBeNull] List<ShortReviewInfo> reviews
+			ICourse course,
+			[CanBeNull] List<ShortReviewInfo> reviews = null
 		)
 		{
-			var slide = course.GetSlideByIdNotSafe(checking.SlideId);
+			var slide = course.FindSlideByIdNotSafe(checking.SlideId);
+			if (slide is null)
+				return null;
+
 			var maxScore = (slide as ExerciseSlide)?.Scoring.ScoreWithCodeReview ?? slide.MaxScore;
 			var score = checking is ManualQuizChecking quizChecking
 				? quizChecking.Score
 				: ((ManualExerciseChecking)checking).Percent is { } percent
 					? SlideCheckingsRepo.ConvertExerciseManualCheckingPercentToScore(percent, maxScore)
 					: (int?)null;
+
 			return new ReviewQueueItem
 			{
 				SubmissionId = checking.Id,
