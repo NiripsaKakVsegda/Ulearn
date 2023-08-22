@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import api from "src/api";
 import { AppDispatch, store } from "src/setupStore";
-import { Provider, connect, } from "react-redux";
+import { connect, Provider, } from "react-redux";
 
 import { ThemeContext, Toast } from "ui";
 import ErrorBoundary from "src/components/common/ErrorBoundary";
@@ -48,8 +48,8 @@ function UlearnApp(): React.ReactElement {
 interface Props {
 	account: AccountState;
 	getNotificationsCount: () => void;
-	getCurrentUser: () => void;
-	getCourses: () => void;
+	getCurrentUser: () => Promise<void>;
+	getCourses: () => Promise<void>;
 	setDeviceType: (deviceType: DeviceType) => void;
 	children?: React.ReactNode;
 }
@@ -92,11 +92,12 @@ class InternalUlearnApp extends Component<Props, State> {
 
 	componentDidMount() {
 		const { getCurrentUser, getCourses } = this.props;
-		getCurrentUser();
-		getCourses();
-		this.setState({
-			initializing: false
-		});
+		Promise.all([getCurrentUser(), getCourses()])
+			.finally(() =>
+				this.setState({
+					initializing: false
+				})
+			);
 		window.addEventListener("resize", this.onWindowResize);
 	}
 
@@ -173,7 +174,7 @@ const mapStateToProps = (state: RootState) => {
 	};
 };
 
-const mapDispatchToProps = (dispatch : AppDispatch) => {
+const mapDispatchToProps = (dispatch: AppDispatch) => {
 	return {
 		getCurrentUser: () => api.account.redux.getCurrentUser()(dispatch),
 		getCourses: () => api.courses.getCourses()(dispatch),

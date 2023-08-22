@@ -60,9 +60,11 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 	const [filter, setFilter] = useState<ReviewQueueFilterState>();
 	useEffect(() => {
-		buildFilterState(searchParams)
-			.then(f => setFilter(f));
-	}, [searchParams]);
+		if(isInstructor) {
+			buildFilterState(searchParams)
+				.then(f => setFilter(f));
+		}
+	}, [searchParams, isInstructor]);
 
 	const filterParameters = useMemo(
 		() => buildInstructorReviewQueueMetaFilterParameters(searchParams, course, itemsToLoadCount),
@@ -135,6 +137,9 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 	const reviewQueueLink = constructPathToReviewQueue(courseId) +
 		buildQuery(buildFilterSearchQueryParams(searchParams));
+
+	if (!isInstructor)
+		return null;
 
 	return <ReviewNavigationButtons
 		courseId={ courseId }
