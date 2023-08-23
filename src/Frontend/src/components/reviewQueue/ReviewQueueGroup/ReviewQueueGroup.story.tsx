@@ -54,3 +54,26 @@ ReviewQueueGroupSlideGroupingStory.args = {
 	noStudent: true,
 	buildLinkToInstructorReview: () => '#'
 };
+
+export const ReviewQueueGroupMockedNoGroupingStory = Template.bind({});
+ReviewQueueGroupMockedNoGroupingStory.storyName = "Mocked. No grouping";
+ReviewQueueGroupMockedNoGroupingStory.args = {
+	alwaysOpened: true,
+	reviewQueueItems: mockedReviewQueueItems,
+	slideTitlesByIds: getSlideTitlesByIds(mockedCourseSlidesInfo),
+	userId: 'userId',
+	mocked: true,
+	buildLinkToInstructorReview: () => '#'
+};
+
+export const ReviewQueueGroupMockedGroupingStory = Template.bind({});
+ReviewQueueGroupMockedGroupingStory.storyName = "Mocked. Grouping";
+ReviewQueueGroupMockedGroupingStory.args = {
+	title: mockedReviewQueueItems[0].user.visibleName,
+	reviewQueueItems: mockedReviewQueueItems,
+	slideTitlesByIds: getSlideTitlesByIds(mockedCourseSlidesInfo),
+	userId: 'userId',
+	noStudent: true,
+	mocked: true,
+	buildLinkToInstructorReview: () => '#'
+};

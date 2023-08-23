@@ -6,6 +6,7 @@ import ReviewQueueGroup from "../ReviewQueueGroup/ReviewQueueGroup";
 import styles from './reviewQueueList.less';
 import texts from './ReviewQueueList.texts';
 import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
+import { mockSymbol } from "../../common/MockString/MockString";
 
 interface GroupInfo {
 	id: string;
@@ -20,10 +21,16 @@ interface Props {
 	grouping: Grouping;
 	notAllLoaded?: boolean;
 
+	loading?: boolean;
+
 	buildLinkToInstructorReview: (item: ReviewQueueItem, groupingItemId: string) => string;
 }
 
+const mockedGroupsCount = 3;
+
 const ReviewQueueList: FC<Props> = (props) => {
+	const isMocked = !!props.loading && !props.reviewQueueItems.length;
+
 	const slidesOrderInCourseById = props.courseSlidesInfo.units
 		.reduce(
 			(slides, unit) => [...slides, ...unit.slides],
@@ -35,19 +42,19 @@ const ReviewQueueList: FC<Props> = (props) => {
 			{} as Record<string, number>
 		);
 
-	if(!props.reviewQueueItems.length) {
-		return <div className={ styles.noSubmissionsWrapper }>
-			<span className={ styles.noSubmissionsHintColor }>{ texts.noSubmissionsFoundHint }</span>
-			<span>{ texts.noSubmissionsFound }</span>
-		</div>;
-	}
-
 	const slideTitlesByIds = getSlideTitlesByIds(props.courseSlidesInfo);
 
 	const groups = useMemo(
 		() => buildGroups(props.reviewQueueItems, props.grouping),
 		[props.reviewQueueItems, props.grouping]
 	);
+
+	if(!props.reviewQueueItems.length && !isMocked) {
+		return <div className={ styles.noSubmissionsWrapper }>
+			<span className={ styles.noSubmissionsHintColor }>{ texts.noSubmissionsFoundHint }</span>
+			<span>{ texts.noSubmissionsFound }</span>
+		</div>;
+	}
 
 	const renderGroup = (group: GroupInfo) =>
 		<li key={ group.id }>
@@ -60,6 +67,7 @@ const ReviewQueueList: FC<Props> = (props) => {
 				alwaysOpened={ props.grouping === Grouping.NoGrouping }
 				noStudent={ props.grouping === Grouping.GroupStudents }
 				noSlide={ props.grouping === Grouping.GroupExercises }
+				mocked={ isMocked }
 				buildLinkToInstructorReview={ item => props.buildLinkToInstructorReview(item, group.id) }
 			/>
 		</li>;
@@ -76,6 +84,16 @@ const ReviewQueueList: FC<Props> = (props) => {
 				return [{ id: 'all', items: items }];
 
 			case Grouping.GroupStudents:
+				if(isMocked) {
+					const mockUserName = `${ mockSymbol.repeat(10) } ${ mockSymbol.repeat(5) }`;
+					return [...Array(mockedGroupsCount).keys()]
+						.map(key => ({
+							id: key.toString(),
+							title: mockUserName,
+							items: [],
+						}));
+				}
+
 				return Object.values(items
 						.reduce((result, item) => {
 							const current = result[item.user.id] ?? {
@@ -91,6 +109,16 @@ const ReviewQueueList: FC<Props> = (props) => {
 					.sort((a, b) => a.title!.localeCompare(b.title!));
 
 			case Grouping.GroupExercises:
+				if(isMocked) {
+					const mockSlideTitle = mockSymbol.repeat(15);
+					return [...Array(mockedGroupsCount).keys()]
+						.map(key => ({
+							id: key.toString(),
+							title: mockSlideTitle,
+							items: [],
+						}));
+				}
+
 				return Object.values(items
 						.reduce((result, item) => {
 							const current = result[item.slideId] ?? {

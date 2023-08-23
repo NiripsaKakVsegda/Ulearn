@@ -8,7 +8,7 @@ import {
 	mockedSearchStudents
 } from "./storyData";
 import { useState } from "react";
-import { ReviewQueueFilterState } from "./RevoewQueue.types";
+import { Grouping } from "./RevoewQueue.types";
 import { fullscreenLayout } from "src/storiesUtils";
 
 export default {
@@ -19,18 +19,16 @@ export default {
 
 const Template: ComponentStory<typeof ReviewQueuePage> = (args) => {
 	const [filter, setFilter] = useState(args.filter);
+	const [grouping, setGrouping] = useState(args.grouping ?? Grouping.NoGrouping);
 
-	const updatedArgs = {
-		...args,
-		filter,
-		onUpdateFilter: updateFilter,
-	};
+	return <ReviewQueuePage
+		{ ...args }
+		filter={filter}
+		grouping={grouping}
+		onUpdateFilter={setFilter}
+		onChangeGrouping={setGrouping}
 
-	return <ReviewQueuePage { ...updatedArgs } />;
-
-	function updateFilter(filter: ReviewQueueFilterState) {
-		setFilter(filter);
-	}
+	/>;
 };
 
 export const ReviewQueuePageStory = Template.bind({});
@@ -39,6 +37,7 @@ ReviewQueuePageStory.args = {
 	reviewQueueItems: mockedReviewQueueItems,
 	loading: false,
 	filter: getMockedReviewQueueFilter(),
+	grouping: Grouping.NoGrouping,
 	courseSlidesInfo: mockedCourseSlidesInfo,
 	userId: "userId",
 	getStudents: mockedSearchStudents,
@@ -88,10 +87,10 @@ ReviewQueuePageNotAllLoadedStory.args = {
 	buildLinkToInstructorReview: () => "#",
 };
 
-export const ReviewQueuePageFetchingStory = Template.bind({});
-ReviewQueuePageFetchingStory.storyName = "Fetching";
-ReviewQueuePageFetchingStory.args = {
-	reviewQueueItems: mockedReviewQueueItems,
+export const ReviewQueuePageLoadingStory = Template.bind({});
+ReviewQueuePageLoadingStory.storyName = "Loading";
+ReviewQueuePageLoadingStory.args = {
+	reviewQueueItems: [],
 	loading: true,
 	filter: getMockedReviewQueueFilter(),
 	courseSlidesInfo: mockedCourseSlidesInfo,

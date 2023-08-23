@@ -7,21 +7,58 @@ import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
 import { getSlideTitlesByIds } from "../utils/getSlideTitlesByIds";
 import styles from './reviewQueueHistoryList.less';
 import texts from './ReviewQueueHistoryList.texts';
+import MockString from "../../common/MockString/MockString";
 
 interface Props {
 	reviewQueueItems: ReviewQueueItem[];
 	courseSlidesInfo: CourseSlidesInfo;
 	showComments?: boolean;
 
+	loading?: boolean;
+
 	buildLinkToInstructorReview: (item: ReviewQueueItem) => string;
 }
 
+const mockedItemsCount = 3;
+
 const ReviewQueueHistoryList: FC<Props> = (props) => {
+	const renderPlaceholderItem = (key: React.Key) => {
+		const mockUserName = <>
+			<MockString length={ 10 }/> <MockString length={ 5 }/>
+		</>;
+		return <li className={ styles.reviewQueueItem } key={ key }>
+			<div className={ styles.submissionLink }>
+				<div className={ styles.userSlideWrapper }>
+					<span className={ styles.user }>
+						{ mockUserName }
+					</span>
+					<span className={ styles.slide }>
+						<MockString length={ 15 }/>
+					</span>
+				</div>
+				<span className={ styles.score }>
+					<MockString length={ 5 }/>
+				</span>
+				<div className={ styles.reviewerTimestampWrapper }>
+					<span>{ mockUserName }</span>
+					<span className={ styles.timestamp }>
+						<MockString length={ 10 }/>
+					</span>
+				</div>
+			</div>
+			<div className={ styles.splitter }/>
+		</li>;
+	};
+
 	if(!props.reviewQueueItems.length) {
-		return <div className={ styles.noSubmissionsWrapper }>
-			<span className={ styles.noSubmissionsHintColor }>{ texts.noSubmissionsFoundHint }</span>
-			<span>{ texts.noSubmissionsFound }</span>
-		</div>;
+		return props.loading
+			? <ul className={ styles.reviewQueueHistoryList }>
+				{ [...Array(mockedItemsCount).keys()].map(renderPlaceholderItem) }
+			</ul>
+			: <div className={ styles.noSubmissionsWrapper }>
+				<span className={ styles.noSubmissionsHintColor }>{ texts.noSubmissionsFoundHint }</span>
+				<span>{ texts.noSubmissionsFound }</span>
+			</div>;
 	}
 
 	const slideTitlesByIds = getSlideTitlesByIds(props.courseSlidesInfo);

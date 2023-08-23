@@ -14,6 +14,7 @@ import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
 import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
 import styles from './reviewQueueGroup.less';
 import texts from './ReviewQueueGroup.texts';
+import MockString from "../../common/MockString/MockString";
 
 interface Props {
 	reviewQueueItems: ReviewQueueItem[];
@@ -25,8 +26,12 @@ interface Props {
 	noSlide?: boolean;
 	alwaysOpened?: boolean;
 
+	mocked?: boolean;
+
 	buildLinkToInstructorReview: (item: ReviewQueueItem) => string;
 }
+
+const mockedItemsCount = 3;
 
 const ReviewQueueGroup: FC<Props> = (props) => {
 	const [isOpened, setIsOpened] = useState(false);
@@ -47,7 +52,14 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 	const isPhone = useMaxWidth(MaxWidths.Phone);
 
 	const renderHeader = () => {
-		const solutionsCount = texts.getSubmissionsCountInfo(props.reviewQueueItems.length, props.notAllLoaded);
+		const title = props.title
+			? props.mocked
+				? <MockString children={props.title}/>
+				: props.title
+			: undefined;
+		const solutionsCount = props.mocked
+			? <MockString length={ 10 }/>
+			: texts.getSubmissionsCountInfo(props.reviewQueueItems.length, props.notAllLoaded);
 
 		return <div
 			className={ cn(
@@ -67,18 +79,23 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 						: <ArrowCDownIcon20Regular size={ isPhone ? 16 : 20 }/>
 				) }
 				<div className={ styles.groupInfo }>
-					<span className={ styles.groupTitle }>{ props.title || solutionsCount }</span>
-					{ props.title &&
+					<span className={ styles.groupTitle }>{ title || solutionsCount }</span>
+					{ title &&
 						<span className={ styles.solutionsCount }>{ solutionsCount }</span>
 					}
 				</div>
 			</div>
-			<Link
-				className={ styles.checkAllButton }
-				to={ props.buildLinkToInstructorReview(props.reviewQueueItems[0]) }
-			>
-				<span>{ texts.checkAllButton }</span>
-			</Link>
+			{ props.mocked
+				? <div className={ cn(styles.checkAllButton, styles.disabled) }>
+					<span>{ texts.checkAllButton }</span>
+				</div>
+				: <Link
+					className={ styles.checkAllButton }
+					to={ props.buildLinkToInstructorReview(props.reviewQueueItems[0]) }
+				>
+					<span>{ texts.checkAllButton }</span>
+				</Link>
+			}
 		</div>;
 	};
 
@@ -114,6 +131,26 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 		</Hint>;
 	};
 
+	const renderPlaceholderItem = (key: React.Key) => {
+		return <Hint text={ '' } key={ key }>
+			<li>
+				<div
+					className={ cn(
+						styles.reviewQueueItemLink,
+						{ [styles.noStudent]: props.noStudent },
+						{ [styles.noSlide]: props.noSlide }
+					) }
+				>
+					<span className={ styles.user }>
+						<MockString length={ 10 }/> <MockString length={ 5 }/>
+					</span>
+					<span className={ styles.slide }><MockString length={ 15 }/></span>
+					<span className={ styles.timestamp }><MockString length={ 15 }/></span>
+				</div>
+			</li>
+		</Hint>;
+	};
+
 	return (
 		<div className={ styles.submissionsGroup }>
 			{ renderHeader() }
@@ -129,7 +166,10 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 								: 0
 					} }
 				>
-					{ props.reviewQueueItems.map(renderReviewQueueItem) }
+					{ props.mocked
+						? [...Array(mockedItemsCount).keys()].map(renderPlaceholderItem)
+						: props.reviewQueueItems.map(renderReviewQueueItem)
+					}
 				</ul>
 			</ThemeContext.Provider>
 		</div>

@@ -73,22 +73,24 @@ const ReviewQueuePage: FC<Props> = (props) => {
 					getStudents={ props.getStudents }
 					getGroups={ props.getGroups }
 				/>
-				{ (props.reviewQueueItems.length > 0 || !props.loading) && (props.filter.reviewed
-						? <ReviewQueueHistoryList
-							reviewQueueItems={ props.reviewQueueItems }
-							courseSlidesInfo={ props.courseSlidesInfo }
-							showComments={ showComments }
-							buildLinkToInstructorReview={ buildLinkToInstructorReview }
-						/>
-						: <ReviewQueueList
-							reviewQueueItems={ props.reviewQueueItems }
-							courseSlidesInfo={ props.courseSlidesInfo }
-							userId={ props.userId }
-							grouping={ props.grouping }
-							notAllLoaded={ props.notAllItemsLoaded }
-							buildLinkToInstructorReview={ buildLinkToInstructorReview }
-						/>
-				) }
+				{ props.filter.reviewed
+					? <ReviewQueueHistoryList
+						reviewQueueItems={ props.reviewQueueItems }
+						courseSlidesInfo={ props.courseSlidesInfo }
+						showComments={ showComments }
+						loading={ props.loading }
+						buildLinkToInstructorReview={ buildLinkToInstructorReview }
+					/>
+					: <ReviewQueueList
+						reviewQueueItems={ props.reviewQueueItems }
+						courseSlidesInfo={ props.courseSlidesInfo }
+						userId={ props.userId }
+						grouping={ props.grouping }
+						loading={ props.loading }
+						notAllLoaded={ props.notAllItemsLoaded }
+						buildLinkToInstructorReview={ buildLinkToInstructorReview }
+					/>
+				}
 				{ props.notAllItemsLoaded &&
 					<div className={ styles.notAllItemsLoadedInfo }>
 						{ texts.buildNotAllItemsLoadedInfo(props.reviewQueueItems.length) }
