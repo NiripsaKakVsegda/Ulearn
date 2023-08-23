@@ -1,5 +1,4 @@
 import { Dispatch } from "redux";
-import api from "./index";
 import {
 	antiplagiarimsStatusLoadFailAction,
 	antiplagiarimsStatusLoadStartAction,
@@ -11,13 +10,14 @@ import {
 	studentLoadStartAction,
 	studentLoadSuccessAction,
 	studentProhibitFurtherManualCheckingFailAction,
-	studentProhibitFurtherManualCheckingStartAction,
+	studentProhibitFurtherManualCheckingStartAction
 } from "src/actions/instructor";
-import { ShortUserInfo } from "src/models/users";
-import { antiplagiarism, } from "src/consts/routes";
-import { buildQuery } from "src/utils";
-import { AntiPlagiarismStatusResponse, ReviewQueueResponse, } from "src/models/instructor";
+import { antiplagiarism } from "src/consts/routes";
 import { DeadLinesResponse } from "src/models/deadLines";
+import { AntiPlagiarismStatusResponse, ReviewQueueResponse } from "src/models/instructor";
+import { ShortUserInfo } from "src/models/users";
+import { buildQuery } from "src/utils";
+import api from "./index";
 
 export function getAntiPlagiarismStatus(
 	courseId: string,
@@ -79,7 +79,7 @@ const getAntiPlagiarismStatusRedux = (courseId: string, submissionId: number,) =
 				return json;
 			})
 			.catch(error => {
-				dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error,));
+				dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error.toString()));
 				return error;
 			});
 	};
