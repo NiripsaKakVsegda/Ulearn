@@ -1,22 +1,22 @@
-import React, { FC, ReactNode } from 'react';
-import { InstructorReviewInfo } from "../../../../InstructorReview/InstructorReview.types";
-import { isInstructor, UserInfo } from "../../../../../../../../utils/courseRoles";
-import { botId, botName } from "../../../../../../../../consts/common";
-import { ShortUserInfo } from "../../../../../../../../models/users";
-import { EditingReviewState } from "../ReviewsBlock.types";
-import cn from "classnames";
-import { Button, Gapped, Hint, Textarea, ThemeContext } from "ui";
-import reviewPolicyChecker from "../../../../InstructorReview/reviewPolicyChecker";
-import defaultTheme, { textareaHidden } from "../../../../../../../../uiTheme";
-import { ReviewCommentResponse } from "../../../../../../../../models/exercise";
-import ReviewControlsKebab from "../ReviewControlsKebab/ReviewControlsKebab";
-import ReviewHeader from "../ReviewHeader/ReviewHeader";
-import ReviewContent from "../ReviewContent/ReviewContent";
-import texts from "./ReviewItem.texts";
-import styles from "./ReviewItem.less";
 import { ArrowCLeftIcon20Regular } from '@skbkontur/icons/ArrowCLeftIcon20Regular';
 import { ArrowCRightIcon20Regular } from '@skbkontur/icons/ArrowCRightIcon20Regular';
 import { SendPaperplaneIcon16Solid } from '@skbkontur/icons/SendPaperplaneIcon16Solid';
+import cn from "classnames";
+import React, { FC, ReactNode } from 'react';
+import { Button, Gapped, Hint, Textarea, ThemeContext } from "ui";
+import { botId, botName } from "../../../../../../../../consts/common";
+import { ReviewCommentResponse } from "../../../../../../../../models/exercise";
+import { ShortUserInfo } from "../../../../../../../../models/users";
+import defaultTheme, { textareaHidden } from "../../../../../../../../uiTheme";
+import { isInstructor, UserInfo } from "../../../../../../../../utils/courseRoles";
+import { InstructorReviewInfo } from "../../../../InstructorReview/InstructorReview.types";
+import reviewPolicyChecker from "../../../../InstructorReview/reviewPolicyChecker";
+import ReviewContent from "../ReviewContent/ReviewContent";
+import ReviewControlsKebab from "../ReviewControlsKebab/ReviewControlsKebab";
+import ReviewHeader from "../ReviewHeader/ReviewHeader";
+import { EditingReviewState } from "../ReviewsBlock.types";
+import styles from "./ReviewItem.less";
+import texts from "./ReviewItem.texts";
 
 
 interface Props {
@@ -110,7 +110,7 @@ const ReviewItem: FC<Props> = ({
 				error={ (editingReview?.value.length || 0) > reviewPolicyChecker.maxReviewLength }
 				showLengthCounter={ (editingReview?.value.length || 0) > reviewPolicyChecker.maxReviewLength }
 			/>
-			<Gapped gap={ 14 }>
+			<Gapped gap={ 14 } wrap>
 				<Button
 					use={ "primary" }
 					disabled={ !editingReview?.value
@@ -232,7 +232,7 @@ const ReviewItem: FC<Props> = ({
 						&& isSelected
 						&& actions.onAssignBotComment
 						&& isInstructor(user)
-						&& <Gapped gap={ 8 }>
+						&& <Gapped gap={ 8 } wrap>
 							{ comments.length === 0 &&
 								<Hint
 									pos={ "bottom center" }

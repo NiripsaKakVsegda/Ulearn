@@ -1,14 +1,13 @@
+import { SecurityKeyBIcon16Regular } from '@skbkontur/icons/SecurityKeyBIcon16Regular';
 import React, { FC } from 'react';
-import styles from "./studentCheckbox.less";
-import texts from "./StudentCheckbox.texts";
+import { useMediaQuery } from "react-responsive";
 import { Button, Checkbox, Kebab, MenuItem } from "ui";
-import Avatar from "../../../../../common/Avatar/Avatar";
-import Profile from "../../../../../common/Profile/Profile";
+import { SystemAccessType } from "../../../../../../consts/accessType";
 import { GroupStudentInfo } from "../../../../../../models/groups";
 import { AccountState } from "../../../../../../redux/account";
-import { SystemAccessType } from "../../../../../../consts/accessType";
-import { useMediaQuery } from "react-responsive";
-import { SecurityKeyBIcon16Regular } from '@skbkontur/icons/SecurityKeyBIcon16Regular';
+import Profile from "../../../../../common/Profile/Profile";
+import styles from "./studentCheckbox.less";
+import texts from "./StudentCheckbox.texts";
 
 interface Props {
 	studentInfo: GroupStudentInfo;
@@ -36,11 +35,11 @@ const StudentCheckbox: FC<Props> = ({
 			onValueChange={ onValueChange }
 		>
 			<div className={ styles.checkboxContent }>
-				<Avatar user={ user } size="small"/>
 				<span className={ styles.studentBlockSelectable }>
 					<div className={ styles.studentInfo }>
 						<Profile
 							user={ user }
+							withAvatar
 							canViewProfiles={
 								account.isSystemAdministrator ||
 								account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)

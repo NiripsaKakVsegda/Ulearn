@@ -13,12 +13,10 @@
 }
 
 .tooltipWrapper {
-  width: 272px;
-  @media (max-width: 304px) {
-    width: 200px;
-  }
-  @media (min-width: @minLaptopWidth) {
-    width: 100%;
+  width: calc(320px - 32px);
+  max-width: calc(100vw - 32px);
+  @supports(max-height: 100dvw){
+    max-width: calc(100dvw - 32px);
   }
 }
 

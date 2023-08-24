@@ -1,11 +1,10 @@
 import React, { FC, useState } from 'react';
 import { Button, Checkbox, Gapped, Modal } from "ui";
-import Avatar from "../../../../common/Avatar/Avatar";
-import Profile from "../../../../common/Profile/Profile";
+import { SystemAccessType } from "../../../../../consts/accessType";
 import { GroupStudentInfo } from "../../../../../models/groups";
 import { AccountState } from "../../../../../redux/account";
+import Profile from "../../../../common/Profile/Profile";
 import texts from './ChooseStudentsModal.texts';
-import { SystemAccessType } from "../../../../../consts/accessType";
 
 interface Props {
 	account: AccountState;
@@ -29,10 +28,11 @@ const ChooseStudentsModal: FC<Props> = ({
 			<Checkbox
 				checked={ checkedStudentsIds.includes(student.user.id) }
 				data-id={ student.user.id }
-				onChange={ onCheckStudent }>
-				<Avatar user={ student.user } size={ "small" }/>
+				onChange={ onCheckStudent }
+			>
 				<Profile
 					user={ student.user }
+					withAvatar
 					canViewProfiles={
 						account.isSystemAdministrator ||
 						account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
@@ -79,12 +79,12 @@ const ChooseStudentsModal: FC<Props> = ({
 
 	function onCheckStudent(event: React.ChangeEvent<HTMLInputElement>) {
 		const id = event.target.parentElement?.dataset.id;
-		if(!id) {
+		if (!id) {
 			return;
 		}
 
 		const checked = event.target.checked;
-		if(checked) {
+		if (checked) {
 			setCheckedStudentsIds([...checkedStudentsIds, id]);
 		} else {
 			setCheckedStudentsIds(checkedStudentsIds.filter(checkedId => checkedId !== id));

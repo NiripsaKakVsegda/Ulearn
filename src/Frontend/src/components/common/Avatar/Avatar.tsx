@@ -1,64 +1,68 @@
-import React from "react";
-import classNames from 'classnames';
-
-import colorHash from "src/utils/colorHash";
+import cn from 'classnames';
+import React, { useState } from "react";
 import { botId } from "src/consts/common";
-import BotAvatar from "./BotAvatar";
 
 import { ShortUserInfo } from "src/models/users";
 
+import colorHash from "src/utils/colorHash";
+
 import styles from "./avatar.less";
+import BotAvatar from "./BotAvatar";
 
 interface Props {
-	size: 'big' | 'small';
 	user: ShortUserInfo;
+	/**
+	 * @default "small"
+	 */
+	size?: 'big' | 'small';
 	className?: string;
 }
 
 function Avatar(props: Props): React.ReactElement {
-	const [state, setState] = React.useState({
-		imageError: false,
-	});
+	const {
+		user,
+		size = 'small',
+		className
+	} = props;
 
-	const { user, size, className } = props;
-	const { imageError } = state;
 	const imageUrl = user.avatarUrl;
-	const classes = classNames(className, styles["photo-avatar"], styles[size] || "big");
+	const [imageError, setImageError] = useState(false);
+	const classes = cn(className, styles.avatar, styles[size] || "big");
 
-	if(user.id === botId) {
-		return <BotAvatar/>;
+	if (user.id === botId) {
+		return <span className={ classes }>
+			<BotAvatar className={styles.botAvatar}/>
+		</span>;
 	}
 
-	if(imageUrl && !imageError) {
-		return (
+	if (imageUrl && !imageError) {
+		return <span className={ classes }>
 			<img
 				alt="Аватарка"
-				className={ classes }
 				src={ imageUrl }
+				className={ styles.image }
 				onError={ onImageError }
 			/>
-		);
+		</span>;
 	}
 
-	return renderCircle(classes);
+	const userName = props.user.visibleName;
+	const firstLetterIndex = userName.search(/[a-zа-яё]/i);
+	const userFirstLetter = firstLetterIndex !== -1
+		? userName[firstLetterIndex].toUpperCase()
+		: "?";
+
+	return <span
+		className={ classes }
+		style={ {
+			backgroundColor: colorHash(userName)
+		} }
+	>
+		<span className={ styles.letter }>{ userFirstLetter }</span>
+	</span>;
 
 	function onImageError() {
-		setState({ imageError: true });
-	}
-
-	function renderCircle(className: string) {
-		const userName = props.user.visibleName;
-		const firstLetterIndex = userName.search(/[a-zа-яё]/i);
-		const userFirstLetter = firstLetterIndex !== -1 ? userName[firstLetterIndex].toUpperCase() : "?";
-		const divStyle = {
-			backgroundColor: `${ colorHash(userName) }`,
-		};
-
-		return (
-			<div style={ divStyle } className={ `${ className } ${ styles["color-avatar"] }` }>
-				{ userFirstLetter }
-			</div>
-		);
+		setImageError(true);
 	}
 }
 
