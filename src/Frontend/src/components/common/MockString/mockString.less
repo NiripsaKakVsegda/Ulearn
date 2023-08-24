@@ -1,17 +1,20 @@
-@import '/src/variables';
-
-.partsWrapper {
-  cursor: default;
-  user-select: none;
-}
+@import "/src/variables";
 
 .mockString {
   color: transparent;
-  background: @black;
-  opacity: 0.1;
-  border-radius: 8px;
-
   cursor: default;
   user-select: none;
-  line-height: 1;
+
+  & * {
+    background: @black;
+    opacity: 0.1;
+    @supports (opacity: var(--opacity)) {
+      opacity: var(--opacity);
+    }
+    border-radius: 8px;
+  }
+
+  &.inverseColor * {
+    background: @white;
+  }
 }
