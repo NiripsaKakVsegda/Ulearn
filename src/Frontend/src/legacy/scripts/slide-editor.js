@@ -1,6 +1,22 @@
 import CodeMirror from "codemirror";
-import { autoEnlargeTextarea } from "src/legacy/scripts/slide-comments";
-import { loadLanguageStyles } from "src/components/course/Course/Slide/Blocks/Exercise/ExerciseUtils";
+import {autoEnlargeTextarea} from "src/legacy/scripts/slide-comments";
+import registerCodeMirrorHelpers
+	from "../../components/course/Course/Slide/Blocks/Exercise/CodeMirrorAutocompleteExtension";
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/addon/edit/matchbrackets';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/addon/hint/javascript-hint';
+import 'codemirror/addon/hint/anyword-hint';
+import 'codemirror/theme/darcula.css';
+import 'codemirror/mode/clike/clike.js';
+import 'codemirror/mode/python/python.js';
+import 'codemirror/mode/javascript/javascript.js';
+import 'codemirror/mode/xml/xml.js';
+import 'codemirror/mode/css/css.js';
+import 'codemirror/mode/haskell/haskell.js';
+import 'codemirror/mode/sql/sql.js';
+import 'codemirror/mode/jsx/jsx.js';
 
 export default function () {
 	initCodeEditor();
@@ -122,7 +138,7 @@ export function initCodeEditor($parent) {
 
 	function getLangInfo(langId) {
 		/* See http://codemirror.net/mode/ for details */
-		loadLanguageStyles(langId);//we're reusing this method to load styles
+		registerCodeMirrorHelpers();//we're reusing this method to load styles
 
 		if(!langId)
 			return { mode: "text/plain", hint: null };
