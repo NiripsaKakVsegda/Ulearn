@@ -144,6 +144,7 @@ const config: Configuration = {
 		new HtmlWebpackPlugin({
 			inject: true,
 			template: paths.appHtml,
+			title: 'Ulearn.me',
 			favicon: paths.appPublic + '/favicon.ico',
 			minify: {
 				removeComments: true,

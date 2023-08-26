@@ -73,6 +73,9 @@ public class LoginController : BaseUserController
 
 	public ActionResult Index(string returnUrl = "/")
 	{
+		if (User.Identity?.IsAuthenticated ?? false)
+			return Redirect(this.FixRedirectUrl(returnUrl));
+
 		ViewBag.ReturnUrl = returnUrl;
 		return View();
 	}
@@ -151,7 +154,7 @@ public class LoginController : BaseUserController
 		var userId = userManager.GetUserId(User);
 		var info = await signInManager.GetExternalLoginInfoAsync(userId);
 		if (info == null)
-			return RedirectToAction("Index", "Login");
+			return RedirectToAction("Index", "Login", new { returnUrl });
 
 		var user = info.LoginProvider == KonturPassportConstants.AuthenticationType
 			//for kontur.passport ProviderKey is login, but we need sid for backward compatible 

@@ -1,21 +1,21 @@
 import React, { Component, PureComponent } from 'react';
-import { Helmet } from "react-helmet";
-import { saveAs } from "file-saver";
-import { connect } from "react-redux";
-import * as PropTypes from "prop-types";
+import { Helmet }                          from "react-helmet";
+import { saveAs }                          from "file-saver";
+import { connect }                         from "react-redux";
+import * as PropTypes                      from "prop-types";
 
 import api from "src/api";
 
 import CourseLoader from "src/components/course/Course/CourseLoader/CourseLoader";
 import { UrlError } from "./Error/NotFoundErrorBoundary";
 
-import { getQueryStringParameter } from "src/utils";
+import { getQueryStringParameter }                            from "src/utils";
 import { exerciseSolutions, removeFromCache, setBlockCache, } from "src/utils/localStorageManager";
-import documentReadyFunctions from "src/legacy/legacy";
-import runLegacy from "src/legacy/legacyRunner";
+import documentReadyFunctions                                 from "src/legacy/legacy";
+import runLegacy                                              from "src/legacy/legacyRunner";
 
 import { changeCurrentCourseAction } from "src/actions/course";
-import { withNavigate } from "src/utils/router";
+import { withNavigate }              from "src/utils/router";
 
 function getUrlParts(url) {
 	let a = document.createElement('a');
@@ -70,13 +70,22 @@ class DownloadedHtmlContent extends Component {
 	}
 
 	componentDidMount() {
-		this.fetchContentFromServer(this.props.url);
+		this.fetchContentFromServer(this.props.url)
+			.catch(console.error);
 	}
 
 	componentDidUpdate(prevProps) {
-		if(this.props.url !== prevProps.url || this.props.account.isAuthenticated !== prevProps.account.isAuthenticated) {
-			this.setState({ loading: true, body: '', });
-			this.fetchContentFromServer(this.props.url);
+		const url = this.props.url;
+		if(url !== prevProps.url) {
+			this.fetchContentFromServer(this.props.url)
+				.catch(console.error)
+			return;
+		}
+
+		const pathName = getUrlParts(url).pathname.toLowerCase();
+		if(!pathName.startsWith('/login') && this.props.account.isAuthenticated !== prevProps.account.isAuthenticated) {
+			this.fetchContentFromServer(this.props.url)
+				.catch(console.error)
 		}
 	}
 
@@ -98,73 +107,58 @@ class DownloadedHtmlContent extends Component {
 		return body.innerHTML;
 	}
 
-	fetchContentFromServer(url) {
-		this.setState({
-			error: null,
-		});
+	async fetchContentFromServer(url) {
+		this.setState({ loading: true, body: '' });
 
-		this.props.load(url, { credentials: 'include' })
-			.then(response => {
-				if(url !== this.props.url) {
+		const response = await this.props.load(url, { credentials: 'include' });
+		if(url !== this.props.url) {
+			return;
+		}
+		if(response.status === 404 || (!response.redirected && response.headers.has('ReactRender'))) {
+			this.setState({
+				error: new UrlError(response.statusText),
+			});
+			return;
+		}
+		if(response.redirected) {
+			/* If it was a redirect from external login callback, then update user information */
+			const oldUrlPathname = getUrlParts(url).pathname;
+			if(oldUrlPathname.startsWith("/Login/ExternalLoginCallback") || oldUrlPathname.startsWith("/Login/ExternalLoginConfirmation")) {
+				await this.props.updateUserInformation();
+				await this.props.updateCourses();
+			}
+
+			let newUrl = getUrlParts(response.url);
+			if(oldUrlPathname.startsWith('/Account/ReturnHijack') || oldUrlPathname.startsWith('/Account/Hijack')) {
+				removeFromCache(exerciseSolutions);
+				setBlockCache(true);
+				window.location.href = newUrl.pathname + newUrl.search;
+			} else {
+				window.location.replace(newUrl.pathname + newUrl.search);
+				return;
+			}
+		}
+		/* Process attaches: download them and return url back */
+		if(response.headers.has('Content-Disposition')) {
+			let contentDisposition = response.headers.get('Content-Disposition');
+			if(contentDisposition.indexOf('attachment') !== -1) {
+				const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+				let matches = filenameRegex.exec(contentDisposition);
+				if(matches != null && matches[1]) {
+					let filename = matches[1].replace(/['"]/g, '');
+					response.blob().then(blob => this.downloadFile(blob, filename));
 					return;
 				}
-				if(response.headers.has('ReactRender') || response.status === 404) {
-					this.setState({
-						error: new UrlError(response.statusText),
-					});
-					return;
-				}
-				if(response.redirected) {
-					/* If it was a redirect from external login callback, then update user information */
-					const oldUrlPathname = getUrlParts(url).pathname;
-					if(oldUrlPathname.startsWith("/Login/ExternalLoginCallback") || oldUrlPathname.startsWith("/Login/ExternalLoginConfirmation")) {
-						this.props.updateUserInformation();
-						this.props.updateCourses();
-					}
+			}
+		}
+		/* Process content files: also download them and return url back */
+		if(url.toLowerCase().startsWith('/content/') || url.toLowerCase().startsWith('/certificates/')) {
+			response.blob().then(blob => this.downloadFile(blob, url));
+			return;
+		}
 
-					let newUrl = getUrlParts(response.url);
-					if(oldUrlPathname.startsWith('/Account/ReturnHijack') || oldUrlPathname.startsWith('/Account/Hijack')) {
-						removeFromCache(exerciseSolutions);
-						setBlockCache(true);
-						window.location.href = newUrl.pathname + newUrl.search;
-					} else {
-						this.props.navigate(newUrl.pathname + newUrl.search, { replace: true });
-						return Promise.resolve(undefined);
-					}
-				}
-				/* Process attaches: download them and return url back */
-				if(response.headers.has('Content-Disposition')) {
-					let contentDisposition = response.headers.get('Content-Disposition');
-					if(contentDisposition.indexOf('attachment') !== -1) {
-						const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-						let matches = filenameRegex.exec(contentDisposition);
-						if(matches != null && matches[1]) {
-							let filename = matches[1].replace(/['"]/g, '');
-							response.blob().then(blob => this.downloadFile(blob, filename));
-							return Promise.resolve(undefined);
-						}
-					}
-				}
-				/* Process content files: also download them and return url back */
-				if(url.toLowerCase().startsWith('/content/') || url.toLowerCase().startsWith('/certificates/')) {
-					response.blob().then(blob => this.downloadFile(blob, url));
-					return Promise.resolve(undefined);
-				}
-				this.setState(s => {
-					s.loading = true;
-					return s;
-				});
-				return response.text();
-			})
-			.then(data => {
-				if(data === undefined) {
-					return;
-				}
-
-				this.processNewHtmlContent(url, data);
-			}).catch((error) => {
-
-		});
+		const data = await response.text();
+		this.processNewHtmlContent(url, data);
 	}
 
 	loadContentByClass() {

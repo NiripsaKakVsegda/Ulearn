@@ -16,11 +16,11 @@ interface Props {
 }
 
 interface State {
+	timeout?: NodeJS.Timeout;
 	timeoutAwaited: boolean;
 }
 
 class CourseLoader extends React.Component<Props, State> {
-	private readonly timeout: NodeJS.Timeout;
 	static defaultProps = {
 		isSlideLoader: true,
 	};
@@ -31,22 +31,27 @@ class CourseLoader extends React.Component<Props, State> {
 			timeoutAwaited: false,
 		};
 
-		this.timeout = setTimeout(() => {
-			this.setState({
-				timeoutAwaited: true,
-			});
-		}, showLoaderTimout);
-
 		if(props.isSlideLoader) {
 			props.setSlideReady(false);
 		}
 	}
 
+	componentDidMount() {
+		const timeout = setTimeout(() => {
+			this.setState(prev => ({
+				...prev,
+				timeoutAwaited: true,
+			}));
+		}, showLoaderTimout);
+
+		this.setState(prev => ({
+			...prev,
+			timeout
+		}));
+	}
+
 	componentWillUnmount() {
-		const { timeoutAwaited } = this.state;
-		if(!timeoutAwaited) {
-			clearTimeout(this.timeout);
-		}
+		clearTimeout(this.state.timeout);
 
 		if(this.props.isSlideLoader) {
 			setTimeout(() => this.props.setSlideReady(true), 100);

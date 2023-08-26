@@ -1,4 +1,3 @@
-import autoprefixer from "autoprefixer";
 import path from "path";
 import webpack, { Configuration } from "webpack";
 import WebpackDevServer from "webpack-dev-server";
@@ -204,6 +203,7 @@ const config: Configuration = {
 		new HtmlWebpackPlugin({
 			inject: true,
 			template: paths.appHtml,
+			title: 'Ulearn.me',
 			favicon: paths.appPublic + '/favicon.ico',
 		}),
 		new webpack.ProvidePlugin({
