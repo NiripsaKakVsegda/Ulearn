@@ -263,7 +263,7 @@ public class SuperGroupController : BaseGroupController
 		if (superGroup.DistributionTableLink == null)
 			return BadRequest("Auto-group doesn't have a correct link to google sheet table");
 
-		var createdGroups = await groupsRepo.FindGroupsBySuperGroupIdAsync(superGroup.Id);
+		var createdGroups = await groupsRepo.FindGroupsBySuperGroupIdAsync(superGroup.Id, true);
 
 		var createdGroupsByNames = createdGroups.ToDictionary(g => g.Name, g => g);
 

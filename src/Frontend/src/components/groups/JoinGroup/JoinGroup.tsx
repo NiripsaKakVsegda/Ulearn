@@ -1,129 +1,102 @@
-import React, { useState } from 'react';
-
-import { Button, Link, Loader } from "ui";
+import React, { FC } from 'react';
+import { Button } from "ui";
+import { JoinGroupInfo, SuperGroupError } from "../../../models/groups";
 import Page from "../../../pages";
-import { UrlError } from "../../common/Error/NotFoundErrorBoundary";
-
-import { GroupInfo, GroupType } from "src/models/groups";
-import { accountPath, constructPathToCourse } from "src/consts/routes";
-
-import { Props, State } from "./JoinGroup.types";
+import styles from "./JoinGroup.less";
 import texts from './JoinGroup.texts';
-import styles from './JoinGroup.less';
+import LinkAsButton from "../../common/LinkAsButton/LinkAsButton";
 
-function JoinGroup({ joinGroup, getGroupByHash, navigate, params }: Props) {
-	const [group, setGroup] = useState<GroupInfo>();
-	const [state, setState] = useState<State>();
-	const [error, setError] = useState();
+interface Props {
+	group: JoinGroupInfo;
+	courseTitle: string;
 
-	if(!params.hash || error) {
-		throw new UrlError();
-	}
+	onJoinGroup: () => void;
 
-	if(!state) {
-		setState('isLoading');
-		getGroupByHash(params.hash)
-			.then(r => {
-				setGroup(r);
-				setState('loaded');
-			})
-			.catch(err => {
-				setError(err);
-			});
-	}
+	courseLink: string;
+	accountLink: string;
+}
+
+const JoinGroup: FC<Props> = (props) => {
+	const renderContent = (): React.ReactElement => {
+		const { group, courseTitle } = props;
+
+		if(group.isMember) {
+			return <div>
+				<header className={ styles.header }>{ texts.joined.title }</header>
+				<main className={ styles.contentWrapper }>
+					{ texts.joined.buildInfo(group.name, courseTitle) }
+				</main>
+				<footer className={ styles.buttonWrapper }>
+					<LinkAsButton
+						href={ props.courseLink }
+						size={ 'medium' }
+						use={ 'primary' }
+					>
+						{ texts.joined.navigateCourse }
+					</LinkAsButton>
+				</footer>
+			</div>;
+		}
+
+		if(!group.isInviteLinkEnabled && !group.isMember) {
+			return <div>
+				<header className={ styles.header }>{ texts.error.title }</header>
+				<main className={ styles.contentWrapper }>
+					<p>{ texts.error.inviteLinkDisabled }</p>
+				</main>
+			</div>;
+		}
+
+		if(group.superGroupError === SuperGroupError.NoDistributionLink) {
+			return <div>
+				<header className={ styles.header }>{ texts.error.title }</header>
+				<main className={ styles.contentWrapper }>
+					<p>{ texts.error.noDistributionLinkError }</p>
+				</main>
+			</div>;
+		}
+
+		if(group.superGroupError === SuperGroupError.NoGroupFoundForStudent) {
+			return <div>
+				<header className={ styles.header }>{ texts.error.title }</header>
+				<main className={ styles.contentWrapper }>
+					<p>{ texts.error.buildGroupNotFoundError(props.accountLink) }</p>
+				</main>
+			</div>;
+		}
+
+		return <div>
+			<header className={ styles.header }>{ texts.join.title }</header>
+			<main className={ styles.contentWrapper }>
+				<p>
+					{ texts.join.buildMainInfo(group, courseTitle) }
+				</p>
+				<p className={ styles.additional }>
+					{ texts.join.additionalInfo }
+				</p>
+				{ group.canStudentsSeeProgress &&
+					<p>
+						{ texts.join.userCanSeeProgress }
+					</p>
+				}
+			</main>
+			<footer className={ styles.buttonWrapper }>
+				<Button
+					use={ 'primary' }
+					size={ 'medium' }
+					onClick={ props.onJoinGroup }
+				>
+					{ texts.join.button }
+				</Button>
+			</footer>
+		</div>;
+	};
 
 	return (
 		<Page metaTitle={ texts.title }>
 			{ renderContent() }
 		</Page>
 	);
-
-	function renderContent() {
-		if(!group || state === 'isLoading') {
-			return (
-				<Loader>
-					<h2>{ texts.title }</h2>
-				</Loader>
-			);
-		}
-
-		if(state === 'joinedGroup' || group.areYouStudent) {
-			return (
-				<div>
-					<p>{ texts.joined.buildInstructionText(group) }</p>
-					<Button use={ 'primary' } onClick={ navigateToCourse }>
-						{ texts.joined.joinButtonText }
-					</Button>
-				</div>
-			);
-		}
-
-		if(!group.areYouStudent && !group.isInviteLinkEnabled) {
-			return (
-				<div>
-					<h2>{ texts.failTitle }</h2>
-					<p>{ texts.inviteDisabledText }</p>
-				</div>
-			);
-		}
-
-		if(group.groupType === GroupType.SuperGroup) {
-			if(!group.distributionTableLink) {
-				return (<>
-					<h2>{ texts.failTitle }</h2>
-					<p>{ texts.failNoGoogleSheetText }</p>
-				</>);
-			}
-			return (<>
-				<h2>{ texts.failTitle }</h2>
-				<p>{ texts.buildSuperGroupUserNotFound(navigateToAccount) } ({ group.owner.visibleName }).</p>
-			</>);
-		}
-
-		return (
-			<>
-				<h2>{ texts.title }</h2>
-				<p>{ texts.buildInstructionText(group) }</p>
-				<p className={ styles.additional }>{ texts.additional }</p>
-				{
-					group.canStudentsSeeGroupProgress && <p>{ texts.userCanSeeProgress }</p>
-				}
-
-				<Button use={ 'primary' } onClick={ _joinGroup }>
-					{ texts.joinButtonText }
-				</Button>
-			</>
-		);
-	}
-
-	async function _joinGroup() {
-		if(!params.hash) {
-			return;
-		}
-
-		await joinGroup(params.hash)
-			.then(r => {
-				setState('joinedGroup');
-			})
-			.catch(err => {
-				setError(err);
-			});
-	}
-
-	function navigateToCourse() {
-		if(!group) {
-			return;
-		}
-
-		navigate(constructPathToCourse(group.courseId), { replace: true });
-	}
-
-	function navigateToAccount(e: React.MouseEvent<HTMLAnchorElement>) {
-		e.preventDefault();
-		e.stopPropagation();
-
-		navigate(accountPath);
-	}
-}
+};
 
 export default JoinGroup;

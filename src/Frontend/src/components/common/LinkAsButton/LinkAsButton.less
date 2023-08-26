@@ -1,0 +1,111 @@
+@import '/src/variables';
+
+.button {
+  display: inline-block;
+  text-align: center;
+  border-radius: 8px;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+
+  font-weight: 400;
+
+  &, &:hover, &:focus, &:active {
+    text-decoration: none;
+  }
+
+  &:active .buttonText {
+    translate: 0 1px;
+    @supports not(translate: 0 1px) {
+      transform: translateY(1px);
+    }
+  }
+}
+
+.buttonText {
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.small {
+  font-size: 14px;
+  line-height: 20px;
+  padding: 6px 16px;
+  min-width: 100px;
+}
+
+.medium {
+  font-size: 16px;
+  line-height: 22px;
+  padding: 9px 16px;
+  min-width: 100px;
+}
+
+.large {
+  font-size: 18px;
+  line-height: 24px;
+  padding: 12px 20px;
+  min-width: 120px;
+}
+
+.default {
+  color: #222222;
+  background: @white;
+  box-shadow: 0 0 0 1px #00000029;
+
+  &:hover {
+    color: #222222;
+    background: #F2F2F2;
+    box-shadow: 0 0 0 1px #00000029;
+  }
+
+  &:focus {
+    color: #222222;
+  }
+
+  &:active {
+    color: #222222;
+    background: #EBEBEB;
+    box-shadow: 0 0 0 1px #00000029;
+  }
+}
+
+.primary {
+  color: @white;
+  background: @buttonBackground;
+  box-shadow: 0 0 0 1px @buttonBackground;
+
+  &:hover {
+    color: @white;
+    background: @buttonBackgroundHover;
+    box-shadow: 0 0 0 1px @buttonBackgroundHover;
+  }
+
+  &:focus {
+    color: @white;
+  }
+
+  &:active {
+    color: @white;
+    background: @buttonBackgroundActive;
+    box-shadow: 0 0 0 1px @buttonBackgroundActive;
+  }
+}
+
+.disabled {
+  &, &:hover, &:focus, &:active {
+    color: @buttonColorDisabled;
+    background-color: @buttonBackgroundDisabled;
+    box-shadow: 0 0 0 1px @buttonBackgroundDisabled;
+
+    &:active .buttonText {
+      transform: none;
+      translate: none;
+    }
+
+    cursor: default;
+  }
+}

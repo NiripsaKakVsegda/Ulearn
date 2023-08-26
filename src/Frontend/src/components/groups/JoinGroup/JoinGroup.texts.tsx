@@ -1,49 +1,54 @@
 import React from "react";
-import { GroupInfo } from "src/models/groups";
-import { Link } from "ui";
+import { Link } from "react-router-dom";
+import { JoinGroupInfo } from "../../../models/groups";
 
 export default {
 	title: 'Присоединиться к группе',
-	failTitle: 'Неудача!',
 
-	joinButtonText: 'Присоединиться',
-	additional: 'Чтобы преподаватели могли связаться с вами в случае необходимости, мы покажем им вашу электронную почту и привязанные аккаунты социальных сетей.',
-	userCanSeeProgress: 'Вступив, вы сможете смотреть ведомость всей группы прямо на сайте.',
+	join: {
+		title: 'Присоединиться к группе',
+		buildMainInfo: (group: JoinGroupInfo, courseTitle: string) => <>
+			{ group.owner.visibleName } приглашает вас присоединиться
+			к группе «{ group.name }» в курсе «{ courseTitle }».<br/>
+			Преподаватели группы смогут проверять ваши задания и тесты, проводить код-ревью и выставлять вам
+			дополнительные баллы.
+		</>,
+		additionalInfo: 'Чтобы преподаватели могли связаться с вами в случае необходимости, ' +
+			'мы покажем им вашу электронную почту и привязанные аккаунты социальных сетей.',
+		userCanSeeProgress: 'После вступления вам станет доступна ведомость всей группы.',
 
-	failNoGoogleSheetText: 'Группа ещё не настроена',
+		button: 'Присоединиться'
+	},
 
-	buildInstructionText: (group: GroupInfo) => {
-		return (
-			<>
-				{ group.owner.visibleName } приглашает вас присоединиться к группе «{ group.name }» в курсе
-				«{ group.courseTitle }».
-				<br/>
+	joined: {
+		title: 'Вы в группе',
+		buildInfo: (groupName: string, courseTitle: string) => <>
+			<p>
+				Вы присоединились к группе «{ groupName }» в курсе «{ courseTitle }».
+				Теперь этот курс доступен в меню «Мои курсы».
+			</p>
+			<p>
 				Преподаватели группы смогут проверять ваши задания и тесты, проводить код-ревью и выставлять вам
 				дополнительные баллы.
-			</>
-		);
+			</p>
+		</>,
+
+		navigateCourse: 'Перейти к курсу →',
 	},
-	inviteDisabledText: 'В эту группу больше нельзя вступить',
-	buildSuperGroupUserNotFound: (onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void) => <>Мы не смогли вас
-		найти, убедитесь в правильности
-		написания имени в вашем <Link onClick={ onLinkClick } href={ '/account/manage' }>аккаунте</Link>.<br/>
-		Или свяжитесь с вашим преподавателем
-	</>,
-	superGroupUserNotFoundTableLinkText: 'таблицей',
-	joined: {
-		buildInstructionText: (group: GroupInfo) => {
-			return (
-				<>
-					<h2>Вы в группе</h2>
-					<p>
-						Вы присоединились к группе «{ group.name }» в курсе «{ group.courseTitle }».
-						Теперь этот курс доступен в меню «Мои курсы».<br/>
-						Преподаватели группы смогут проверять ваши задания и тесты, проводить код-ревью и выставлять вам
-						дополнительные баллы.
-					</p>
-				</>
-			);
-		},
-		joinButtonText: 'Перейти к курсу →',
+
+
+	error: {
+		title: 'Неудача!',
+		inviteLinkDisabled: 'В эту группу больше нельзя вступить',
+		noDistributionLinkError: 'Группа ещё не настроена',
+		buildGroupNotFoundError: (accountLink: string) => <>
+			<p>
+				Мы не смогли вас найти,
+				убедитесь в правильности написания имени в вашем <Link to={ accountLink }>аккаунте</Link>.
+			</p>
+			<p>
+				Или свяжитесь с вашим преподавателем
+			</p>
+		</>
 	}
 };

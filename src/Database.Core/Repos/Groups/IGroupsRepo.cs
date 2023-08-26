@@ -45,8 +45,7 @@ namespace Database.Repos.Groups
 		Task<List<T>> FindGroupsByIdsAsync<T>(List<int> groupIds) where T : GroupBase;
 		Task<List<SingleGroup>> FindGroupsBySuperGroupIdAsync(int superGroupId, bool includeArchived = false);
 		Task<List<SingleGroup>> FindGroupsBySuperGroupIdsAsync(List<int> superGroupIds, bool includeArchived = false);
-		Task<GroupBase> FindGroupByInviteHashAsync(Guid hash);
-		Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash);
+		Task<GroupBase> FindGroupByInviteHashAsync(Guid hash, bool onlyEnabledLink = true);
 		Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false);
 		Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
 		Task<List<string>> GetMyGroupsUsersIdsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);

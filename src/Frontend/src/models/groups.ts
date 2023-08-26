@@ -161,3 +161,19 @@ export interface GroupsSearchParameters {
 	offset: number;
 	count: number;
 }
+
+export interface JoinGroupInfo{
+	id: number;
+	name: string;
+	courseId: string;
+	owner: ShortUserInfo;
+	isInviteLinkEnabled: boolean;
+	canStudentsSeeProgress: boolean;
+	isMember: boolean;
+	superGroupError?: SuperGroupError;
+}
+
+export enum SuperGroupError {
+	NoDistributionLink = 'NoDistributionLink',
+	NoGroupFoundForStudent = 'NoGroupFoundForStudent'
+}

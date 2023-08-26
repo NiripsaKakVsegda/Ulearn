@@ -14,7 +14,7 @@ const TokenPage = React.lazy(
 );
 
 const JoinGroup = React.lazy(
-	() => import(/* webpackChunkName: "joinGroup" */ "src/components/groups/JoinGroup/JoinGroup.page")
+	() => import(/* webpackChunkName: "joinGroup" */ "src/components/groups/JoinGroup/JoinGroupConnected")
 );
 
 const GroupListPage = React.lazy(
@@ -64,6 +64,11 @@ function Router({ account }: Props): React.ReactElement {
 			element: wrapLazyPage(Course)
 		},
 		{
+			key: 'joinGroup',
+			path: '/groups/:hash',
+			element: wrapLazyPage(JoinGroup)
+		},
+		{
 			key: 'token',
 			path: '/token',
 			element: wrapLazyPage(TokenPage)
@@ -73,11 +78,6 @@ function Router({ account }: Props): React.ReactElement {
 	if (account.accountLoaded) {
 		if (account.isAuthenticated) {
 			routes.push(
-				{
-					key: 'groupsList',
-					path: '/groups/:hash',
-					element: wrapLazyPage(JoinGroup)
-				},
 				{
 					key: 'groupsList',
 					path: '/:courseId/groups/',

@@ -37,14 +37,3 @@ export function createGroup(courseId: string, name: string, groupType: GroupType
 export function deleteGroup(groupId: number): Promise<Response> {
 	return api.delete(`${ groups }/${ groupId }`);
 }
-
-// Invite hash
-export function joinGroupByInviteHash(inviteHash: string): Promise<Response> {
-	const url = `${ groups }/${ inviteHash }/join`;
-	return api.post(url);
-}
-
-export function getGroupByInviteHash(inviteHash: string): Promise<GroupInfo> {
-	const url = `${ groups }/${ inviteHash }`;
-	return api.get(url);
-}

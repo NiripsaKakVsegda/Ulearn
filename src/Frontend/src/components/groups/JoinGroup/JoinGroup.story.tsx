@@ -1,34 +1,105 @@
-import React from 'react';
+import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { JoinGroupInfo, SuperGroupError } from "../../../models/groups";
+import { fullscreenLayout, getMockedUser } from "../../../storiesUtils";
 import JoinGroup from "./JoinGroup";
-import { buildListTemplate, getMockedGroup } from "../../../storiesUtils";
-import { returnPromiseAfterDelay } from "src/utils/storyMock";
-import { Meta } from "@storybook/react";
-import { Props } from './JoinGroup.types';
-
-const group = getMockedGroup();
-
-const joinGroupMock = (inviteHash: string) => {
-	return returnPromiseAfterDelay<Response>(300);
-};
-
-const getGroupMock = (inviteHash: string) => {
-	return returnPromiseAfterDelay(300, group);
-};
-
-const defaultProps: Props = {
-	joinGroup: joinGroupMock,
-	getGroupByHash: getGroupMock,
-	navigate: () => ({}),
-	params: { hash: '123123', courseId: 'bp', taskId: '' },
-};
-
-const ListTemplate = buildListTemplate<Props>(
-	(props) => <JoinGroup { ...props } />
-);
-export const Default = ListTemplate.bind({});
-Default.args = [{ title: "Join simple", props: { ...defaultProps } }];
-
+import { mockFunc } from "../../../utils/storyMock";
 
 export default {
 	title: 'Group/JoinGroup',
-} as Meta;
+	component: JoinGroup,
+	...fullscreenLayout
+} as ComponentMeta<typeof JoinGroup>;
+
+const Template: ComponentStory<typeof JoinGroup> = (args) => (
+	<JoinGroup { ...args } />
+);
+
+export const JoinGroupStory = Template.bind({});
+JoinGroupStory.storyName = 'Default';
+JoinGroupStory.args = {
+	group: getMockedJoinGroupInfo(),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+export const JoinGroupCanSeeProgressStory = Template.bind({});
+JoinGroupCanSeeProgressStory.storyName = 'Can see progress';
+JoinGroupCanSeeProgressStory.args = {
+	group: getMockedJoinGroupInfo({
+		canStudentsSeeProgress: true
+	}),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+export const JoinGroupLinkAlreadyMemberStory = Template.bind({});
+JoinGroupLinkAlreadyMemberStory.storyName = 'Already member';
+JoinGroupLinkAlreadyMemberStory.args = {
+	group: getMockedJoinGroupInfo({
+		isMember: true
+	}),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+export const JoinGroupLinkDisabledStory = Template.bind({});
+JoinGroupLinkDisabledStory.storyName = 'Link disabled';
+JoinGroupLinkDisabledStory.args = {
+	group: getMockedJoinGroupInfo({
+		isInviteLinkEnabled: false
+	}),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+export const JoinGroupLinkNoDistributionLinkErrorStory = Template.bind({});
+JoinGroupLinkNoDistributionLinkErrorStory.storyName = 'Super group. No distribution link';
+JoinGroupLinkNoDistributionLinkErrorStory.args = {
+	group: getMockedJoinGroupInfo({
+		superGroupError: SuperGroupError.NoDistributionLink
+	}),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+export const JoinGroupLinkNoGroupFoundStory = Template.bind({});
+JoinGroupLinkNoGroupFoundStory.storyName = 'Super group. No group found for student';
+JoinGroupLinkNoGroupFoundStory.args = {
+	group: getMockedJoinGroupInfo({
+		superGroupError: SuperGroupError.NoGroupFoundForStudent
+	}),
+	courseTitle: 'Мок курс',
+	courseLink: '#',
+	accountLink: '#',
+	onJoinGroup: mockFunc
+};
+
+
+function getMockedJoinGroupInfo(joinGroupInfo?: Partial<JoinGroupInfo>): JoinGroupInfo {
+	return {
+		id: 0,
+		name: 'Мок группа',
+		courseId: 'id',
+		owner: getMockedUser({
+			id: 'userId',
+			firstName: 'Иван',
+			lastName: 'Иванов',
+			visibleName: 'Иван Иванов'
+		}),
+		isMember: false,
+		isInviteLinkEnabled: true,
+		canStudentsSeeProgress: false,
+		superGroupError: undefined,
+		...joinGroupInfo
+	};
+}

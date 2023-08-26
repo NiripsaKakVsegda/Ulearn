@@ -321,17 +321,13 @@ namespace Database.Repos.Groups
 		}
 
 		[ItemCanBeNull]
-		public Task<GroupBase> FindGroupByInviteHashAsync(Guid hash)
+		public Task<GroupBase> FindGroupByInviteHashAsync(Guid hash, bool onlyEnabledLink = true)
 		{
-			return db.Groups
-				.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled);
-		}
-
-		[ItemCanBeNull]
-		public Task<GroupBase> FindGroupByInviteHashAsync_WithDisabledLink(Guid hash)
-		{
-			return db.Groups
-				.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted);
+			return onlyEnabledLink
+				? db.Groups
+					.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted && g.IsInviteLinkEnabled)
+				: db.Groups
+					.FirstOrDefaultAsync(g => g.InviteHash == hash && !g.IsDeleted);
 		}
 
 		public IQueryable<GroupBase> GetCourseGroupsQueryable(string courseId, GroupQueryType groupType, bool includeArchived = false)

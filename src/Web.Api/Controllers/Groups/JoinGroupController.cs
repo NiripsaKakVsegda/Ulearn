@@ -15,7 +15,6 @@ using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Core.Courses.Manager;
 using Ulearn.Web.Api.Models.Responses.Groups;
 using Ulearn.Web.Api.Utils;
-using GroupSettings = Ulearn.Web.Api.Models.Responses.Groups.GroupSettings;
 
 namespace Ulearn.Web.Api.Controllers.Groups
 {
@@ -49,24 +48,47 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// </summary>
 		/// <param name="inviteHash">Инвайт-хеш группы</param>
 		[HttpGet]
-		public async Task<ActionResult<GroupSettings>> Group(Guid inviteHash)
+		public async Task<ActionResult<JoinGroupInfo>> Group(Guid inviteHash)
 		{
-			var group = await groupsRepo.FindGroupByInviteHashAsync_WithDisabledLink(inviteHash).ConfigureAwait(false);
+			var group = await groupsRepo.FindGroupByInviteHashAsync(inviteHash, false).ConfigureAwait(false);
 
-			if (group == null)
+			if (group is null)
 				return NotFound(new ErrorResponse($"Group with invite hash {inviteHash} not found"));
 
-			var isLinkEnabled = group.IsInviteLinkEnabled;
+			var isInviteLinkEnabled = group.IsInviteLinkEnabled;
 
-			if (group.GroupType == GroupType.SuperGroup)
+			SuperGroupError? error = null;
+			if (group is SuperGroup superGroup)
 			{
-				var (createdGroups, error) = await GetGroupsToJoinViaSuperGroup(group as SuperGroup);
-				if (error == null)
-					group = createdGroups.FirstOrDefault();
+				if (superGroup.DistributionTableLink is null)
+				{
+					error = SuperGroupError.NoDistributionLink;
+				}
+				else
+				{
+					var groups = await GetGroupsToJoinViaSuperGroup(superGroup);
+					if (groups.Count == 1)
+						group = groups[0];
+					else
+						error = SuperGroupError.NoGroupFoundForStudent;
+				}
 			}
 
-			var isMember = await groupMembersRepo.IsUserMemberOfGroup(@group.Id, UserId).ConfigureAwait(false);
-			return BuildGroupInfo(group, isUserMemberOfGroup: isMember, isLinkEnabled: isLinkEnabled);
+			var singleGroup = group as SingleGroup;
+			return new JoinGroupInfo
+			{
+				Id = group.Id,
+				Name = group.Name,
+				CourseId = group.CourseId,
+				Owner = BuildShortUserInfo(group.Owner),
+				IsInviteLinkEnabled = isInviteLinkEnabled,
+				CanStudentsSeeProgress = singleGroup is not null &&
+										singleGroup.CanUsersSeeGroupProgress,
+				SuperGroupError = error,
+				IsMember = singleGroup is not null &&
+							await groupMembersRepo.IsUserMemberOfGroup(singleGroup.Id, UserId)
+				// Can't use singleGroup.Members.Any(u => u.UserId == UserId) because EF Core doesn't correctly update related entities after removing student from group
+			};
 		}
 
 		/// <summary>
@@ -74,18 +96,17 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// Группа должна быть не удалена, а инвайт-ссылка в ней — включена.
 		/// </summary>
 		/// <param name="inviteHash">Инвайт-хеш группы</param>
-		[HttpPost("join")]
-		
+		[HttpPut("join")]
 		[SwaggerResponse((int)HttpStatusCode.Conflict, Description = "User is already a student of this group")]
 		public async Task<IActionResult> Join(Guid inviteHash)
 		{
 			var group = await groupsRepo.FindGroupByInviteHashAsync(inviteHash).ConfigureAwait(false);
 
-			if (group == null)
+			if (group is null)
 				return NotFound(new ErrorResponse($"Group with invite hash {inviteHash} not found"));
 
-			if (group.GroupType == GroupType.SuperGroup)
-				return await JoinSuperGroup(group as SuperGroup);
+			if (group is SuperGroup superGroup)
+				return await JoinSuperGroup(superGroup);
 
 			var groupMember = await groupMembersRepo.AddUserToGroupAsync(group.Id, UserId).ConfigureAwait(false);
 			if (groupMember == null)
@@ -98,36 +119,45 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 		private async Task<ActionResult> JoinSuperGroup(SuperGroup superGroup)
 		{
-			var (createdGroups, error) = await GetGroupsToJoinViaSuperGroup(superGroup);
+			var groups = await GetGroupsToJoinViaSuperGroup(superGroup);
 
-			if (error != null)
-				return NotFound(error);
+			if (groups.Count == 0)
+				return NotFound(new ErrorResponse("No group found for user"));
+			if (groups.Count > 1)
+				return NotFound(new ErrorResponse("Found multiple groups for user"));
 
-			var groupToJoin = createdGroups.FirstOrDefault();
+			var groupToJoin = groups[0];
 
 			var groupMember = await groupMembersRepo.AddUserToGroupAsync(groupToJoin.Id, UserId).ConfigureAwait(false);
-			return groupMember == null
-				? Conflict(new ErrorResponse($"User {UserId} is already a student of group {groupToJoin.Id}"))
-				: Ok(new SuccessResponseWithMessage($"Student {UserId} is added to group {superGroup.Id}"));
+			if (groupMember is null)
+				return Conflict(new ErrorResponse($"User {UserId} is already a student of group {groupToJoin.Id}"));
+
+			await slideCheckingsRepo.ResetManualCheckingLimitsForUser(groupToJoin.CourseId, UserId);
+
+			return Ok(new SuccessResponseWithMessage($"Student {UserId} is added to group {superGroup.Id}"));
 		}
 
-		private async Task<(List<SingleGroup> createdGroups, string error)> GetGroupsToJoinViaSuperGroup(SuperGroup superGroup)
+		private async Task<List<SingleGroup>> GetGroupsToJoinViaSuperGroup(SuperGroup superGroup)
 		{
-			var (createdGroups, spreadSheetGroups) = await superGroupManager.GetSheetGroupsAndCreatedGroups(superGroup.DistributionTableLink, superGroup.Id);
-			var user = await usersRepo.FindUserById(UserId);
+			var (createdGroups, spreadSheetGroups) = await superGroupManager.GetSheetGroupsAndCreatedGroups(
+				superGroup.DistributionTableLink,
+				superGroup.Id
+			);
+			var user = (await usersRepo.FindUserById(UserId))!;
 
-			var userNames = new HashSet<string> { $"{user.FirstName.Trim()} {user.LastName.Trim()}", $"{user.LastName.Trim()} {user.FirstName.Trim()}" };
+			var userNames = new HashSet<string>
+			{
+				$"{user.FirstName.Trim()} {user.LastName.Trim()}",
+				$"{user.LastName.Trim()} {user.FirstName.Trim()}"
+			};
 			var userGroupsNames = spreadSheetGroups
 				.Where(g => userNames.Contains(g.studentName))
 				.Select(g => g.groupName)
 				.ToHashSet();
 
-			return (createdGroups
-					.Where(g => userGroupsNames.Contains(g.Name))
-					.ToList(),
-				userGroupsNames.Count != 1
-					? "There is multiple or none groups user could join in"
-					: null);
+			return createdGroups
+				.Where(g => userGroupsNames.Contains(g.Name))
+				.ToList();
 		}
 	}
 }
