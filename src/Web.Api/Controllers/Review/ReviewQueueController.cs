@@ -31,6 +31,7 @@ namespace Ulearn.Web.Api.Controllers.Review
 		private readonly ISlideCheckingsRepo slideCheckingsRepo;
 		private readonly IGroupsRepo groupsRepo;
 		private readonly ICourseRolesRepo courseRolesRepo;
+		private readonly IUserSolutionsRepo solutionsRepo;
 
 		public ReviewQueueController(
 			ICourseStorage courseStorage,
@@ -38,13 +39,15 @@ namespace Ulearn.Web.Api.Controllers.Review
 			IUsersRepo usersRepo,
 			ISlideCheckingsRepo slideCheckingsRepo,
 			IGroupsRepo groupsRepo,
-			ICourseRolesRepo courseRolesRepo
+			ICourseRolesRepo courseRolesRepo,
+			IUserSolutionsRepo solutionsRepo
 		)
 			: base(courseStorage, db, usersRepo)
 		{
 			this.slideCheckingsRepo = slideCheckingsRepo;
 			this.groupsRepo = groupsRepo;
 			this.courseRolesRepo = courseRolesRepo;
+			this.solutionsRepo = solutionsRepo;
 		}
 
 		[HttpGet]
@@ -99,9 +102,12 @@ namespace Ulearn.Web.Api.Controllers.Review
 				true
 			);
 
-			var exercises = checkings.OfType<ManualExerciseChecking>().ToList();
-			var reviews = exercises.Count > 0
-				? BuildReviewsInfo(exercises)
+			var exerciseIds = checkings
+				.OfType<ManualExerciseChecking>()
+				.Select(c => c.Id)
+				.ToList();
+			var reviews = exerciseIds.Count > 0
+				? await BuildReviewsInfo(exerciseIds)
 				: null;
 
 			return new ReviewQueueResponse
@@ -319,20 +325,27 @@ namespace Ulearn.Web.Api.Controllers.Review
 			return result.ToList();
 		}
 
-		private static Dictionary<int, List<ShortReviewInfo>> BuildReviewsInfo(IEnumerable<ManualExerciseChecking> exercises)
+		private async Task<Dictionary<int, List<ShortReviewInfo>>> BuildReviewsInfo(IEnumerable<int> exercisesIds)
 		{
+			var reviewsByIds = await slideCheckingsRepo.GetExerciseCodeReviewForCheckings(exercisesIds);
+			var exercisesWithReviewsIds = reviewsByIds.Keys.ToList();
+			var solutionsByIds = await solutionsRepo.GetSolutionsForSubmissions(exercisesWithReviewsIds);
+			exercisesWithReviewsIds = solutionsByIds.Keys.ToList();
+
 			var result = new Dictionary<int, List<ShortReviewInfo>>();
-			foreach (var exercise in exercises)
+			foreach (var id in exercisesWithReviewsIds)
 			{
-				var solution = exercise.Submission.SolutionCode.Text;
-				if (string.IsNullOrEmpty(solution))
+				var solution = solutionsByIds[id];
+				if (string.IsNullOrWhiteSpace(solution))
 					continue;
-				result[exercise.Id] = exercise.Reviews.Select(r => (
+				result[id] = reviewsByIds[id]
+					.Select(r => (
 						review: r,
 						startPos: solution.FindPositionByLineAndCharacter(r.StartLine, r.StartPosition),
 						finishPos: solution.FindPositionByLineAndCharacter(r.FinishLine, r.FinishPosition)
 					))
 					.Where(reviewInfo => reviewInfo.finishPos - reviewInfo.startPos > 0)
+					.Where(reviewInfo => reviewInfo.startPos >= 0 && reviewInfo.finishPos < solution.Length)
 					.OrderBy(reviewInfo => reviewInfo.startPos)
 					.Select(reviewInfo => new ShortReviewInfo
 					{

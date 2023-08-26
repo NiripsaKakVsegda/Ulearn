@@ -220,18 +220,10 @@ namespace Database.Repos
 				query = query.Take(options.Count);
 
 			if (includeVirtualFields)
-			{
-				if (query is IQueryable<ManualExerciseChecking> exerciseCheckingsQuery)
-					query = (IQueryable<T>)exerciseCheckingsQuery
-						.Include(c => c.Submission.SolutionCode)
-						.Include(c => c.Submission.Reviews)
-						.ThenInclude(r => r.Author);
-
 				query = query
 					.Include(c => c.User)
 					.Include(c => c.LockedBy)
 					.Include(c => c.CheckedBy);
-			}
 
 			return query.ToListAsync();
 		}
@@ -497,10 +489,16 @@ namespace Database.Repos
 		public async Task<Dictionary<int, List<ExerciseCodeReview>>> GetExerciseCodeReviewForCheckings(IEnumerable<int> checkingsIds)
 		{
 			return (await db.ExerciseCodeReviews
-					.Where(r => r.ExerciseCheckingId.HasValue && checkingsIds.Contains(r.ExerciseCheckingId.Value) && !r.IsDeleted)
-					.ToListAsync())
-				.GroupBy(r => r.ExerciseCheckingId)
-				.ToDictionary(g => g.Key.Value, g => g.ToList());
+					.Where(r =>
+						r.ExerciseCheckingId.HasValue &&
+						checkingsIds.Contains(r.ExerciseCheckingId.Value) &&
+						!r.IsDeleted
+					)
+					.Include(r => r.Author)
+					.ToListAsync()
+				)
+				.GroupBy(r => r.ExerciseCheckingId!.Value)
+				.ToDictionary(g => g.Key, g => g.ToList());
 		}
 
 		public async Task<List<string>> GetTopUserReviewComments(string courseId, Guid slideId, string userId, int count)

@@ -538,16 +538,15 @@ namespace Database.Repos
 			UnhandledSubmissionsWaiter.HandledSubmissions.TryAdd(submission.Id, DateTime.Now);
 		}
 
-		public async Task<Dictionary<int, string>> GetSolutionsForSubmissions(IEnumerable<int> submissionsIds)
+		public Task<Dictionary<int, string>> GetSolutionsForSubmissions(IEnumerable<int> submissionsIds)
 		{
-			var solutionsHashes = await db.UserExerciseSubmissions
+			var query = db.UserExerciseSubmissions
 				.Where(s => submissionsIds.Contains(s.Id))
-				.Select(s => new { Hash = s.SolutionCodeHash, SubmissionId = s.Id })
-				.ToListAsync();
-			var textsByHash = await textsRepo.GetTextsByHashes(solutionsHashes.Select(s => s.Hash));
-			return solutionsHashes.ToDictSafe(
-				s => s.SubmissionId,
-				s => textsByHash.GetOrDefault(s.Hash, ""));
+				.Select(s => new { s.Id, Solution = s.SolutionCode.Text });
+			return query.ToDictionaryAsync(
+				s => s.Id,
+				s => s.Solution
+			);
 		}
 
 		public UserExerciseSubmission FindNoTrackingSubmission(int id)
