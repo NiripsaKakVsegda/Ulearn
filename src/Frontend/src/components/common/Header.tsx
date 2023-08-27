@@ -25,6 +25,7 @@ import { RootState } from "src/models/reduxState";
 import { DeviceType } from "src/consts/deviceType";
 
 import styles from './Header.less';
+import { isCourseSlide as checkIsCourseSlide } from "../course/Course/CourseUtils";
 
 
 interface Props {
@@ -32,6 +33,7 @@ interface Props {
 	courses: CourseState;
 	initializing: boolean;
 	deviceType: DeviceType;
+	isCourseSlide: boolean;
 	toggleNavigation: () => void;
 }
 
@@ -117,7 +119,7 @@ class Header extends Component<Props, State> {
 	}
 
 	render() {
-		const { initializing, account, deviceType, courses, } = this.props;
+		const { initializing, account, deviceType, courses, isCourseSlide } = this.props;
 		const { isSystemAdministrator, courseRole, } = this.state;
 		const userIsInstructor = isInstructor({ isSystemAdministrator, courseRole });
 
@@ -129,7 +131,8 @@ class Header extends Component<Props, State> {
 					<Hijack name={ account.visibleName }/>
 					{ !initializing && this.renderUserRoleMenu() }
 					{
-						userIsInstructor && <StudentMode
+						userIsInstructor && isCourseSlide &&
+						<StudentMode
 							deviceType={ deviceType }
 							containerClass={ cn(styles.headerElement, styles.button) }
 						/>
@@ -156,10 +159,10 @@ class Header extends Component<Props, State> {
 	}
 
 	renderNavMenuIcon() {
-		const { deviceType, toggleNavigation, } = this.props;
+		const { deviceType, toggleNavigation, isCourseSlide } = this.props;
 
 		return (
-			isIconOnly(deviceType) &&
+			isCourseSlide && isIconOnly(deviceType) &&
 			<button className={ cn(styles.headerElement, styles.button) } onClick={ toggleNavigation }>
 				<UiMenuBars3HIcon20Regular/>
 			</button>
@@ -247,8 +250,20 @@ class Header extends Component<Props, State> {
 	}
 }
 
-const mapStateToHeaderProps = ({ account, courses, device, }: RootState) => {
-	return { account, courses, deviceType: device.deviceType };
+const mapStateToHeaderProps = ({ account, courses, device }: RootState) => {
+	const currentCourse = courses.currentCourseId &&
+		courses.fullCoursesInfo[courses.currentCourseId];
+
+	const isUserTesterOrHigher = !!courses.currentCourseId && (
+		account.isSystemAdministrator ||
+		account.roleByCourse[courses.currentCourseId] &&
+		account.roleByCourse[courses.currentCourseId] !== CourseRoleType.student
+	);
+
+	const isCourseSlide = !!currentCourse &&
+		checkIsCourseSlide(document.location, currentCourse, isUserTesterOrHigher);
+
+	return { account, courses, deviceType: device.deviceType, isCourseSlide };
 };
 
 const mapDispatchToHeaderProps = (dispatch: Dispatch) => {

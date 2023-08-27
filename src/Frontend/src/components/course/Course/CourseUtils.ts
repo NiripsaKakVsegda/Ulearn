@@ -1,5 +1,16 @@
+import { ScoringGroupsIds } from "src/consts/scoringGroup";
 import { CourseInfo, ScoringGroup, UnitInfo, UnitsInfo } from "src/models/course";
+import { DeadLineInfo } from "src/models/deadLines";
+import { SubmissionInfo } from "src/models/exercise";
+import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
+import { MatchParams } from "src/models/router";
+import { ShortSlideInfo, SlideType } from "src/models/slide";
 import { SlideUserProgress } from "src/models/userProgress";
+import { getDataIfLoaded } from "src/redux";
+import { DeadLineSchedule, getDeadLineForSlide } from "src/utils/deadLinesUtils";
+import { isTimeArrived } from "src/utils/momentUtils";
+import { InstructorReviewFilterSearchParams } from "../../reviewQueue/RevoewQueue.types";
+import { getInstructorReviewFilterSearchParamsFromQuery } from "../../reviewQueue/utils/getFilterSearchParamsFromQuery";
 import {
 	CourseStatistics,
 	FlashcardsStatistics,
@@ -8,17 +19,7 @@ import {
 	StartupSlideInfo,
 	UnitProgressWithLastVisit
 } from "../Navigation/types";
-import { ScoringGroupsIds } from "src/consts/scoringGroup";
-import { ShortSlideInfo, SlideType } from "src/models/slide";
-import { MatchParams } from "src/models/router";
-import { ReviewInfoRedux, SubmissionInfoRedux } from "src/models/reduxState";
-import { SubmissionInfo } from "src/models/exercise";
-import { getDataIfLoaded } from "src/redux";
-import { DeadLineInfo } from "src/models/deadLines";
-import { DeadLineSchedule, getDeadLineForSlide } from "src/utils/deadLinesUtils";
-import { isTimeArrived } from "src/utils/momentUtils";
-import { InstructorReviewFilterSearchParams } from "../../reviewQueue/RevoewQueue.types";
-import { getInstructorReviewFilterSearchParamsFromQuery } from "../../reviewQueue/utils/getFilterSearchParamsFromQuery";
+import { matchPath } from "react-router-dom";
 
 
 export interface SlideInfo {
@@ -222,6 +223,18 @@ export const slideActionsRegex = {
 	flashcards: /flashcards/i,
 };
 
+export function isSlideRequiresReview(slideId: string, courseInfo: CourseInfo) {
+	for (const unit of courseInfo.units) {
+		for (const slide of unit.slides) {
+			if(slide.id === slideId && slide.requiresReview) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 export default function getSlideInfo(
 	params: MatchParams,
 	location: Location,
@@ -236,7 +249,12 @@ export default function getSlideInfo(
 
 	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
 	const isLti = queryParams.isLti || !!slideSlugOrAction?.match(slideActionsRegex.ltiSlide);
-	const isReview = !!queryParams.submissionId && !!queryParams.userId;
+	const isReview = !!slideId &&
+		!!queryParams.userId &&
+		!!queryParams.submissionId &&
+		!!courseInfo &&
+		isUserTesterOrHigher &&
+		isSlideRequiresReview(slideId, courseInfo);
 
 	const isNavigationVisible = !isLti && !isReview && (courseInfo == null || courseInfo.tempCourseError == null);
 
@@ -251,7 +269,8 @@ export default function getSlideInfo(
 	let deadLineInfo = null;
 	if(deadLines && navigationInfo && slideId) {
 		deadLineInfo = getDeadLineForSlide(deadLines, navigationInfo.current.scoringGroup, slideId,
-			navigationInfo.current.unitId);
+			navigationInfo.current.unitId
+		);
 	}
 
 	return {
@@ -430,3 +449,28 @@ export const getSubmissionsWithReviews = (
 			} as SubmissionInfo);
 		});
 };
+
+export function isCourseSlide(location: Location, courseInfo: CourseInfo, isUserTesterOrHigher: boolean): boolean {
+	const match = matchPath({
+		path: "/course/:courseId/:slideSlugOrAction",
+	}, location.pathname);
+	const slideSlugOrAction = match?.params.slideSlugOrAction;
+	if(!match || !slideSlugOrAction) {
+		return false;
+	}
+
+	const queryParams = parseKnownQueryParams(location.search);
+	if(queryParams.isLti) {
+		return false;
+	}
+
+	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
+	if(!slideId) {
+		return false;
+	}
+
+	return !queryParams.submissionId ||
+		!queryParams.userId ||
+		!isUserTesterOrHigher ||
+		!isSlideRequiresReview(slideId, courseInfo);
+}

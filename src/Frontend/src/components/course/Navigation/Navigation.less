@@ -1,7 +1,6 @@
 @import "/src/variables.less";
 
 @rootZIndex: @asideZIndex;
-@contentHeight: calc(100vh - @headerHeight);
 
 .overflow {
   overflow: hidden;
@@ -36,8 +35,10 @@
   width: @navigationMenuWidth;
 
   overflow-y: auto;
-  height: @contentHeight;
-  max-height: @contentHeight;
+  height: calc(100vh - @headerHeight);
+  @supports (height: 100dvh){
+    height: calc(100dvh - @headerHeight);
+  }
   background: #ffffff;
 
   transform: translateX(-@navigationMenuWidth);
@@ -79,7 +80,6 @@
 
   .contentWrapper {
     bottom: auto;
-    max-height: calc(100vh - @headerHeight);
     transform: translateX(0);
     transition: none;
   }

@@ -2,11 +2,8 @@ import React, { RefObject } from "react";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import cn from "classnames";
-import { matchPath, useLocation, } from "react-router-dom";
 
 import { Toggle, } from "ui";
-
-import { parseKnownQueryParams } from "../../course/Course/CourseUtils";
 import { studentModeToggleAction, } from "src/actions/instructor";
 import { saveToCache, studentMode, } from "src/utils/localStorageManager";
 
@@ -25,23 +22,18 @@ interface Props {
 function StudentMode({ isStudentMode, setStudentMode, deviceType, containerClass, }: Props) {
 	const refButton: RefObject<HTMLButtonElement> = React.createRef();
 	const refSpan: RefObject<HTMLSpanElement> = React.createRef();
-	const location = useLocation();
-	const match = matchPath({
-		path: "/course/:courseId/:slideSlugOrAction",
-	}, location.pathname);
-	const queryParams = parseKnownQueryParams(location.search);
-	if(!match?.params.slideSlugOrAction || queryParams.isLti || queryParams.submissionId) {
-		return null;
-	}
 
 	return (
-		<button tabIndex={ -1 }
-				className={ cn(styles.toggleWrapper, containerClass,) }
-				onClick={ onClick }
-				ref={ refButton }>
+		<button
+			tabIndex={ -1 }
+			className={ cn(styles.toggleWrapper, containerClass,) }
+			onClick={ onClick }
+			ref={ refButton }
+		>
 			<Toggle
 				checked={ isStudentMode }
-				onValueChange={ showForStudentToggleChanged }/>
+				onValueChange={ showForStudentToggleChanged }
+			/>
 			{ deviceType !== DeviceType.mobile && <span ref={ refSpan }> Режим студента </span> }
 		</button>
 	);
@@ -60,7 +52,7 @@ function StudentMode({ isStudentMode, setStudentMode, deviceType, containerClass
 
 const mapStateToProps = (state: RootState) => {
 	return {
-		isStudentMode: state.instructor.isStudentMode,
+		isStudentMode: state.instructor.isStudentMode
 	};
 };
 const mapDispatchToProps = (dispatch: Dispatch) => ({
