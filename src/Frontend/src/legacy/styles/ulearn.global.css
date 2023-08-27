@@ -1,3 +1,14 @@
+/*reset bootstrapStyles for kontur-ui*/
+[data-tid='MenuItem__root'], [data-tid='Tabs__root'] {
+	&, &:hover, &:focus, &:active, & a, & a:hover, & a:focus, & a:active {
+		text-decoration: none;
+	}
+}
+
+label[data-tid='Toggle__root'], label[data-tid='Input__root'] {
+	margin: initial;
+}
+
 /* code-review */
 .legacy-page .exercise__add-review {
 	position: absolute;

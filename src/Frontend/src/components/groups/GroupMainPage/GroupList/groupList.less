@@ -36,8 +36,14 @@
   }
 }
 
+.mainGroupItem:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
 .content {
   margin: 0 -@indent;
+  padding: 0;
+  list-style: none;
 
   @media (max-width: @maxTabletWidth) {
     margin-left: -@tabletIndent;
@@ -76,6 +82,7 @@
 .subGroupsWrapper {
   list-style: none;
   padding: 0 0 0 10px;
+  margin-bottom: 8px;
 }
 
 .subGroupsItem {

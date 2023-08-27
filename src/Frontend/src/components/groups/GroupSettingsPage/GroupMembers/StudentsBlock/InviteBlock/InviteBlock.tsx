@@ -38,16 +38,12 @@ const InviteBlock: FC<Props> = ({ group, onToggleInviteLink }) => {
 
 	return (
 		<div className={ styles.toggleInvite }>
-			<label>
-				<Toggle
-					checked={ isInviteLinkEnabled }
-					onValueChange={ onToggleInviteLink }
-				>
-				</Toggle>
-				<span className={ styles.toggleInviteText }>
-					{ texts.buildLinkHint(isInviteLinkEnabled, isSuperGroup) }
-				</span>
-			</label>
+			<Toggle
+				checked={ isInviteLinkEnabled }
+				onValueChange={ onToggleInviteLink }
+			>
+				{ texts.buildLinkHint(isInviteLinkEnabled, isSuperGroup) }
+			</Toggle>
 			{ isInviteLinkEnabled && renderInviteLink() }
 			{ isInviteLinkEnabled && group.groupType === GroupType.SuperGroup && <p>{ texts.superGroupHintText }</p> }
 		</div>

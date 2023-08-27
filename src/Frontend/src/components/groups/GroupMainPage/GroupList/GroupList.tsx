@@ -1,10 +1,11 @@
 import React, { FC } from "react";
+import { useSearchParams } from "react-router-dom";
+
+import { GroupInfo, GroupInfoWithSubGroups } from "src/models/groups";
 import GroupsListItem from "../GroupsListItem/GroupsListItem";
 
-import { GroupInfo, GroupInfoWithSubGroups, GroupType } from "src/models/groups";
-
 import styles from "./groupList.less";
-import { useSearchParams } from "react-router-dom";
+import cn from "classnames";
 
 interface Props {
 	userId?: string | null;
@@ -30,12 +31,12 @@ const GroupList: FC<Props> = ({
 
 	return (
 		<section className={ styles.wrapper }>
-			<div className={ styles.content }>
+			<ul className={ styles.content }>
 				{ [...groups, ...superGroups]
 					.sort(groupSorter)
 					.map((g) => renderGroup(g))
 				}
-			</div>
+			</ul>
 			{ groups.length === 0 && superGroups.length === 0 &&
 				<div className={ styles.noGroups }>
 					{ noGroupsMessage }
@@ -46,9 +47,14 @@ const GroupList: FC<Props> = ({
 
 	function renderGroup(group: GroupInfoWithSubGroups, isSubGroup = false) {
 		return (
-			<>
+			<li
+				key={ group.id }
+				className={ cn({
+					[styles.mainGroupItem]: !isSubGroup,
+					[styles.subGroupsItem]: isSubGroup
+				}) }
+			>
 				<GroupsListItem
-					key={ group.id }
 					courseId={ courseId }
 					group={ group }
 					deleteGroup={ onDeleteGroup }
@@ -59,15 +65,13 @@ const GroupList: FC<Props> = ({
 				{ group.subGroups && group.subGroups.length > 0 &&
 					<div className={ styles.subGroupsContainer }>
 						<ul className={ styles.subGroupsWrapper }>
-							{
-								group.subGroups.map(g => {
-									return (<li className={ styles.subGroupsItem }>{ renderGroup(g, true) }</li>);
-								})
+							{ group.subGroups
+								.map(g => renderGroup(g, true))
 							}
 						</ul>
 					</div>
 				}
-			</>
+			</li>
 		);
 	}
 

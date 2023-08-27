@@ -1,29 +1,18 @@
 @import "/src/variables.less";
 
 .toggleInvite {
-  cursor: pointer;
-  margin: 10px 0 5px;
-}
-
-.toggleInviteText {
-  margin-left: 7px;
+  margin: 12px 0 8px;
 }
 
 .inviteLink {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: baseline;
-  margin: 0 0 10px;
-  cursor: pointer;
+  align-items: center;
+  margin: 8px 0 4px;
   gap: 12px;
 }
 
 .inviteLinkInput {
-  width: 100%;
-  label {
-    margin: 0;
-  }
+  flex-grow: 1;
 
   @media (max-width: @maxPhoneWidth) {
     display: none;
