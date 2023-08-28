@@ -8,7 +8,7 @@ import LinkAsButton from "../../common/LinkAsButton/LinkAsButton";
 
 interface Props {
 	group: JoinGroupInfo;
-	courseTitle: string;
+	courseTitle?: string;
 
 	onJoinGroup: () => void;
 

@@ -31,20 +31,20 @@ const JoinGroupConnected: FC = () => {
 	const [joinGroupMutation] = joinGroupApi.useJoinGroupMutation();
 
 	const courseTitle = group
-		? courseById[group.courseId].title
+		? courseById[group.courseId.toLowerCase()]?.title
 		: undefined;
 
-	if(!account.isAuthenticated) {
+	if(account.accountLoaded && !account.isAuthenticated) {
 		return <Navigate
 			to={ constructLinkWithReturnUrl(login, `/${ groups }/${ hash }`) }
 		/>;
 	}
 
-	if(isLoading) {
+	if(!account.accountLoaded || isLoading) {
 		return <CourseLoader/>;
 	}
 
-	if(isError || !group || !courseTitle) {
+	if(isError || !group) {
 		return <Error404/>;
 	}
 
