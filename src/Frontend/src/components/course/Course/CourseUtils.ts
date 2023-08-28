@@ -465,12 +465,10 @@ export function isCourseSlide(location: Location, courseInfo: CourseInfo, isUser
 	}
 
 	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
-	if(!slideId) {
-		return false;
-	}
 
 	return !queryParams.submissionId ||
 		!queryParams.userId ||
 		!isUserTesterOrHigher ||
+		!slideId ||
 		!isSlideRequiresReview(slideId, courseInfo);
 }
