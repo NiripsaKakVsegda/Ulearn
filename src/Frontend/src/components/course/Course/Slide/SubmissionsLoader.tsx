@@ -1,13 +1,13 @@
 import React, { PropsWithChildren, useEffect } from "react";
+import { connect } from "react-redux";
+import { Dispatch } from "redux";
 
 import api from "src/api";
-import { connect } from "react-redux";
-
-import { SlidePropsWithContext } from "./Slide.types";
 import { SubmissionInfo } from "src/models/exercise";
 import { RootState } from "src/redux/reducers";
-import { getSubmissionsWithReviews, } from "../CourseUtils";
-import { Dispatch } from "redux";
+import { getSubmissionsWithReviews } from "../CourseUtils";
+
+import { SlidePropsWithContext } from "./Slide.types";
 
 export type SubmissionsLoaderProps =
 	SlidePropsWithContext
@@ -64,7 +64,7 @@ const mapStateToProps = (state: RootState, { slideContext: { slideInfo, } }: Sli
 	if(userId && submissions) {
 		if(slideInfo.isReview && slideInfo.query.submissionId && !submissions.find(
 			s => s.id === slideInfo.query.submissionId)) {
-			submissions = undefined;
+			submissions = [];
 		}
 	}
 

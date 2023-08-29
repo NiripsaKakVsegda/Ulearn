@@ -80,9 +80,7 @@ import { clone } from "src/utils/jsonExtensions";
 import { mockFunc, returnPromiseAfterDelay } from "src/utils/storyMock";
 import { Button } from "ui";
 import { withNavigate } from "../../../../../utils/router";
-import {
-	getInstructorReviewFilterSearchParamsFromQuery
-} from "../../../../reviewQueue/utils/getFilterSearchParamsFromQuery";
+import { getInstructorReviewFilterSearchParamsFromQuery } from "../../../../reviewQueue/utils/getFilterSearchParamsFromQuery";
 import { skipLoki } from "../../../Navigation/stroies.data";
 import { BlocksWrapper, StaticCode } from "../Blocks";
 import InstructorReview from "./InstructorReview";
@@ -595,7 +593,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return review;
 				})
 				.catch(error => {
-					dispatch(reviewsAddFailAction(submissionId, error));
+					dispatch(reviewsAddFailAction(submissionId, error.toString()));
 					return error;
 				});
 		},
@@ -608,7 +606,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return review;
 				})
 				.catch(error => {
-					dispatch(reviewsDeleteFailAction(submissionId, reviewId, error, isBotReview));
+					dispatch(reviewsDeleteFailAction(submissionId, reviewId, error.toString(), isBotReview));
 					return error;
 				});
 		},
@@ -659,7 +657,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return favouriteReview;
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsAddFailAction(courseId, slideId, error));
+					dispatch(favouriteReviewsAddFailAction(courseId, slideId, error.toString()));
 					return error;
 				});
 		},
@@ -670,7 +668,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					dispatch(favouriteReviewsDeleteSuccessAction(courseId, slideId, favouriteReviewId));
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error));
+					dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error.toString()));
 					return error;
 				});
 		},
@@ -743,7 +741,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					}
 				})
 				.catch(error => {
-					dispatch(studentLoadFailAction(studentId, error));
+					dispatch(studentLoadFailAction(studentId, error.toString()));
 					return error;
 				});
 		},
@@ -755,7 +753,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return json;
 				})
 				.catch(error => {
-					dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error));
+					dispatch(antiplagiarimsStatusLoadFailAction(submissionId, error.toString()));
 					return error;
 				});
 		},
@@ -774,7 +772,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return favouriteReviews;
 				})
 				.catch(error => {
-					dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error));
+					dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error.toString()));
 					return error;
 				});
 		},
@@ -786,7 +784,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 					return json;
 				})
 				.catch(error => {
-					dispatch(groupLoadFailAction(userId, error));
+					dispatch(groupLoadFailAction(userId, error.toString()));
 					return error;
 				});
 		},
@@ -795,7 +793,7 @@ const mapDispatchToProps = (dispatch: Dispatch): ApiFromRedux => {
 			args.slideContext.slideInfo.query = { ...args.slideContext.slideInfo.query, submissionId };
 			return returnPromiseAfterDelay(loadingTimes.enableManualChecking, Promise.resolve())
 				.catch(error => {
-					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error));
+					dispatch(submissionsEnableManualCheckingFailAction(submissionId, error.toString()));
 					return error;
 				});
 		},

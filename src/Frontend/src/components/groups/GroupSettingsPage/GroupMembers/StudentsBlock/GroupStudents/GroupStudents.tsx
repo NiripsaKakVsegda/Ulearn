@@ -72,6 +72,7 @@ const GroupStudents: FC<Props> = ({
 				<Checkbox
 					checked={ students.length === checkedStudentIds.length }
 					onValueChange={ onCheckAllStudents }
+					className={styles.removeMargin}
 				>
 					{ texts.selectAll }
 				</Checkbox>

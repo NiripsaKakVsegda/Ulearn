@@ -212,7 +212,7 @@ const addReviewRedux = (
 				return review;
 			})
 			.catch(error => {
-				dispatch(reviewsAddFailAction(submissionId, error,));
+				dispatch(reviewsAddFailAction(submissionId, error.toString()));
 				throw error;
 			});
 	};
@@ -252,7 +252,7 @@ const deleteReviewRedux = (
 				return review;
 			})
 			.catch(error => {
-				dispatch(reviewsDeleteFailAction(submissionId, reviewId, error, isBotReview));
+				dispatch(reviewsDeleteFailAction(submissionId, reviewId, error.toString(), isBotReview));
 				return error;
 			});
 	};
@@ -331,7 +331,7 @@ const getUserSubmissionsRedux = (userId: string, courseId: string, slideId: stri
 				return json.submissions;
 			})
 			.catch(error => {
-				dispatch(submissionsLoadFailAction(userId, courseId, slideId, error,));
+				dispatch(submissionsLoadFailAction(userId, courseId, slideId, error.toString()));
 				return error;
 			});
 	};
@@ -357,7 +357,7 @@ const enableManualCheckingRedux = (
 		dispatch(submissionsEnableManualCheckingStartAction(submissionId));
 		return enableManualChecking(submissionId)
 			.catch(error => {
-				dispatch(submissionsEnableManualCheckingFailAction(submissionId, error,));
+				dispatch(submissionsEnableManualCheckingFailAction(submissionId, error.toString()));
 				return error;
 			});
 	};

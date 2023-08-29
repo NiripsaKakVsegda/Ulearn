@@ -42,13 +42,13 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 		}
 
 		[HttpGet("for-user/{userId}")]
-		public async Task<ActionResult<DeadLinesResponse>> GetDeadLinesForUser([FromQuery] string courseId, [FromRoute] string userId)
+		public async Task<ActionResult<DeadLinesResponse>> GetDeadLinesForUser([FromQuery] string courseId, [FromRoute] Guid userId)
 		{
 			var isInstructor = await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Tester);
 			if (!isInstructor)
 				return Forbid($"You do not have an access to view dead lines in course {courseId}");
 
-			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, Guid.Parse(userId));
+			var deadLines = await deadLinesRepo.GetDeadLinesForUser(courseId, userId);
 
 			return DeadLinesResponse.BuildDeadLinesInfo(deadLines);
 		}

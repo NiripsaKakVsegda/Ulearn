@@ -43,7 +43,7 @@ const getFavouriteReviewsRedux = (courseId: string, slideId: string,) => {
 				return favouriteReviews;
 			})
 			.catch(error => {
-				dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error,));
+				dispatch(favouriteReviewsLoadFailAction(courseId, slideId, error.toString()));
 				return error;
 			});
 	};
@@ -58,7 +58,7 @@ const addFavouriteReviewRedux = (courseId: string, slideId: string, text: string
 				return favouriteReview;
 			})
 			.catch(error => {
-				dispatch(favouriteReviewsAddFailAction(courseId, slideId, error,));
+				dispatch(favouriteReviewsAddFailAction(courseId, slideId, error.toString()));
 				return error;
 			});
 	};
@@ -72,7 +72,7 @@ const deleteFavouriteReviewRedux = (courseId: string, slideId: string, favourite
 				dispatch(favouriteReviewsDeleteSuccessAction(courseId, slideId, favouriteReviewId,));
 			})
 			.catch(error => {
-				dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error,));
+				dispatch(favouriteReviewsDeleteFailAction(courseId, slideId, favouriteReviewId, error.toString()));
 				return error;
 			});
 	};

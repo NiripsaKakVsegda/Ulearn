@@ -64,7 +64,7 @@ const getStudentInfoRedux = (studentId: string,) => {
 				}
 			})
 			.catch(error => {
-				dispatch(studentLoadFailAction(studentId, error));
+				dispatch(studentLoadFailAction(studentId, error.toString()));
 				return error;
 			});
 	};
@@ -95,7 +95,7 @@ const prohibitFurtherManualCheckingRedux = (
 		dispatch(studentProhibitFurtherManualCheckingStartAction(courseId, slideId, userId, prohibit,));
 		return prohibitFurtherManualChecking(courseId, slideId, userId, prohibit)
 			.catch(error => {
-				dispatch(studentProhibitFurtherManualCheckingFailAction(courseId, slideId, userId, prohibit, error));
+				dispatch(studentProhibitFurtherManualCheckingFailAction(courseId, slideId, userId, prohibit, error.toString()));
 				return error;
 			});
 	};
@@ -110,7 +110,7 @@ const getDeadLinesRedux = (courseId: string, studentId: string) => {
 				return r;
 			})
 			.catch(error => {
-				dispatch(deadLinesLoadFailAction(courseId, studentId, error,));
+				dispatch(deadLinesLoadFailAction(courseId, studentId, error.toString()));
 				return error;
 			});
 	};

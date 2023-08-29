@@ -26,7 +26,7 @@ const getDeadLinesForCurrentUserRedux = (courseId: string,) => {
 				return r;
 			})
 			.catch(error => {
-				dispatch(deadLinesLoadFailAction(courseId, error,));
+				dispatch(deadLinesLoadFailAction(courseId, error.toString()));
 				return error;
 			});
 	};

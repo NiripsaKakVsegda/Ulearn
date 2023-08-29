@@ -1,3 +1,4 @@
+import { matchPath } from "react-router-dom";
 import { ScoringGroupsIds } from "src/consts/scoringGroup";
 import { CourseInfo, ScoringGroup, UnitInfo, UnitsInfo } from "src/models/course";
 import { DeadLineInfo } from "src/models/deadLines";
@@ -19,7 +20,6 @@ import {
 	StartupSlideInfo,
 	UnitProgressWithLastVisit
 } from "../Navigation/types";
-import { matchPath } from "react-router-dom";
 
 
 export interface SlideInfo {
@@ -223,10 +223,10 @@ export const slideActionsRegex = {
 	flashcards: /flashcards/i,
 };
 
-export function isSlideRequiresReview(slideId: string, courseInfo: CourseInfo) {
+export function hasSlideReview(slideId: string, courseInfo: CourseInfo) {
 	for (const unit of courseInfo.units) {
 		for (const slide of unit.slides) {
-			if(slide.id === slideId && slide.requiresReview) {
+			if(slide.type === SlideType.Exercise || slide.id === slideId && slide.requiresReview) {
 				return true;
 			}
 		}
@@ -250,11 +250,11 @@ export default function getSlideInfo(
 	const slideId = queryParams.slideId || slideSlugOrAction?.match(guidRegex)?.[0].toLowerCase();
 	const isLti = queryParams.isLti || !!slideSlugOrAction?.match(slideActionsRegex.ltiSlide);
 	const isReview = !!slideId &&
-		!!queryParams.userId &&
-		!!queryParams.submissionId &&
-		!!courseInfo &&
-		isUserTesterOrHigher &&
-		isSlideRequiresReview(slideId, courseInfo);
+					 !!queryParams.userId &&
+					 !!queryParams.submissionId &&
+					 !!courseInfo &&
+					 isUserTesterOrHigher &&
+					 hasSlideReview(slideId, courseInfo);
 
 	const isNavigationVisible = !isLti && !isReview && (courseInfo == null || courseInfo.tempCourseError == null);
 
@@ -470,5 +470,5 @@ export function isCourseSlide(location: Location, courseInfo: CourseInfo, isUser
 		!queryParams.userId ||
 		!isUserTesterOrHigher ||
 		!slideId ||
-		!isSlideRequiresReview(slideId, courseInfo);
+		!hasSlideReview(slideId, courseInfo);
 }

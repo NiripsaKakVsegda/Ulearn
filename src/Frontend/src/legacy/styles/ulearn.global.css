@@ -5,10 +5,6 @@
 	}
 }
 
-label[data-tid='Toggle__root'], label[data-tid='Input__root'] {
-	margin: initial;
-}
-
 /* code-review */
 .legacy-page .exercise__add-review {
 	position: absolute;

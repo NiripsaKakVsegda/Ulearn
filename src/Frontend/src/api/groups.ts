@@ -21,7 +21,7 @@ export function getCourseGroupsRedux(courseId: string, userId: string, archived?
 				return json;
 			})
 			.catch(error => {
-				dispatch(groupLoadFailAction(userId, error));
+				dispatch(groupLoadFailAction(userId, error.toString()));
 				return error;
 			});
 	};
