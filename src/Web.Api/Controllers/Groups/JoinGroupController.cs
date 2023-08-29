@@ -74,12 +74,14 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				}
 			}
 
+			var courseTitle = courseStorage.FindCourse(group.CourseId)?.Title;
 			var singleGroup = group as SingleGroup;
 			return new JoinGroupInfo
 			{
 				Id = group.Id,
 				Name = group.Name,
 				CourseId = group.CourseId,
+				CourseTitle = courseTitle,
 				Owner = BuildShortUserInfo(group.Owner),
 				IsInviteLinkEnabled = isInviteLinkEnabled,
 				CanStudentsSeeProgress = singleGroup is not null &&

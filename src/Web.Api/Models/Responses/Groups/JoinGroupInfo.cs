@@ -17,6 +17,9 @@ public class JoinGroupInfo
 	public string CourseId { get; set; }
 
 	[DataMember]
+	public string CourseTitle { get; set; } // To display title for hidden from user course
+
+	[DataMember]
 	public ShortUserInfo Owner { get; set; }
 
 	[DataMember]

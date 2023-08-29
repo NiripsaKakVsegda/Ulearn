@@ -7,9 +7,9 @@ export default {
 
 	join: {
 		title: 'Присоединиться к группе',
-		buildMainInfo: (group: JoinGroupInfo, courseTitle?: string) => <>
+		buildMainInfo: (group: JoinGroupInfo) => <>
 			{ group.owner.visibleName } приглашает вас присоединиться
-			к группе «{ group.name }» {courseTitle && <>в курсе «{ courseTitle }»</>}.<br/>
+			к группе «{ group.name }» в курсе «{ group.courseTitle }».<br/>
 			Преподаватели группы смогут проверять ваши задания и тесты, проводить код-ревью и выставлять вам
 			дополнительные баллы.
 		</>,
@@ -22,9 +22,9 @@ export default {
 
 	joined: {
 		title: 'Вы в группе',
-		buildInfo: (groupName: string, courseTitle?: string) => <>
+		buildInfo: (groupName: string, courseTitle: string) => <>
 			<p>
-				Вы присоединились к группе «{ groupName }» {courseTitle && <>в курсе «{ courseTitle }»</>}.
+				Вы присоединились к группе «{ groupName }» в курсе «{ courseTitle }».
 				Теперь этот курс доступен в меню «Мои курсы».
 			</p>
 			<p>

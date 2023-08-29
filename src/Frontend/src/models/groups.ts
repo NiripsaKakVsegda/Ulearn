@@ -166,6 +166,7 @@ export interface JoinGroupInfo{
 	id: number;
 	name: string;
 	courseId: string;
+	courseTitle: string;
 	owner: ShortUserInfo;
 	isInviteLinkEnabled: boolean;
 	canStudentsSeeProgress: boolean;

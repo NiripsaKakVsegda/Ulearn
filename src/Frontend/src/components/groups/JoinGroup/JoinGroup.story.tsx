@@ -18,7 +18,6 @@ export const JoinGroupStory = Template.bind({});
 JoinGroupStory.storyName = 'Default';
 JoinGroupStory.args = {
 	group: getMockedJoinGroupInfo(),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -30,7 +29,6 @@ JoinGroupCanSeeProgressStory.args = {
 	group: getMockedJoinGroupInfo({
 		canStudentsSeeProgress: true
 	}),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -42,7 +40,6 @@ JoinGroupLinkAlreadyMemberStory.args = {
 	group: getMockedJoinGroupInfo({
 		isMember: true
 	}),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -54,7 +51,6 @@ JoinGroupLinkDisabledStory.args = {
 	group: getMockedJoinGroupInfo({
 		isInviteLinkEnabled: false
 	}),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -66,7 +62,6 @@ JoinGroupLinkNoDistributionLinkErrorStory.args = {
 	group: getMockedJoinGroupInfo({
 		superGroupError: SuperGroupError.NoDistributionLink
 	}),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -78,7 +73,6 @@ JoinGroupLinkNoGroupFoundStory.args = {
 	group: getMockedJoinGroupInfo({
 		superGroupError: SuperGroupError.NoGroupFoundForStudent
 	}),
-	courseTitle: 'Мок курс',
 	courseLink: '#',
 	accountLink: '#',
 	onJoinGroup: mockFunc
@@ -90,6 +84,7 @@ function getMockedJoinGroupInfo(joinGroupInfo?: Partial<JoinGroupInfo>): JoinGro
 		id: 0,
 		name: 'Мок группа',
 		courseId: 'id',
+		courseTitle: 'Мок курс',
 		owner: getMockedUser({
 			id: 'userId',
 			firstName: 'Иван',

@@ -14,7 +14,7 @@ const JoinGroupConnected: FC = () => {
 		throw new UrlError();
 	}
 
-	const [account, courseById] = useAppSelector(state => [
+	const [account] = useAppSelector(state => [
 		state.account,
 		state.courses.courseById
 	]);
@@ -29,10 +29,6 @@ const JoinGroupConnected: FC = () => {
 	});
 
 	const [joinGroupMutation] = joinGroupApi.useJoinGroupMutation();
-
-	const courseTitle = group
-		? courseById[group.courseId.toLowerCase()]?.title
-		: undefined;
 
 	if(account.accountLoaded && !account.isAuthenticated) {
 		return <Navigate
@@ -54,7 +50,6 @@ const JoinGroupConnected: FC = () => {
 			onJoinGroup={ joinGroup }
 			accountLink={ accountPath }
 			courseLink={ constructPathToCourse(group.courseId) }
-			courseTitle={ courseTitle }
 		/>
 	);
 

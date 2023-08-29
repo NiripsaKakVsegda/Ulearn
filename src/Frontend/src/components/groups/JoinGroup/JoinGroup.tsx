@@ -8,7 +8,6 @@ import LinkAsButton from "../../common/LinkAsButton/LinkAsButton";
 
 interface Props {
 	group: JoinGroupInfo;
-	courseTitle?: string;
 
 	onJoinGroup: () => void;
 
@@ -18,13 +17,13 @@ interface Props {
 
 const JoinGroup: FC<Props> = (props) => {
 	const renderContent = (): React.ReactElement => {
-		const { group, courseTitle } = props;
+		const { group } = props;
 
 		if(group.isMember) {
 			return <div>
 				<header className={ styles.header }>{ texts.joined.title }</header>
 				<main className={ styles.contentWrapper }>
-					{ texts.joined.buildInfo(group.name, courseTitle) }
+					{ texts.joined.buildInfo(group.name, group.courseTitle) }
 				</main>
 				<footer className={ styles.buttonWrapper }>
 					<LinkAsButton
@@ -69,7 +68,7 @@ const JoinGroup: FC<Props> = (props) => {
 			<header className={ styles.header }>{ texts.join.title }</header>
 			<main className={ styles.contentWrapper }>
 				<p>
-					{ texts.join.buildMainInfo(group, courseTitle) }
+					{ texts.join.buildMainInfo(group) }
 				</p>
 				<p className={ styles.additional }>
 					{ texts.join.additionalInfo }
