@@ -19,7 +19,7 @@ public class StaticFilesController : Controller
 
 	public async Task<ActionResult> CourseFile(string courseId, string path)
 	{
-		if (string.IsNullOrEmpty(courseId) || path.Contains("..") || path.Contains("/courses/"))
+		if (string.IsNullOrEmpty(courseId) || string.IsNullOrEmpty(path) || path.Contains("..") || path.Contains("/courses/"))
 			return NotFound();
 		var extension = Path.GetExtension(path);
 		var mimeType = CourseStaticFilesHelper.AllowedExtensions.GetOrDefault(extension);
