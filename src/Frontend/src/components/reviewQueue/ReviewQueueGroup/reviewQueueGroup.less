@@ -29,7 +29,7 @@
   }
 
   @media (max-width: @maxPhoneWidth) {
-    padding: 8px 12px;
+    padding: 8px 16px;
   }
 }
 
@@ -118,10 +118,12 @@
       color: @buttonColorDisabled;
       background-color: @buttonBackgroundDisabled;
       box-shadow: 0 0 0 1px @buttonBackgroundDisabled;
+
       > * {
         display: inline-block;
         transform: none;
       }
+
       cursor: default;
     }
   }
@@ -133,8 +135,33 @@
   padding: 0;
   list-style: none;
   overflow: hidden;
-  max-height: 0;
   transition: max-height @animationDuration ease;
+}
+
+.reviewQueueItem {
+  position: relative;
+
+  .splitter {
+    display: none;
+  }
+
+  @media (max-width: 500px) {
+    .splitter {
+      display: initial;
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: -1px;
+      height: 1px;
+      background-color: @borderColor;
+    }
+
+    &:last-child {
+      .splitter {
+        display: none;
+      }
+    }
+  }
 }
 
 .reviewQueueItemLink {
@@ -142,10 +169,13 @@
 
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding: 8px 32px;
+
+  display: grid;
+  grid-template-columns: 3fr 3fr 2fr;
+  align-items: center;
+  grid-gap: 4px 16px;
+
   font-size: 16px;
   line-height: 22px;
   cursor: pointer;
@@ -182,24 +212,17 @@
     line-height: 14px;
   }
 
-  @media (max-width: @maxPhoneWidth) {
-    padding: 8px 12px;
-  }
-
   .user {
-    width: 35%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .slide {
-    width: 35%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .timestamp {
-    width: 30%;
     text-align: right;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -207,30 +230,30 @@
   }
 
   &.noStudent {
+    grid-template-columns: 2fr 1fr;
+
     .user {
       display: none;
-    }
-
-    .slide {
-      width: 60%;
-    }
-
-    .timestamp {
-      width: 40%;
     }
   }
 
   &.noSlide {
-    .user {
-      width: 60%;
-    }
+    grid-template-columns: 2fr 1fr;
 
     .slide {
       display: none;
     }
+  }
+
+  @media (max-width: @maxPhoneWidth) {
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
 
     .timestamp {
-      width: 40%;
+      text-align: initial;
     }
   }
 }

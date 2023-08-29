@@ -40,12 +40,17 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 	const listRef = useRef<HTMLUListElement>(null);
 
 	useEffect(() => {
-		calculateListItemsTotalHeight();
+		if(props.alwaysOpened) {
+			return;
+		}
 		window.addEventListener('resize', calculateListItemsTotalHeight);
 		return () => window.removeEventListener('resize', calculateListItemsTotalHeight);
 	}, [listRef.current]);
 
 	useEffect(() => {
+		if(props.alwaysOpened) {
+			return;
+		}
 		calculateListItemsTotalHeight();
 	}, [props.reviewQueueItems]);
 
@@ -54,7 +59,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 	const renderHeader = () => {
 		const title = props.title
 			? props.mocked
-				? <MockString children={props.title}/>
+				? <MockString children={ props.title }/>
 				: props.title
 			: undefined;
 		const solutionsCount = props.mocked
@@ -108,7 +113,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 			text={ isLocked && item.lockedBy ? texts.buildLockedByInfo(getNameWithLastNameFirst(item.lockedBy)) : '' }
 			key={ item.submissionId }
 		>
-			<li>
+			<li className={styles.reviewQueueItem}>
 				<Link
 					to={ props.buildLinkToInstructorReview(item) }
 					className={ cn(
@@ -127,13 +132,14 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 					<span className={ styles.slide }>{ props.slideTitlesByIds[item.slideId] }</span>
 					<span className={ styles.timestamp }>{ getReviewQueueTimestamp(item.timestamp) }</span>
 				</Link>
+				<div className={ styles.splitter }/>
 			</li>
 		</Hint>;
 	};
 
 	const renderPlaceholderItem = (key: React.Key) => {
 		return <Hint text={ '' } key={ key }>
-			<li>
+			<li className={styles.reviewQueueItem}>
 				<div
 					className={ cn(
 						styles.reviewQueueItemLink,
@@ -147,6 +153,7 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 					<span className={ styles.slide }><MockString length={ 15 }/></span>
 					<span className={ styles.timestamp }><MockString length={ 15 }/></span>
 				</div>
+				<div className={ styles.splitter }/>
 			</li>
 		</Hint>;
 	};

@@ -6,8 +6,6 @@
   list-style: none;
 
   width: 100%;
-  display: flex;
-  flex-direction: column;
   border-radius: 24px;
   background-color: @white;
   overflow: hidden;
@@ -33,10 +31,9 @@
 
 .reviewQueueItem {
   position: relative;
-
   display: flex;
   flex-direction: column;
-  gap: 8px;
+
   font-size: 16px;
   line-height: 22px;
 
@@ -56,15 +53,19 @@
   }
 
   @media (max-width: @maxPhoneWidth) {
-    padding: 12px 16px;
+    .splitter {
+      left: 20px;
+      right: 20px;
+    }
   }
 }
 
 .submissionLink {
   cursor: pointer;
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 80px 1fr;
   align-items: center;
-  gap: 4px 8px;
+  grid-gap: 4px 16px;
   padding: 16px 24px;
 
   color: @black;
@@ -83,32 +84,27 @@
   }
 
   .userSlideWrapper {
-    width: 60%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 4px 16px;
+  }
 
-    display: flex;
-    flex-direction: row;
-    gap: 4px 8px;
+  .user {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    .user {
-      width: 50%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .slide {
-      width: 50%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  .slide {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .score {
-    width: fit-content;
     white-space: nowrap;
+    text-align: right;
   }
 
   .reviewerTimestampWrapper {
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -126,27 +122,37 @@
   }
 
   @media (max-width: @maxPhoneWidth) {
+    grid-template-columns: 1fr 80px 1fr;
+    padding: 12px 20px;
+
     .userSlideWrapper {
-      flex-direction: column;
-      width: 40%;
-
-      .user {
-        width: initial;
-      }
-
-      .slide {
-        width: initial;
-      }
+      grid-template-columns: 1fr;
     }
 
-    .scoreTimestampInfo {
-      width: 50%;
+    .reviewerTimestampWrapper {
+      gap: 4px;
+    }
+
+    .slide {
+      color: @additionalColor;
+    }
+  }
+
+  @media (max-width: 450px) {
+    grid-template-columns: 1fr;
+
+    .score {
+      text-align: left;
+    }
+
+    .reviewerTimestampWrapper {
+      text-align: left;
     }
   }
 }
 
 .reviewCommentsList {
-  margin: 0 24px 16px;
+  margin: 8px 24px 16px;
   padding: 0 0 0 8px;
   list-style: none;
   border-left: 4px solid @grayWhite;
