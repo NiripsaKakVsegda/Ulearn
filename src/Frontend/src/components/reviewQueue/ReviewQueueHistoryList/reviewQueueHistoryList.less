@@ -141,8 +141,15 @@
   @media (max-width: 450px) {
     grid-template-columns: 1fr;
 
+    .user {
+      width: calc(100% - 100px);
+    }
+
     .score {
-      text-align: left;
+      position: absolute;
+      right: 20px;
+      top: 12px;
+      width: fit-content;
     }
 
     .reviewerTimestampWrapper {
