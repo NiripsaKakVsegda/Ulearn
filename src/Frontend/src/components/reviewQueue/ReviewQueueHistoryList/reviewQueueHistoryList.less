@@ -9,6 +9,20 @@
   border-radius: 24px;
   background-color: @white;
   overflow: hidden;
+
+  &.mocked {
+    .submissionLink {
+      cursor: default;
+
+      &, &:hover, &:focus, &:active {
+        background-color: initial;
+      }
+
+      .user, .slide {
+        text-overflow: clip;
+      }
+    }
+  }
 }
 
 .noSubmissionsWrapper {

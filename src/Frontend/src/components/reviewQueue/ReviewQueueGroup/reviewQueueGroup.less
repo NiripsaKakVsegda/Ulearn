@@ -1,4 +1,4 @@
-@import '/src/variables';
+@import "/src/variables";
 
 @animationDuration: 200ms;
 
@@ -26,6 +26,10 @@
 
   &.noClose {
     cursor: initial;
+  }
+
+  &.mocked {
+    cursor: default;
   }
 
   @media (max-width: @maxPhoneWidth) {
@@ -136,6 +140,16 @@
   list-style: none;
   overflow: hidden;
   transition: max-height @animationDuration ease;
+
+  &.mocked {
+    .reviewQueueItemLink {
+      cursor: default;
+
+      &, &:hover, &:focus, &:active {
+        background-color: initial;
+      }
+    }
+  }
 }
 
 .reviewQueueItem {

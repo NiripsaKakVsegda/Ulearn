@@ -10,11 +10,11 @@ import { MaxWidths, useMaxWidth } from "../../../hooks/useMaxWidth";
 import { ReviewQueueItem } from "../../../models/instructor";
 import { roundHint } from "../../../uiTheme";
 import { momentFromServerToLocal } from "../../../utils/momentUtils";
+import MockString from "../../common/MockString/MockString";
 import { getNameWithLastNameFirst } from "../../common/Profile/Profile";
 import { getReviewQueueTimestamp } from "../utils/getReviewQueueTimestamp";
 import styles from './reviewQueueGroup.less';
 import texts from './ReviewQueueGroup.texts';
-import MockString from "../../common/MockString/MockString";
 
 interface Props {
 	reviewQueueItems: ReviewQueueItem[];
@@ -72,10 +72,11 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 				styles.groupHeader,
 				{
 					[styles.noClose]: props.alwaysOpened,
-					[styles.opened]: props.alwaysOpened || isOpened
-				},
+					[styles.opened]: props.alwaysOpened || isOpened,
+					[styles.mocked]: props.mocked
+				}
 			) }
-			onClick={ props.alwaysOpened ? undefined : toggleGroupOpened }
+			onClick={ props.alwaysOpened || props.mocked ? undefined : toggleGroupOpened }
 		>
 			<div className={ styles.groupOpenCloseInfoWrapper }>
 				{ !props.alwaysOpened && (
@@ -163,7 +164,10 @@ const ReviewQueueGroup: FC<Props> = (props) => {
 			{ renderHeader() }
 			<ThemeContext.Provider value={ roundHint }>
 				<ul
-					className={ styles.reviewQueueList }
+					className={ cn(
+						styles.reviewQueueList,
+						{ [styles.mocked]: props.mocked }
+					) }
 					ref={ listRef }
 					style={ {
 						maxHeight: props.alwaysOpened

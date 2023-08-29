@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import React, { FC } from 'react';
 import { Link } from "react-router-dom";
 import { useMaxWidth } from '../../../hooks/useMaxWidth';
@@ -55,7 +56,7 @@ const ReviewQueueHistoryList: FC<Props> = (props) => {
 
 	if (!props.reviewQueueItems.length) {
 		return props.loading
-			? <ul className={ styles.reviewQueueHistoryList }>
+			? <ul className={ cn(styles.reviewQueueHistoryList, styles.mocked) }>
 				{ [...Array(mockedItemsCount).keys()].map(renderPlaceholderItem) }
 			</ul>
 			: <div className={ styles.noSubmissionsWrapper }>
