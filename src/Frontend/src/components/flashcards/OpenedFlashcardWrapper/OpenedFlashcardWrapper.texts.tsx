@@ -21,7 +21,7 @@ export default {
 					statusNode = <span className={ styles.approvedColor }>опубликована</span>;
 					break;
 				case FlashcardModerationStatus.Declined:
-					statusNode = <span className={ styles.declinedColor }>отлконена</span>;
+					statusNode = <span className={ styles.declinedColor }>отклонена</span>;
 					break;
 			}
 			return <>Статус: { statusNode }</>;
