@@ -356,16 +356,27 @@ namespace Database.Repos.Groups
 			return groups.ToListAsync();
 		}
 
-		// Получение пользователей из групп в которых пользователь является владельцем либо преподавателем
-		public Task<List<string>> GetMyGroupsUsersIdsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false)
+		/// <summary>
+		/// Получение пользователей из групп в которых пользователь является владельцем или преподавателем
+		/// </summary>
+		public Task<List<string>> GetMyGroupsMembers(string courseId, string userId, bool includeArchived = false)
 		{
-			var groups = db.GroupAccesses
-				.Where(ga =>
-					ga.Group.CourseId == courseId &&
-					!ga.Group.IsDeleted &&
-					(ga.Group.OwnerId == userId || (ga.UserId == userId && ga.IsEnabled))
+			var groups = db.SingleGroups
+				.GroupJoin(
+					db.GroupAccesses,
+					g => g.Id,
+					ga => ga.GroupId,
+					(group, accesses) => new { group, accesses }
 				)
-				.Select(ga => ga.Group);
+				.SelectMany(
+					e => e.accesses.DefaultIfEmpty(),
+					(e, access) => new { e.group, access }
+				)
+				.Where(e =>
+					e.group.OwnerId == userId ||
+					(e.access != null && e.access.UserId == userId && e.access.IsEnabled)
+				)
+				.Select(e => e.group);
 
 			if (!includeArchived)
 				groups = groups.Where(g => !g.IsArchived);

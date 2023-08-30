@@ -48,7 +48,7 @@ namespace Database.Repos.Groups
 		Task<GroupBase> FindGroupByInviteHashAsync(Guid hash, bool onlyEnabledLink = true);
 		Task<List<GroupBase>> GetCourseGroupsAsync(string courseId, GroupQueryType groupType, bool includeArchived = false);
 		Task<List<GroupBase>> GetMyGroupsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
-		Task<List<string>> GetMyGroupsUsersIdsFilterAccessibleToUserAsync(string courseId, string userId, bool includeArchived = false);
+		Task<List<string>> GetMyGroupsMembers(string courseId, string userId, bool includeArchived = false);
 		Task EnableInviteLinkAsync(int groupId, bool isEnabled);
 		Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId);
 		Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId);

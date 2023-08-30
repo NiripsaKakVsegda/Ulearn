@@ -233,18 +233,17 @@ namespace Database.Repos
 			bool includeVirtualFields = false
 		) where T : AbstractManualSlideChecking
 		{
-			var query = GetManualCheckingQueueFilterQuery<T>(options)
-				.Join(
-					db.Set<T>()
-						.GroupBy(c => new { c.UserId, c.SlideId })
-						.Select(g => g
-							.Select(c => c.Id)
-							.Max()
-						),
-					c => c.Id,
-					id => id,
-					(c, _) => c
-				);
+			var query = db.Set<T>().Join(
+				GetManualCheckingQueueFilterQuery<T>(options)
+					.GroupBy(c => new { c.UserId, c.SlideId })
+					.Select(g => g
+						.Select(c => c.Id)
+						.Max()
+					),
+				c => c.Id,
+				id => id,
+				(c, _) => c
+			);
 
 			query = options.DateSort is DateSort.Ascending
 				? query.OrderBy(c => c.Timestamp)
@@ -254,12 +253,10 @@ namespace Database.Repos
 				query = query.Take(options.Count);
 
 			if (includeVirtualFields)
-			{
 				query = query
 					.Include(c => c.User)
 					.Include(c => c.LockedBy)
 					.Include(c => c.CheckedBy);
-			}
 
 			return query.ToListAsync();
 		}
