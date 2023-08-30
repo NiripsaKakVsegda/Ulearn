@@ -42,7 +42,6 @@ const FlashcardEditor: FC<Props> = (props) => {
 						onValueChange={ updateQuestion }
 						resize={ 'none' }
 						maxLength={ 2000 }
-						autoFocus
 					/>
 					<Textarea
 						className={ styles.answerInput }
