@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Ulearn.Core.Helpers;
+using CourseLoader.Helpers;
 
-namespace Ulearn.Core.Extensions
+namespace CourseLoader.Extensions
 {
 	public static class FileExtensions
 	{

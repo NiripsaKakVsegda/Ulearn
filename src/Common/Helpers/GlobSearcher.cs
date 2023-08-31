@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Ulearn.Core.Helpers
+namespace Ulearn.Common.Helpers
 {
 	/* See https://stackoverflow.com/questions/398518/how-to-implement-glob-in-c-sharp for details */
 	public static class GlobSearcher

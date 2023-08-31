@@ -7,8 +7,13 @@
 		<Authors>SKB Kontur Ulearn Team</Authors>
 		<Copyright>Copyright 2014–2022 SKB Kontur</Copyright>
 		<TargetFramework>net6.0</TargetFramework>
-		<OutputType>Library</OutputType>
 		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+
+		<PackageId>Ulearn.Common</PackageId>
+		<Version>1.0.0</Version>
+		<Description>Common utilities for Ulearn</Description>
+		<Company>SKB Kontur</Company>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="DotNetZip" Version="1.16.0" />

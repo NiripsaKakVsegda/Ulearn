@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Ulearn.Common.Helpers;
 
 namespace Ulearn.Common.Extensions
 {
@@ -64,6 +68,18 @@ namespace Ulearn.Common.Extensions
 		public static bool IsInDirectory(this FileSystemInfo fileOrDirectory, DirectoryInfo directory)
 		{
 			return fileOrDirectory.FullName.ToLower().StartsWith(directory.FullName.ToLower());
+		}
+
+		public static IEnumerable<FileInfo> GetFilesByMask(this DirectoryInfo directory, string mask)
+		{
+			if (mask.Contains(".."))
+				throw new ArgumentException($"{nameof(mask)} can not contain \"..\"", nameof(mask));
+
+			/* Replace slashes / to backslashes \ on Windows */
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				mask = mask.Replace('/', '\\');
+
+			return GlobSearcher.Glob(Path.Combine(directory.FullName, mask)).Select(path => new FileInfo(path));
 		}
 	}
 }
