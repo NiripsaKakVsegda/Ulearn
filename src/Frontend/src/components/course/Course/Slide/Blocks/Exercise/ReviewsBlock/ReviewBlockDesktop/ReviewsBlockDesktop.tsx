@@ -5,6 +5,7 @@ import styles from "./ReviewsBlockDesktop.less";
 import { getDataFromReviewToCompareChanges } from "../../../../InstructorReview/utils";
 import { areReviewsSame, reviewsComparerByStart } from "../../ExerciseUtils";
 import ReviewItem from "../ReviewItem/ReviewItem";
+import { clamp } from "src/utils/clamp";
 
 const ReviewsBlockDesktop: FC<Props> = (props) => {
 	const minDistanceBetweenReviews = 5;
@@ -156,12 +157,9 @@ const ReviewsBlockDesktop: FC<Props> = (props) => {
 				const height = comment.ref.current?.offsetHeight || 0;
 
 				const availableSpace = distanceToSelectedReviewFromTop - (curPosition + spaceWhichReviewsWillConsume);
-				if(curPosition <= anchorTop && curPosition + availableSpace >= anchorTop) {
-					comment.margin = Math.max(5, anchorTop - curPosition);
-				} else {
-					comment.margin = Math.max(5, availableSpace);
-				}
-				curPosition += (height + comment.margin);
+				comment.margin = clamp(anchorTop - curPosition, minDistanceBetweenReviews, availableSpace);
+
+				curPosition += comment.margin + height;
 				spaceWhichReviewsWillConsume -= (height + minDistanceBetweenReviews);
 			}
 		}
@@ -170,10 +168,9 @@ const ReviewsBlockDesktop: FC<Props> = (props) => {
 			const comment = commentsWithMargin[i];
 			const anchorTop = comment.review.anchor;
 			const height = comment.ref.current?.offsetHeight || 0;
-			const offset = Math.max(minDistanceBetweenReviews, anchorTop - curPosition);
 
-			comment.margin = offset;
-			curPosition += offset + height;
+			comment.margin = Math.max(anchorTop - curPosition, minDistanceBetweenReviews);
+			curPosition += comment.margin + height;
 		}
 
 		return commentsWithMargin;
