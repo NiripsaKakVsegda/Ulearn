@@ -22,7 +22,7 @@ const Markdown: FC<Props> = (props) => {
 						return <code>{ children }</code>;
 					}
 					const lang = className
-						? className.match(/(?<=language-).*/g)?.pop()
+						? /^language-(.+)$/.exec(className.toLowerCase())?.pop()
 						: undefined;
 					const code = children.pop() as string ?? '';
 					return renderCode(
