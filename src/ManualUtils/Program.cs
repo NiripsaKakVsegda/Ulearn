@@ -132,7 +132,7 @@ namespace ManualUtils
 			// await FixCheckedManualCheckingsWithoutScoreAndPercent(serviceProvider);
 			// await SetPercentByScore(serviceProvider);
 			// await ScoresUpdater.UpdateVisitsForExercises(serviceProvider, new DateTime(2021, 8, 15));
-			await SetManualSlideCheckingCheckedInfoByReviews(serviceProvider);
+			//await SetManualSlideCheckingCheckedInfoByReviews(serviceProvider);
 		}
 
 		private static void GenerateUpdateSequences()
