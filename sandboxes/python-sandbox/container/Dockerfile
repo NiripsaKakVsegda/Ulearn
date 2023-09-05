@@ -12,4 +12,4 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-RUN useradd student && chmod 700 /app/tests && chmod 700 /app/main.py && chmod 600 /app/cbr_api
+RUN useradd student && chmod 700 /app/tests && chmod 700 /app/main.py && chmod 777 /app/student_works
