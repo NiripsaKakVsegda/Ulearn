@@ -14,4 +14,3 @@ opencv-python
 pillow
 reportlab
 lxml
-ctools
