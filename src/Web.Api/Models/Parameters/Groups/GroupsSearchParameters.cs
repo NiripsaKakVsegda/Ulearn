@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Ulearn.Common.Api.Models.Parameters;
@@ -11,6 +12,10 @@ public class GroupsSearchParameters : IPaginationParameters
 	[FromQuery]
 	[CanBeNull]
 	public string CourseId { get; set; }
+
+	[FromQuery]
+	[CanBeNull]
+	public GroupType? GroupType { get; set; }
 
 	[FromQuery]
 	public bool IncludeArchived { get; set; } = false;

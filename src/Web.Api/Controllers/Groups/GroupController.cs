@@ -305,6 +305,9 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		public async Task<ActionResult<GroupStudentsResponse>> GroupStudents(int groupId)
 		{
 			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false);
+			if (group is null)
+				return NotFound($"Group with id {groupId} not found");
+
 			var members = await groupMembersRepo.GetGroupMembersAsync(group.Id).ConfigureAwait(false);
 			var accessesByUserId = (await coursesRepo.GetCourseAccesses(group.CourseId))
 				.Where(a => a.AccessType.IsStudentCourseAccess())
@@ -336,7 +339,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		/// <summary>
 		/// Добавить студента в группу
 		/// </summary>
-		[HttpPost("students/{studentId:guid}")]
+		[HttpPost("students/{studentId}")]
 		[ProducesResponseType((int)HttpStatusCode.OK)]
 		[SwaggerResponse((int)HttpStatusCode.NotFound, Description = "Can't find user")]
 		[SwaggerResponse((int)HttpStatusCode.Conflict, Description = "User is already a student of this group")]
@@ -349,11 +352,15 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			if (user == null)
 				return NotFound(new ErrorResponse($"Can't find user with id {studentId}"));
 
+			var group = await groupsRepo.FindGroupByIdAsync(groupId);
+			if (group is null)
+				return NotFound(new ErrorResponse($"Can't find group with id {groupId}"));
+
 			var groupMember = await groupMembersRepo.AddUserToGroupAsync(groupId, studentId).ConfigureAwait(false);
 			if (groupMember == null)
-				return StatusCode((int)HttpStatusCode.Conflict, new ErrorResponse($"User {studentId} is already a student of group {groupId}"));
+				return StatusCode((int)HttpStatusCode.Conflict, new ErrorResponse($"User {studentId} is already member of group {groupId}"));
 
-			await slideCheckingsRepo.ResetManualCheckingLimitsForUser(groupMember.Group.CourseId, studentId);
+			await slideCheckingsRepo.ResetManualCheckingLimitsForUser(group.CourseId, studentId);
 
 			return Ok(new SuccessResponseWithMessage($"Student {studentId} is added to group {groupId}"));
 		}

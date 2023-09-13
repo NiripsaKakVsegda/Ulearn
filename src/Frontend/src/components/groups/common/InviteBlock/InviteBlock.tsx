@@ -1,7 +1,7 @@
 import { AttachLinkIcon16Regular } from '@skbkontur/icons/AttachLinkIcon16Regular';
 import React, { FC } from 'react';
 import { Button, Input, Toast, Toggle } from "ui";
-import { GroupInfo, GroupType } from "../../../../../../models/groups";
+import { GroupInfo, GroupType } from "../../../../models/groups";
 import styles from './inviteBlock.less';
 import texts from './InviteBlock.texts';
 

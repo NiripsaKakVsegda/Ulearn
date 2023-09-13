@@ -1,0 +1,119 @@
+@import '/src/variables';
+
+.wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  font-family: @defaultFonts;
+  font-size: 16px;
+  line-height: 1.2;
+
+  label {
+    margin: 0;
+  }
+}
+
+.header {
+  display: flex;
+  gap: 24px;
+  padding: 0 8px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.actionText {
+  @media (max-width: @maxPhoneWidth) {
+    display: none;
+  }
+}
+
+.removeButton:not(.disabled) button { //To override kontur ui default button color
+  &, &:hover {
+    color: @negativeColor;
+  }
+
+  &:active:enabled, &:active:enabled:hover:enabled {
+    color: #AF000F;
+  }
+}
+
+.membersList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memberCheckbox {
+  padding: 8px;
+  border-radius: 8px;
+
+  & > input, & > div {
+    left: 8px;
+  }
+
+  & > span {
+    flex-grow: 1;
+  }
+
+  &:hover {
+    background-color: @backgroundGray;
+    .changeAccessesButton {
+      display: initial;
+    }
+  }
+}
+
+.memberCheckboxContent {
+  padding-left: 4px;
+  display: inline-grid;
+  grid-gap: 0 8px;
+  align-items: center;
+  min-height: 26px;
+
+  width: 100%;
+  max-width: 700px;
+
+  grid-template-columns: 1fr 280px;
+
+  @media (max-width: @maxPhoneWidth){
+    max-width: initial;
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.memberInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.addingTime {
+  color: @additionalColor;
+}
+
+.accessesControlsWrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.accessesInfo {
+  color: @additionalColor;
+  text-align: right;
+}
+
+.changeAccessesButton {
+  display: none;
+  margin-left: auto;
+}

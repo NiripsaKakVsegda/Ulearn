@@ -1,9 +1,22 @@
+import { GroupType } from "../../../../models/groups";
 import getPluralForm from "../../../../utils/getPluralForm";
 
 export default {
 	unknownName: 'Неизвестный',
-	buildStudentsCountMessage: (studentsCount: number) => {
-		const pluralForm = getPluralForm(studentsCount, 'студент', 'студента', 'студентов');
+	buildStudentsCountMessage: (studentsCount: number, groupType: GroupType) => {
+		const pluralForm = groupType === GroupType.SuperGroup
+			? getPluralForm(
+				studentsCount,
+				'нераспределённый студент',
+				'нераспределённых студента',
+				'нераспределённых студентов'
+			)
+			: getPluralForm(
+				studentsCount,
+				'студент',
+				'студента',
+				'студентов'
+			);
 		return `${ studentsCount } ${ pluralForm }`;
 	},
 	buildTeachersList: (teachers: string[], isSuperGroup = false) => {

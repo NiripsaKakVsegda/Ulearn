@@ -32,6 +32,7 @@ public class SuperGroupController : BaseGroupController
 	private readonly IGroupAccessesRepo groupAccessesRepo;
 	private readonly IGroupMembersRepo groupMembersRepo;
 	private readonly IUnitsRepo unitsRepo;
+	private readonly IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder;
 
 	public SuperGroupController(
 		ICourseStorage courseStorage,
@@ -41,10 +42,11 @@ public class SuperGroupController : BaseGroupController
 		IGroupAccessesRepo groupAccessesRepo,
 		IGroupMembersRepo groupMembersRepo,
 		IUnitsRepo unitsRepo,
-		SuperGroupManager superGroupHelper)
+		SuperGroupManager superGroupHelper, IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder)
 		: base(courseStorage, db, usersRepo)
 	{
 		this.superGroupHelper = superGroupHelper;
+		this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
 		this.groupsRepo = groupsRepo;
 		this.groupAccessesRepo = groupAccessesRepo;
 		this.groupMembersRepo = groupMembersRepo;
@@ -89,7 +91,7 @@ public class SuperGroupController : BaseGroupController
 			if (superGroup.DistributionTableLink != spreadsheetUrl)
 				await groupsRepo.ModifyGroupAsync<SuperGroup>(groupId, new Database.Models.GroupSettings { DistributionTableLink = spreadsheetUrl });
 
-			return await BuildSpreadSheetExtractionData(createdGroups, spreadSheetGroups);
+			return await BuildSpreadSheetExtractionData(superGroup, createdGroups, spreadSheetGroups);
 		}
 		catch (GoogleApiException e)
 		{
@@ -107,7 +109,7 @@ public class SuperGroupController : BaseGroupController
 		{
 			errorMessage = e.Message;
 		}
-		
+
 		log.Warn($"Error while getting spread sheet from {spreadsheetUrl}, {errorMessage}");
 		return BadRequest(errorMessage);
 	}
@@ -270,18 +272,19 @@ public class SuperGroupController : BaseGroupController
 		var notCreatedGroups = moves
 			.SelectMany(p => new[] { p.Value.FromGroupName, p.Value.ToGroupName })
 			.Distinct()
-			.Where(groupName => !createdGroupsByNames.ContainsKey(groupName))
+			.Where(groupName => groupName is not null && !createdGroupsByNames.ContainsKey(groupName))
 			.ToList();
 
 		if (notCreatedGroups.Count > 0)
 			return BadRequest($"Can't sort users in not created groups ({string.Join(", ", notCreatedGroups)}), please create these groups first");
 
-		var movedUsers = await MoveUsers(createdGroupsByNames, moves);
+		var movedUsers = await MoveUsers(superGroup, createdGroupsByNames, moves);
 
 		return Ok(new SuperGroupMoveUserResponse { MovedUsers = movedUsers });
 	}
 
 	private async Task<List<MoveUserInfo>> MoveUsers(
+		SuperGroup superGroup,
 		Dictionary<string, SingleGroup> createdGroupsByNames,
 		Dictionary<string, MoveStudentInfo> usersToMoveByGroupName
 	)
@@ -289,16 +292,27 @@ public class SuperGroupController : BaseGroupController
 		var createdGroupsIds = createdGroupsByNames
 			.Values
 			.Select(g => g.Id)
+			.Append(superGroup.Id)
 			.ToList();
 
 		var joinedStudents = await groupMembersRepo.GetGroupsMembersAsync(createdGroupsIds);
 
 		var joinedStudentsByName_withoutNamesake = joinedStudents
-			.GroupBy(m => m.User.VisibleName)
+			.Where(m => m.User.FirstName is not null && m.User.LastName is not null)
+			.GroupBy(m => $"{m.User.FirstName.Trim()} {m.User.LastName.Trim()}".Replace('ё', 'е'), StringComparer.OrdinalIgnoreCase)
 			.Where(m => m.Count() == 1)
+			.Select(m => m.Single())
+			.SelectMany(
+				member => new[]
+				{
+					(member, name: $"{member.User.FirstName.Trim()} {member.User.LastName.Trim()}".Replace('ё', 'е')),
+					(member, name: $"{member.User.LastName.Trim()} {member.User.FirstName.Trim()}".Replace('ё', 'е'))
+				}
+			)
 			.ToDictionary(
-				m => m.Key,
-				m => m.FirstOrDefault()
+				e => e.name,
+				e => e.member,
+				StringComparer.OrdinalIgnoreCase
 			);
 
 		var moveResults = new List<MoveUserInfo>();
@@ -309,43 +323,77 @@ public class SuperGroupController : BaseGroupController
 		{
 			var group = createdGroupsByNames[moveStudentInfo.ToGroupName];
 
-			if (!joinedStudentsByName_withoutNamesake.TryGetValue(studentName, out var studentAsMember) || studentAsMember.GroupId == group.Id)
+			if (!joinedStudentsByName_withoutNamesake.TryGetValue(studentName.Trim().Replace('ё', 'е'), out var member) || member.GroupId == group.Id)
 				continue;
 
-			if (!usersToRemoveByGroupsIds.ContainsKey(studentAsMember.GroupId))
-				usersToRemoveByGroupsIds.Add(studentAsMember.GroupId, new List<string>());
+			if (!usersToRemoveByGroupsIds.ContainsKey(member.GroupId))
+				usersToRemoveByGroupsIds.Add(member.GroupId, new List<string>());
 
 			if (!usersToAddByGroupsIds.ContainsKey(group.Id))
 				usersToAddByGroupsIds.Add(group.Id, new List<string>());
 
-			usersToRemoveByGroupsIds[studentAsMember.GroupId].Add(studentAsMember.UserId);
-			usersToAddByGroupsIds[group.Id].Add(studentAsMember.UserId);
+			usersToRemoveByGroupsIds[member.GroupId].Add(member.UserId);
+			usersToAddByGroupsIds[group.Id].Add(member.UserId);
 
-			moveResults.Add(new MoveUserInfo { UserId = studentAsMember.UserId, UserName = studentName, CurrentGroupId = group.Id, OldGroupId = studentAsMember.GroupId });
+			moveResults.Add(new MoveUserInfo { UserId = member.UserId, UserName = studentName, CurrentGroupId = group.Id, OldGroupId = member.GroupId });
 		}
 
-		await Task.WhenAll(
-			AddOrDeleteUsersFromGroups(usersToRemoveByGroupsIds, true),
-			AddOrDeleteUsersFromGroups(usersToAddByGroupsIds)
-		);
+		var usersToDelete = usersToRemoveByGroupsIds
+			.SelectMany(
+				kvp => kvp.Value,
+				(kvp, userId) => $"{kvp.Key}_{userId}"
+			)
+			.ToHashSet();
+
+		var membersToDelete = joinedStudents
+			.Where(m => usersToDelete.Contains($"{m.GroupId}_{m.UserId}"))
+			.ToArray();
+
+		var membersToAdd = usersToAddByGroupsIds
+			.SelectMany(
+				kvp => kvp.Value,
+				(kvp, userId) => new GroupMember
+				{
+					GroupId = kvp.Key,
+					UserId = userId,
+					AddingTime = DateTime.Now
+				}
+			)
+			.ToArray();
+
+		var usersWithManualCheckingForOldSolutions = createdGroupsByNames.Values
+			.Where(g => g.IsManualCheckingEnabledForOldSolutions)
+			.GroupJoin(
+				membersToAdd,
+				g => g.Id,
+				m => m.GroupId,
+				(_, members) => members
+			)
+			.SelectMany(m => m)
+			.Select(m => m.UserId);
+
+		await ApplyMembersMoves(superGroup.CourseId, membersToDelete, membersToAdd, usersWithManualCheckingForOldSolutions);
 
 		return moveResults;
 	}
 
-	private async Task AddOrDeleteUsersFromGroups(Dictionary<int, List<string>> usersToUpdateByGroupsIds, bool toRemove = false)
+	private async Task ApplyMembersMoves(
+		string courseId,
+		GroupMember[] membersToDelete,
+		GroupMember[] membersToAdd,
+		IEnumerable<string> usersWithManualCheckingForOldSolutions
+	)
 	{
-		var resortTasks = new List<Task>();
+		await using var transaction = await db.Database.BeginTransactionAsync();
 
-		foreach (var (groupId, userIds) in usersToUpdateByGroupsIds)
-			resortTasks.Add(toRemove
-				? groupMembersRepo.RemoveUsersFromGroupAsync(groupId, userIds)
-				: groupMembersRepo.AddUsersToGroupAsync(groupId, userIds)
-			);
-
-		await Task.WhenAll(resortTasks);
+		db.GroupMembers.RemoveRange(membersToDelete);
+		await db.GroupMembers.AddRangeAsync(membersToAdd);
+		await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(courseId, usersWithManualCheckingForOldSolutions);
+		await db.SaveChangesAsync();
+		await transaction.CommitAsync();
 	}
 
-	private async Task<SuperGroupSheetExtractionResult> BuildSpreadSheetExtractionData(List<SingleGroup> createdGroups, (string groupName, string studentName)[] spreadSheetGroups)
+	private async Task<SuperGroupSheetExtractionResult> BuildSpreadSheetExtractionData(SuperGroup superGroup, List<SingleGroup> createdGroups, (string groupName, string studentName)[] spreadSheetGroups)
 	{
 		var createdGroupsDictionary = createdGroups
 			.ToDictionary(g => g.Name, g => g);
@@ -366,21 +414,13 @@ public class SuperGroupController : BaseGroupController
 			? await groupMembersRepo.GetGroupsMembersAsync(createdGroupsIds)
 			: new List<GroupMember>();
 
-		List<GroupMemberInfo> GetJoinedStudents(int groupId)
-		{
-			return allJoinedStudents
-				.Where(m => m.GroupId == groupId)
-				.Select(m => GroupMemberInfo.BuildGroupMemberInfo(m, BuildShortUserInfo(m.User)))
-				.ToList();
-		}
-
 		var shouldBeDeletedGroupsDictionary = shouldBeDeletedGroups
 			.GroupBy(g => g.Name)
 			.ToDictionary(
 				g => g.Key,
 				g =>
 				{
-					var groupId = g.FirstOrDefault().Id;
+					var groupId = g.First().Id;
 					return new SuperGroupItemInfo
 					{
 						NeededAction = SuperGroupItemActions.ShouldBeDeleted,
@@ -408,10 +448,11 @@ public class SuperGroupController : BaseGroupController
 						JoinedStudents = isGroupCreated ? GetJoinedStudents(createdGroupsDictionary[g.Key].Id) : null,
 						GroupId = groupId,
 					};
-				});
+				}
+			);
 
 		var groupNamesByStudent = superGroupHelper.GetGroupsByUserName(spreadSheetGroups);
-		var neededMoves = await GetMovesInSuperGroup(createdGroups, spreadSheetGroups);
+		var neededMoves = await GetMovesInSuperGroup(superGroup, createdGroups, spreadSheetGroups);
 		var validatingResults = new List<ValidatingResult>();
 
 		if (groupNamesByStudent.Count > 0)
@@ -427,39 +468,63 @@ public class SuperGroupController : BaseGroupController
 				.ToDictionary(x => x.Key, x => x.Value),
 			ValidatingResults = validatingResults,
 		};
+
+		List<GroupMemberInfo> GetJoinedStudents(int groupId)
+		{
+			return allJoinedStudents
+				.Where(m => m.GroupId == groupId)
+				.Select(m => GroupMemberInfo.BuildGroupMemberInfo(m, BuildShortUserInfo(m.User)))
+				.ToList();
+		}
 	}
 
-	private async Task<Dictionary<string, MoveStudentInfo>> GetMovesInSuperGroup(List<SingleGroup> createdGroups, (string groupName, string studentName)[] spreadSheetGroups)
+	private async Task<Dictionary<string, MoveStudentInfo>> GetMovesInSuperGroup(SuperGroup superGroup, List<SingleGroup> createdGroups, (string groupName, string studentName)[] spreadSheetGroups)
 	{
 		var studentNamesByGroupsName = new Dictionary<string, MoveStudentInfo>();
-		var createdGroupsIds = createdGroups
-			.Select(g => g.Id)
-			.ToList();
 
 		var createdGroupsById = createdGroups
+			.Cast<GroupBase>()
+			.Append(superGroup)
 			.ToDictionary(g => g.Id);
+
+		var createdGroupsIds = createdGroupsById.Keys;
+
 		var joinedStudents = await groupMembersRepo.GetGroupsMembersAsync(createdGroupsIds);
 
-		var joinedStudentsByName_withoutNamesake = joinedStudents
-			.GroupBy(m => m.User.VisibleName)
-			.Where(m => m.Count() == 1)
-			.Select(m => m.FirstOrDefault())
-			.ToList();
-
-		var sheetStudentsByName_withoutNamesake = spreadSheetGroups
-			.GroupBy(p => p.studentName)
+		var sheetGroupByStudentName_withoutNamesake = spreadSheetGroups
+			.GroupBy(p => p.studentName.Trim().Replace('ё', 'е'), StringComparer.OrdinalIgnoreCase)
 			.Where(g => g.Count() == 1)
-			.Select(g => g.FirstOrDefault())
-			.ToDictionary(p => p.studentName);
+			.Select(g => g.Single())
+			.ToDictionary(
+				p => p.studentName.Trim().Replace('ё', 'е'),
+				p => p.groupName,
+				StringComparer.OrdinalIgnoreCase
+			);
 
-		foreach (var joinedStudent in joinedStudentsByName_withoutNamesake)
+		var joinedStudents_withoutNamesake = joinedStudents
+			.Where(m => m.User.FirstName is not null && m.User.LastName is not null)
+			.GroupBy(m => $"{m.User.FirstName.Trim()} {m.User.LastName.Trim()}".Replace('ё', 'е'), StringComparer.OrdinalIgnoreCase)
+			.Where(m => m.Count() == 1)
+			.Select(m => m.Single());
+
+		foreach (var member in joinedStudents_withoutNamesake)
 		{
-			if (!sheetStudentsByName_withoutNamesake.TryGetValue(joinedStudent.User.VisibleName, out var pair)
-				|| !createdGroupsById.TryGetValue(joinedStudent.GroupId, out var group)
-				|| group.Name == pair.groupName)
+			if (
+				(
+					!sheetGroupByStudentName_withoutNamesake
+						.TryGetValue($"{member.User.FirstName.Trim()} {member.User.LastName.Trim()}".Replace('ё', 'е'), out var groupName) &&
+					!sheetGroupByStudentName_withoutNamesake
+						.TryGetValue($"{member.User.LastName.Trim()} {member.User.FirstName.Trim()}".Replace('ё', 'е'), out groupName)
+				)
+				|| !createdGroupsById.TryGetValue(member.GroupId, out var group)
+				|| group.Name == groupName)
 				continue;
 
-			studentNamesByGroupsName[pair.studentName] = new() { FromGroupName = group.Name, ToGroupName = pair.groupName };
+			studentNamesByGroupsName[member.User.VisibleName] = new MoveStudentInfo
+			{
+				FromGroupName = group.GroupType == GroupType.SingleGroup ? group.Name : null,
+				ToGroupName = groupName
+			};
 		}
 
 		return studentNamesByGroupsName;

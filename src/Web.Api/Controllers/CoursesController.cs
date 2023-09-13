@@ -90,7 +90,7 @@ namespace Ulearn.Web.Api.Controllers
 			{
 				var visibleCourses = await unitsRepo.GetVisibleCourses();
 				var coursesInWhichUserHasAnyRole = await courseRolesRepo.GetCoursesWhereUserIsInRole(UserId, CourseRoleType.Tester).ConfigureAwait(false);
-				var userGroups = await groupMembersRepo.GetUserGroupsAsync(User.GetUserId());
+				var userGroups = await groupMembersRepo.GetUserGroupsAsync<SingleGroup>(User.GetUserId());
 				var userGroupsIds = userGroups.Select(g => g.Id).ToHashSet();
 				HashSet<string> publications = null;
 				if (userGroups.Count > 0)

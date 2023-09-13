@@ -1,6 +1,7 @@
 import { CheckAIcon16Solid } from '@skbkontur/icons/CheckAIcon16Solid';
 import { MinusIcon16Solid } from '@skbkontur/icons/MinusIcon16Solid';
 import { PlusIcon16Solid } from '@skbkontur/icons/PlusIcon16Solid';
+import { WarningCircleIcon16Solid } from '@skbkontur/icons/WarningCircleIcon16Solid';
 import { WarningTriangleIcon16Solid } from '@skbkontur/icons/WarningTriangleIcon16Solid';
 import { ValidationWrapper } from "@skbkontur/react-ui-validations";
 import React, { useEffect, useState } from "react";
@@ -29,12 +30,14 @@ import Page from "src/pages";
 import { clone } from "src/utils/jsonExtensions";
 import { withNavigate } from "src/utils/router";
 import { Button, Input, Link, Loader, Modal, Toast } from "ui";
+import { AccountState } from "../../../../redux/account";
 import { RootState } from "../../../../redux/reducers";
 import { superGroupsApi } from "../../../../redux/toolkit/api/groups/groupsApi";
 import { groupSettingsApi } from "../../../../redux/toolkit/api/groups/groupSettingsApi";
 import { AppDispatch } from "../../../../setupStore";
-import InviteBlock from "../GroupMembers/StudentsBlock/InviteBlock/InviteBlock";
+import InviteBlock from "../../common/InviteBlock/InviteBlock";
 import SettingsType from "../SettingsType";
+import ManageMembers from "./ManageMembers";
 import styles from "./SuperGroup.less";
 
 import texts from "./SuperGroup.texts";
@@ -42,7 +45,8 @@ import UpdateSubGroupsSettings from "./UpdateSubGroupsSettings";
 
 interface SuperGroupProps extends WithNavigate {
 	groupInfo: GroupInfo;
-
+	refetchGroup: () => void;
+	account: AccountState;
 	updateSuperGroupsState: (
 		params: Partial<GroupsListParameters>,
 		recipe: (draft: SuperGroupsListResponse) => void
@@ -60,6 +64,7 @@ interface SuperGroupProps extends WithNavigate {
 
 const SettingsToTitle = {
 	[SettingsType.settings]: 'Настройки',
+	[SettingsType.unassignedMembers]: 'Нераспределённые студенты',
 	[SettingsType.additional]: 'Отложенная публикация',
 	[SettingsType.deadlines]: 'Дедлайны'
 };
@@ -97,7 +102,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		: null;
 	const neededActionsCount = neededActions ? neededActions.length : -1;
 
-	if (tableLink && !isLoading && !extractionResult && !error) {
+	if(tableLink && !isLoading && !extractionResult && !error) {
 		_extractGoogleSheet();
 	}
 
@@ -106,14 +111,36 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			{ renderHeader() }
 			{ renderGoogleSheetLink() }
 			<InviteBlock onToggleInviteLink={ onToggleInviteLink } group={ groupInfo }/>
+			<p key={ SettingsType.unassignedMembers }>
+				{ groupInfo.studentsCount
+					? <WarningCircleIcon16Solid color={ "#b49100" } size={ 14 }/>
+					: <CheckAIcon16Solid size={ 14 }/>
+				}&nbsp;
+				<Button
+					use={ 'link' }
+					data-id={ SettingsType.unassignedMembers }
+					onClick={ onSettingsTabChangeHandler }
+					disabled={ !groupInfo.studentsCount }
+				>
+					{ texts.getUnassignedMembersInfo(groupInfo.studentsCount) }
+				</Button>
+			</p>
 			<Loader active={ isLoading }>
 				{ extractionResult && renderExtractionResult(extractionResult) }
 			</Loader>
+			{ settingsTab &&
+				<Modal onClose={ closeSettingsModal }>
+					<Modal.Header>
+						{ SettingsToTitle[settingsTab] }
+					</Modal.Header>
+					{ renderSettingsModalContent(settingsTab) }
+				</Modal>
+			}
 		</Page>
 	);
 
 	function onToggleInviteLink(isEnabled: boolean) {
-		if (!groupInfo) {
+		if(!groupInfo) {
 			return;
 		}
 		saveSettings({
@@ -146,7 +173,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	function getDateValidationResult(): {
 		message: string
 	} | null {
-		if (tableLink === '' || tableLink === null) {
+		if(tableLink === '' || tableLink === null) {
 			return { message: "Поле не может быть пустым" };
 		}
 		return null;
@@ -171,7 +198,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 						use={ "default" }
 						error={ !!error }
 						disabled={ tableLink === '' || tableLink === null }
-						onClick={ _extractGoogleSheet }
+						onClick={ updateGroups }
 					>
 						{ texts.extractSpreadsheetButton }
 					</Button>
@@ -182,8 +209,8 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function renderExtractionResult(extractionResult: SuperGroupSheetExtractionResult) {
-		if (!groups || Object.keys(groups).length === 0) {
-			if (extractionResult.validatingResults.length === 0) {
+		if(!groups || Object.keys(groups).length === 0) {
+			if(extractionResult.validatingResults.length === 0) {
 				return (
 					<p>
 						{ texts.noGroupsText }
@@ -204,9 +231,9 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 				{ renderValidatingResults(extractionResult.validatingResults) }
 				{
 					neededActions && neededActionsCount > 0 && <>
-									  <p>{ texts.buildSubmitButtonHint(neededActions) }</p>
-									  { renderUpdateGroupsButton() }
-								  </>
+						<p>{ texts.buildSubmitButtonHint(neededActions) }</p>
+						{ renderUpdateGroupsButton() }
+					</>
 				}
 				{
 					neededActions && neededActionsCount === 0 &&
@@ -241,14 +268,14 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 
 	function _deleteGroup(event: React.MouseEvent<HTMLButtonElement>) {
 		const parent = event.currentTarget.parentElement;
-		if (!parent) {
+		if(!parent) {
 			console.error("Parent element of this button wasn't found!");
 			return;
 		}
 		const id = parseInt(parent.dataset.tid || '');
 		const groupName = parent.dataset.groupName || '';
 
-		if (!id || !extractionResult) {
+		if(!id || !extractionResult) {
 			console.error("Couldn't parse id and/or group name from the button data");
 			return;
 		}
@@ -329,12 +356,12 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 								}) }
 						</ul>
 						{ neededNoActions &&
-						  <>
-							  <p>{ texts.validating.studentBelongsToOtherGroupHint }</p>
-							  <Button onClick={ resortStudentsButtonClick }>
-								  { texts.validating.studentBelongsToOtherGroupButtonText }
-							  </Button>
-						  </>
+							<>
+								<p>{ texts.validating.studentBelongsToOtherGroupHint }</p>
+								<Button onClick={ resortStudentsButtonClick }>
+									{ texts.validating.studentBelongsToOtherGroupButtonText }
+								</Button>
+							</>
 						}
 					</>
 				};
@@ -343,12 +370,12 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function resortStudentsButtonClick() {
-		if (!extractionResult) {
+		if(!extractionResult) {
 			return;
 		}
 		const belongsToOtherGroup = extractionResult.validatingResults
 			.find(v => v.type === ValidationType.studentBelongsToOtherGroup) as StudentBelongsToOtherGroup;
-		if (!belongsToOtherGroup) {
+		if(!belongsToOtherGroup) {
 			return;
 		}
 
@@ -356,7 +383,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			.then(r => {
 				Toast.push(texts.afterResortingSuccessToastText);
 
-				_extractGoogleSheet();
+				updateGroups();
 				return r;
 			});
 	}
@@ -376,32 +403,20 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		return (
 			<>
 				<p>
-					<Link id={ SettingsType.settings } onClick={ onSettingsTabChangeHandler }>
+					<Button use={'link'} data-id={ SettingsType.settings } onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.settings] }
-					</Link>
+					</Button>
 				</p>
 				<p>
-					<Link disabled id={ SettingsType.additional } onClick={ onSettingsTabChangeHandler }>
+					<Button disabled use={'link'} data-id={ SettingsType.additional } onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.additional] }
-					</Link>
+					</Button>
 				</p>
 				<p>
-					<Link disabled id={ SettingsType.deadlines } onClick={ onSettingsTabChangeHandler }>
+					<Button disabled use={'link'} data-id={ SettingsType.deadlines } onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.deadlines] }
-					</Link>
+					</Button>
 				</p>
-				{
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					// @ts-ignore
-					settingsTab && <Modal onClose={ closeSettingsModal }>
-									<Modal.Header>
-										{ SettingsToTitle[settingsTab] }
-									</Modal.Header>
-									{/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/ }
-									{/*@ts-ignore*/ }
-									{ renderSettingsModalContent(settingsTab) }
-								</Modal>
-				}
 			</>
 		);
 	}
@@ -411,9 +426,6 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	function renderSettingsModalContent(type: SettingsType) {
-		if (!groups) {
-			return;
-		}
 		switch (type) {
 			case SettingsType.settings: {
 				return (
@@ -423,6 +435,12 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 					/>
 				);
 			}
+			case SettingsType.unassignedMembers: {
+				return <ManageMembers
+					groupId={ groupInfo.id }
+					courseId={ groupInfo.courseId }
+				/>
+			}
 			case SettingsType.additional:
 				return 'Функциональность пока недоступна';
 			case SettingsType.deadlines:
@@ -430,13 +448,15 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		}
 	}
 
-	function onSettingsTabChangeHandler(event: React.MouseEvent<HTMLAnchorElement>) {
-		const settingType = event.currentTarget.id;
-		onSettingsModalChange(settingType);
+	function onSettingsTabChangeHandler(event: React.MouseEvent) {
+		event.stopPropagation();
+		event.preventDefault();
+		const { id } = (event.currentTarget as HTMLElement).parentElement?.dataset ?? {};
+		onSettingsModalChange(id);
 	}
 
 	function onSettingsModalChange(value?: string) {
-		if (!value) {
+		if(!value) {
 			setSettingsSettingsTab(undefined);
 		}
 
@@ -444,7 +464,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 
 	async function onUpdateGroupsButtonClick() {
-		if (!neededActionsAsDictionary || !extractionResult) {
+		if(!neededActionsAsDictionary || !extractionResult) {
 			return;
 		}
 
@@ -457,7 +477,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		const afterUpdates = clone(extractionResult);
 		for (const update of Object.values(updates)) {
 			//group exists === created
-			if (update.groupId) {
+			if(update.groupId) {
 				const group = afterUpdates.groups[update.groupName];
 				group.groupId = update.groupId;
 				group.neededAction = null;
@@ -473,11 +493,16 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	function mapExtractionToAction(extractionResult: SuperGroupSheetExtractionResult) {
 		const groupsToUpdate: UpdateGroupsRequestParameters['groupsToUpdate'] = {};
 		for (const [groupId, superGroupItem] of Object.entries(extractionResult.groups)) {
-			if (superGroupItem.neededAction) {
+			if(superGroupItem.neededAction) {
 				groupsToUpdate[groupId] = superGroupItem.neededAction;
 			}
 		}
 		return groupsToUpdate;
+	}
+
+	function updateGroups() {
+		props.refetchGroup();
+		return _extractGoogleSheet();
 	}
 
 	async function _extractGoogleSheet() {
@@ -490,6 +515,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		});
 		setLoading(true);
 		setError(null);
+
 		await extractGoogleSheet(tableLink, groupInfo.id)
 			.then(r => {
 				setExtractionResult(r);
@@ -504,7 +530,9 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 	}
 }
 
-const mapStateToProps = (state: RootState) => ({});
+const mapStateToProps = (state: RootState) => ({
+	account: state.account
+});
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
 	updateSuperGroupsState: (params: Partial<GroupsListParameters>, recipe: (draft: SuperGroupsListResponse) => void) =>

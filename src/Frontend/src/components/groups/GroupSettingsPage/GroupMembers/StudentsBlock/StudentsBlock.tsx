@@ -1,19 +1,17 @@
 import React, { FC } from 'react';
 import styles from "./studentsBlock.less";
-import InviteBlock from "./InviteBlock/InviteBlock";
+import InviteBlock from "../../../common/InviteBlock/InviteBlock";
 import GroupStudents from "./GroupStudents/GroupStudents";
 import { Loader, Toast } from "ui";
 import { GroupInfo } from "../../../../../models/groups";
 import { AccountState } from "../../../../../redux/account";
 import texts from "./StudentsBlock.texts";
-import { coursesApi } from "../../../../../redux/toolkit/api/coursesApi";
 import { groupStudentsApi, updateStudentAccessesCache } from "../../../../../redux/toolkit/api/groups/groupStudentsApi";
 import { groupLimitsApi } from "../../../../../redux/toolkit/api/groups/groupLimitsApi";
 import { groupSettingsApi } from "../../../../../redux/toolkit/api/groups/groupSettingsApi";
 import { courseAccessesApi } from "../../../../../redux/toolkit/api/courseAccessesApi";
 import { CourseAccessType } from "../../../../../consts/accessType";
 import { useAppDispatch } from "../../../../../redux/toolkit/hooks/useAppDispatch";
-import { ShortGroupInfo } from "../../../../../models/comments";
 
 interface Props {
 	account: AccountState;
@@ -31,7 +29,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 	const [saveSettings] = groupSettingsApi.useSaveGroupSettingsMutation();
 	const [resetLimits] = groupLimitsApi.useResetStudentsLimitsMutation();
 	const [removeStudents] = groupStudentsApi.useRemoveGroupStudentsMutation();
-	const [copyStudents] = groupStudentsApi.useCopyStudentsMutation();
 
 	const dispatch = useAppDispatch();
 	const [grantAccessMutation] = courseAccessesApi.useGrantAccessMutation();
@@ -49,13 +46,12 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 			<div>
 				{ (students.length > 0) &&
 					<GroupStudents
+						groupId={ group.id }
 						account={ account }
 						students={ students }
 						courseTitle={ group.courseTitle }
-						getCourses={ getCourses }
 						onRemoveStudents={ onRemoveStudents }
 						onResetLimits={ onResetLimits }
-						onCopyStudents={ onCopyStudents }
 						onGrantAccess={ grantAccess }
 						onRevokeAccess={ revokeAccess }
 					/>
@@ -63,15 +59,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 			</div>
 		</Loader>
 	);
-
-	function getCourses() {
-		return coursesApi.useGetUserCoursesQuery(undefined, {
-			selectFromResult: ({ data, isLoading }) => ({
-				courses: data || [],
-				isCoursesLoading: isLoading
-			})
-		});
-	}
 
 	function onToggleInviteLink(isEnabled: boolean) {
 		saveSettings({
@@ -89,13 +76,6 @@ const StudentsBlock: FC<Props> = ({ account, group }) => {
 		resetLimits({ groupId: group.id, studentIds }).unwrap()
 			.then(() => {
 				Toast.push(texts.resetLimitsToast);
-			});
-	}
-
-	function onCopyStudents(group: ShortGroupInfo, studentIds: string[]) {
-		copyStudents({ groupId: group.id, studentIds }).unwrap()
-			.then(() => {
-				Toast.push(texts.buildCopyStudentsToast(group.name));
 			});
 	}
 

@@ -139,18 +139,18 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				Count = parameters.Count
 			};
 
-			var groups = new List<SingleGroup>();
+			var groups = new List<GroupBase>();
 			if (isCourseAdmin && searchModel.InstructorId is null)
 			{
 				searchModel.InstructorId = UserId;
-				groups.AddRange(await groupsRepo.SearchGroups(searchModel));
+				groups.AddRange(await SearchGroups(parameters.GroupType, searchModel));
 				searchModel.Count -= groups.Count;
 				if (searchModel.Count > 0)
-					groups.AddRange(await groupsRepo.SearchGroups(searchModel, true));
+					groups.AddRange(await SearchGroups(parameters.GroupType, searchModel, true));
 			}
 			else
 			{
-				groups.AddRange(await groupsRepo.SearchGroups(searchModel));
+				groups.AddRange(await SearchGroups(parameters.GroupType, searchModel));
 			}
 
 			return new GroupsSearchResponse
@@ -223,5 +223,13 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				ApiUrl = url,
 			});
 		}
+
+		public async Task<IEnumerable<GroupBase>> SearchGroups(GroupType? groupType, GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false) =>
+			groupType switch
+			{
+				GroupType.SingleGroup => await groupsRepo.SearchGroups<SingleGroup>(queryModel, instructorIdExcluded),
+				GroupType.SuperGroup => await groupsRepo.SearchGroups<SuperGroup>(queryModel, instructorIdExcluded),
+				_ => await groupsRepo.SearchGroups<GroupBase>(queryModel, instructorIdExcluded)
+			};
 	}
 }

@@ -154,6 +154,7 @@ export interface GroupsSearchResponse {
 
 export interface GroupsSearchParameters {
 	courseId: string;
+	groupType: GroupType;
 	includeArchived: boolean;
 	instructorId: string;
 	memberId: string;
@@ -162,8 +163,9 @@ export interface GroupsSearchParameters {
 	count: number;
 }
 
-export interface JoinGroupInfo{
+export interface JoinGroupInfo {
 	id: number;
+	groupType: GroupType;
 	name: string;
 	courseId: string;
 	courseTitle: string;
@@ -171,10 +173,5 @@ export interface JoinGroupInfo{
 	isInviteLinkEnabled: boolean;
 	canStudentsSeeProgress: boolean;
 	isMember: boolean;
-	superGroupError?: SuperGroupError;
-}
-
-export enum SuperGroupError {
-	NoDistributionLink = 'NoDistributionLink',
-	NoGroupFoundForStudent = 'NoGroupFoundForStudent'
+	isInDefaultGroup: boolean;
 }

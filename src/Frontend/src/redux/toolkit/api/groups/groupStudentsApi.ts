@@ -3,6 +3,7 @@ import { GroupStudentsResponse } from "../../../../models/groups";
 import { HttpMethods } from "../../../../consts/httpMethods";
 import { ShortCourseAccess } from "../../../../models/courseAccess";
 import { AppDispatch } from "../../../../setupStore";
+import { groupSettingsApi } from "./groupSettingsApi";
 
 export const groupStudentsApi = groupsApi.injectEndpoints({
 	endpoints: (build) => ({
@@ -33,6 +34,15 @@ export const groupStudentsApi = groupsApi.injectEndpoints({
 						(draft) => {
 							draft.students = draft.students
 								.filter(student => !studentIds.includes(student.user.id));
+
+							const studentsCount = draft.students.length;
+							dispatch(groupSettingsApi.util.updateQueryData(
+								'getGroup',
+								{ groupId },
+								(draft) => {
+									draft.studentsCount = studentsCount;
+								}
+							));
 						}
 					));
 				});

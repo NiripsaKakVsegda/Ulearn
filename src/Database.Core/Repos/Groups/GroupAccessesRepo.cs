@@ -146,7 +146,7 @@ namespace Database.Repos.Groups
 			[CanBeNull] List<string> coursesIds,
 			string userId,
 			bool needEditAccess,
-			bool actual, 
+			bool actual,
 			bool archived,
 			GroupQueryType groupType = GroupQueryType.SingleGroup)
 		{
@@ -319,15 +319,20 @@ namespace Database.Repos.Groups
 				canSeeAllGroups[courseId.ToLower()] = await CanUserSeeAllCourseGroupsAsync(userId, courseId);
 
 			var groupsWithAccess = new HashSet<int>(db.GroupAccesses.Where(a => a.UserId == userId && a.IsEnabled).Select(a => a.GroupId));
-			var usersGroups = db.GroupMembers
-				.Include(m => m.Group)
-				.Where(m => userIds.Contains(m.UserId) && courseIds.Contains(m.Group.CourseId))
-				.ToList()
-				.GroupBy(m => m.UserId)
+			var usersGroups = (await db.SingleGroups
+					.SelectMany(
+						g => g.Members,
+						(group, member) => new { group, member }
+					)
+					.Where(e => userIds.Contains(e.member.UserId) && courseIds.Contains(e.group.CourseId))
+					.ToListAsync()
+				)
+				.GroupBy(m => m.member.UserId)
 				.ToDictionary(group => group.Key, group => group.ToList())
 				.ToDictionary(
 					kv => kv.Key,
-					kv => kv.Value.Select(m => m.Group)
+					kv => kv.Value
+						.Select(m => m.group)
 						.Distinct()
 						.Where(g => (g.OwnerId == userId || groupsWithAccess.Contains(g.Id) || canSeeAllGroups[g.CourseId.ToLower()]) && !g.IsDeleted)
 						.Where(g => actual != g.IsArchived || archived == g.IsArchived)

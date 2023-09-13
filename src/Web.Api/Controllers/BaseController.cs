@@ -104,11 +104,12 @@ namespace Ulearn.Web.Api.Controllers
 			};
 		}
 
-		protected ShortGroupInfo BuildShortGroupInfo(SingleGroup g)
+		protected ShortGroupInfo BuildShortGroupInfo(GroupBase g)
 		{
 			return new ShortGroupInfo
 			{
 				Id = g.Id,
+				GroupType = g.GroupType,
 				Name = g.Name,
 				CourseId = g.CourseId,
 				IsArchived = g.IsArchived,

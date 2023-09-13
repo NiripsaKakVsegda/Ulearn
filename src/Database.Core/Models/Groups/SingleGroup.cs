@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using JetBrains.Annotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Database.Models
 {
@@ -29,12 +24,5 @@ namespace Database.Models
 		[Required]
 		/* Значение по умолчанию для галочки «Не принимать больше код-ревью у этого студента по этой задаче» */
 		public bool DefaultProhibitFutherReview { get; set; }
-		
-		public virtual ICollection<GroupMember> Members { get; set; }
-
-		/* TODO (andgein): Use ToListAsync()? */
-		[NotMapped]
-		public List<GroupMember> NotDeletedMembers => 
-			Members?.Where(m => !m.User.IsDeleted).ToList() ?? new List<GroupMember>();
 	}
 }

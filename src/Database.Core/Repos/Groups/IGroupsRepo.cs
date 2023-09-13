@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,7 +31,7 @@ namespace Database.Repos.Groups
 			bool defaultProhibitFurtherReview = true,
 			bool isInviteLinkEnabled = true);
 
-		Task<List<SingleGroup>> SearchGroups(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false);
+		Task<List<T>> SearchGroups<T>(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false) where T : GroupBase;
 		Task<SingleGroup> CopyGroupAsync(SingleGroup group, string courseId, string newOwnerId = "");
 		Task<GroupBase> ModifyGroupAsync(int groupId, GroupSettings settings);
 		Task<T> ModifyGroupAsync<T>(int groupId, GroupSettings newSettings) where T : GroupBase;
@@ -66,7 +66,6 @@ namespace Database.Repos.Groups
 		Task<IEnumerable<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(IEnumerable<int> groupIds);
 		List<ApplicationUser> GetGroupsMembersAsUsers(IEnumerable<int> groupIds);
 		Task<bool> GetDefaultProhibitFurtherReviewForUser(string courseId, string userId, string instructorId);
-		Task<List<int>> GetGroupIdsByMembers(string[] userIds);
 		Task<List<T>> FindGroupsFilterAvailableForUser<T>(IEnumerable<int> groupIds, string userId, [CanBeNull] string courseId = null) where T : GroupBase;
 		Task<List<int>> FilterGroupIdsAvailableForUser<T>(IEnumerable<int> groupIds, string userId, [CanBeNull] string courseId = null) where T : GroupBase;
 	}

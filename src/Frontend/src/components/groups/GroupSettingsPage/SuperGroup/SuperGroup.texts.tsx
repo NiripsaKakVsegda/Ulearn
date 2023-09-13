@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Link } from "ui";
-import getPluralForm from "src/utils/getPluralForm";
 import { constructPathToGroup } from "src/consts/routes";
-import { SuperGroupSheetExtractionResult, SuperGroupItemActions, MoveStudentInfo } from "src/models/superGroup";
+import { MoveStudentInfo, SuperGroupItemActions, SuperGroupSheetExtractionResult } from "src/models/superGroup";
+import getPluralForm from "src/utils/getPluralForm";
+import { Button, Link } from "ui";
 import SettingsType from "../SettingsType";
 
 const submitButtonText = `Применить`;
@@ -30,6 +30,7 @@ export default {
 
 		return Object
 			.entries(extractionResult.groups)
+			.sort((a ,b) => a[0].localeCompare(b[0]))
 			.map(([groupName, superGroupItem]) => {
 				let text = '';
 				let additionalAction = <></>;
@@ -146,12 +147,25 @@ export default {
 
 	settingsTabInstructions: 'Для созданных групп можно изменить следующие параметры',
 
+	getUnassignedMembersInfo: (count: number) => {
+		const plural = getPluralForm(
+			count,
+			'нераспределённый студент',
+			'нераспределённых студента',
+			'нераспределённых студентов',
+		);
+		return `${ count } ${ plural }`;
+	},
+
 	validating: {
 		buildSameStudentInGroups: (studentName: string, groupsNames: string[]) => {
 			return `${ studentName } (группы ${ groupsNames.join(", ") })`;
 		},
 		buildStudentBelongsToOtherGroup: (studentName: string, moveInfo: MoveStudentInfo) => {
-			return `${ studentName } должен находиться в группе «${ moveInfo.toGroupName }», но вступил в «${ moveInfo.fromGroupName }»`;
+			const from = moveInfo.fromGroupName
+				? ', но вступил в «${ moveInfo.fromGroupName }»'
+				: '';
+			return `${ studentName } должен находиться в группе «${ moveInfo.toGroupName }»${ from }`;
 		},
 
 		sameName: `В таблице есть студенты с одинаковыми именами:`,
@@ -164,4 +178,6 @@ export default {
 
 		formatIsUnsupported: 'Формат таблицы не распознан',
 	},
+
+	studentsRemoved: 'Студенты исключены из группы'
 };

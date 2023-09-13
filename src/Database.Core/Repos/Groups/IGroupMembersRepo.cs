@@ -20,8 +20,10 @@ namespace Database.Repos.Groups
 		Task<List<SingleGroup>> GetUserGroupsAsync(string courseId, string userId, bool includeArchived = false);
 		Task<List<(int GroupId, string UserId)>> GetGroupsMembersAsGroupsIdsAndUserIds(ICollection<int> groupIds);
 		Task<bool> IsUserMemberOfGroup(int groupId, string userId);
+		Task<List<SingleGroup>> GetUserSubGroups(int superGroupId, string userId);
 		Task<Dictionary<string, List<SingleGroup>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false);
-		Task<List<SingleGroup>> GetUserGroupsAsync(string userId);
+		Task<List<GroupBase>> GetUserGroupsAsync(string userId);
+		Task<List<T>> GetUserGroupsAsync<T>(string userId) where T: GroupBase;
 		Task<string> GetUserGroupsNamesAsString(string courseId, string userId, bool includeArchived = false);
 	}
 }

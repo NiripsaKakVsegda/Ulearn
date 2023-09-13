@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Database.Models;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using Vostok.Logging.Abstractions;
 using Ulearn.Common.Extensions;
+using Vostok.Logging.Abstractions;
 
 namespace Database.Repos.Groups
 {
@@ -58,18 +58,37 @@ namespace Database.Repos.Groups
 				.Select(m => (m.GroupId, m.UserId)).ToList();
 		}
 
-		public async Task<bool> IsUserMemberOfGroup(int groupId, string userId)
+		public Task<bool> IsUserMemberOfGroup(int groupId, string userId)
 		{
-			return await db.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == userId);
+			return db.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == userId);
+		}
+
+		public Task<List<SingleGroup>> GetUserSubGroups(int superGroupId, string userId)
+		{
+			return db.SingleGroups
+				.Where(g => g.SuperGroupId == superGroupId)
+				.GroupJoin(
+					db.GroupMembers,
+					g => g.Id,
+					m => m.GroupId,
+					(group, members) => new { group, members }
+				)
+				.SelectMany(
+					e => e.members,
+					(e, member) => new { e.group, member }
+				)
+				.Where(e => e.member.UserId == userId)
+				.Select(e => e.group)
+				.Distinct()
+				.ToListAsync();
 		}
 
 		[ItemCanBeNull]
 		public async Task<GroupMember> AddUserToGroupAsync(int groupId, string userId)
 		{
 			log.Info($"Пытаюсь добавить пользователя {userId} в группу {groupId}");
-			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false) ?? throw new ArgumentNullException($"Can't find group with id={groupId}");
-			if (group.GroupType != GroupType.SingleGroup)
-				throw new ArgumentException($"Group {groupId} isn't single group");
+			var group = await groupsRepo.FindGroupByIdAsync(groupId).ConfigureAwait(false)
+						?? throw new ArgumentNullException($"Can't find group with id={groupId}");
 			
 			var groupMember = new GroupMember
 			{
@@ -95,25 +114,28 @@ namespace Database.Repos.Groups
 				log.Info($"Пользователь {userId} добавлен в группу {groupId}");
 			}
 
-			if ((group as SingleGroup).IsManualCheckingEnabledForOldSolutions)
+			if (group is SingleGroup { IsManualCheckingEnabledForOldSolutions: true })
 				await manualCheckingsForOldSolutionsAdder.AddManualCheckingsForOldSolutionsAsync(group.CourseId, userId).ConfigureAwait(false);
 
 			return groupMember;
 		}
 
+		[ItemCanBeNull]
 		public async Task<GroupMember> RemoveUserFromGroupAsync(int groupId, string userId)
 		{
 			log.Info($"Удаляю пользователя {userId} из группы {groupId}");
 
 			var member = db.GroupMembers.FirstOrDefault(m => m.GroupId == groupId && m.UserId == userId);
 			if (member != null)
+			{
 				db.GroupMembers.Remove(member);
-			else
-				log.Info($"Пользователь {userId} не состоит в группе {groupId}");
+				await db.SaveChangesAsync().ConfigureAwait(false);
+				log.Info($"Пользователь {userId} удалён из группы {groupId}");
+				return member;
+			}
 
-			await db.SaveChangesAsync().ConfigureAwait(false);
-
-			return member;
+			log.Info($"Пользователь {userId} не состоит в группе {groupId}");
+			return null;
 		}
 
 		public async Task<List<GroupMember>> RemoveUsersFromGroupAsync(int groupId, List<string> userIds)
@@ -184,9 +206,22 @@ namespace Database.Repos.Groups
 			return string.Join(", ", usersGroups.Select(g => g.Name));
 		}
 
-		public async Task<List<SingleGroup>> GetUserGroupsAsync(string userId)
+		public Task<List<GroupBase>> GetUserGroupsAsync(string userId)
 		{
-			return await db.GroupMembers.Where(m => m.UserId == userId && !m.Group.IsDeleted).Select(m => m.Group).ToListAsync();
+			return GetUserGroupsAsync<GroupBase>(userId);
+		}
+
+		public Task<List<T>> GetUserGroupsAsync<T>(string userId) where T : GroupBase
+		{
+			return db.Set<T>()
+				.Where(g => !g.IsDeleted)
+				.SelectMany(
+					g => g.Members,
+					(group, member) => new {group, member}
+				)
+				.Where(e => e.member.UserId == userId)
+				.Select(e => e.group)
+				.ToListAsync();
 		}
 
 		public async Task<Dictionary<string, List<SingleGroup>>> GetUsersGroupsAsync(string courseId, List<string> usersIds, bool includeArchived = false)

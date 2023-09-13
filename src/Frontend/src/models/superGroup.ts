@@ -83,7 +83,7 @@ export type StudentBelongsToOtherGroup = {
 }
 
 export interface MoveStudentInfo {
-	fromGroupName: string;
+	fromGroupName?: string;
 	toGroupName: string;
 }
 

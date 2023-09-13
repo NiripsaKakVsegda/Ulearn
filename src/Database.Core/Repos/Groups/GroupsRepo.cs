@@ -56,9 +56,9 @@ namespace Database.Repos.Groups
 			);
 		}
 
-		public Task<List<SingleGroup>> SearchGroups(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false)
+		public Task<List<T>> SearchGroups<T>(GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false) where T : GroupBase
 		{
-			var query = db.SingleGroups
+			var query = db.Set<T>()
 				.Where(g => !g.IsDeleted);
 
 			if (queryModel.CourseId is not null)
@@ -402,24 +402,14 @@ namespace Database.Repos.Groups
 		public async Task<bool> GetDefaultProhibitFurtherReviewForUser(string courseId, string userId, string instructorId)
 		{
 			var accessibleGroupsIds = new HashSet<int>((await GetMyGroupsFilterAccessibleToUser(courseId, instructorId)).Select(g => g.Id));
-			var userGroupsIdsWithDefaultProhibitFutherReview = db.GroupMembers
-				.Include(m => m.Group)
-				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.DefaultProhibitFutherReview)
+			var userGroupsIdsWithDefaultProhibitFutherReview = await db.SingleGroups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.DefaultProhibitFutherReview)
+				.SelectMany(g => g.Members)
+				.Where(m => m.UserId == userId)
 				.Select(m => m.GroupId)
 				.Distinct()
-				.ToList();
-			return userGroupsIdsWithDefaultProhibitFutherReview.Any(g => accessibleGroupsIds.Contains(g));
-		}
-
-		public Task<List<int>> GetGroupIdsByMembers(string[] userIds)
-		{
-			return db.GroupMembers
-				.Where(m => userIds.Contains(m.UserId))
-				.Select(m => m.Group)
-				.Where(g => !g.IsDeleted)
-				.Select(g => g.Id)
-				.Distinct()
 				.ToListAsync();
+			return userGroupsIdsWithDefaultProhibitFutherReview.Any(g => accessibleGroupsIds.Contains(g));
 		}
 
 		public async Task<List<T>> FindGroupsFilterAvailableForUser<T>(IEnumerable<int> groupIds, string userId, string courseId = null) where T : GroupBase
@@ -512,10 +502,12 @@ namespace Database.Repos.Groups
 		public async Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId)
 		{
 			if (course.Settings.IsManualCheckingEnabled)
-				return true;
+				return await Task.FromResult(true);
 
-			return await db.GroupMembers
-				.AnyAsync(m => m.Group.CourseId == course.Id && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled);
+			return await db.SingleGroups
+				.Where(g => g.CourseId == course.Id && !g.IsDeleted && !g.IsArchived && g.IsManualCheckingEnabled)
+				.SelectMany(g => g.Members)
+				.AnyAsync(m => m.UserId == userId);
 		}
 
 		public async Task<HashSet<string>> GetUsersIdsWithEnabledManualChecking(Course course, List<string> userIds)
@@ -523,24 +515,26 @@ namespace Database.Repos.Groups
 			if (course.Settings.IsManualCheckingEnabled)
 				return userIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-			return (await db.GroupMembers
-					.Where(m => m.Group.CourseId == course.Id && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.IsManualCheckingEnabled)
-					.Where(m => userIds.Contains(m.UserId))
+			return (await db.SingleGroups
+					.Where(g => g.CourseId == course.Id && !g.IsDeleted && !g.IsArchived && g.IsManualCheckingEnabled)
+					.SelectMany(g => g.Members)
 					.Select(m => m.UserId)
-					.ToListAsync())
-				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+					.Where(id => userIds.Contains(id))
+					.ToListAsync()
+				).ToHashSet(StringComparer.OrdinalIgnoreCase);
 		}
 
 		public async Task<bool> GetDefaultProhibitFurtherReviewForUserAsync(string courseId, string userId, string instructorId)
 		{
 			var accessibleGroups = await GetMyGroupsFilterAccessibleToUserAsync(courseId, instructorId).ConfigureAwait(false);
 			var accessibleGroupsIds = accessibleGroups.Select(g => g.Id).ToHashSet();
-			var userGroupsIdsWithDefaultProhibitFutherReview = await db.GroupMembers
-				.Where(m => m.Group.CourseId == courseId && m.UserId == userId && !m.Group.IsDeleted && !m.Group.IsArchived && m.Group.DefaultProhibitFutherReview)
+			var userGroupsIdsWithDefaultProhibitFutherReview = await db.SingleGroups
+				.Where(g => g.CourseId == courseId && !g.IsDeleted && !g.IsArchived && g.DefaultProhibitFutherReview)
+				.SelectMany(g => g.Members)
+				.Where(m => m.UserId == userId)
 				.Select(m => m.GroupId)
-				.Distinct()
-				.ToListAsync()
-				.ConfigureAwait(false);
+				.ToListAsync();
+
 			return userGroupsIdsWithDefaultProhibitFutherReview.Any(g => accessibleGroupsIds.Contains(g));
 		}
 

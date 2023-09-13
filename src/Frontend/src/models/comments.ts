@@ -1,4 +1,5 @@
 import { ShortUserInfo } from "src/models/users";
+import { GroupType } from "./groups";
 
 export interface SlideComments {
 	topLevelComments: Comment[];
@@ -15,6 +16,7 @@ export interface Pagination {
 
 export interface ShortGroupInfo {
 	id: number;
+	groupType: GroupType;
 	courseId: string;
 	name: string;
 	isArchived: boolean;

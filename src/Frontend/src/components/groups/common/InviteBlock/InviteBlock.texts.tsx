@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default {
 	copyLink: 'Скопировать ссылку',
 	linkCopiedToast: 'Ссылка скопирована',

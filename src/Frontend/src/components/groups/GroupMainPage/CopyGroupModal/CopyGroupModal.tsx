@@ -10,6 +10,7 @@ import { useGroupsSearch } from "../../../common/GroupsSearch/useGroupsSearch";
 import GroupsSearchCombobox from "../../../common/GroupsSearch/GroupsSearchCombobox";
 import { ShortGroupInfo } from "../../../../models/comments";
 import { CourseRoleType } from "../../../../consts/accessType";
+import { GroupType } from "../../../../models/groups";
 
 interface Props {
 	course: CourseInfo;
@@ -33,7 +34,7 @@ const CopyGroupModal: FC<Props> = ({ course, onClose, onGroupCopied }) => {
 		.map(course => [course, course.title]);
 	const [selectedCourse, setSelectedCourse] = useState<CourseInfo>();
 
-	const searchGroups = useGroupsSearch(selectedCourse?.id);
+	const searchGroups = useGroupsSearch(selectedCourse?.id, {groupType: GroupType.SingleGroup});
 	const [selectedGroup, setSelectedGroup] = useState<ShortGroupInfo>();
 
 	const { instructorIds } = usersApi.useSearchUsersQuery({

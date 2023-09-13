@@ -1,157 +1,104 @@
-import React, { FC, useEffect, useState } from 'react';
-import { AccountState } from "../../../../../../redux/account";
-import { GroupStudentInfo } from "../../../../../../models/groups";
-
-import styles from './groupStudents.less';
-import texts from './GroupStudents.texts';
-import { Checkbox } from "ui";
-import { getNameWithLastNameFirst } from "../../../../../common/Profile/Profile";
-import CopyStudentsModal from "../CopyStudentsModal/CopyStudentsModal";
-import ResetsLimitsModal from "../ResetLimitsModal/ResetsLimitsModal";
-import StudentActions from "../StudentActions/StudentActions";
-import StudentCheckbox from "../StudentCheckbox/StudentCheckbox";
-import { ShortCourseInfo } from "../../../../../../models/course";
-import UserAccessesModal, { AccessesType } from "../../../../../common/UserAccessesModal/UserAccessesModal";
+import React, { FC, useState } from 'react';
 import { CourseAccessType, SystemAccessType } from "../../../../../../consts/accessType";
-import { ShortGroupInfo } from "../../../../../../models/comments";
+import { GroupStudentInfo } from "../../../../../../models/groups";
+import { AccountState } from "../../../../../../redux/account";
+import UserAccessesModal, { AccessesType } from "../../../../../common/UserAccessesModal/UserAccessesModal";
+import MembersList from "../../../../common/MembersList/MembersList";
+import ResetsLimitsModal from "../../../../common/ResetLimitsModal/ResetsLimitsModal";
+import styles from './groupStudents.less';
+import CopyStudents from "../../../../common/CopyStudents";
 
 interface Props {
+	groupId: number;
 	courseTitle: string;
 	account: AccountState;
 	students: GroupStudentInfo[];
 
-	getCourses: () => { courses: ShortCourseInfo[], isCoursesLoading: boolean };
-
 	onRemoveStudents: (studentIds: string[]) => void;
 	onResetLimits: (studentIds: string[]) => void;
-	onCopyStudents: (group: ShortGroupInfo, studentIds: string[]) => void;
 
 	onGrantAccess: (userId: string, accessType: CourseAccessType) => void;
 	onRevokeAccess: (userId: string, accessType: CourseAccessType) => void;
 }
 
 const GroupStudents: FC<Props> = ({
+	groupId,
 	courseTitle,
 	account,
 	students,
 	...actions
 }) => {
-	const [checkedStudentIds, setCheckedStudentIds] = useState<string[]>([]);
-	const [copyStudentsModalOpen, setCopyStudentsModalOpen] = useState<boolean>(false);
-	const [resetLimitsModalOpen, setResetLimitsModalOpen] = useState<boolean>(false);
-	const [accessesModalStudent, setAccessesModalStudent] =
-		useState<GroupStudentInfo>();
+	const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+	const [isCopyingStudents, setIsCopyingStudents] = useState(false);
+	const [isResetLimitsModalOpened, setIsResetLimitsModalOpened] = useState(false);
+	const [accessesModalStudentId, setAccessesModalStudentId] =
+		useState<string>();
 
-	useEffect(() => {
-		if(accessesModalStudent) {
-			setAccessesModalStudent(students.find(s => s.user.id === accessesModalStudent.user.id));
+	const accessesModalStudent = accessesModalStudentId
+		? students.find(s => s.user.id === accessesModalStudentId)
+		: undefined;
+
+	return <>
+		<MembersList
+			className={ styles.membersList }
+			members={ students }
+			canViewProfiles={
+				account.isSystemAdministrator ||
+				account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
+			}
+			selectedStudentIds={ selectedStudentIds }
+			onChangeSelected={ setSelectedStudentIds }
+			onCopyStudents={ toggleCopyStudentsModal }
+			onResetLimits={ toggleResetLimitsModal }
+			onDeleteStudents={ deleteStudents }
+			onChangeAccesses={ setAccessesModalStudentId }
+		/>
+		{ isCopyingStudents &&
+			<CopyStudents
+				studentIds={ selectedStudentIds }
+				currentGroupId={ groupId }
+				asModal
+				onClose={ toggleCopyStudentsModal }
+			/>
 		}
-	}, [students]);
-
-	const renderStudents = (): JSX.Element =>
-		<div>
-			{
-				[...students]
-					.sort(compareByName)
-					.map(studentInfo =>
-						<StudentCheckbox
-							key={ studentInfo.user.id }
-							studentInfo={ studentInfo }
-							account={ account }
-							isChecked={ checkedStudentIds.includes(studentInfo.user.id) }
-							onCheck={ onCheckStudent }
-							onChangeStudentAccesses={ openStudentsAccessesModal }
-						/>
-					)
-			}
-		</div>;
-
-	return (
-		<>
-			<div className={ styles["actions-block"] }>
-				<Checkbox
-					checked={ students.length === checkedStudentIds.length }
-					onValueChange={ onCheckAllStudents }
-					className={styles.removeMargin}
-				>
-					{ texts.selectAll }
-				</Checkbox>
-				<StudentActions
-					noStudentsChecked={ checkedStudentIds.length === 0 }
-					onCopyStudents={ toggleCopyStudentsModal }
-					onResetLimits={ toggleResetLimitsModal }
-					onDeleteStudents={ onRemoveStudents }
-				/>
-			</div>
-			{ renderStudents() }
-			{ copyStudentsModalOpen &&
-				<CopyStudentsModal
-					checkedStudentIds={ checkedStudentIds }
-					onClose={ toggleCopyStudentsModal }
-					getCourses={ actions.getCourses }
-					onCopyStudents={ actions.onCopyStudents }
-				/>
-			}
-			{ resetLimitsModalOpen &&
-				<ResetsLimitsModal
-					checkedStudentIds={ checkedStudentIds }
-					onClose={ toggleResetLimitsModal }
-					onResetLimits={ actions.onResetLimits }
-				/>
-			}
-			{ accessesModalStudent &&
-				<UserAccessesModal
-					user={ accessesModalStudent.user }
-					accesses={ accessesModalStudent.accesses }
-					accessesType={ AccessesType.StudentAccesses }
-					courseTitle={ courseTitle }
-					canViewProfile={
-						account.isSystemAdministrator ||
-						account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
-					}
-					onClose={ closeStudentsAccessesModal }
-					onGrantAccess={ actions.onGrantAccess }
-					onRevokeAccess={ actions.onRevokeAccess }
-				/>
-			}
-		</>
-	);
-
-	function onCheckAllStudents(checked: boolean) {
-		setCheckedStudentIds(checked ? students.map(student => student.user.id) : []);
-	}
-
-	function onCheckStudent(id: string, checked: boolean) {
-		if(checked) {
-			setCheckedStudentIds([...checkedStudentIds, id]);
-		} else {
-			setCheckedStudentIds(checkedStudentIds.filter(checkedId => checkedId !== id));
+		{ isResetLimitsModalOpened &&
+			<ResetsLimitsModal
+				checkedStudentIds={ selectedStudentIds }
+				onClose={ toggleResetLimitsModal }
+				onResetLimits={ actions.onResetLimits }
+			/>
 		}
-	}
+		{ accessesModalStudent &&
+			<UserAccessesModal
+				user={ accessesModalStudent.user }
+				accesses={ accessesModalStudent.accesses }
+				accessesType={ AccessesType.StudentAccesses }
+				courseTitle={ courseTitle }
+				canViewProfile={
+					account.isSystemAdministrator ||
+					account.systemAccesses?.includes(SystemAccessType.viewAllProfiles)
+				}
+				onClose={ closeStudentsAccessesModal }
+				onGrantAccess={ actions.onGrantAccess }
+				onRevokeAccess={ actions.onRevokeAccess }
+			/>
+		}
+	</>;
 
 	function toggleCopyStudentsModal() {
-		setCopyStudentsModalOpen(!copyStudentsModalOpen);
+		setIsCopyingStudents(prev => !prev);
 	}
 
 	function toggleResetLimitsModal() {
-		setResetLimitsModalOpen(!resetLimitsModalOpen);
+		setIsResetLimitsModalOpened(prev => !prev);
 	}
 
-	function openStudentsAccessesModal(student: GroupStudentInfo) {
-		setAccessesModalStudent(student);
+	function deleteStudents() {
+		actions.onRemoveStudents(selectedStudentIds);
 	}
 
 	function closeStudentsAccessesModal() {
-		setAccessesModalStudent(undefined);
-	}
-
-	function onRemoveStudents() {
-		actions.onRemoveStudents(checkedStudentIds);
-		setCheckedStudentIds([]);
-	}
-
-	function compareByName(a: GroupStudentInfo, b: GroupStudentInfo) {
-		return getNameWithLastNameFirst(a.user).localeCompare(getNameWithLastNameFirst(b.user));
+		setAccessesModalStudentId(undefined);
 	}
 };
 

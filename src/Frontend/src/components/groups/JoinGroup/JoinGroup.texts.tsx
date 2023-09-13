@@ -1,18 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { JoinGroupInfo } from "../../../models/groups";
+import { GroupType, JoinGroupInfo } from "../../../models/groups";
+import styles from './JoinGroup.less';
 
 export default {
 	title: 'Присоединиться к группе',
 
 	join: {
-		title: 'Присоединиться к группе',
-		buildMainInfo: (group: JoinGroupInfo) => <>
-			{ group.owner.visibleName } приглашает вас присоединиться
-			к группе «{ group.name }» в курсе «{ group.courseTitle }».<br/>
-			Преподаватели группы смогут проверять ваши задания и тесты, проводить код-ревью и выставлять вам
-			дополнительные баллы.
-		</>,
+		getTitle: (groupType: GroupType) => groupType === GroupType.SingleGroup
+			? 'Присоединиться к группе'
+			: 'Присоединиться к курсу',
+		buildMainInfo: (group: JoinGroupInfo) => {
+			const isSingleGroup = group.groupType === GroupType.SingleGroup;
+			const joinTo = isSingleGroup
+				? `группе «${ group.name }» в курсе «${ group.courseTitle }»`
+				: `курсу «${ group.courseTitle }»`;
+			return <>
+				{ group.owner.visibleName } приглашает вас присоединиться к { joinTo }.
+				<br/>
+				Преподаватели { isSingleGroup && 'группы' } смогут проверять ваши задания и тесты,
+				проводить код-ревью и выставлять вам дополнительные баллы.
+			</>;
+		},
 		additionalInfo: 'Чтобы преподаватели могли связаться с вами в случае необходимости, ' +
 			'мы покажем им вашу электронную почту и привязанные аккаунты социальных сетей.',
 		userCanSeeProgress: 'После вступления вам станет доступна ведомость всей группы.',
@@ -36,18 +45,25 @@ export default {
 		navigateCourse: 'Перейти к курсу →',
 	},
 
-
 	error: {
 		title: 'Неудача!',
 		inviteLinkDisabled: 'В эту группу больше нельзя вступить',
-		noDistributionLinkError: 'Группа ещё не настроена',
-		buildGroupNotFoundError: (accountLink: string) => <>
+		defaultGroupTitle: 'Почти получилось!',
+		buildDefaultGroupError: (group: JoinGroupInfo, accountLink: string) => <>
 			<p>
-				Мы не смогли вас найти,
-				убедитесь в правильности написания имени в вашем <Link to={ accountLink }>аккаунте</Link>.
+				Поздравляем! Вы вступили в курс «{ group.courseTitle }», осталось попасть в нужную группу.
 			</p>
 			<p>
-				Или свяжитесь с вашим преподавателем
+				Для этого корректно напишите имя и фамилию в&nbsp;
+				<Link to={ accountLink } target="_blank" rel="noopener noreferrer">
+					аккаунте
+				</Link>: на русском, без сокращений и никнеймов.
+				<br/>
+				После этого еще раз пройдите по ссылке для присоединения.
+			</p>
+			<p className={ styles.additional }>
+				Если это не поможет, то немного подождите,
+				преподаватель скоро завершит распределение по группам.
 			</p>
 		</>
 	}

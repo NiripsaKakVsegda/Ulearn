@@ -37,7 +37,7 @@ function GroupSettingsPage(props: Props) {
 	const groupId = parseInt(params.groupId || '0');
 	const pageTab = params.groupPage as GroupSettingsTab;
 
-	const { data: group, isLoading, isError } = groupSettingsApi.useGetGroupQuery({ groupId });
+	const { data: group, isLoading, isError, refetch } = groupSettingsApi.useGetGroupQuery({ groupId });
 
 	useEffect(() => {
 		enterToCourse(courseId);
@@ -53,7 +53,10 @@ function GroupSettingsPage(props: Props) {
 	const loadedGroup = group;
 
 	if(loadedGroup.groupType === GroupType.SuperGroup) {
-		return <SuperGroupPage groupInfo={ loadedGroup }/>;
+		return <SuperGroupPage
+			groupInfo={ loadedGroup }
+			refetchGroup={ refetch }
+		/>;
 	}
 
 	return (

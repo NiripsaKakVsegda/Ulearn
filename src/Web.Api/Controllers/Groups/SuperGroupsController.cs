@@ -8,6 +8,7 @@ using Database.Repos.Groups;
 using Database.Repos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
@@ -42,11 +43,6 @@ public class SuperGroupsController : BaseGroupController
 	[HttpGet]
 	public async Task<ActionResult<SuperGroupsListResponse>> GroupsList([FromQuery] GroupsListParameters parameters)
 	{
-		return await GetGroupsListResponseAsync(parameters);
-	}
-
-	private async Task<SuperGroupsListResponse> GetGroupsListResponseAsync(GroupsListParameters parameters)
-	{
 		var groups = await groupAccessesRepo.GetAvailableForUserGroupsAsync(parameters.CourseId, UserId, false, true, true, GroupQueryType.SuperGroup);
 
 		/* Order groups by (name, createTime) and get one page of data (offset...offset+count) */
@@ -68,11 +64,13 @@ public class SuperGroupsController : BaseGroupController
 		var subGroups = await groupsRepo.FindGroupsBySuperGroupIdsAsync(groupsIds, true);
 		var subGroupsIds = subGroups.Select(g => g.Id).ToList();
 
-		var groupMembers = await groupMembersRepo.GetGroupsMembersAsync(subGroupsIds);
-		var membersCountByGroup = groupMembers
-			.GroupBy(m => m.GroupId)
-			.ToDictionary(g => g.Key, g => g.Count())
-			.ToDefaultDictionary();
+		var membersCountByGroupId = await db.GroupMembers
+			.Where(m => groupsIds.Contains(m.GroupId) || subGroupsIds.Contains(m.GroupId))
+			.Where(m => !m.User.IsDeleted)
+			.Select(m => m.GroupId)
+			.GroupBy(id => id)
+			.Select(g => new { g.Key, Count = g.Count() })
+			.ToDictionaryAsync(g => g.Key, g => g.Count);
 
 		var superGroupAccessesByGroup = await groupAccessesRepo.GetGroupAccessesAsync(groupsIds);
 		var groupAccessesByGroup = await groupAccessesRepo.GetGroupAccessesAsync(subGroupsIds);
@@ -80,14 +78,14 @@ public class SuperGroupsController : BaseGroupController
 		var groupInfos = filteredGroups
 			.Select(g => BuildGroupInfo(
 				g,
-				null,
+				membersCountByGroupId.GetOrDefault(g.Id, 0),
 				superGroupAccessesByGroup[g.Id],
 				addGroupApiUrl: true))
 			.ToList();
 		var subGroupInfos = subGroups
 			.Select(g => BuildGroupInfo(
 				g,
-				membersCountByGroup[g.Id],
+				membersCountByGroupId.GetOrDefault(g.Id, 0),
 				groupAccessesByGroup[g.Id],
 				addGroupApiUrl: true))
 			.GroupBy(g => g.SuperGroupId)

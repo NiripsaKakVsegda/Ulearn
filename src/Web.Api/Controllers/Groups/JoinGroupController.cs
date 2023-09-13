@@ -57,39 +57,45 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 			var isInviteLinkEnabled = group.IsInviteLinkEnabled;
 
-			SuperGroupError? error = null;
 			if (group is SuperGroup superGroup)
 			{
-				if (superGroup.DistributionTableLink is null)
+				var getSubGroupsUserMember = await groupMembersRepo.GetUserSubGroups(superGroup.Id, UserId);
+				if (getSubGroupsUserMember.Count > 0)
 				{
-					error = SuperGroupError.NoDistributionLink;
+					group = getSubGroupsUserMember[0];
 				}
 				else
 				{
-					var groups = await GetGroupsToJoinViaSuperGroup(superGroup);
+					var groups = superGroup.DistributionTableLink is null
+						? new List<SingleGroup>()
+						: await GetGroupsToJoinViaSuperGroup(superGroup);
 					if (groups.Count == 1)
 						group = groups[0];
-					else
-						error = SuperGroupError.NoGroupFoundForStudent;
 				}
 			}
 
-			var courseTitle = courseStorage.FindCourse(group.CourseId)?.Title;
-			var singleGroup = group as SingleGroup;
+			var isMember = await groupMembersRepo.IsUserMemberOfGroup(group.Id, UserId);
+			var isInDefaultGroup = group switch
+			{
+				SuperGroup => isMember,
+				SingleGroup { SuperGroupId: not null } singleGroup =>
+					await groupMembersRepo.IsUserMemberOfGroup(singleGroup.SuperGroupId.Value, UserId),
+				_ => false
+			};
+
 			return new JoinGroupInfo
 			{
 				Id = group.Id,
+				GroupType = group.GroupType,
 				Name = group.Name,
 				CourseId = group.CourseId,
-				CourseTitle = courseTitle,
+				CourseTitle = courseStorage.FindCourse(group.CourseId)?.Title,
 				Owner = BuildShortUserInfo(group.Owner),
 				IsInviteLinkEnabled = isInviteLinkEnabled,
-				CanStudentsSeeProgress = singleGroup is not null &&
-										singleGroup.CanUsersSeeGroupProgress,
-				SuperGroupError = error,
-				IsMember = singleGroup is not null &&
-							await groupMembersRepo.IsUserMemberOfGroup(singleGroup.Id, UserId)
-				// Can't use singleGroup.Members.Any(u => u.UserId == UserId) because EF Core doesn't correctly update related entities after removing student from group
+				CanStudentsSeeProgress = group is SingleGroup { CanUsersSeeGroupProgress: true },
+				IsMember = isMember,
+				IsInDefaultGroup = isInDefaultGroup
+				// Can't use group.Members.Any(u => u.UserId == UserId) because EF Core doesn't correctly update related entities after removing student from group
 			};
 		}
 
@@ -111,6 +117,9 @@ namespace Ulearn.Web.Api.Controllers.Groups
 				return await JoinSuperGroup(superGroup);
 
 			var groupMember = await groupMembersRepo.AddUserToGroupAsync(group.Id, UserId).ConfigureAwait(false);
+			if (group is SingleGroup { SuperGroupId: not null } singleGroup)
+				await groupMembersRepo.RemoveUserFromGroupAsync(singleGroup.SuperGroupId.Value, UserId);
+
 			if (groupMember == null)
 				return StatusCode((int)HttpStatusCode.Conflict, new ErrorResponse($"User {UserId} is already a student of group {group.Id}"));
 
@@ -121,22 +130,24 @@ namespace Ulearn.Web.Api.Controllers.Groups
 
 		private async Task<ActionResult> JoinSuperGroup(SuperGroup superGroup)
 		{
-			var groups = await GetGroupsToJoinViaSuperGroup(superGroup);
+			var groups = superGroup.DistributionTableLink is null
+				? new List<SingleGroup>()
+				: await GetGroupsToJoinViaSuperGroup(superGroup);
 
-			if (groups.Count == 0)
-				return NotFound(new ErrorResponse("No group found for user"));
-			if (groups.Count > 1)
-				return NotFound(new ErrorResponse("Found multiple groups for user"));
-
-			var groupToJoin = groups[0];
+			GroupBase groupToJoin = groups.Count == 1
+				? groups[0]
+				: superGroup;
 
 			var groupMember = await groupMembersRepo.AddUserToGroupAsync(groupToJoin.Id, UserId).ConfigureAwait(false);
+			if (groupToJoin.GroupType is GroupType.SingleGroup)
+				await groupMembersRepo.RemoveUserFromGroupAsync(superGroup.Id, UserId);
+
 			if (groupMember is null)
 				return Conflict(new ErrorResponse($"User {UserId} is already a student of group {groupToJoin.Id}"));
 
 			await slideCheckingsRepo.ResetManualCheckingLimitsForUser(groupToJoin.CourseId, UserId);
 
-			return Ok(new SuccessResponseWithMessage($"Student {UserId} is added to group {superGroup.Id}"));
+			return Ok(new SuccessResponseWithMessage($"Student {UserId} is added to group {groupToJoin.Id}"));
 		}
 
 		private async Task<List<SingleGroup>> GetGroupsToJoinViaSuperGroup(SuperGroup superGroup)
@@ -147,13 +158,13 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			);
 			var user = (await usersRepo.FindUserById(UserId))!;
 
-			var userNames = new HashSet<string>
+			var userNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 			{
-				$"{user.FirstName.Trim()} {user.LastName.Trim()}",
-				$"{user.LastName.Trim()} {user.FirstName.Trim()}"
+				$"{user.FirstName.Trim()} {user.LastName.Trim()}".Replace('ё', 'е'),
+				$"{user.LastName.Trim()} {user.FirstName.Trim()}".Replace('ё', 'е')
 			};
 			var userGroupsNames = spreadSheetGroups
-				.Where(g => userNames.Contains(g.studentName))
+				.Where(g => userNames.Contains(g.studentName.Trim().Replace('ё', 'е')))
 				.Select(g => g.groupName)
 				.ToHashSet();
 

@@ -1,3 +1,4 @@
+import cn from "classnames";
 import React, { FC } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -5,7 +6,6 @@ import { GroupInfo, GroupInfoWithSubGroups } from "src/models/groups";
 import GroupsListItem from "../GroupsListItem/GroupsListItem";
 
 import styles from "./groupList.less";
-import cn from "classnames";
 
 interface Props {
 	userId?: string | null;
@@ -65,7 +65,8 @@ const GroupList: FC<Props> = ({
 				{ group.subGroups && group.subGroups.length > 0 &&
 					<div className={ styles.subGroupsContainer }>
 						<ul className={ styles.subGroupsWrapper }>
-							{ group.subGroups
+							{ [...group.subGroups]
+								.sort(groupNameSorter)
 								.map(g => renderGroup(g, true))
 							}
 						</ul>
@@ -75,8 +76,9 @@ const GroupList: FC<Props> = ({
 		);
 	}
 
+
 	function groupSorter(a: GroupInfo, b: GroupInfo) {
-		const nameCompare = a.name.localeCompare(b.name);
+		const nameCompare = groupNameSorter(a, b);
 
 		if(!userId) {
 			return nameCompare;
@@ -111,7 +113,10 @@ const GroupList: FC<Props> = ({
 		}
 
 		return nameCompare;
+	}
 
+	function groupNameSorter(a: GroupInfo, b: GroupInfo) {
+		return a.name.localeCompare(b.name);
 	}
 };
 

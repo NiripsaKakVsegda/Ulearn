@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-using JetBrains.Annotations;
+using Database.Models;
 using Ulearn.Web.Api.Models.Common;
 
 namespace Ulearn.Web.Api.Models.Responses.Groups;
@@ -9,6 +9,9 @@ public class JoinGroupInfo
 {
 	[DataMember]
 	public int Id { get; set; }
+
+	[DataMember]
+	public GroupType GroupType { get; set; }
 
 	[DataMember]
 	public string Name { get; set; }
@@ -32,12 +35,5 @@ public class JoinGroupInfo
 	public bool IsMember { get; set; }
 
 	[DataMember]
-	[CanBeNull]
-	public SuperGroupError? SuperGroupError;
-}
-
-public enum SuperGroupError
-{
-	NoDistributionLink,
-	NoGroupFoundForStudent
+	public bool IsInDefaultGroup { get; set; }
 }

@@ -124,10 +124,9 @@ const GroupsListItem: FC<Props> = ({ group, courseId, deleteGroup, toggleArchive
 								{ !isSubGroup && group.superGroupName && <> («{ group.superGroupName }»)</> }
 							</h3>
 						</Link>
-						{ !isSuperGroup && <div>
-							{ texts.buildStudentsCountMessage(studentsCount) }
+						<div>
+							{ texts.buildStudentsCountMessage(studentsCount, group.groupType) }
 						</div>
-						}
 						{ renderTeachers() }
 					</header>
 					{ !isSuperGroup && <div className={ styles["group-settings"] }>

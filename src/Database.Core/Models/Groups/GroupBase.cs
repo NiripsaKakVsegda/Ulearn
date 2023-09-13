@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Models;
@@ -12,7 +14,7 @@ public abstract class GroupBase
 {
 	[Required]
 	public virtual GroupType GroupType { get; }
-	
+
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -45,4 +47,11 @@ public abstract class GroupBase
 	public bool IsInviteLinkEnabled { get; set; }
 
 	public DateTime? CreateTime { get; set; } // При разархивировании обновляется
+
+	public virtual ICollection<GroupMember> Members { get; set; }
+
+	/* TODO (andgein): Use ToListAsync()? */
+	[NotMapped]
+	public List<GroupMember> NotDeletedMembers =>
+		Members?.Where(m => !m.User.IsDeleted).ToList() ?? new List<GroupMember>();
 }
