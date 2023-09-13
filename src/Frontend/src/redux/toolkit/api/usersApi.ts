@@ -17,7 +17,7 @@ export const usersApi = createApi({
 				params
 			})
 		}),
-		findUsersByIds: build.query<UsersByIdsResponse, { userIds: string[] }>({
+		findUsersByIds: build.query<UsersByIdsResponse, { userIds: string[], courseId?: string }>({
 			query: (params) => ({
 				url: `by-ids${ buildQuery(params) }`
 			})

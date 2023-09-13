@@ -1,14 +1,16 @@
+import { ValidationContainer, ValidationWrapper } from "@skbkontur/react-ui-validations";
+import { ValidationInfo } from "@skbkontur/react-ui-validations/src/ValidationWrapper";
 import React, { FC, useMemo, useState } from 'react';
 import { Button, Modal, Select } from "ui";
-import { CourseSlidesInfo, defaultFilterState, ReviewQueueModalFilterState } from "../RevoewQueue.types";
-import texts from './FiltersModal.texts';
-import styles from './filtersModal.less';
+import { ShortGroupInfo } from "../../../models/comments";
 import { StudentsFilter } from "../../../models/instructor";
 import { ShortUserInfo } from "../../../models/users";
-import { ShortGroupInfo } from "../../../models/comments";
-import areFiltersEquals from "../utils/areFiltersEquals";
 import GroupsSearchTokenInput from "../../common/GroupsSearch/GroupsSearchTokenInput";
 import UsersSearchTokenInput from "../../common/UsersSearch/UsersSearchTokenInput";
+import { CourseSlidesInfo, defaultFilterState, ReviewQueueModalFilterState } from "../RevoewQueue.types";
+import areFiltersEquals from "../utils/areFiltersEquals";
+import styles from './filtersModal.less';
+import texts from './FiltersModal.texts';
 
 interface Props {
 	filter: ReviewQueueModalFilterState;
@@ -22,6 +24,7 @@ interface Props {
 }
 
 const inputsWidthInPixels = 300;
+const tokenInputMaxItemsCount = 20;
 
 const FiltersModal: FC<Props> = (props) => {
 	const initialFilter = props.filter;
@@ -33,6 +36,10 @@ const FiltersModal: FC<Props> = (props) => {
 	);
 	const isDefaultFilter = useMemo(
 		() => areFiltersEquals(defaultFilterState, filter),
+		[filter]
+	);
+	const validationInfo = useMemo(
+		() => validateFilter(filter),
 		[filter]
 	);
 
@@ -59,55 +66,61 @@ const FiltersModal: FC<Props> = (props) => {
 				{ texts.modalHeader }
 			</Modal.Header>
 			<Modal.Body>
-				<ul className={ styles.filters }>
-					<li>
-						<span>{ texts.filters.unit }</span>
-						<Select<string>
-							value={ filter.unitId ?? 'all' }
-							onValueChange={ handleUnitIdChange }
-							items={ unitSelectItems }
-							width={ inputsWidthInPixels }
-							maxWidth={ '100%' }
-						/>
-					</li>
-					<li>
-						<span>{ texts.filters.slide }</span>
-						<Select<string>
-							value={ filter.slideId ?? 'all' }
-							onValueChange={ handleSlideIdChange }
-							items={ slideSelectItems }
-							disabled={ !filter.unitId }
-							width={ inputsWidthInPixels }
-							maxWidth={ '100%' }
-						/>
-					</li>
-					<li>
-						<span>{ texts.filters.studentsFilter }</span>
-						<Select<StudentsFilter>
-							value={ filter.studentsFilter }
-							onValueChange={ handleStudentFilterChange }
-							items={ studentsFilterItems }
-							width={ inputsWidthInPixels }
-							maxWidth={ '100%' }
-						/>
-					</li>
-					{ filter.studentsFilter === StudentsFilter.StudentIds &&
-						<UsersSearchTokenInput
-							searchUsers={ props.getStudents }
-							users={ filter.students ?? [] }
-							onChangeUsers={ handleStudentsListChange }
-							width={ inputsWidthInPixels }
-						/>
-					}
-					{ filter.studentsFilter === StudentsFilter.GroupIds &&
-						<GroupsSearchTokenInput
-							searchGroups={ props.getGroups }
-							groups={ filter.groups ?? [] }
-							onChangeGroups={ handleGroupListChange }
-							width={ inputsWidthInPixels }
-						/>
-					}
-				</ul>
+				<ValidationContainer>
+					<div className={ styles.filters }>
+						<div className={ styles.selectTitleWrapper }>
+							<span>{ texts.filters.unit }</span>
+							<Select<string>
+								value={ filter.unitId ?? 'all' }
+								onValueChange={ handleUnitIdChange }
+								items={ unitSelectItems }
+								width={ inputsWidthInPixels }
+								maxWidth={ '100%' }
+							/>
+						</div>
+						<div className={ styles.selectTitleWrapper }>
+							<span>{ texts.filters.slide }</span>
+							<Select<string>
+								value={ filter.slideId ?? 'all' }
+								onValueChange={ handleSlideIdChange }
+								items={ slideSelectItems }
+								disabled={ !filter.unitId }
+								width={ inputsWidthInPixels }
+								maxWidth={ '100%' }
+							/>
+						</div>
+						<div className={ styles.selectTitleWrapper }>
+							<span>{ texts.filters.studentsFilter }</span>
+							<Select<StudentsFilter>
+								value={ filter.studentsFilter }
+								onValueChange={ handleStudentFilterChange }
+								items={ studentsFilterItems }
+								width={ inputsWidthInPixels }
+								maxWidth={ '100%' }
+							/>
+						</div>
+						{ filter.studentsFilter === StudentsFilter.StudentIds &&
+							<ValidationWrapper validationInfo={ validationInfo }>
+								<UsersSearchTokenInput
+									searchUsers={ props.getStudents }
+									users={ filter.students ?? [] }
+									onChangeUsers={ handleStudentsListChange }
+									width={ inputsWidthInPixels }
+								/>
+							</ValidationWrapper>
+						}
+						{ filter.studentsFilter === StudentsFilter.GroupIds &&
+							<ValidationWrapper validationInfo={ validationInfo }>
+								<GroupsSearchTokenInput
+									searchGroups={ props.getGroups }
+									groups={ filter.groups ?? [] }
+									onChangeGroups={ handleGroupListChange }
+									width={ inputsWidthInPixels }
+								/>
+							</ValidationWrapper>
+						}
+					</div>
+				</ValidationContainer>
 			</Modal.Body>
 			<Modal.Footer>
 				<div className={ styles.buttonsWrapper }>
@@ -115,7 +128,7 @@ const FiltersModal: FC<Props> = (props) => {
 						use={ 'primary' }
 						size={ 'medium' }
 						onClick={ applyFilters }
-						disabled={ filtersEquals }
+						disabled={ filtersEquals || !!validationInfo }
 						children={ texts.buttons.apply }
 					/>
 					<Button
@@ -190,6 +203,26 @@ const FiltersModal: FC<Props> = (props) => {
 
 	function resetFilters() {
 		setFilter(defaultFilterState);
+	}
+
+	function validateFilter(filter: ReviewQueueModalFilterState): ValidationInfo | null {
+		if(filter.studentsFilter === StudentsFilter.StudentIds && filter.studentIds && filter.studentIds.length > tokenInputMaxItemsCount) {
+			return {
+				level: 'error',
+				type: 'immediate',
+				message: texts.error.buildTooManyStudentsError(tokenInputMaxItemsCount)
+			};
+		}
+
+		if(filter.studentsFilter === StudentsFilter.GroupIds && filter.groupIds && filter.groupIds.length > tokenInputMaxItemsCount) {
+			return {
+				level: 'error',
+				type: 'immediate',
+				message: texts.error.buildTooManyGroupsError(tokenInputMaxItemsCount)
+			};
+		}
+
+		return null;
 	}
 };
 

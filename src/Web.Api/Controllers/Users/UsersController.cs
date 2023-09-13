@@ -6,8 +6,9 @@ using Database;
 using Database.Models;
 using Database.Repos;
 using Database.Repos.Users;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
@@ -158,48 +159,30 @@ namespace Ulearn.Web.Api.Controllers.Users
 		}
 
 		[HttpGet("by-ids")]
-		public async Task<ActionResult<UsersByIdsResponse>> FindUsersByIds([FromQuery] List<string> userIds)
+		[Authorize]
+		public async Task<ActionResult<UsersByIdsResponse>> FindUsersByIds(
+			[FromQuery] List<string> userIds,
+			[FromQuery] [CanBeNull] string courseId
+		)
 		{
 			const int maxRequestUsersCount = 100;
 
-			var isCourseAdmin = await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.CourseAdmin);
-			var isInstructor = isCourseAdmin || await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.Instructor);
-			if (!isInstructor)
-				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of any course"));
-
 			if (userIds.Count > maxRequestUsersCount)
-				return BadRequest(new ErrorResponse($"You cannot request more than {maxRequestUsersCount} users"));
+				return StatusCode((int)HttpStatusCode.RequestEntityTooLarge, new ErrorResponse($"You cannot request more than {maxRequestUsersCount} users"));
 
-			var usersQuery = db.Users
-				.Where(u => userIds.Contains(u.Id) && !u.IsDeleted);
-			if (!isCourseAdmin)
-				usersQuery = usersQuery
-					.GroupJoin(
-						db.GroupMembers,
-						u => u.Id,
-						member => member.UserId,
-						(user, members) => new { user, members }
-					)
-					.SelectMany(
-						e => e.members,
-						(e, member) => new { e.user, member.Group }
-					)
-					.GroupJoin(
-						db.GroupAccesses,
-						e => e.Group.Id,
-						ga => ga.GroupId,
-						(e, accesses) => new { e.user, e.Group, accesses }
-					)
-					.SelectMany(
-						e => e.accesses.DefaultIfEmpty(),
-						(e, access) => new { e.user, e.Group, access }
-					)
-					.Where(e => e.Group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
-					.Select(e => e.user);
+			var isSysAdmin = await IsSystemAdministratorAsync();
 
-			var users = await usersQuery
-				.Distinct()
-				.ToListAsync();
+			if (courseId is null && !isSysAdmin)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("Only system administrator can request users in all courses"));
+
+			if (courseId is not null)
+			{
+				var isInstructor = isSysAdmin || await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor);
+				if (!isInstructor)
+					return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of course"));
+			}
+
+			var users = await usersRepo.FindUsersFilterAvailableForUser(userIds, UserId, courseId);
 
 			return new UsersByIdsResponse
 			{

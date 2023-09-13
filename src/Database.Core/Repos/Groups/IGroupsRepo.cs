@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using JetBrains.Annotations;
 using Ulearn.Core.Courses;
 
 namespace Database.Repos.Groups
@@ -66,5 +67,7 @@ namespace Database.Repos.Groups
 		List<ApplicationUser> GetGroupsMembersAsUsers(IEnumerable<int> groupIds);
 		Task<bool> GetDefaultProhibitFurtherReviewForUser(string courseId, string userId, string instructorId);
 		Task<List<int>> GetGroupIdsByMembers(string[] userIds);
+		Task<List<T>> FindGroupsFilterAvailableForUser<T>(IEnumerable<int> groupIds, string userId, [CanBeNull] string courseId = null) where T : GroupBase;
+		Task<List<int>> FilterGroupIdsAvailableForUser<T>(IEnumerable<int> groupIds, string userId, [CanBeNull] string courseId = null) where T : GroupBase;
 	}
 }

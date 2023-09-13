@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using Database.Repos.Users;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Ulearn.Core.Courses;
@@ -12,16 +13,24 @@ namespace Database.Repos.Groups
 	public class GroupsRepo : IGroupsRepo
 	{
 		private readonly UlearnDb db;
+		private readonly IUsersRepo usersRepo;
+		private readonly ICourseRolesRepo courseRolesRepo;
 		private readonly IGroupsCreatorAndCopier groupsCreatorAndCopier;
 		private readonly IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder;
 
 		public GroupsRepo(
 			UlearnDb db,
-			IGroupsCreatorAndCopier groupsCreatorAndCopier, IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder)
+			IGroupsCreatorAndCopier groupsCreatorAndCopier,
+			IManualCheckingsForOldSolutionsAdder manualCheckingsForOldSolutionsAdder,
+			IUsersRepo usersRepo,
+			ICourseRolesRepo courseRolesRepo
+		)
 		{
 			this.db = db;
 			this.groupsCreatorAndCopier = groupsCreatorAndCopier;
 			this.manualCheckingsForOldSolutionsAdder = manualCheckingsForOldSolutionsAdder;
+			this.usersRepo = usersRepo;
+			this.courseRolesRepo = courseRolesRepo;
 		}
 
 		public async Task<SingleGroup> CreateSingleGroupAsync(string courseId,
@@ -411,6 +420,93 @@ namespace Database.Repos.Groups
 				.Select(g => g.Id)
 				.Distinct()
 				.ToListAsync();
+		}
+
+		public async Task<List<T>> FindGroupsFilterAvailableForUser<T>(IEnumerable<int> groupIds, string userId, string courseId = null) where T : GroupBase
+		{
+			var query = await FilterGroupsAvailableForUser_Internal<T>(groupIds, userId, courseId);
+			return query is null
+				? new List<T>()
+				: await query.ToListAsync();
+		}
+
+		public async Task<List<int>> FilterGroupIdsAvailableForUser<T>(IEnumerable<int> groupIds, string userId, string courseId = null) where T : GroupBase
+		{
+			var query = await FilterGroupsAvailableForUser_Internal<T>(groupIds, userId, courseId);
+			return query is null
+				? new List<int>()
+				: await query
+					.Select(g => g.Id)
+					.ToListAsync();
+		}
+
+		[ItemCanBeNull]
+		private async Task<IQueryable<T>> FilterGroupsAvailableForUser_Internal<T>(IEnumerable<int> groupIds, string userId, [CanBeNull] string courseId = null) where T : GroupBase
+		{
+			groupIds = groupIds
+				.Distinct()
+				.ToArray();
+
+			var query = db.Set<T>()
+				.Where(g => groupIds.Contains(g.Id) && !g.IsDeleted);
+
+			var accessesQuery = query
+				.GroupJoin(
+					db.GroupAccesses,
+					g => g.Id,
+					ga => ga.GroupId,
+					(group, accesses) => new { group, accesses }
+				)
+				.SelectMany(
+					e => e.accesses.DefaultIfEmpty(),
+					(e, access) => new { e.group, access }
+				);
+
+			var isSysAdmin = await usersRepo.IsSystemAdministrator(userId);
+
+			if (courseId is not null)
+			{
+				var courseRole = await courseRolesRepo.GetRole(userId, courseId);
+				if (isSysAdmin || courseRole is CourseRoleType.CourseAdmin)
+					return query.Where(g => g.CourseId == courseId);
+
+				if (courseRole > CourseRoleType.Instructor)
+					return null;
+
+				return accessesQuery
+					.Where(e => e.group.CourseId == courseId)
+					.Where(e =>
+						e.group.OwnerId == userId ||
+						(e.access.UserId == userId && e.access.IsEnabled)
+					)
+					.Select(e => e.group)
+					.Distinct();
+			}
+
+			if (isSysAdmin)
+				return query;
+
+			var userRoles = await courseRolesRepo.GetRoles(userId);
+			var adminCourseIds = userRoles
+				.Where(kvp => kvp.Value == CourseRoleType.CourseAdmin)
+				.Select(kvp => kvp.Key)
+				.ToList();
+			var instructorCourseIds = userRoles
+				.Where(kvp => kvp.Value == CourseRoleType.Instructor)
+				.Select(kvp => kvp.Key)
+				.ToList();
+
+			if (adminCourseIds.Count + instructorCourseIds.Count == 0)
+				return null;
+
+			return accessesQuery
+				.Where(e =>
+					adminCourseIds.Contains(e.group.CourseId) ||
+					instructorCourseIds.Contains(e.group.CourseId) &&
+					(e.group.OwnerId == userId || (e.access.UserId == userId && e.access.IsEnabled))
+				)
+				.Select(e => e.group)
+				.Distinct();
 		}
 
 		public async Task<bool> IsManualCheckingEnabledForUserAsync(Course course, string userId)

@@ -5,11 +5,14 @@ import { getGroupId, getGroupName, renderGroupItem, renderGroupValue } from "./c
 import texts from "./GroupsSearch.texts";
 import styles from "./groupsSearch.less";
 import { roundInputs } from "../../../uiTheme";
+import cn from "classnames";
 
 interface Props {
 	searchGroups: (query: string) => Promise<ShortGroupInfo[]>;
 	groups: ShortGroupInfo[];
 	onChangeGroups: (groups: ShortGroupInfo[]) => void;
+
+	className?: string;
 
 	width?: number | string;
 	error?: boolean;
@@ -49,7 +52,11 @@ const GroupsSearchTokenInput: FC<Props> = (props) => {
 
 	return <ThemeContext.Provider value={ roundInputs }>
 		<TokenInput<ShortGroupInfo>
-			className={ styles.tokenInput }
+			className={ cn(
+				styles.input,
+				{[styles.notEmpty]: !!props.groups?.length},
+				props.className
+			) }
 			getItems={ getFilteredGroups }
 			selectedItems={ props.groups }
 			onValueChange={ props.onChangeGroups }

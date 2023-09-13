@@ -11,7 +11,6 @@ using Database.Repos.Users;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses;
@@ -186,77 +185,17 @@ namespace Ulearn.Web.Api.Controllers.Review
 
 			if (parameters.StudentsFilter is StudentsFilter.GroupIds)
 			{
-				parameters.GroupIds = parameters.GroupIds is null
-					? new List<int>()
-					: await GetValidGroupIds(parameters.GroupIds.Distinct().ToList(), isCourseAdmin);
+				parameters.GroupIds = parameters.GroupIds is { Count: > 0 }
+					? await groupsRepo.FilterGroupIdsAvailableForUser<SingleGroup>(parameters.GroupIds, UserId, parameters.CourseId)
+					: new List<int>();
 			}
 
 			if (parameters.StudentsFilter is StudentsFilter.StudentIds)
 			{
-				parameters.StudentIds = parameters.StudentIds is null
-					? new List<string>()
-					: await GetValidUserIds(parameters.StudentIds.Distinct().ToList(), isCourseAdmin);
+				parameters.StudentIds = parameters.StudentIds is { Count: > 0 }
+					? await usersRepo.FilterUserIdsAvailableForUser(parameters.StudentIds, UserId, parameters.CourseId)
+					: new List<string>();
 			}
-		}
-
-		private Task<List<int>> GetValidGroupIds(ICollection<int> groupIds, bool isCourseAdmin)
-		{
-			var validGroupsQuery = db.Groups
-				.Where(g => groupIds.Contains(g.Id) && !g.IsDeleted);
-			if (!isCourseAdmin)
-				validGroupsQuery = validGroupsQuery
-					.GroupJoin(
-						db.GroupAccesses,
-						g => g.Id,
-						ga => ga.GroupId,
-						(group, accesses) => new { group, accesses }
-					)
-					.SelectMany(
-						e => e.accesses.DefaultIfEmpty(),
-						(e, access) => new { e.group, access }
-					)
-					.Where(e => e.group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
-					.Select(e => e.group);
-
-			return validGroupsQuery
-				.Select(g => g.Id)
-				.Distinct()
-				.ToListAsync();
-		}
-
-		private Task<List<string>> GetValidUserIds(ICollection<string> userIds, bool isCourseAdmin)
-		{
-			var validUsersQuery = db.Users
-				.Where(u => userIds.Contains(u.Id) && !u.IsDeleted);
-			if (!isCourseAdmin)
-				validUsersQuery = validUsersQuery
-					.GroupJoin(
-						db.GroupMembers,
-						u => u.Id,
-						member => member.UserId,
-						(user, members) => new { user, members }
-					)
-					.SelectMany(
-						e => e.members,
-						(e, member) => new { e.user, member.Group }
-					)
-					.GroupJoin(
-						db.GroupAccesses,
-						e => e.Group.Id,
-						ga => ga.GroupId,
-						(e, accesses) => new { e.user, e.Group, accesses }
-					)
-					.SelectMany(
-						e => e.accesses.DefaultIfEmpty(),
-						(e, access) => new { e.user, e.Group, access }
-					)
-					.Where(e => e.Group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
-					.Select(e => e.user);
-
-			return validUsersQuery
-				.Select(u => u.Id)
-				.Distinct()
-				.ToListAsync();
 		}
 
 		private async Task<ManualCheckingQueueFilterOptions> BuildQueryFilterOptions(ReviewQueueFilterParameters parameters, bool reviewed)

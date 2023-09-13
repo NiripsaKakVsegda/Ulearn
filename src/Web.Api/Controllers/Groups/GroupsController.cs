@@ -9,10 +9,10 @@ using Database.Models;
 using Database.Repos;
 using Database.Repos.Groups;
 using Database.Repos.Users;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
 using Ulearn.Common.Api.Models.Responses;
 using Ulearn.Common.Extensions;
 using Ulearn.Core.Courses.Manager;
@@ -162,40 +162,30 @@ namespace Ulearn.Web.Api.Controllers.Groups
 		}
 
 		[HttpGet("by-ids")]
-		public async Task<ActionResult<GroupsByIdsResponse>> FindGroupsByIds([FromQuery] List<int> groupIds)
+		[Authorize]
+		public async Task<ActionResult<GroupsByIdsResponse>> FindGroupsByIds(
+			[FromQuery] List<int> groupIds,
+			[FromQuery] [CanBeNull] string courseId
+		)
 		{
-			const int maxRequestUsersCount = 100;
+			const int maxRequestGroupsCount = 100;
 
-			var isCourseAdmin = await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.CourseAdmin);
-			var isInstructor = isCourseAdmin || await courseRolesRepo.HasUserAccessTo_Any_Course(UserId, CourseRoleType.Instructor);
-			if (!isInstructor)
-				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of any course"));
+			if (groupIds.Count > maxRequestGroupsCount)
+				return StatusCode((int)HttpStatusCode.RequestEntityTooLarge, new ErrorResponse($"You cannot request more than {maxRequestGroupsCount} groups"));
 
-			if (groupIds.Count > maxRequestUsersCount)
-				return BadRequest(new ErrorResponse($"You cannot request more than {maxRequestUsersCount} groups"));
+			var isSysAdmin = await IsSystemAdministratorAsync();
 
-			var groupsQuery = db.SingleGroups
-				.Where(g => groupIds.Contains(g.Id) && !g.IsDeleted);
-			if (!isCourseAdmin)
-				groupsQuery = groupsQuery
-					.GroupJoin(
-						db.GroupAccesses,
-						g => g.Id,
-						ga => ga.GroupId,
-						(group, accesses) => new { group, accesses }
-					)
-					.SelectMany(
-						e => e.accesses.DefaultIfEmpty(),
-						(e, access) => new { e.group, access }
-					)
-					.Where(e => e.group.OwnerId == UserId || (e.access.UserId == UserId && e.access.IsEnabled))
-					.Select(e => e.group);
+			if (courseId is null && !isSysAdmin)
+				return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("Only system administrator can request groups in all courses"));
 
-			var groups = await groupsQuery
-				.Distinct()
-				.Include(g => g.Owner)
-				.Include(g => g.Members)
-				.ToListAsync();
+			if (courseId is not null)
+			{
+				var isInstructor = isSysAdmin || await courseRolesRepo.HasUserAccessToCourse(UserId, courseId, CourseRoleType.Instructor);
+				if (!isInstructor)
+					return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse("You should be at least instructor of course"));
+			}
+
+			var groups = await groupsRepo.FindGroupsFilterAvailableForUser<SingleGroup>(groupIds, UserId, courseId);
 
 			return new GroupsByIdsResponse
 			{

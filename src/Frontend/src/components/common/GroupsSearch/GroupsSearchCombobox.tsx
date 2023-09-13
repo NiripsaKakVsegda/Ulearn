@@ -4,11 +4,15 @@ import { ComboBox, MenuItemState, ThemeContext } from "ui";
 import texts from "./GroupsSearch.texts";
 import { roundInputs } from "../../../uiTheme";
 import { getGroupId, getGroupName, renderGroupItem, renderGroupValue } from "./common";
+import cn from "classnames";
+import styles from "./groupsSearch.less";
 
 interface Props {
 	searchGroups: (query: string) => Promise<ShortGroupInfo[]>;
 	group?: ShortGroupInfo;
 	onSelectGroup: (group?: ShortGroupInfo) => void;
+
+	className?: string;
 
 	clearInputAfterSelect?: boolean;
 
@@ -39,6 +43,7 @@ const GroupsSearchCombobox: FC<Props> = (props) => {
 
 	return <ThemeContext.Provider value={ roundInputs }>
 		<ComboBox<ShortGroupInfo>
+			className={ cn(styles.input, props.className) }
 			getItems={ props.searchGroups }
 			value={ props.group }
 			onValueChange={ selectGroup }

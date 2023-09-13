@@ -6,7 +6,9 @@ import {
 	GroupInfo,
 	GroupsByIdsResponse,
 	GroupsInfoResponse,
-	GroupsListParameters, GroupsSearchParameters, GroupsSearchResponse,
+	GroupsListParameters,
+	GroupsSearchParameters,
+	GroupsSearchResponse,
 	GroupType,
 	SuperGroupsListResponse
 } from "../../../../models/groups";
@@ -29,7 +31,10 @@ export const groupsApi = createApi({
 				}
 			})
 		}),
-		findGroupsByIds: build.query<GroupsByIdsResponse, { groupIds: number[] }>({
+		findGroupsByIds: build.query<GroupsByIdsResponse, {
+			groupIds: number[],
+			courseId?: string
+		}>({
 			query: (params) => ({
 				url: `by-ids${ buildQuery(params) }`
 			})

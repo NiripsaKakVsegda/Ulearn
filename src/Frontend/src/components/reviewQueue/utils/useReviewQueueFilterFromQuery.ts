@@ -39,7 +39,7 @@ export default function useReviewQueueFilterFromQuery(course?: CourseInfo, defau
 
 		if(filter.studentsFilter === StudentsFilter.StudentIds) {
 			const students = filter.studentIds
-				? (await findUsersByIdsQuery({ userIds: filter.studentIds }).unwrap()).foundUsers
+				? (await findUsersByIdsQuery({ userIds: filter.studentIds.slice(0, 100), courseId: course.id }).unwrap()).foundUsers
 				: [];
 			const studentIds = students.map(s => s.id);
 
@@ -52,7 +52,7 @@ export default function useReviewQueueFilterFromQuery(course?: CourseInfo, defau
 
 		if(filter.studentsFilter === StudentsFilter.GroupIds) {
 			const groups = filter.groupIds
-				? (await findGroupsByIdsQuery({ groupIds: filter.groupIds }).unwrap()).foundGroups
+				? (await findGroupsByIdsQuery({ groupIds: filter.groupIds.slice(0, 100), courseId: course.id }).unwrap()).foundGroups
 				: [];
 			const groupIds = groups.map(g => g.id);
 

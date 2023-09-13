@@ -4,11 +4,15 @@ import texts from "./UsersSearch.texts";
 import { roundInputs } from "../../../uiTheme";
 import { getStudentId, getUserName, renderUserItem, renderUserValue } from "./common";
 import { ShortUserInfo } from "../../../models/users";
+import cn from "classnames";
+import styles from "./usersSearch.less";
 
 interface Props {
 	searchUsers: (query: string) => Promise<ShortUserInfo[]>;
 	user?: ShortUserInfo;
 	onSelectUser: (user?: ShortUserInfo) => void;
+
+	className?: string;
 
 	clearInputAfterSelect?: boolean;
 
@@ -39,6 +43,7 @@ const UsersSearchCombobox: FC<Props> = (props) => {
 
 	return <ThemeContext.Provider value={ roundInputs }>
 		<ComboBox<ShortUserInfo>
+			className={ cn(styles.input, props.className) }
 			getItems={ props.searchUsers }
 			value={ props.user }
 			onValueChange={ selectUser }

@@ -6,11 +6,14 @@ import styles from "./usersSearch.less";
 import { roundInputs } from "../../../uiTheme";
 import { ShortUserInfo } from "../../../models/users";
 import { getNameWithLastNameFirst } from "../Profile/Profile";
+import cn from "classnames";
 
 interface Props {
 	searchUsers: (query: string) => Promise<ShortUserInfo[]>;
 	users: ShortUserInfo[];
 	onChangeUsers: (users: ShortUserInfo[]) => void;
+
+	className?: string;
 
 	width?: number | string;
 	error?: boolean;
@@ -50,7 +53,11 @@ const UsersSearchTokenInput: FC<Props> = (props) => {
 
 	return <ThemeContext.Provider value={ roundInputs }>
 		<TokenInput<ShortUserInfo>
-			className={ styles.tokenInput }
+			className={ cn(
+				styles.input,
+				{[styles.notEmpty]: !!props.users?.length},
+				props.className
+			) }
 			getItems={ getFilteredUsers }
 			selectedItems={ props.users }
 			onValueChange={ props.onChangeUsers }

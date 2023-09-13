@@ -27,5 +27,7 @@ namespace Database.Repos.Users
 		Task<List<string>> FindUsersBySocialProviderKey(string providerKey);
 		Task<List<ApplicationUser>> FindUsersByConfirmedEmails(IEnumerable<string> emails);
 		Task<List<ApplicationUser>> FindUsersByConfirmedEmail(string email);
+		Task<List<ApplicationUser>> FindUsersFilterAvailableForUser(IEnumerable<string> userIds, string userId, [CanBeNull] string courseId = null);
+		Task<List<string>> FilterUserIdsAvailableForUser(IEnumerable<string> userIds, string userId, string courseId = null);
 	}
 }

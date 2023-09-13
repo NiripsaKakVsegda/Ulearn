@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Models;
+using Database.Repos;
 using Database.Repos.Groups;
+using Database.Repos.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
@@ -22,9 +24,14 @@ namespace Database.Core.Tests.Repos.Groups
 
 			var groupsCreatorAndCopier = serviceProvider.GetService<IGroupsCreatorAndCopier>();
 			var manualCheckingsForOldSolutionsAdder = new Mock<IManualCheckingsForOldSolutionsAdder>();
+			var usersRepo = new Mock<IUsersRepo>();
+			var courseRolesRepo = new Mock<ICourseRolesRepo>();
 
 			groupsRepo = new GroupsRepo(
-				db, groupsCreatorAndCopier, manualCheckingsForOldSolutionsAdder.Object
+				db, groupsCreatorAndCopier,
+				manualCheckingsForOldSolutionsAdder.Object,
+				usersRepo.Object,
+				courseRolesRepo.Object
 			);
 		}
 

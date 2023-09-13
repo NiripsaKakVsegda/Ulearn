@@ -230,7 +230,7 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 	async function buildFilterState(params: InstructorReviewFilterSearchParams): Promise<ReviewQueueFilterState> {
 		if(params.grouping === Grouping.GroupStudents && params.groupingItemId) {
 			const students =
-				(await findUsersByIdsQuery({ userIds: [params.groupingItemId] }).unwrap()).foundUsers;
+				(await findUsersByIdsQuery({ userIds: [params.groupingItemId], courseId }).unwrap()).foundUsers;
 			const studentIds = students.map(s => s.id);
 
 			return {
@@ -242,7 +242,7 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 		if(params.studentsFilter === StudentsFilter.StudentIds) {
 			const students = params.studentIds?.length
-				? (await findUsersByIdsQuery({ userIds: params.studentIds }).unwrap()).foundUsers
+				? (await findUsersByIdsQuery({ userIds: params.studentIds.slice(0, 100), courseId }).unwrap()).foundUsers
 				: [];
 			const studentIds = students.map(s => s.id);
 
@@ -255,7 +255,7 @@ const ReviewNavigationButtonsConnected: FC<Props> = ({ slideInfo }) => {
 
 		if(params.studentsFilter === StudentsFilter.GroupIds) {
 			const groups = params.groupIds?.length
-				? (await findGroupsByIdsQuery({ groupIds: params.groupIds }).unwrap()).foundGroups
+				? (await findGroupsByIdsQuery({ groupIds: params.groupIds.slice(0, 100), courseId }).unwrap()).foundGroups
 				: [];
 			const groupIds = groups.map(g => g.id);
 
