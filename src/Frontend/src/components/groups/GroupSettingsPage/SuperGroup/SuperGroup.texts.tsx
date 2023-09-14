@@ -163,7 +163,7 @@ export default {
 		},
 		buildStudentBelongsToOtherGroup: (studentName: string, moveInfo: MoveStudentInfo) => {
 			const from = moveInfo.fromGroupName
-				? ', но вступил в «${ moveInfo.fromGroupName }»'
+				? `, но вступил в «${ moveInfo.fromGroupName }»`
 				: '';
 			return `${ studentName } должен находиться в группе «${ moveInfo.toGroupName }»${ from }`;
 		},
