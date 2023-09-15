@@ -225,8 +225,23 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			);
 		}
 
+		const totalInfo = Object
+			.values(extractionResult.groups)
+			.reduce(
+				(pv, cv) => {
+					pv.joined += cv.joinedStudents?.length ?? 0;
+					pv.total += cv.studentNames?.length ?? 0;
+					return pv;
+				},
+				{
+					joined: 0,
+					total: 0,
+				}
+			);
+
 		return (
 			<div>
+				{ texts.buildGroupsMeta(totalInfo.joined, totalInfo.total) }
 				{ renderGroupsInfo(extractionResult) }
 				{ renderValidatingResults(extractionResult.validatingResults) }
 				{
@@ -342,7 +357,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 			case ValidationType.studentBelongsToOtherGroup: {
 				const neededNoActions = (!neededActions || neededActionsCount === 0);
 				return {
-					title: <>{ texts.validating.studentBelongsToOtherGroup }</>,
+					title: <>{ texts.validating.buildStudentBelongsToOtherGroupMeta(Object.keys(validationResult.neededMoves).length) } </>,
 					content: <>
 						<ul>
 							{ Object
@@ -403,17 +418,19 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 		return (
 			<>
 				<p>
-					<Button use={'link'} data-id={ SettingsType.settings } onClick={ onSettingsTabChangeHandler }>
+					<Button use={ 'link' } data-id={ SettingsType.settings } onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.settings] }
 					</Button>
 				</p>
 				<p>
-					<Button disabled use={'link'} data-id={ SettingsType.additional } onClick={ onSettingsTabChangeHandler }>
+					<Button disabled use={ 'link' } data-id={ SettingsType.additional }
+							onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.additional] }
 					</Button>
 				</p>
 				<p>
-					<Button disabled use={'link'} data-id={ SettingsType.deadlines } onClick={ onSettingsTabChangeHandler }>
+					<Button disabled use={ 'link' } data-id={ SettingsType.deadlines }
+							onClick={ onSettingsTabChangeHandler }>
 						{ SettingsToTitle[SettingsType.deadlines] }
 					</Button>
 				</p>
@@ -439,7 +456,7 @@ function SuperGroupPage(props: SuperGroupProps): React.ReactElement {
 				return <ManageMembers
 					groupId={ groupInfo.id }
 					courseId={ groupInfo.courseId }
-				/>
+				/>;
 			}
 			case SettingsType.additional:
 				return 'Функциональность пока недоступна';

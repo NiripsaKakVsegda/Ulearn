@@ -30,13 +30,16 @@ export default {
 
 		return Object
 			.entries(extractionResult.groups)
-			.sort((a ,b) => a[0].localeCompare(b[0]))
+			.sort((a, b) => a[0].localeCompare(b[0]))
 			.map(([groupName, superGroupItem]) => {
 				let text = '';
 				let additionalAction = <></>;
 				const groupNameContent = superGroupItem.groupId
 					? <Link onClick={ navigateToGroup }
-							href={ constructPathToGroup(courseId, superGroupItem.groupId) + `/${ SettingsType.settings }` }>
+							href={ constructPathToGroup(
+								courseId,
+								superGroupItem.groupId
+							) + `/${ SettingsType.settings }` }>
 						{ groupName }
 					</Link>
 					: groupName;
@@ -83,6 +86,14 @@ export default {
 					content: <>{ groupNameContent } { text } { additionalAction }</>,
 				});
 			});
+	},
+
+	buildGroupsMeta: (joined: number, total: number) => {
+		return (
+			<p>
+				Всего в подгруппы { getPluralForm(joined, 'вступил', 'вступило', 'вступило') } { joined } из { total }
+			</p>
+		);
 	},
 
 	instruction: <>Супер-группа позволяет создавать группы используя гугл-таблицу (<Link
@@ -133,8 +144,10 @@ export default {
 		}
 
 		if(toCreateCount > 0) {
-			text += ` ${ getPluralFutureTense(toCreateCount) } ${ getPluralVerb(toCreateCount,
-				true) } ${ toCreateCount } ${ getPluralCreationCount(
+			text += ` ${ getPluralFutureTense(toCreateCount) } ${ getPluralVerb(
+				toCreateCount,
+				true
+			) } ${ toCreateCount } ${ getPluralCreationCount(
 				toCreateCount) }`;
 		}
 
@@ -167,11 +180,18 @@ export default {
 				: '';
 			return `${ studentName } должен находиться в группе «${ moveInfo.toGroupName }»${ from }`;
 		},
+		buildStudentBelongsToOtherGroupMeta: (count: number) => {
+			return `Текущее распределение студентов по группам не соответствует таблице (${ count } ${ getPluralForm(
+				count,
+				'несоответствие',
+				'несоответствия',
+				'несоответствий'
+			) }):`;
+		},
 
 		sameName: `В таблице есть студенты с одинаковыми именами:`,
 		sameNameHint: `Эти студенты не смогут воспользоваться ссылкой для вступления в авто группу. Их нужно пригласить вручную через ссылку-приглашение для отдельной группы`,
 
-		studentBelongsToOtherGroup: `Текущее распределение студентов по группам не соответствует таблице:`,
 		studentBelongsToOtherGroupButtonText: `Перераспределить студентов`,
 		studentBelongsToOtherGroupCreateFirstHint: `Создайте все группы, потом вы сможете перераспределить студентов.`,
 		studentBelongsToOtherGroupHint: 'Вы можете перераспределить этих студентов. Тогда они будут удалены из старых групп и добавлены в новые в соответсвии с таблицей.',
