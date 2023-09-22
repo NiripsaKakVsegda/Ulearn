@@ -178,6 +178,7 @@ public class HttpMethods : IHttpMethods
 	private HttpClient HttpClient()
 	{
 		var client = new HttpClient();
+		client.Timeout = TimeSpan.FromMinutes(5);
 		client.DefaultRequestHeaders.Authorization =
 			new AuthenticationHeaderValue("Bearer", config.JwtToken);
 		return client;

@@ -2,6 +2,7 @@
 
 namespace CourseToolHotReloader.Dtos;
 
+#nullable disable
 public class LoginPasswordParameters
 {
 	[JsonPropertyName("login")]

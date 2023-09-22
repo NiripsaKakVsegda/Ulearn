@@ -89,7 +89,7 @@ public class ConsoleApplication : IApplication
 			SendFullArchive = false
 		};
 
-		ConsoleWorker.WriteLine("Загружаем курс на Ulearn...");
+		ConsoleWorker.WriteLine($"Загружаем курс {courseId} на Ulearn...");
 		var result = await coursesManager.UploadCourse(course, userId)
 			.RefineError("Не удалось добавить курс");
 		if (!result.IsSuccess)
@@ -99,7 +99,7 @@ public class ConsoleApplication : IApplication
 		}
 
 		config.Courses.Add(course);
-		ConsoleWorker.WriteLine($"Курс {course.CourseId} был добавлен в список отслеживаемых");
+		ConsoleWorker.WriteLine($"Курс {course.CourseId} добавлен в список отслеживаемых");
 		config.Flush().OnFail(ConsoleWorker.WriteError);
 
 		OpenCourseInBrowser(courseId, userId);
@@ -345,13 +345,13 @@ public class ConsoleApplication : IApplication
 
 	private async Task ReloadCourseAsync(CourseInfo course, string userId)
 	{
-		ConsoleWorker.WriteLine("Загружаем курс на Ulearn...");
+		ConsoleWorker.WriteLine($"Загружаем курс {course.CourseId} на Ulearn...");
 		var result = await coursesManager.UploadCourse(course, userId)
 			.RefineError($"Не удалось перезагрузить курс {course.CourseId}")
 			.OnFail(ConsoleWorker.WriteError);
 
 		if (result.IsSuccess)
-			ConsoleWorker.WriteLine($"Курс {course.CourseId} был успешно перезагружен.");
+			ConsoleWorker.WriteLine($"Курс {course.CourseId} успешно перезагружен.");
 	}
 
 	private static void PrintCourses(IReadOnlyList<CourseInfo> courses)
@@ -395,7 +395,7 @@ public class ConsoleApplication : IApplication
 	{
 		var courseUrl = Utils.BuildTempCourseUrl(config.SiteUrl, courseId, userId);
 		Utils.OpenInBrowser(courseUrl)
-			.RefineError("Ошибка при попытке открыть курс в браузере")
+			.RefineError($"Ошибка при попытке открыть курс {courseId} в браузере")
 			.OnFail(ConsoleWorker.WriteError);
 	}
 }

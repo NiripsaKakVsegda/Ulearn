@@ -2,6 +2,9 @@
 
 namespace CourseToolHotReloader.Dtos;
 
+#nullable disable
+// ReSharper disable ClassNeverInstantiated.Global
+
 public class AccountResponse
 {
 	[JsonPropertyName("user")]

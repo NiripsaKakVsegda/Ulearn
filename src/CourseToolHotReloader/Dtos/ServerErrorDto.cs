@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+#nullable disable
 
 namespace CourseToolHotReloader.Dtos;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ServerErrorDto
 {
 	[JsonPropertyName("status")]

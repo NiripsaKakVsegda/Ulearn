@@ -7,6 +7,7 @@ using CourseToolHotReloader.Application;
 using CourseToolHotReloader.Configs;
 using CourseToolHotReloader.Dtos;
 using CourseToolHotReloader.Infrastructure;
+using Vostok.Logging.Abstractions;
 
 namespace CourseToolHotReloader.ApiClient;
 
@@ -36,6 +37,7 @@ public interface IUlearnApiClient
 
 internal class UlearnApiClient : IUlearnApiClient
 {
+	private static ILog Log => LogProvider.Get();
 	private readonly IConfig config;
 	private readonly IHttpMethods httpMethods;
 
@@ -75,7 +77,9 @@ internal class UlearnApiClient : IUlearnApiClient
 	{
 		try
 		{
+			Log.Info($"Пакую изменения курса {courseId} в zip-архив из {path}...");
 			using var ms = ZipUpdater.CreateZipByUpdates(path, updates, deletedFiles, excludeCriterias);
+			Log.Info($"Отправляю изменения курса {courseId} на сервер. Размер zip: {Math.Ceiling(ms.Length / 1024.0)} Kb");
 			return await httpMethods.UploadCourseChanges(ms, courseId, token);
 		}
 		catch (Exception e)
@@ -93,7 +97,9 @@ internal class UlearnApiClient : IUlearnApiClient
 	{
 		try
 		{
+			Log.Info($"Пакую курс {courseId} в zip-архив из {path}...");
 			using var ms = ZipUpdater.CreateZipByFolder(path, excludeCriterias);
+			Log.Info($"Отправляю курс {courseId} на сервер. Размер zip: {Math.Ceiling(ms.Length / 1024.0)} Kb");
 			return await httpMethods.UploadFullCourse(ms, courseId, token);
 		}
 		catch (Exception e)

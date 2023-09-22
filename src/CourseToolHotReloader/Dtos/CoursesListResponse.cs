@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace CourseToolHotReloader.Dtos;
+#nullable disable
 
 public class CoursesListResponse
 {
