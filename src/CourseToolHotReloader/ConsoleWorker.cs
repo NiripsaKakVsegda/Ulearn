@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security;
+using CourseToolHotReloader.Infrastructure;
 using Vostok.Logging.Abstractions;
 
 namespace CourseToolHotReloader;
@@ -76,6 +77,12 @@ public static class ConsoleWorker
 	{
 		Console.WriteLine($"Авторизуйтесь на {tokenUrl}, получите токен и вставьте его сюда.");
 		Console.Write("> ");
+		
+		Utils.OpenInBrowser(tokenUrl)
+			.RefineError($"Ошибка при попытке открыть страницу авторизации в браузере")
+			.OnFail(WriteError);
+
+		
 		var token = new SecureString();
 		while (true)
 		{
