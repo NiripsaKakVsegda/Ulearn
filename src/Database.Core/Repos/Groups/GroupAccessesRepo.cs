@@ -190,7 +190,7 @@ namespace Database.Repos.Groups
 				.ToList();
 		}
 
-		public async Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType)
+		public async Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType = GroupQueryType.SingleGroup)
 		{
 			if (!await courseRolesRepo.HasUserAccessToCourse(userId, courseId, CourseRoleType.Instructor).ConfigureAwait(false))
 				return new List<GroupBase>();
@@ -198,14 +198,19 @@ namespace Database.Repos.Groups
 			return await InternalGetAvailableForUserGroupsAsync(new List<string> { courseId }, userId, needEditAccess, actual, archived, groupType).ConfigureAwait(false);
 		}
 
-		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived)
+		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType = GroupQueryType.SingleGroup)
 		{
 			return InternalGetAvailableForUserGroupsAsync(coursesIds, userId, needEditAccess, actual, archived);
 		}
 
-		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string userId, bool needEditAccess, bool actual, bool archived)
+		public Task<List<GroupBase>> GetAvailableForUserGroupsAsync(
+			string userId,
+			bool needEditAccess,
+			bool actual,
+			bool archived,
+			GroupQueryType groupType = GroupQueryType.SingleGroup)
 		{
-			return InternalGetAvailableForUserGroupsAsync(null, userId, needEditAccess, actual, archived);
+			return InternalGetAvailableForUserGroupsAsync(null, userId, needEditAccess, actual, archived, groupType);
 		}
 
 		/* Instructor can view student if he is a course admin or if student is member of one of accessible for instructor group */
@@ -244,7 +249,7 @@ namespace Database.Repos.Groups
 
 		public async Task<List<GroupMember>> GetMembersOfAllGroupsVisibleForUserAsync(string userId)
 		{
-			var groups = await GetAvailableForUserGroupsAsync(userId, false, actual: true, archived: true).ConfigureAwait(false);
+			var groups = await GetAvailableForUserGroupsAsync(userId, false, actual: true, archived: true, GroupQueryType.All).ConfigureAwait(false);
 			return await groupMembersRepo.GetGroupsMembersAsync(groups.Select(g => g.Id).ToList()).ConfigureAwait(false);
 		}
 

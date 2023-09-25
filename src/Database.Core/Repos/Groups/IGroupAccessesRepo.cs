@@ -16,9 +16,9 @@ namespace Database.Repos.Groups
 		Task<bool> HasUserGrantedAccessToGroupOrIsOwnerAsync(int groupId, string userId);
 		Task<bool> IsGroupVisibleForUserAsync(int groupId, string userId);
 		Task<bool> IsGroupVisibleForUserAsync(GroupBase group, string userId);
-		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType);
-		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived);
-		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string userId, bool needEditAccess, bool actual, bool archived);
+		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string courseId, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType = GroupQueryType.SingleGroup);
+		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(List<string> coursesIds, string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType = GroupQueryType.SingleGroup);
+		Task<List<GroupBase>> GetAvailableForUserGroupsAsync(string userId, bool needEditAccess, bool actual, bool archived, GroupQueryType groupType = GroupQueryType.SingleGroup);
 		Task<bool> HasInstructorViewAccessToStudentGroup(string instructorId, string studentId);
 		Task<bool> HasInstructorEditAccessToStudentGroup(string instructorId, string studentId);
 		Task<List<string>> GetCoursesWhereUserCanSeeAllGroupsAsync(string userId, IEnumerable<string> coursesIds);

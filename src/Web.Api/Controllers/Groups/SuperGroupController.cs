@@ -309,6 +309,7 @@ public class SuperGroupController : BaseGroupController
 					(member, name: $"{member.User.LastName.Trim()} {member.User.FirstName.Trim()}".Replace('ё', 'е'))
 				}
 			)
+			.Distinct()
 			.ToDictionary(
 				e => e.name,
 				e => e.member,
