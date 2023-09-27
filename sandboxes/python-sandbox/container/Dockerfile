@@ -3,7 +3,7 @@ FROM python:3.11-slim
 ENV TZ=Europe/Ekaterinburg
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y wget && apt-get install -y curl \
-	&& apt-get install -y gcc && apt-get install -y nano && rm -rf /var/lib/apt/lists/*
+	&& apt-get install -y gcc && apt-get install -y nano && apt-get install -y libglib2.0-0 libgl1-mesa-glx && rm -rf /var/lib/apt/lists/*
 COPY ./app/ /app/
 
 WORKDIR app
