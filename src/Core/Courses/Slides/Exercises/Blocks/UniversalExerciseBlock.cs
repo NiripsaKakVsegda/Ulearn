@@ -143,7 +143,7 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 			ExerciseInitialCode = NoStudentZip
 				? GetNoStudentZipInitialCode(fp)
 				: ExerciseInitialCode ?? $"{commentSymbols} Вставьте сюда финальное содержимое файла {UserCodeFilePath}";
-			Validator.ValidatorName = string.Join(" ", Language.GetName(), Validator.ValidatorName ?? "");
+			Validator.ValidatorName = string.Join(" ", Validator.ValidatorName ?? "");
 			Extractor = Region != null
 				? new CommonSingleRegionExtractor((fp.InitialUserCodeFile.Exists ? fp.InitialUserCodeFile : fp.UserCodeFile).ContentAsUtf8())
 				: null;
@@ -185,10 +185,15 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 
 		public override SolutionBuildResult BuildSolution(string userWrittenCode, Language? language = null)
 		{
+			var validatorCopy = new ValidatorDescription
+			{
+				ValidatorName = Validator.ValidatorName,
+				RemoveDefaults = Validator.RemoveDefaults
+			};
 			if (language != null)
-				Validator.ValidatorName = string.Join(" ", language.GetName(), Validator.ValidatorName ?? "");
+				validatorCopy.ValidatorName = string.Join(" ", language.GetName(), Validator.ValidatorName ?? "");
 
-			var validator = ValidatorsRepository.Get(Validator);
+			var validator = ValidatorsRepository.Get(validatorCopy);
 			var fullCode = userWrittenCode;
 			if (validator != null && Extractor != null)
 			{

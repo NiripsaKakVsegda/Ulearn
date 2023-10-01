@@ -62,9 +62,10 @@ namespace Ulearn.Core.Courses.Slides.Exercises.Blocks
 		public RunnerSubmission CreateSubmission(string submissionId, string code, Language language, string courseDirectory)
 		{
 			var submission = base.CreateSubmission(submissionId, code, courseDirectory);
-			if (!(submission is CommandRunnerSubmission commandRunnerSubmission))
+			if (submission is not CommandRunnerSubmission commandRunnerSubmission)
 				return submission;
 
+			commandRunnerSubmission.Language = language;
 			commandRunnerSubmission.RunCommand = RunCommandWithArguments(language);
 
 			return commandRunnerSubmission;
