@@ -218,3 +218,4 @@ src/uLearn\.Web/Courses
 *.less.d.ts
 
 !.gitkeep
+appsettings.local.json

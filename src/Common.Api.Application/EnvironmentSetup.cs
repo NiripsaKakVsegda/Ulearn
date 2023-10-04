@@ -90,8 +90,8 @@ namespace Ulearn.Common.Api
 				.CombineWith(new JsonFileSource("appsettings.json"))
 				.CombineWith(new JsonFileSource("appsettings." + (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production") + ".json"));
 			var environmentName = Environment.GetEnvironmentVariable("UlearnEnvironmentName");
-			if (environmentName != null && environmentName.ToLower().Contains("local"))
-				configurationSource = configurationSource.CombineWith(new JsonFileSource("appsettings.local.json"));
+			//if (environmentName != null && environmentName.ToLower().Contains("local"))
+			configurationSource = configurationSource.CombineWith(new JsonFileSource("appsettings.local.json"));
 			return configurationSource;
 		}
 	}
