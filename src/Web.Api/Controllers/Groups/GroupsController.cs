@@ -224,7 +224,7 @@ namespace Ulearn.Web.Api.Controllers.Groups
 			});
 		}
 
-		public async Task<IEnumerable<GroupBase>> SearchGroups(GroupType? groupType, GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false) =>
+		private async Task<IEnumerable<GroupBase>> SearchGroups(GroupType? groupType, GroupsSearchQueryModel queryModel, bool instructorIdExcluded = false) =>
 			groupType switch
 			{
 				GroupType.SingleGroup => await groupsRepo.SearchGroups<SingleGroup>(queryModel, instructorIdExcluded),
