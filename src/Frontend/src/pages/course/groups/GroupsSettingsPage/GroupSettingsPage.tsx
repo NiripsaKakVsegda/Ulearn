@@ -93,7 +93,7 @@ function GroupSettingsPage(props: Props) {
 			case GroupSettingsTab.DeadLines:
 				return <>
 					<GroupDeadLines
-						courseId={ courseId }
+						courseId={ courseId.toLowerCase() }
 						groupId={ groupId }
 						user={ account }
 					/>

@@ -17,7 +17,7 @@ export const deadLinesApi = createApi({
 			query: ({ courseId, groupId }) => ({
 				url: '',
 				params: {
-					courseId,
+					courseId: courseId.toLowerCase(),
 					groupId
 				}
 			})
@@ -28,7 +28,7 @@ export const deadLinesApi = createApi({
 				method: HttpMethods.POST,
 				params: {
 					...deadLine,
-					courseId: deadLine.courseId,
+					courseId: deadLine.courseId.toLowerCase(),
 					userIds: deadLine.userIds === null ? undefined : deadLine.userIds,
 					slideType: deadLine.slideType === null ? DeadLineSlideType.All : deadLine.slideType,
 					slideValue: deadLine.slideValue === null ? undefined : deadLine.slideValue,
@@ -41,7 +41,7 @@ export const deadLinesApi = createApi({
 				queryFulfilled.then(({ data: createdDeadLine }) => {
 					dispatch(deadLinesApi.util.updateQueryData(
 						'getDeadLines',
-						{ courseId: deadLine.courseId, groupId: deadLine.groupId },
+						{ courseId: deadLine.courseId.toLowerCase(), groupId: deadLine.groupId },
 						(draft) => {
 							draft.deadLines.push(createdDeadLine);
 						}
@@ -66,7 +66,7 @@ export const deadLinesApi = createApi({
 				queryFulfilled.then(() => {
 					dispatch(deadLinesApi.util.updateQueryData(
 						'getDeadLines',
-						{ courseId: deadLine.courseId, groupId: deadLine.groupId },
+						{ courseId: deadLine.courseId.toLowerCase(), groupId: deadLine.groupId },
 						(draft) => {
 							const updatedIndex = draft.deadLines
 								.findIndex(sourceDeadLine => sourceDeadLine.id === deadLine.id);
@@ -87,7 +87,7 @@ export const deadLinesApi = createApi({
 				queryFulfilled.then(() => {
 					dispatch(deadLinesApi.util.updateQueryData(
 						'getDeadLines',
-						{ courseId: deadLine.courseId, groupId: deadLine.groupId },
+						{ courseId: deadLine.courseId.toLowerCase(), groupId: deadLine.groupId },
 						(draft) => {
 							draft.deadLines = draft.deadLines
 								.filter(source => source.id !== deadLine.id);

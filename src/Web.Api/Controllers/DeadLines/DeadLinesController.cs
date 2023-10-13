@@ -80,7 +80,7 @@ namespace Ulearn.Web.Api.Controllers.DeadLines
 			if (!isInstructor)
 				return Forbid($"You do not have an access to add dead lines in course {courseId}");
 
-			var deadLine = await deadLinesRepo.AddDeadLine(courseId, groupId, unitId, slideType, slideValue, userIds?.Count == 0 ? null : userIds, date, scorePercent);
+			var deadLine = await deadLinesRepo.AddDeadLine(courseId.ToLower(), groupId, unitId, slideType, slideValue, userIds?.Count == 0 ? null : userIds, date, scorePercent);
 
 			return deadLine;
 		}
