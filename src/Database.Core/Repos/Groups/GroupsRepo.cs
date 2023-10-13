@@ -370,7 +370,11 @@ namespace Database.Repos.Groups
 		/// </summary>
 		public Task<List<string>> GetMyGroupsMembers(string courseId, string userId, bool includeArchived = false)
 		{
-			var groups = db.SingleGroups
+			var singleGroups = db.SingleGroups
+				.Where(g => !g.IsDeleted && g.CourseId == courseId);
+			if (!includeArchived)
+				singleGroups = singleGroups.Where(g => !g.IsArchived);
+			var groups = singleGroups
 				.GroupJoin(
 					db.GroupAccesses,
 					g => g.Id,
@@ -386,9 +390,6 @@ namespace Database.Repos.Groups
 					(e.access != null && e.access.UserId == userId && e.access.IsEnabled)
 				)
 				.Select(e => e.group);
-
-			if (!includeArchived)
-				groups = groups.Where(g => !g.IsArchived);
 
 			var userIds = groups
 				.SelectMany(g => g.Members)
