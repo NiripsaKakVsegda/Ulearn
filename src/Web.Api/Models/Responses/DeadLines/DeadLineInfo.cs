@@ -44,7 +44,7 @@ namespace Ulearn.Web.Api.Models.Responses.DeadLines
 			{
 				Id = deadLine.Id,
 				Date = deadLine.Date,
-				CourseId = deadLine.CourseId,
+				CourseId = deadLine.CourseId.ToLower(),
 				GroupId = deadLine.GroupId,
 				UnitId = deadLine.UnitId,
 				SlideType = deadLine.SlideType,
