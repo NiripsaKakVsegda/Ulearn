@@ -15,7 +15,7 @@ namespace GiftsGranter
 	{
 		private static ILog Log => LogProvider.Get().ForContext(typeof(StaffClient));
 		private readonly string clientAuth;
-		private readonly string passportUri = "https://passport.skbkontur.ru/v3/connect/token";
+		private readonly string passportUri = "https://passport.skbkontur.ru/connect/token";
 		private string authToken;
 
 		/// <param name="clientAuth">format: "clientId:clientSecret"</param>
