@@ -186,7 +186,6 @@ namespace Ulearn.Web.Api.Controllers
 		{
 			var userId = User.GetUserId();
 			var isSystemAdministrator = await usersRepo.IsSystemAdministrator(userId);
-			var visibleCourses = await unitsRepo.GetVisibleCourses();
 
 			var rolesByCourse = (await courseRolesRepo.GetRoles(userId).ConfigureAwait(false))
 				.Where(kvp => kvp.Value != CourseRoleType.Student).ToList();
@@ -204,9 +203,7 @@ namespace Ulearn.Web.Api.Controllers
 					}
 				)
 				.ToList();
-			var coursesInWhichUserHasAnyRole = new HashSet<string>(rolesByCourse.Select(kvp => kvp.Key), StringComparer.OrdinalIgnoreCase);
-			var groupsWhereIAmStudent = (await groupMembersRepo.GetUserGroupsAsync<SingleGroup>(userId).ConfigureAwait(false))
-				.Where(g => visibleCourses.Contains(g.CourseId) || coursesInWhichUserHasAnyRole.Contains(g.CourseId) || isSystemAdministrator);
+			var groupsWhereIAmStudent = await groupMembersRepo.GetUserGroupsAsync<SingleGroup>(userId).ConfigureAwait(false);
 			return new CourseRolesResponse
 			{
 				IsSystemAdministrator = isSystemAdministrator,
