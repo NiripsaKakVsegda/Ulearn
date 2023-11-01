@@ -176,7 +176,9 @@ public class AnalyticsController : Controller
 			Slides = slides,
 			SlidesVisits = slidesVisits,
 
-			VisitedUsers = visitedUsers,
+			VisitedUsers = visitedUsers
+				.OrderBy(u=> u.UserVisibleName != "" ? u.UserVisibleName : u.UserName, StringComparer.OrdinalIgnoreCase)
+				.ToList(),
 			VisitedUsersIsMore = isMore,
 			VisitedSlidesCountByUser = visitedSlidesCountByUser,
 			VisitedSlidesCountByUserAllTime = visitedSlidesCountByUserAllTime,
