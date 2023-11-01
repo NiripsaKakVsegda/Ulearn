@@ -56,6 +56,7 @@ const GroupDeadLines: FC<Props> = ({ courseId, groupId, user, }) => {
 		})
 	});
 
+	const deadLinesToRender = [...deadLines].sort(sortDeadLinesByTimestamp);
 	const isLoading = isCourseLoading || isStudentsLoading || isDeadLinesLoading;
 
 	const { unitsMarkup, slidesMarkupByUnitId } = buildMarkups();
@@ -120,7 +121,7 @@ const GroupDeadLines: FC<Props> = ({ courseId, groupId, user, }) => {
 						(deadLines.length > 0 || newDeadLine) &&
 						<div className={ styles.table }>
 							{ renderDeadLinesTableHeader() }
-							{ deadLines.map(deadLine => renderDeadLine(deadLine)) }
+							{ deadLinesToRender.map(deadLine => renderDeadLine(deadLine)) }
 							{ newDeadLine && renderDeadLine(newDeadLine) }
 						</div>
 					}
@@ -288,6 +289,10 @@ const GroupDeadLines: FC<Props> = ({ courseId, groupId, user, }) => {
 		const time = publicationMoment.format('HH:mm');
 
 		return { ...deadLine, date, time };
+	}
+
+	function sortDeadLinesByTimestamp(deadLine: DeadLineInfo, otherDeadLine: DeadLineInfo) {
+		return new Date(deadLine.date).getTime() - new Date(otherDeadLine.date).getTime();
 	}
 };
 
